@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finsec-hunt.local/schemas/target.schema.json",
+  "title": "FinSec Hunt Target",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["target", "scope", "accounts", "testing", "restrictions", "focus"],
+  "properties": {
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type"],
+      "properties": {
+        "name": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"},
+        "type": {"type": "string"}
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hosts"],
+      "properties": {"hosts": {"type": "array", "items": {"type": "string"}}}
+    },
+    "accounts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "ownership"],
+        "properties": {
+          "id": {"type": "string"},
+          "ownership": {"enum": ["researcher", "external"]}
+        }
+      }
+    },
+    "testing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["production", "human_approval_required", "destructive_testing"],
+      "properties": {
+        "production": {"type": "boolean"},
+        "human_approval_required": {"type": "boolean"},
+        "destructive_testing": {"type": "boolean"}
+      }
+    },
+    "restrictions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["denial_of_service", "brute_force", "social_engineering", "spam", "destructive_actions"],
+      "properties": {
+        "denial_of_service": {"type": "boolean"},
+        "brute_force": {"type": "boolean"},
+        "social_engineering": {"type": "boolean"},
+        "spam": {"type": "boolean"},
+        "destructive_actions": {"type": "boolean"}
+      }
+    },
+    "focus": {"type": "array", "items": {"type": "string"}}
+  }
+}
+

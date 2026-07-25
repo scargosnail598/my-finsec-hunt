@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finsec-hunt.local/schemas/observation.schema.json",
+  "title": "FinSec Hunt Passive Observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "source",
+    "source_reference",
+    "source_fingerprint",
+    "actor",
+    "channel",
+    "host",
+    "method",
+    "path",
+    "authentication",
+    "knowledge_status"
+  ],
+  "properties": {
+    "id": {"type": "string", "pattern": "^OBS-[0-9]+$"},
+    "timestamp": {"type": ["string", "null"], "format": "date-time"},
+    "source": {"enum": ["HAR", "BURP_XML", "CAIDO_JSON", "OPENAPI"]},
+    "source_reference": {"type": "string"},
+    "source_fingerprint": {"type": "string"},
+    "actor": {"type": "string"},
+    "channel": {"enum": ["WEB", "MOBILE", "PARTNER_API", "PUBLIC_API", "UNKNOWN"]},
+    "host": {"type": "string", "minLength": 1},
+    "scheme": {"type": ["string", "null"]},
+    "method": {"type": "string"},
+    "path": {"type": "string", "pattern": "^/"},
+    "query_parameters": {"type": "object"},
+    "request_fields": {"type": "array", "items": {"type": "string"}},
+    "response_fields": {"type": "array", "items": {"type": "string"}},
+    "status_code": {"type": ["integer", "null"]},
+    "content_type": {"type": ["string", "null"]},
+    "authentication": {"type": "object"},
+    "notes": {"type": ["string", "null"]},
+    "knowledge_status": {"const": "OBSERVED"}
+  }
+}

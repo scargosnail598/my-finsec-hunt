@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finsec-hunt.local/schemas/endpoint.schema.json",
+  "title": "FinSec Hunt Endpoint",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "method", "path", "hosts", "channels", "authentication", "resource", "parameters", "state_change", "financial_impact", "observed_by", "sources", "confidence", "knowledge_status", "normalization"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^EP-[0-9]+$"},
+    "method": {"type": "string"},
+    "path": {"type": "string", "pattern": "^/"},
+    "hosts": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "channels": {"type": "array", "items": {"enum": ["WEB", "MOBILE", "PARTNER_API", "PUBLIC_API", "UNKNOWN"]}},
+    "authentication": {"type": "object"},
+    "resource": {"type": "object"},
+    "parameters": {"type": "array", "items": {"type": "object"}},
+    "state_change": {"type": "boolean"},
+    "state_change_confidence": {"enum": ["OBSERVED", "INFERRED", "ASSUMED", "CONFIRMED", "REFUTED"]},
+    "financial_impact": {"enum": ["none", "unknown"]},
+    "observed_by": {"type": "array", "items": {"type": "string"}},
+    "sources": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "confidence": {"enum": ["low", "medium", "high"]},
+    "knowledge_status": {"const": "INFERRED"},
+    "normalization": {"type": "object"}
+  }
+}

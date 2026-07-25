@@ -1,0 +1,33 @@
+openapi: 3.1.0
+servers:
+  - url: https://api.example.test
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+paths:
+  /api/v2/refunds/{refundId}:
+    get:
+      parameters:
+        - name: refundId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Synthetic refund response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  refundId:
+                    type: string
+                  status:
+                    type: string
+              example:
+                access_token: SYNTHETIC_OPENAPI_SECRET

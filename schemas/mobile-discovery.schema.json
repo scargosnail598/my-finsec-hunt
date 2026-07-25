@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finsec-hunt.local/schemas/mobile-discovery.schema.json",
+  "title": "FinSec Hunt Mobile Static Discovery",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "id",
+    "key",
+    "kind",
+    "value",
+    "sources",
+    "channel",
+    "confidence",
+    "knowledge_status",
+    "notes"
+  ],
+  "properties": {
+    "id": {"type": "string", "pattern": "^MOB-[0-9]+$"},
+    "key": {"type": "string"},
+    "kind": {
+      "enum": [
+        "BASE_URL",
+        "API_PATH",
+        "GRAPHQL_ENDPOINT",
+        "WEBSOCKET",
+        "DEEP_LINK",
+        "CUSTOM_HEADER"
+      ]
+    },
+    "value": {"type": "string"},
+    "sources": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "channel": {"const": "MOBILE"},
+    "confidence": {"enum": ["low", "medium", "high"]},
+    "knowledge_status": {"const": "OBSERVED"},
+    "notes": {"type": "string"},
+    "generation": {"type": ["object", "null"]}
+  }
+}

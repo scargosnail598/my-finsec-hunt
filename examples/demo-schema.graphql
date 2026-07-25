@@ -1,0 +1,7 @@
+type Query {
+  wallet(walletId: ID!): Wallet
+}
+
+type Mutation {
+  cancelWithdrawal(withdrawalId: ID!, password: String = "SYNTHETIC_GRAPHQL_SECRET"): Withdrawal
+}

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finsec-hunt.local/schemas/graphql-operation.schema.json",
+  "title": "FinSec Hunt GraphQL Operation Lead",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "id",
+    "key",
+    "operation_type",
+    "field",
+    "arguments",
+    "return_type",
+    "sources",
+    "confidence",
+    "knowledge_status"
+  ],
+  "properties": {
+    "id": {"type": "string", "pattern": "^GQL-[0-9]+$"},
+    "key": {"type": "string"},
+    "operation_type": {"enum": ["query", "mutation", "subscription"]},
+    "field": {"type": "string"},
+    "arguments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type"],
+        "properties": {
+          "name": {"type": "string"},
+          "type": {"type": "string"}
+        }
+      }
+    },
+    "return_type": {"type": "string"},
+    "endpoint": {"type": ["string", "null"]},
+    "sources": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "confidence": {"enum": ["low", "medium", "high"]},
+    "knowledge_status": {"const": "OBSERVED"},
+    "notes": {"type": ["string", "null"]},
+    "generation": {"type": ["object", "null"]}
+  }
+}

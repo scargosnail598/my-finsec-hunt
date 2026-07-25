@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "finsec-hunt"
+version = "0.5.0"
+description = "Local-first research workspace for authorized fintech bug bounty analysis"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{ name = "FinSec Hunt Contributors" }]
+dependencies = [
+  "jinja2>=3.1.4",
+  "pydantic>=2.7.0",
+  "pyyaml>=6.0.1",
+  "rich>=13.7.1",
+  "typer>=0.12.3",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy>=1.10.0",
+  "pytest>=8.2.0",
+  "ruff>=0.5.0",
+  "types-pyyaml>=6.0.12.20240311",
+]
+
+[project.scripts]
+hunt = "finsec.cli:app"
+
+[tool.setuptools.packages.find]
+include = ["finsec*"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["finsec"]

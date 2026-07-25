@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finsec-hunt.local/schemas/hypothesis.schema.json",
+  "title": "FinSec Hunt Hypothesis (Phase 3 Contract)",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "id",
+    "key",
+    "title",
+    "category",
+    "component",
+    "source",
+    "mutation_dimensions",
+    "evidence_status",
+    "hypothesis",
+    "reasoning",
+    "preconditions",
+    "expected_secure_behavior",
+    "possible_vulnerable_behavior",
+    "potential_impact",
+    "evidence_to_collect",
+    "scores",
+    "priority"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^HYP-[0-9]+$"
+    },
+    "key": {"type": "string"},
+    "title": {"type": "string"},
+    "category": {
+      "enum": [
+        "authentication",
+        "authorization",
+        "state_integrity",
+        "replay",
+        "value_validation",
+        "version_parity",
+        "channel_parity"
+      ]
+    },
+    "component": {"type": "string"},
+    "source": {"$ref": "#/$defs/hypothesisSource"},
+    "invariant": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "observations": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "mutation_dimensions": {
+      "type": "array",
+      "items": {
+        "enum": ["ACTOR", "OBJECT", "STATE", "TIME", "VALUE", "CHANNEL", "VERSION"]
+      },
+      "minItems": 1
+    },
+    "required_state": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "attacker_capability": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "evidence_status": {"$ref": "#/$defs/knowledgeStatus"},
+    "hypothesis": {"type": "string"},
+    "reasoning": {"type": "string"},
+    "preconditions": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "expected_secure_behavior": {"type": "string"},
+    "possible_vulnerable_behavior": {"type": "string"},
+    "potential_impact": {"$ref": "#/$defs/potentialImpact"},
+    "evidence_to_collect": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "scores": {"$ref": "#/$defs/hypothesisScores"},
+    "priority": {"enum": ["P1", "P2", "P3"]},
+    "status": {
+      "default": "NOT_TESTED",
+      "enum": [
+        "NOT_TESTED",
+        "TEST_PLANNED",
+        "REFUTED",
+        "NEEDS_EVIDENCE",
+        "CONFIRMED"
+      ]
+    },
+    "safety_notes": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "notes": {
+      "type": ["string", "null"]
+    },
+    "generation": {
+      "anyOf": [
+        {"$ref": "#/$defs/generationMetadata"},
+        {"type": "null"}
+      ]
+    }
+  },
+  "$defs": {
+    "hypothesisSource": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "endpoints": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "invariants": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "observations": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "hypothesisScores": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["impact", "likelihood", "confidence", "testability", "total"],
+      "properties": {
+        "impact": {"type": "integer", "minimum": 1, "maximum": 5},
+        "likelihood": {"type": "integer", "minimum": 1, "maximum": 5},
+        "confidence": {"type": "integer", "minimum": 1, "maximum": 5},
+        "testability": {"type": "integer", "minimum": 1, "maximum": 5},
+        "total": {"type": "integer", "minimum": 4, "maximum": 20}
+      }
+    },
+    "impactLevel": {
+      "enum": ["none", "low", "medium", "high", "unknown"]
+    },
+    "potentialImpact": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "confidentiality": {"$ref": "#/$defs/impactLevel"},
+        "integrity": {"$ref": "#/$defs/impactLevel"},
+        "availability": {"$ref": "#/$defs/impactLevel"},
+        "financial": {"$ref": "#/$defs/impactLevel"}
+      }
+    },
+    "knowledgeStatus": {
+      "enum": ["OBSERVED", "INFERRED", "ASSUMED", "CONFIRMED", "REFUTED"]
+    },
+    "generationMetadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["generator", "generated_checksum", "source_fingerprint"],
+      "properties": {
+        "managed": {"type": "boolean", "default": true},
+        "generator": {"type": "string"},
+        "generated_checksum": {"type": "string"},
+        "source_fingerprint": {"type": "string"}
+      }
+    }
+  }
+}

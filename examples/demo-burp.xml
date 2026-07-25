@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<items>
+  <item>
+    <url>https://api.example.test/api/v2/payments/123?access_token=SYNTHETIC_QUERY_SECRET</url>
+    <host>api.example.test</host>
+    <port>443</port>
+    <protocol>https</protocol>
+    <method>GET</method>
+    <status>200</status>
+    <mimetype>application/json</mimetype>
+    <request>GET /api/v2/payments/123?access_token=SYNTHETIC_QUERY_SECRET HTTP/1.1&#13;&#10;Host: api.example.test&#13;&#10;Authorization: Bearer SYNTHETIC_BURP_SECRET&#13;&#10;&#13;&#10;</request>
+    <response>HTTP/1.1 200 OK&#13;&#10;Content-Type: application/json&#13;&#10;&#13;&#10;{"id":"123","access_token":"SYNTHETIC_RESPONSE_SECRET"}</response>
+  </item>
+</items>

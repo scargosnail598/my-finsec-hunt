@@ -1,0 +1,6 @@
+https://mobile:SYNTHETIC_URL_PASSWORD@api.example.test/api/v2/wallets?access_token=SYNTHETIC_MOBILE_SECRET
+https://api.example.test/graphql
+wss://stream.example.test/events
+finsec-demo://withdrawals/confirm
+/api/v1/refunds/{refundId}
+X-Client-Version
