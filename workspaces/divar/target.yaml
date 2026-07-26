@@ -1,0 +1,24 @@
+target:
+  name: divar
+  type: fintech
+scope:
+  hosts: 
+    - divar.ir
+    - api.divar.ir 
+accounts: []
+testing:
+  production: false
+  human_approval_required: true
+  destructive_testing: false
+restrictions:
+  denial_of_service: false
+  brute_force: false
+  social_engineering: false
+  spam: false
+  destructive_actions: false
+focus:
+- authorization
+- business_logic
+- financial_workflows
+- authentication
+- race_conditions

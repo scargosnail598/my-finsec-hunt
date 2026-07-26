@@ -1,0 +1,8244 @@
+version: 1
+endpoints:
+- id: EP-001
+  method: GET
+  path: /
+  hosts:
+  - app.733.ir
+  - divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Unknown
+    confidence: low
+    knowledge_status: INFERRED
+  parameters:
+  - name: did
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000269
+    - OBS-000360
+    - OBS-000405
+    - OBS-000461
+    knowledge_status: INFERRED
+  - name: typ
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000269
+    - OBS-000360
+    - OBS-000405
+    - OBS-000461
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000013
+  - OBS-000014
+  - OBS-000269
+  - OBS-000360
+  - OBS-000405
+  - OBS-000461
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /
+    rules: []
+- id: EP-002
+  method: GET
+  path: /back/style/prod/sprite/v1.0.0-b66a929c/sprite.json
+  hosts:
+  - map.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Sprite.Json
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000141
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /back/style/prod/sprite/v1.0.0-b66a929c/sprite.json
+    rules: []
+- id: EP-003
+  method: GET
+  path: /back/style/prod/sprite/v1.0.0-b66a929c/sprite.png
+  hosts:
+  - map.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Sprite.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000142
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /back/style/prod/sprite/v1.0.0-b66a929c/sprite.png
+    rules: []
+- id: EP-004
+  method: GET
+  path: /back/style/prod/style-light-view-port-v1.0.0-b66a929c-balad.json
+  hosts:
+  - map.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: StyleLightViewPortV1.0.0B66A929CBalad.Json
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000140
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /back/style/prod/style-light-view-port-v1.0.0-b66a929c-balad.json
+    rules: []
+- id: EP-005
+  method: GET
+  path: /favicon.ico
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Favicon.Ico
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000313
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /favicon.ico
+    rules: []
+- id: EP-006
+  method: GET
+  path: /images/nav_logo321.webp
+  hosts:
+  - www.google.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: NavLogo321.Webp
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000004
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /images/nav_logo321.webp
+    rules: []
+- id: EP-007
+  method: GET
+  path: /js/index.js
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Index.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000306
+  - OBS-000397
+  - OBS-000442
+  - OBS-000498
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /js/index.js
+    rules: []
+- id: EP-008
+  method: GET
+  path: /logo.aspx
+  hosts:
+  - trustseal.enamad.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Logo.Aspx
+    confidence: low
+    knowledge_status: INFERRED
+  parameters:
+  - name: Code
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000043
+    - OBS-000061
+    - OBS-000307
+    - OBS-000398
+    - OBS-000443
+    - OBS-000499
+    knowledge_status: INFERRED
+  - name: id
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000043
+    - OBS-000061
+    - OBS-000307
+    - OBS-000398
+    - OBS-000443
+    - OBS-000499
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000043
+  - OBS-000061
+  - OBS-000307
+  - OBS-000398
+  - OBS-000443
+  - OBS-000499
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /logo.aspx
+    rules: []
+- id: EP-009
+  method: GET
+  path: /manifest.json
+  hosts:
+  - divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Manifest.Json
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000041
+  - OBS-000344
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /manifest.json
+    rules: []
+- id: EP-010
+  method: GET
+  path: /my-divar/wallet-and-payments
+  hosts:
+  - divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WalletAndPayment
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000314
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /my-divar/wallet-and-payments
+    rules: []
+- id: EP-011
+  method: GET
+  path: /newsite/Content/ap-responsive-helpers.css
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: ApResponsiveHelpers.Css
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000274
+  - OBS-000365
+  - OBS-000410
+  - OBS-000466
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/Content/ap-responsive-helpers.css
+    rules: []
+- id: EP-012
+  method: GET
+  path: /newsite/Content/bootstrap-rtl.css
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: BootstrapRtl.Css
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000271
+  - OBS-000362
+  - OBS-000407
+  - OBS-000463
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/Content/bootstrap-rtl.css
+    rules: []
+- id: EP-013
+  method: GET
+  path: /newsite/Content/bootstrap.css
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Bootstrap.Css
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000270
+  - OBS-000361
+  - OBS-000406
+  - OBS-000462
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/Content/bootstrap.css
+    rules: []
+- id: EP-014
+  method: GET
+  path: /newsite/Content/font-awesome.css
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: FontAwesome.Css
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000272
+  - OBS-000363
+  - OBS-000408
+  - OBS-000464
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/Content/font-awesome.css
+    rules: []
+- id: EP-015
+  method: GET
+  path: /newsite/Content/rubick_pres.css
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: RubickPres.Css
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000273
+  - OBS-000364
+  - OBS-000409
+  - OBS-000465
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/Content/rubick_pres.css
+    rules: []
+- id: EP-016
+  method: GET
+  path: /newsite/Content/site.css
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Site.Css
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000275
+  - OBS-000366
+  - OBS-000411
+  - OBS-000467
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/Content/site.css
+    rules: []
+- id: EP-017
+  method: GET
+  path: /newsite/Scripts/bootstrap.js
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Bootstrap.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000305
+  - OBS-000396
+  - OBS-000441
+  - OBS-000497
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/Scripts/bootstrap.js
+    rules: []
+- id: EP-018
+  method: GET
+  path: /newsite/fonts/BYekan.woff
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Byekan.Woff
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000312
+  - OBS-000403
+  - OBS-000448
+  - OBS-000504
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/fonts/BYekan.woff
+    rules: []
+- id: EP-019
+  method: GET
+  path: /newsite/fonts/Yekan.woff
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Yekan.Woff
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000310
+  - OBS-000401
+  - OBS-000446
+  - OBS-000502
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/fonts/Yekan.woff
+    rules: []
+- id: EP-020
+  method: GET
+  path: /newsite/fonts/fontawesome-webfont.woff2
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: FontawesomeWebfont.Woff2
+    confidence: low
+    knowledge_status: INFERRED
+  parameters:
+  - name: v
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000311
+    - OBS-000402
+    - OBS-000447
+    - OBS-000503
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000311
+  - OBS-000402
+  - OBS-000447
+  - OBS-000503
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/fonts/fontawesome-webfont.woff2
+    rules: []
+- id: EP-021
+  method: GET
+  path: /newsite/images/app-icon-cafebazaar.png
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: AppIconCafebazaar.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000281
+  - OBS-000372
+  - OBS-000417
+  - OBS-000473
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/app-icon-cafebazaar.png
+    rules: []
+- id: EP-022
+  method: GET
+  path: /newsite/images/app-icon-myket.png
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: AppIconMyket.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000286
+  - OBS-000377
+  - OBS-000422
+  - OBS-000478
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/app-icon-myket.png
+    rules: []
+- id: EP-023
+  method: GET
+  path: /newsite/images/back1.jpg
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Back1.Jpg
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000308
+  - OBS-000399
+  - OBS-000444
+  - OBS-000500
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/back1.jpg
+    rules: []
+- id: EP-024
+  method: GET
+  path: /newsite/images/click-here.png
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: ClickHere.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000277
+  - OBS-000368
+  - OBS-000413
+  - OBS-000469
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/click-here.png
+    rules: []
+- id: EP-025
+  method: GET
+  path: /newsite/images/download-app.jpg
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: DownloadApp.Jpg
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000309
+  - OBS-000400
+  - OBS-000445
+  - OBS-000501
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/download-app.jpg
+    rules: []
+- id: EP-026
+  method: GET
+  path: /newsite/images/get-app.png
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: GetApp.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000279
+  - OBS-000370
+  - OBS-000415
+  - OBS-000471
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/get-app.png
+    rules: []
+- id: EP-027
+  method: GET
+  path: /newsite/images/hal.health-app.jpg
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Hal.HealthApp.Jpg
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000300
+  - OBS-000391
+  - OBS-000436
+  - OBS-000492
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/hal.health-app.jpg
+    rules: []
+- id: EP-028
+  method: GET
+  path: /newsite/images/logo.png
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Logo.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000276
+  - OBS-000367
+  - OBS-000412
+  - OBS-000468
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/logo.png
+    rules: []
+- id: EP-029
+  method: GET
+  path: /newsite/images/menuhandphone.png
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Menuhandphone.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000280
+  - OBS-000371
+  - OBS-000416
+  - OBS-000472
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/menuhandphone.png
+    rules: []
+- id: EP-030
+  method: GET
+  path: /newsite/images/mobile.png
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Mobile.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000278
+  - OBS-000369
+  - OBS-000414
+  - OBS-000470
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/mobile.png
+    rules: []
+- id: EP-031
+  method: GET
+  path: /newsite/images/mojudi1.png
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Mojudi1.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000289
+  - OBS-000380
+  - OBS-000425
+  - OBS-000481
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/mojudi1.png
+    rules: []
+- id: EP-032
+  method: GET
+  path: /newsite/images/more-desc.png
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: MoreDesc.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000291
+  - OBS-000382
+  - OBS-000427
+  - OBS-000483
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/more-desc.png
+    rules: []
+- id: EP-033
+  method: GET
+  path: /newsite/images/myket.qr.new.png
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Myket.Qr.New.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000285
+  - OBS-000376
+  - OBS-000421
+  - OBS-000477
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/myket.qr.new.png
+    rules: []
+- id: EP-034
+  method: GET
+  path: /newsite/images/qr-cafebazar.png
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: QrCafebazar.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000282
+  - OBS-000373
+  - OBS-000418
+  - OBS-000474
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/qr-cafebazar.png
+    rules: []
+- id: EP-035
+  method: GET
+  path: /newsite/images/qr-code-v6.png
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: QrCodeV6.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000284
+  - OBS-000375
+  - OBS-000420
+  - OBS-000476
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/qr-code-v6.png
+    rules: []
+- id: EP-036
+  method: GET
+  path: /newsite/images/qr-direct-android.png
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: QrDirectAndroid.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000283
+  - OBS-000374
+  - OBS-000419
+  - OBS-000475
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/qr-direct-android.png
+    rules: []
+- id: EP-037
+  method: GET
+  path: /newsite/images/qr-ios-direct.png
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: QrIosDirect.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000287
+  - OBS-000378
+  - OBS-000423
+  - OBS-000479
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/qr-ios-direct.png
+    rules: []
+- id: EP-038
+  method: GET
+  path: /newsite/images/rounded-icon-Bank-App.gif
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: RoundedIconBankApp.Gif
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000292
+  - OBS-000383
+  - OBS-000428
+  - OBS-000484
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/rounded-icon-Bank-App.gif
+    rules: []
+- id: EP-039
+  method: GET
+  path: /newsite/images/rounded-icon-buy-charge.jpg
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: RoundedIconBuyCharge.Jpg
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000290
+  - OBS-000381
+  - OBS-000426
+  - OBS-000482
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/rounded-icon-buy-charge.jpg
+    rules: []
+- id: EP-040
+  method: GET
+  path: /newsite/images/rounded-icon-car.jpg
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: RoundedIconCar.Jpg
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000301
+  - OBS-000392
+  - OBS-000437
+  - OBS-000493
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/rounded-icon-car.jpg
+    rules: []
+- id: EP-041
+  method: GET
+  path: /newsite/images/rounded-icon-charity.jpg
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: RoundedIconCharity.Jpg
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000295
+  - OBS-000386
+  - OBS-000431
+  - OBS-000487
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/rounded-icon-charity.jpg
+    rules: []
+- id: EP-042
+  method: GET
+  path: /newsite/images/rounded-icon-insurance.jpg
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: RoundedIconInsurance.Jpg
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000297
+  - OBS-000388
+  - OBS-000433
+  - OBS-000489
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/rounded-icon-insurance.jpg
+    rules: []
+- id: EP-043
+  method: GET
+  path: /newsite/images/rounded-icon-internet-charge.jpg
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: RoundedIconInternetCharge.Jpg
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000293
+  - OBS-000384
+  - OBS-000429
+  - OBS-000485
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/rounded-icon-internet-charge.jpg
+    rules: []
+- id: EP-044
+  method: GET
+  path: /newsite/images/rounded-icon-mobile-bill.jpg
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: RoundedIconMobileBill.Jpg
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000294
+  - OBS-000385
+  - OBS-000430
+  - OBS-000486
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/rounded-icon-mobile-bill.jpg
+    rules: []
+- id: EP-045
+  method: GET
+  path: /newsite/images/rounded-icon-service-bill.jpg
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: RoundedIconServiceBill.Jpg
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000296
+  - OBS-000387
+  - OBS-000432
+  - OBS-000488
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/rounded-icon-service-bill.jpg
+    rules: []
+- id: EP-046
+  method: GET
+  path: /newsite/images/rounded-icon-shake.jpg
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: RoundedIconShake.Jpg
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000299
+  - OBS-000390
+  - OBS-000435
+  - OBS-000491
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/rounded-icon-shake.jpg
+    rules: []
+- id: EP-047
+  method: GET
+  path: /newsite/images/rounded-icon-tele-pardaz.jpg
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: RoundedIconTelePardaz.Jpg
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000298
+  - OBS-000389
+  - OBS-000434
+  - OBS-000490
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/rounded-icon-tele-pardaz.jpg
+    rules: []
+- id: EP-048
+  method: GET
+  path: /newsite/images/sibapp-icon-appstore.png
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: SibappIconAppstore.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000288
+  - OBS-000379
+  - OBS-000424
+  - OBS-000480
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/sibapp-icon-appstore.png
+    rules: []
+- id: EP-049
+  method: GET
+  path: /newsite/images/social-instagram.png
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: SocialInstagram.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000304
+  - OBS-000395
+  - OBS-000440
+  - OBS-000496
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/social-instagram.png
+    rules: []
+- id: EP-050
+  method: GET
+  path: /newsite/images/social-telegram.png
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: SocialTelegram.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000303
+  - OBS-000394
+  - OBS-000439
+  - OBS-000495
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/social-telegram.png
+    rules: []
+- id: EP-051
+  method: GET
+  path: /newsite/images/social-twitter.png
+  hosts:
+  - app.733.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: SocialTwitter.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000302
+  - OBS-000393
+  - OBS-000438
+  - OBS-000494
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /newsite/images/social-twitter.png
+    rules: []
+- id: EP-052
+  method: GET
+  path: /og/_/js/k=og.asy.en_US.M_7ghikQAkA.2019.O/rt=j/m=_ac,_awd,ada,lldp,qads/exm=/d=1/ed=1/rs=AA2YrTtJT2GPlx0nJ84RzsS-D9uX1TzAyQ
+  hosts:
+  - www.gstatic.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Rs=Aa2Yrttjt2Gplx0Nj84RzssD9Ux1Tzayq
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000009
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /og/_/js/k=og.asy.en_US.M_7ghikQAkA.2019.O/rt=j/m=_ac,_awd,ada,lldp,qads/exm=/d=1/ed=1/rs=AA2YrTtJT2GPlx0nJ84RzsS-D9uX1TzAyQ
+    rules: []
+- id: EP-053
+  method: GET
+  path: /og/_/ss/k=og.asy.kDNUSkL2BhY.L.W.O/m=ll_tdm,adcgm3,ll_fw/excm=/d=1/ed=1/ct=zgms/rs=AA2YrTtex7puGoauetYjvpmcy8ijqj0ihQ
+  hosts:
+  - www.gstatic.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Rs=Aa2Yrttex7Pugoauetyjvpmcy8Ijqj0Ihq
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000011
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /og/_/ss/k=og.asy.kDNUSkL2BhY.L.W.O/m=ll_tdm,adcgm3,ll_fw/excm=/d=1/ed=1/ct=zgms/rs=AA2YrTtex7puGoauetYjvpmcy8ijqj0ihQ
+    rules: []
+- id: EP-054
+  method: GET
+  path: /pagead/1p-conversion/16521530460/
+  hosts:
+  - www.google.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 1PConversion
+    confidence: low
+    knowledge_status: INFERRED
+  parameters:
+  - name: adview_query_id
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000007
+    knowledge_status: INFERRED
+  - name: adview_type
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000007
+    knowledge_status: INFERRED
+  - name: gad_source
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000007
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000007
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /pagead/1p-conversion/16521530460/
+    rules: []
+- id: EP-055
+  method: GET
+  path: /pagead/conversion/16521530460/
+  hosts:
+  - www.googleadservices.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Conversion
+    confidence: low
+    knowledge_status: INFERRED
+  parameters:
+  - name: adview_query_id
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000006
+    knowledge_status: INFERRED
+  - name: adview_type
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000006
+    knowledge_status: INFERRED
+  - name: gad_source
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000006
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000006
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /pagead/conversion/16521530460/
+    rules: []
+- id: EP-056
+  method: GET
+  path: /places-web.json
+  hosts:
+  - map.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: PlacesWeb.Json
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000016
+  - OBS-000316
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /places-web.json
+    rules: []
+- id: EP-057
+  method: GET
+  path: /s/googlesans/v29/4UaGrENHsxJlGDuGo1OIlL3Owp4.woff2
+  hosts:
+  - fonts.gstatic.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 4Uagrenhsxjlgdugo1Oill3Owp4.Woff2
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000002
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /s/googlesans/v29/4UaGrENHsxJlGDuGo1OIlL3Owp4.woff2
+    rules: []
+- id: EP-058
+  method: GET
+  path: /sD6lXN/7QhL7e/8
+  hosts:
+  - touch.radif.ai
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 7Qhl7E
+    confidence: low
+    knowledge_status: INFERRED
+  parameters:
+  - name: q
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000118
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000118
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /sD6lXN/7QhL7e/8
+    rules: []
+- id: EP-059
+  method: GET
+  path: /search
+  hosts:
+  - www.google.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Search
+    confidence: low
+    knowledge_status: INFERRED
+  parameters:
+  - name: gs_lcrp
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000001
+    knowledge_status: INFERRED
+  - name: ie
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000001
+    knowledge_status: INFERRED
+  - name: oq
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000001
+    knowledge_status: INFERRED
+  - name: q
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000001
+    knowledge_status: INFERRED
+  - name: rlz
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000001
+    knowledge_status: INFERRED
+  - name: source
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000001
+    knowledge_status: INFERRED
+  - name: sourceid
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000001
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000001
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /search
+    rules: []
+- id: EP-060
+  method: GET
+  path: /service-worker.js
+  hosts:
+  - divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: ServiceWorker.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000042
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /service-worker.js
+    rules: []
+- id: EP-061
+  method: GET
+  path: /static/fonts/Open%20Sans%20Regular,Arial%20Unicode%20MS%20Regular/0-255.pbf
+  hosts:
+  - tiles.raah.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 0255.Pbf
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000158
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/fonts/Open%20Sans%20Regular,Arial%20Unicode%20MS%20Regular/0-255.pbf
+    rules: []
+- id: EP-062
+  method: GET
+  path: /static/fonts/Open%20Sans%20Regular,Arial%20Unicode%20MS%20Regular/1536-1791.pbf
+  hosts:
+  - tiles.raah.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 15361791.Pbf
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000159
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/fonts/Open%20Sans%20Regular,Arial%20Unicode%20MS%20Regular/1536-1791.pbf
+    rules: []
+- id: EP-063
+  method: GET
+  path: /static/fonts/Vazir%20Bold,Arial%20Unicode%20MS%20Regular/0-255.pbf
+  hosts:
+  - tiles.raah.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 0255.Pbf
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000168
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/fonts/Vazir%20Bold,Arial%20Unicode%20MS%20Regular/0-255.pbf
+    rules: []
+- id: EP-064
+  method: GET
+  path: /static/fonts/Vazir%20Bold,Arial%20Unicode%20MS%20Regular/65024-65279.pbf
+  hosts:
+  - tiles.raah.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 6502465279.Pbf
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000169
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/fonts/Vazir%20Bold,Arial%20Unicode%20MS%20Regular/65024-65279.pbf
+    rules: []
+- id: EP-065
+  method: GET
+  path: /static/fonts/Vazir%20Light,Arial%20Unicode%20MS%20Regular/0-255.pbf
+  hosts:
+  - tiles.raah.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 0255.Pbf
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000164
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/fonts/Vazir%20Light,Arial%20Unicode%20MS%20Regular/0-255.pbf
+    rules: []
+- id: EP-066
+  method: GET
+  path: /static/fonts/Vazir%20Light,Arial%20Unicode%20MS%20Regular/64256-64511.pbf
+  hosts:
+  - tiles.raah.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 6425664511.Pbf
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000166
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/fonts/Vazir%20Light,Arial%20Unicode%20MS%20Regular/64256-64511.pbf
+    rules: []
+- id: EP-067
+  method: GET
+  path: /static/fonts/Vazir%20Light,Arial%20Unicode%20MS%20Regular/65024-65279.pbf
+  hosts:
+  - tiles.raah.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 6502465279.Pbf
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000167
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/fonts/Vazir%20Light,Arial%20Unicode%20MS%20Regular/65024-65279.pbf
+    rules: []
+- id: EP-068
+  method: GET
+  path: /static/fonts/Vazir%20Light,Arial%20Unicode%20MS%20Regular/8192-8447.pbf
+  hosts:
+  - tiles.raah.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 81928447.Pbf
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000165
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/fonts/Vazir%20Light,Arial%20Unicode%20MS%20Regular/8192-8447.pbf
+    rules: []
+- id: EP-069
+  method: GET
+  path: /static/fonts/Vazir%20Regular,Arial%20Unicode%20MS%20Regular/0-255.pbf
+  hosts:
+  - tiles.raah.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 0255.Pbf
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000160
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/fonts/Vazir%20Regular,Arial%20Unicode%20MS%20Regular/0-255.pbf
+    rules: []
+- id: EP-070
+  method: GET
+  path: /static/fonts/Vazir%20Regular,Arial%20Unicode%20MS%20Regular/64256-64511.pbf
+  hosts:
+  - tiles.raah.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 6425664511.Pbf
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000162
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/fonts/Vazir%20Regular,Arial%20Unicode%20MS%20Regular/64256-64511.pbf
+    rules: []
+- id: EP-071
+  method: GET
+  path: /static/fonts/Vazir%20Regular,Arial%20Unicode%20MS%20Regular/65024-65279.pbf
+  hosts:
+  - tiles.raah.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 6502465279.Pbf
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000163
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/fonts/Vazir%20Regular,Arial%20Unicode%20MS%20Regular/65024-65279.pbf
+    rules: []
+- id: EP-072
+  method: GET
+  path: /static/fonts/Vazir%20Regular,Arial%20Unicode%20MS%20Regular/8192-8447.pbf
+  hosts:
+  - tiles.raah.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 81928447.Pbf
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000161
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/fonts/Vazir%20Regular,Arial%20Unicode%20MS%20Regular/8192-8447.pbf
+    rules: []
+- id: EP-073
+  method: GET
+  path: /static/imgs/widget-icons/light/grey_50/v1/note.png
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Note.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000247
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/imgs/widget-icons/light/grey_50/v1/note.png
+    rules: []
+- id: EP-074
+  method: GET
+  path: /static/imgs/widget-icons/light/icon_secondary/v1/star.png
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Star.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000238
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/imgs/widget-icons/light/icon_secondary/v1/star.png
+    rules: []
+- id: EP-075
+  method: GET
+  path: /static/imgs/widget-icons/light/success_secondary/v1/payment.png
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Payment.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000221
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/imgs/widget-icons/light/success_secondary/v1/payment.png
+    rules: []
+- id: EP-076
+  method: GET
+  path: /static/imgs/widget-icons/light/white_primary/v1/camera.png
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Camera.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000071
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/imgs/widget-icons/light/white_primary/v1/camera.png
+    rules: []
+- id: EP-077
+  method: GET
+  path: /static/imgs/widget-icons/light/white_primary/v1/stairs.png
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Stairs.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000070
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/imgs/widget-icons/light/white_primary/v1/stairs.png
+    rules: []
+- id: EP-078
+  method: GET
+  path: /static/imgs/widget-icons/light/white_primary/v1/videocam.png
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Videocam.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000072
+  - OBS-000196
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/imgs/widget-icons/light/white_primary/v1/videocam.png
+    rules: []
+- id: EP-079
+  method: GET
+  path: /static/photo/afra/webp_thumbnail/{webpThumbnailId}/873e3b41-2d8c-4f40-b977-0531cb5a831c.jpg.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000077
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000077
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/afra/webp_thumbnail/zgxkWb4GZjLgNey6xbrw-w/873e3b41-2d8c-4f40-b977-0531cb5a831c.jpg.webp
+    rules:
+    - long_opaque
+- id: EP-080
+  method: GET
+  path: /static/photo/afra/webp_thumbnail/{webpThumbnailId}/aff8f2b9-a848-4337-9ec4-6d037745bd84.jpg.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000134
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000134
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/afra/webp_thumbnail/acfhU-HXwlkxtGjI9iL36Q/aff8f2b9-a848-4337-9ec4-6d037745bd84.jpg.webp
+    rules:
+    - long_opaque
+- id: EP-081
+  method: GET
+  path: /static/photo/neda/post/{postId}/2dd5f96c-0f52-4696-9d9e-efd575360497.jpg.jpg
+  hosts:
+  - postimage01.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Post
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: postId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000179
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000179
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/post/EUNTkNSFXKYybxYbRD0CyQ/2dd5f96c-0f52-4696-9d9e-efd575360497.jpg.jpg
+    rules:
+    - long_opaque
+- id: EP-082
+  method: GET
+  path: /static/photo/neda/post/{postId}/fdeec762-1505-43e0-b5d1-1f29c4d9d7e7.jpg.jpg
+  hosts:
+  - postimage01.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Post
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: postId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000178
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000178
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/post/hVczpr8JFkXabhIsXztcrw/fdeec762-1505-43e0-b5d1-1f29c4d9d7e7.jpg.jpg
+    rules:
+    - long_opaque
+- id: EP-083
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/10d6241c-725d-4205-aa11-419beb5c217b.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000080
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000080
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/Ts5fMU0SFN2rbV3S4-iysA/10d6241c-725d-4205-aa11-419beb5c217b.webp
+    rules:
+    - long_opaque
+- id: EP-084
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/1c4a1004-8ecc-4426-bdf9-e1eddca508b1.jpg.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000201
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000201
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/tEZTbTt0TpkqcpRAnuhYeg/1c4a1004-8ecc-4426-bdf9-e1eddca508b1.jpg.webp
+    rules:
+    - long_opaque
+- id: EP-085
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/2dd5f96c-0f52-4696-9d9e-efd575360497.jpg.webp
+  hosts:
+  - postimage01.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000181
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000181
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/f3pkIYuu00nMeYBwT9kseQ/2dd5f96c-0f52-4696-9d9e-efd575360497.jpg.webp
+    rules:
+    - long_opaque
+- id: EP-086
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/3640adb5-2b87-44a6-8c7a-a116177018e3.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000207
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000207
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/R46pxrQL5vMKNcpM1osW6w/3640adb5-2b87-44a6-8c7a-a116177018e3.webp
+    rules:
+    - long_opaque
+- id: EP-087
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/3a225fc6-60ce-4c6d-a1c6-5d63cdb4a977.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000133
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000133
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/Sx2wOqVZ98mPO_sTr0Dxhw/3a225fc6-60ce-4c6d-a1c6-5d63cdb4a977.webp
+    rules:
+    - long_opaque
+- id: EP-088
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/3a29b601-75d2-43e1-959d-50cd62046cf4.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000199
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000199
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/-AKwCBV8nzzLvPYJbWFNwg/3a29b601-75d2-43e1-959d-50cd62046cf4.webp
+    rules:
+    - long_opaque
+- id: EP-089
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/3a5d8082-125f-40e2-b0f1-563b4cb89733.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000220
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000220
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/HYeLIADUctJ-Le2tKMnRuw/3a5d8082-125f-40e2-b0f1-563b4cb89733.webp
+    rules:
+    - long_opaque
+- id: EP-090
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/446f6855-9e0a-49a2-9a92-d57f5649a379.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000079
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000079
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/RSh84ihOz4mF7MdDgF4vXg/446f6855-9e0a-49a2-9a92-d57f5649a379.webp
+    rules:
+    - long_opaque
+- id: EP-091
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/478cb5ae-6a52-4d14-a050-e65c27867568.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000223
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000223
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/omcJWN4Q6M_5_ie-63UtLQ/478cb5ae-6a52-4d14-a050-e65c27867568.webp
+    rules:
+    - long_opaque
+- id: EP-092
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/49ce9a6a-652b-4f63-a984-f06e2af75c39.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000213
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000213
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/GeYgMsyaIrD56TzXF_yZXg/49ce9a6a-652b-4f63-a984-f06e2af75c39.webp
+    rules:
+    - long_opaque
+- id: EP-093
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/565aa3cc-b4bc-4f5f-a2f5-76fa4258f8e1.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000208
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000208
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/RTkpVOVLGdjzTj-Xeqs4DQ/565aa3cc-b4bc-4f5f-a2f5-76fa4258f8e1.webp
+    rules:
+    - long_opaque
+- id: EP-094
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/56dc01bf-3f5f-4c0c-a374-978e4ff01cee.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000198
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000198
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/heOWeLb7sS4p6N8EauvJkw/56dc01bf-3f5f-4c0c-a374-978e4ff01cee.webp
+    rules:
+    - long_opaque
+- id: EP-095
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/592aeac7-3cbb-455c-82e0-415ce89ab8ff.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000205
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000205
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/Btup1JXmQRKTHqe4t0lmlg/592aeac7-3cbb-455c-82e0-415ce89ab8ff.webp
+    rules:
+    - long_opaque
+- id: EP-096
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/5f17e17a-0eb8-4c91-81ca-98e46a061d59.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000211
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000211
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/NU3zeYdh3_f3bAMS56dhIg/5f17e17a-0eb8-4c91-81ca-98e46a061d59.webp
+    rules:
+    - long_opaque
+- id: EP-097
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/6773e422-a0c4-4ed5-8c3b-762da5d47a3e.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000076
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000076
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/bohQ8DC2aTH7Bzntl6uFLg/6773e422-a0c4-4ed5-8c3b-762da5d47a3e.webp
+    rules:
+    - long_opaque
+- id: EP-098
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/6ebdedb8-1a51-4a6f-ad00-c3bb3a901607.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000082
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000082
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/JxSjYg0D9757Y4AXWcwSPw/6ebdedb8-1a51-4a6f-ad00-c3bb3a901607.webp
+    rules:
+    - long_opaque
+- id: EP-099
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/787ead9b-900b-47da-805c-f99ddcecab4a.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000222
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000222
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/iL86T75Cn1OpRAYiF_1VlA/787ead9b-900b-47da-805c-f99ddcecab4a.webp
+    rules:
+    - long_opaque
+- id: EP-100
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/7a51aa64-4e77-4c03-bc1d-2ed783acd291.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000214
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000214
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/NkrgSlHTndDpV_JsXgG3mw/7a51aa64-4e77-4c03-bc1d-2ed783acd291.webp
+    rules:
+    - long_opaque
+- id: EP-101
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/7e5ef07c-7fcc-4ab0-a162-55d15615f9b9.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000075
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000075
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/YV4SSFlEckpGn4iU2aHLhg/7e5ef07c-7fcc-4ab0-a162-55d15615f9b9.webp
+    rules:
+    - long_opaque
+- id: EP-102
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/865e0edd-4b3b-4064-9c0b-cf9d7a327750.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000209
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000209
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/kknaqcC6SY6nGM262Krhrw/865e0edd-4b3b-4064-9c0b-cf9d7a327750.webp
+    rules:
+    - long_opaque
+- id: EP-103
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/87d9a6f1-cac0-4781-ade4-7b6d37cc3a83.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000216
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000216
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/euk50SObrkwvyc4Iaemm4w/87d9a6f1-cac0-4781-ade4-7b6d37cc3a83.webp
+    rules:
+    - long_opaque
+- id: EP-104
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/8838d88d-1282-49e5-bc88-c152424f8947.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000087
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000087
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/Eln47jbX96_3Gdb1yFvVCg/8838d88d-1282-49e5-bc88-c152424f8947.webp
+    rules:
+    - long_opaque
+- id: EP-105
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/88569945-1351-4d70-8ea4-79631a8d7d1c.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000092
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000092
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/VrrH4wXtYsNmGjpEiQfUfQ/88569945-1351-4d70-8ea4-79631a8d7d1c.webp
+    rules:
+    - long_opaque
+- id: EP-106
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/8aa496a6-d987-4787-806e-88da1ec7f646.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000091
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000091
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/Vwzz6bTDWJWWjjh5ZAtrng/8aa496a6-d987-4787-806e-88da1ec7f646.webp
+    rules:
+    - long_opaque
+- id: EP-107
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/8f4444ba-05f1-47da-b99d-88f9b477a708.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000203
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000203
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/KW3dbzk1ZC3Ff2hmUSBQnw/8f4444ba-05f1-47da-b99d-88f9b477a708.webp
+    rules:
+    - long_opaque
+- id: EP-108
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/8fec2276-186a-40b8-99f8-851910feabc5.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000215
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000215
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/dTj6qlY366qXqKqZEA8zAw/8fec2276-186a-40b8-99f8-851910feabc5.webp
+    rules:
+    - long_opaque
+- id: EP-109
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/95fdf04a-fdb6-4305-ae27-b6959c5a5bb7.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000078
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000078
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/8RGJJZ6DP_KEpujZOWEMVA/95fdf04a-fdb6-4305-ae27-b6959c5a5bb7.webp
+    rules:
+    - long_opaque
+- id: EP-110
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/9f5aacb4-19dc-4a05-ae1e-ec2576ac2324.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000139
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000139
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/pz5tI_ruC6sOCei6WmUg_w/9f5aacb4-19dc-4a05-ae1e-ec2576ac2324.webp
+    rules:
+    - long_opaque
+- id: EP-111
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/a54df2f3-df5f-4ca7-9024-a98710b803c9.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000204
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000204
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/pcdcnUjPdFNP-YNoCxWV8w/a54df2f3-df5f-4ca7-9024-a98710b803c9.webp
+    rules:
+    - long_opaque
+- id: EP-112
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/a578ba3e-fed7-4e0c-ab62-76dd182e2193.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000081
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000081
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/MBMUUGDhU3eWrUcRbfE7Cg/a578ba3e-fed7-4e0c-ab62-76dd182e2193.webp
+    rules:
+    - long_opaque
+- id: EP-113
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/abb996e5-05a7-407e-ab1c-11318e5290a4.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000135
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000135
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/DjX-DU-yTAv2BocaB0kgdw/abb996e5-05a7-407e-ab1c-11318e5290a4.webp
+    rules:
+    - long_opaque
+- id: EP-114
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/ac7b8cfe-33ed-4f53-a499-b9bd253ae43a.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000136
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000136
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/8_F4Abprkkkf3AN_Qxzmtw/ac7b8cfe-33ed-4f53-a499-b9bd253ae43a.webp
+    rules:
+    - long_opaque
+- id: EP-115
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/aefa08ce-5144-4365-ae9f-5518b69fa09e.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000090
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000090
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/NUl5JnO3Mcx1vEcR_V3kEQ/aefa08ce-5144-4365-ae9f-5518b69fa09e.webp
+    rules:
+    - long_opaque
+- id: EP-116
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/b30e7f1f-68e3-40f0-840c-9af719547b9e.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000210
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000210
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/3GKcjj-qqEE5UedSQ_bUzw/b30e7f1f-68e3-40f0-840c-9af719547b9e.webp
+    rules:
+    - long_opaque
+- id: EP-117
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/b7072dbf-348c-41ca-9c20-715f4e07bbfc.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000212
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000212
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/FUMz53NNuKtIE_Nz2cBL2g/b7072dbf-348c-41ca-9c20-715f4e07bbfc.webp
+    rules:
+    - long_opaque
+- id: EP-118
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/b8bdb611-dd3e-4bcb-bfee-1f81899c4577.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000206
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000206
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/Ywg06LIYSwiGripqImQ2kQ/b8bdb611-dd3e-4bcb-bfee-1f81899c4577.webp
+    rules:
+    - long_opaque
+- id: EP-119
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/b9ac2750-d1c2-4123-b580-d98779fc45b6.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000074
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000074
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/7DXrfgRAUc4Pmvh1-QPYMA/b9ac2750-d1c2-4123-b580-d98779fc45b6.webp
+    rules:
+    - long_opaque
+- id: EP-120
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/bad47bd7-18e0-4330-b71b-45c9bf8dddc9.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000084
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000084
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/GZo_z00v9G727d1QfoQTVg/bad47bd7-18e0-4330-b71b-45c9bf8dddc9.webp
+    rules:
+    - long_opaque
+- id: EP-121
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/bfcf5a76-b10f-4f56-800e-b310244d4949.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000200
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000200
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/870k2tFQC_5o4ao9MG0IFQ/bfcf5a76-b10f-4f56-800e-b310244d4949.webp
+    rules:
+    - long_opaque
+- id: EP-122
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/c3999216-6076-4f28-93f1-7303397b902a.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000138
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000138
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/jtkc1zCa9m9ed4p_PInKoQ/c3999216-6076-4f28-93f1-7303397b902a.webp
+    rules:
+    - long_opaque
+- id: EP-123
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/cc495ab1-afc9-4cc5-9cdf-82e4f2b20997.jpg.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000073
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000073
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/RvfhwFAQx1j4TzuDhF8nzw/cc495ab1-afc9-4cc5-9cdf-82e4f2b20997.jpg.webp
+    rules:
+    - long_opaque
+- id: EP-124
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/cc77820e-20ca-45f6-ae3a-4223be599290.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000088
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000088
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/kGcfSc1hJABV4eUe13YCxg/cc77820e-20ca-45f6-ae3a-4223be599290.webp
+    rules:
+    - long_opaque
+- id: EP-125
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/dbf7290c-e77b-4d40-ad38-2d6de74ad463.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000085
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000085
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/A1fTqwfQaqK9r_WSPEpkww/dbf7290c-e77b-4d40-ad38-2d6de74ad463.webp
+    rules:
+    - long_opaque
+- id: EP-126
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/e8a76e53-8273-4153-ae0c-860b6de65be5.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000137
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000137
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/f8UGf6uOJG5ePrDRKm-o8g/e8a76e53-8273-4153-ae0c-860b6de65be5.webp
+    rules:
+    - long_opaque
+- id: EP-127
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/e9436395-9798-409c-af0a-f73e3c7d90df.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000089
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000089
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/cwW2uvYcwEfg_ULhP_8USQ/e9436395-9798-409c-af0a-f73e3c7d90df.webp
+    rules:
+    - long_opaque
+- id: EP-128
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/eea129dc-7a7a-4278-a5fb-89a4311a4039.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000217
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000217
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/hbTLMIQnNa1JqTzoe4RpBw/eea129dc-7a7a-4278-a5fb-89a4311a4039.webp
+    rules:
+    - long_opaque
+- id: EP-129
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/f6973d3b-01c1-42f4-a729-16458cb15362.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000202
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000202
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/9ylvrvyjtawzUv0i9m-SqA/f6973d3b-01c1-42f4-a729-16458cb15362.webp
+    rules:
+    - long_opaque
+- id: EP-130
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/f9f76f35-35e9-471a-b3e9-4d376489ccf5.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000219
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000219
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/2wnfe0WZJllH6iC9wunXyA/f9f76f35-35e9-471a-b3e9-4d376489ccf5.webp
+    rules:
+    - long_opaque
+- id: EP-131
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/fb0fdf04-1eb5-4688-9d55-e99d0cafbccf.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000086
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000086
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/Se-OFX-2BZ4a33TMDpy_tg/fb0fdf04-1eb5-4688-9d55-e99d0cafbccf.webp
+    rules:
+    - long_opaque
+- id: EP-132
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/fc5925e3-e4aa-4074-95a0-eddb0e8df80d.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000132
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000132
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/8d_1nuyOalBuf5SyrBdkOg/fc5925e3-e4aa-4074-95a0-eddb0e8df80d.webp
+    rules:
+    - long_opaque
+- id: EP-133
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/fdeec762-1505-43e0-b5d1-1f29c4d9d7e7.jpg.webp
+  hosts:
+  - postimage01.divarcdn.com
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000131
+    - OBS-000180
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000131
+  - OBS-000180
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/ymQKF1YLzXJ6fJlvG62K3w/fdeec762-1505-43e0-b5d1-1f29c4d9d7e7.jpg.webp
+    rules:
+    - long_opaque
+- id: EP-134
+  method: GET
+  path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/ff5ec32d-45c9-47e1-b25b-e4ba1e24795e.webp
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WebpThumbnail
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: webpThumbnailId
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000083
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000083
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/photo/neda/webp_thumbnail/7Cse7PzicbSw620oIhDfAg/ff5ec32d-45c9-47e1-b25b-e4ba1e24795e.webp
+    rules:
+    - long_opaque
+- id: EP-135
+  method: GET
+  path: /static/public/core/payment/asan_pardakht_logo.png
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: AsanPardakhtLogo.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000259
+  - OBS-000357
+  - OBS-000517
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/public/core/payment/asan_pardakht_logo.png
+    rules: []
+- id: EP-136
+  method: GET
+  path: /static/public/core/payment/bazaar_pay_logo.png
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: BazaarPayLogo.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000261
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/public/core/payment/bazaar_pay_logo.png
+    rules: []
+- id: EP-137
+  method: GET
+  path: /static/public/core/payment/digi_pay_logo.png
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: DigiPayLogo.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000260
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/public/core/payment/digi_pay_logo.png
+    rules: []
+- id: EP-138
+  method: GET
+  path: /static/public/pro/landing/logo.png
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Logo.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000237
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/public/pro/landing/logo.png
+    rules: []
+- id: EP-139
+  method: GET
+  path: /static/public/pro/registration/auto_promotion.png
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: AutoPromotion.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000455
+  - OBS-000511
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/public/pro/registration/auto_promotion.png
+    rules: []
+- id: EP-140
+  method: GET
+  path: /static/public/pro/registration/edit_price.png
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: EditPrice.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000456
+  - OBS-000512
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/public/pro/registration/edit_price.png
+    rules: []
+- id: EP-141
+  method: GET
+  path: /static/public/pro/registration/insight.png
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Insight.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000454
+  - OBS-000510
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/public/pro/registration/insight.png
+    rules: []
+- id: EP-142
+  method: GET
+  path: /static/public/search/filters-config.json
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: FiltersConfig.Json
+    confidence: low
+    knowledge_status: INFERRED
+  parameters:
+  - name: version
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000015
+    - OBS-000315
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000015
+  - OBS-000315
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/public/search/filters-config.json
+    rules: []
+- id: EP-143
+  method: GET
+  path: /static/public/web/mapbox-gl-rtl-text.min.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: MapboxGlRtlText.Min.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000149
+  - OBS-000152
+  - OBS-000153
+  - OBS-000154
+  - OBS-000155
+  - OBS-000156
+  - OBS-000157
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /static/public/web/mapbox-gl-rtl-text.min.js
+    rules: []
+- id: EP-144
+  method: GET
+  path: /tiles/freezed_zoom_11/8/164/100.pbf
+  hosts:
+  - tiles.raah.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 100.Pbf
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000147
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /tiles/freezed_zoom_11/8/164/100.pbf
+    rules: []
+- id: EP-145
+  method: GET
+  path: /tiles/freezed_zoom_11/8/164/101.pbf
+  hosts:
+  - tiles.raah.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 101.Pbf
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000148
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /tiles/freezed_zoom_11/8/164/101.pbf
+    rules: []
+- id: EP-146
+  method: GET
+  path: /tiles/high/8/164/100.pbf
+  hosts:
+  - tiles.raah.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 100.Pbf
+    confidence: low
+    knowledge_status: INFERRED
+  parameters:
+  - name: version
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000143
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000143
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /tiles/high/8/164/100.pbf
+    rules: []
+- id: EP-147
+  method: GET
+  path: /tiles/high/8/164/101.pbf
+  hosts:
+  - tiles.raah.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 101.Pbf
+    confidence: low
+    knowledge_status: INFERRED
+  parameters:
+  - name: version
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000144
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000144
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /tiles/high/8/164/101.pbf
+    rules: []
+- id: EP-148
+  method: GET
+  path: /tiles/low/8/164/100.pbf
+  hosts:
+  - tiles.raah.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 100.Pbf
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000145
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /tiles/low/8/164/100.pbf
+    rules: []
+- id: EP-149
+  method: GET
+  path: /tiles/low/8/164/101.pbf
+  hosts:
+  - tiles.raah.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 101.Pbf
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000146
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /tiles/low/8/164/101.pbf
+    rules: []
+- id: EP-150
+  method: GET
+  path: /v8/call/call-history/unacted-bundle-count
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: UnactedBundleCount
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000113
+  - OBS-000346
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/call/call-history/unacted-bundle-count
+    rules: []
+- id: EP-151
+  method: GET
+  path: /v8/mapimage
+  hosts:
+  - mapimage.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Mapimage
+    confidence: low
+    knowledge_status: INFERRED
+  parameters:
+  - name: encrypted_data
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000182
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000182
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/mapimage
+    rules: []
+- id: EP-152
+  method: GET
+  path: /v8/posts-v2/web/gahoUVea
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Gahouvea
+    confidence: low
+    knowledge_status: INFERRED
+  parameters:
+  - name: tracker_session_id
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000175
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000175
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/posts-v2/web/gahoUVea
+    rules: []
+- id: EP-153
+  method: GET
+  path: /verify/ALSKRH1YgH7ez9PZHX7KIlBTJ1USRMUl4VPpYz01Gltu9eYHAtfY4eaZPJrCqaAnhDI3wym5fE9kQRzt_XLnDncXqAYWaP03TFSkWyEWHi63hIdfbCmHNc-6HSUucAiwJ0XwpQDXYITLaYBN6-aPadxUMg
+  hosts:
+  - www.google.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Alskrh1Ygh7Ez9Pzhx7Kilbtj1Usrmul4Vppyz01Gltu9Eyhatfy4Eazpjrcqaanhdi3Wym5Fe9KqrztXlndncxqaywap03Tfskwyewhi63Hidfbcmhnc6Hsuucaiwj0Xwpqdxyitlaybn6Apadxumg
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000003
+  - OBS-000010
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /verify/ALSKRH1YgH7ez9PZHX7KIlBTJ1USRMUl4VPpYz01Gltu9eYHAtfY4eaZPJrCqaAnhDI3wym5fE9kQRzt_XLnDncXqAYWaP03TFSkWyEWHi63hIdfbCmHNc-6HSUucAiwJ0XwpQDXYITLaYBN6-aPadxUMg
+    rules: []
+- id: EP-154
+  method: GET
+  path: /web-assets/2026/07/369.7fa0e4a4.desktop.css
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: 369.7Fa0E4A4.Desktop.Css
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000129
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/369.7fa0e4a4.desktop.css
+    rules: []
+- id: EP-155
+  method: GET
+  path: /web-assets/2026/07/IRANSansWeb.cdb118d6.woff2
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Iransansweb.Cdb118D6.Woff2
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000030
+  - OBS-000226
+  - OBS-000330
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/IRANSansWeb.cdb118d6.woff2
+    rules: []
+- id: EP-156
+  method: GET
+  path: /web-assets/2026/07/IRANSansWeb_Bold.94bdf556.woff2
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: IransanswebBold.94Bdf556.Woff2
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000096
+  - OBS-000189
+  - OBS-000358
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/IRANSansWeb_Bold.94bdf556.woff2
+    rules: []
+- id: EP-157
+  method: GET
+  path: /web-assets/2026/07/IRANSansWeb_Medium.9f338149.woff2
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: IransanswebMedium.9F338149.Woff2
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000040
+  - OBS-000060
+  - OBS-000343
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/IRANSansWeb_Medium.9f338149.woff2
+    rules: []
+- id: EP-158
+  method: GET
+  path: /web-assets/2026/07/bootstrap-547.3f4fb2a1.desktop.css
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Bootstrap547.3F4Fb2A1.Desktop.Css
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000038
+  - OBS-000340
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/bootstrap-547.3f4fb2a1.desktop.css
+    rules: []
+- id: EP-159
+  method: GET
+  path: /web-assets/2026/07/bootstrap-547.58da18da.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Bootstrap547.58Da18Da.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000029
+  - OBS-000329
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/bootstrap-547.58da18da.desktop.js
+    rules: []
+- id: EP-160
+  method: GET
+  path: /web-assets/2026/07/components-179.8105de45.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Components179.8105De45.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000024
+  - OBS-000324
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/components-179.8105de45.desktop.js
+    rules: []
+- id: EP-161
+  method: GET
+  path: /web-assets/2026/07/fp-pb-580.58c24cb2.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: FpPb580.58C24Cb2.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000116
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/fp-pb-580.58c24cb2.desktop.js
+    rules: []
+- id: EP-162
+  method: GET
+  path: /web-assets/2026/07/framework-pb-535.ad67f7ff.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: FrameworkPb535.Ad67F7Ff.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000022
+  - OBS-000322
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/framework-pb-535.ad67f7ff.desktop.js
+    rules: []
+- id: EP-163
+  method: GET
+  path: /web-assets/2026/07/ic-pb-930.3797c625.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: IcPb930.3797C625.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000032
+  - OBS-000332
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/ic-pb-930.3797c625.desktop.js
+    rules: []
+- id: EP-164
+  method: GET
+  path: /web-assets/2026/07/khesht-326.ecf36801.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Khesht326.Ecf36801.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000023
+  - OBS-000323
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/khesht-326.ecf36801.desktop.js
+    rules: []
+- id: EP-165
+  method: GET
+  path: /web-assets/2026/07/lazyplaceselector-329.e93cd19d.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Lazyplaceselector329.E93Cd19D.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000034
+  - OBS-000336
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/lazyplaceselector-329.e93cd19d.desktop.js
+    rules: []
+- id: EP-166
+  method: GET
+  path: /web-assets/2026/07/main-792.53b8328e.desktop.css
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Main792.53B8328E.Desktop.Css
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000036
+  - OBS-000338
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/main-792.53b8328e.desktop.css
+    rules: []
+- id: EP-167
+  method: GET
+  path: /web-assets/2026/07/main.65268493.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Main.65268493.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000020
+  - OBS-000320
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/main.65268493.desktop.js
+    rules: []
+- id: EP-168
+  method: GET
+  path: /web-assets/2026/07/manage-738.b47a0e56.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Manage738.B47A0E56.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000231
+  - OBS-000334
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/manage-738.b47a0e56.desktop.js
+    rules: []
+- id: EP-169
+  method: GET
+  path: /web-assets/2026/07/manage-738.db5bfca8.desktop.css
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Manage738.Db5Bfca8.Desktop.Css
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000230
+  - OBS-000341
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/manage-738.db5bfca8.desktop.css
+    rules: []
+- id: EP-170
+  method: GET
+  path: /web-assets/2026/07/mapbox-pb-369.31264a00.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: MapboxPb369.31264A00.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000130
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/mapbox-pb-369.31264a00.desktop.js
+    rules: []
+- id: EP-171
+  method: GET
+  path: /web-assets/2026/07/mapbox-pb-388.b6605a5a.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: MapboxPb388.B6605A5A.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000033
+  - OBS-000335
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/mapbox-pb-388.b6605a5a.desktop.js
+    rules: []
+- id: EP-172
+  method: GET
+  path: /web-assets/2026/07/observer-pb-256.4d955262.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: ObserverPb256.4D955262.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000031
+  - OBS-000331
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/observer-pb-256.4d955262.desktop.js
+    rules: []
+- id: EP-173
+  method: GET
+  path: /web-assets/2026/07/per-localization-713.34a8cfc1.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: PerLocalization713.34A8Cfc1.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000028
+  - OBS-000328
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/per-localization-713.34a8cfc1.desktop.js
+    rules: []
+- id: EP-174
+  method: GET
+  path: /web-assets/2026/07/polyfills.a4bcd583.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Polyfills.A4Bcd583.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000018
+  - OBS-000318
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/polyfills.a4bcd583.desktop.js
+    rules: []
+- id: EP-175
+  method: GET
+  path: /web-assets/2026/07/postview-782.89280520.desktop.css
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Postview782.89280520.Desktop.Css
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000173
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/postview-782.89280520.desktop.css
+    rules: []
+- id: EP-176
+  method: GET
+  path: /web-assets/2026/07/postview-782.ce2f6e85.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Postview782.Ce2F6E85.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000174
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/postview-782.ce2f6e85.desktop.js
+    rules: []
+- id: EP-177
+  method: GET
+  path: /web-assets/2026/07/real-estate.efdfc654.png
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: RealEstate.Efdfc654.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000186
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/real-estate.efdfc654.png
+    rules: []
+- id: EP-178
+  method: GET
+  path: /web-assets/2026/07/runtime.14f55c20.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Runtime.14F55C20.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000017
+  - OBS-000317
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/runtime.14f55c20.desktop.js
+    rules: []
+- id: EP-179
+  method: GET
+  path: /web-assets/2026/07/services-671.1c1d7fc5.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Services671.1C1D7Fc5.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000026
+  - OBS-000326
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/services-671.1c1d7fc5.desktop.js
+    rules: []
+- id: EP-180
+  method: GET
+  path: /web-assets/2026/07/sh-f25b5f90-828.8f5f569c.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: ShF25B5F90828.8F5F569C.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000229
+  - OBS-000333
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/sh-f25b5f90-828.8f5f569c.desktop.js
+    rules: []
+- id: EP-181
+  method: GET
+  path: /web-assets/2026/07/sonnat-icons.5c5c2d1b.woff2
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: SonnatIcons.5C5C2D1B.Woff2
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000039
+  - OBS-000342
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/sonnat-icons.5c5c2d1b.woff2
+    rules: []
+- id: EP-182
+  method: GET
+  path: /web-assets/2026/07/store-962.a166a37e.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Store962.A166A37E.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000027
+  - OBS-000327
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/store-962.a166a37e.desktop.js
+    rules: []
+- id: EP-183
+  method: GET
+  path: /web-assets/2026/07/utils-357.7d05c725.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Utils357.7D05C725.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000025
+  - OBS-000325
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/utils-357.7d05c725.desktop.js
+    rules: []
+- id: EP-184
+  method: GET
+  path: /web-assets/2026/07/vendors-pb-159.400a4952.desktop.css
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: VendorsPb159.400A4952.Desktop.Css
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000035
+  - OBS-000337
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/vendors-pb-159.400a4952.desktop.css
+    rules: []
+- id: EP-185
+  method: GET
+  path: /web-assets/2026/07/vendors-pb.48b084f5.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: VendorsPb.48B084F5.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000019
+  - OBS-000319
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/vendors-pb.48b084f5.desktop.js
+    rules: []
+- id: EP-186
+  method: GET
+  path: /web-assets/2026/07/widget-base-183.1693463d.desktop.js
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WidgetBase183.1693463D.Desktop.J
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000021
+  - OBS-000321
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/widget-base-183.1693463d.desktop.js
+    rules: []
+- id: EP-187
+  method: GET
+  path: /web-assets/2026/07/widget-base-183.7a67a804.desktop.css
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WidgetBase183.7A67A804.Desktop.Css
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000037
+  - OBS-000339
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/2026/07/widget-base-183.7a67a804.desktop.css
+    rules: []
+- id: EP-188
+  method: GET
+  path: /web-assets/publics/android-chrome-192x192.png
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: AndroidChrome192X192.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000045
+  - OBS-000355
+  - OBS-000404
+  - OBS-000449
+  - OBS-000505
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/publics/android-chrome-192x192.png
+    rules: []
+- id: EP-189
+  method: GET
+  path: /web-assets/publics/favicon-32x32.png
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Favicon32X32.Png
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000044
+  - OBS-000056
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/publics/favicon-32x32.png
+    rules: []
+- id: EP-190
+  method: GET
+  path: /web-assets/publics/offline-statics/IRANSansWeb.eot
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Iransansweb.Eot
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000052
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/publics/offline-statics/IRANSansWeb.eot
+    rules: []
+- id: EP-191
+  method: GET
+  path: /web-assets/publics/offline-statics/IRANSansWeb.ttf
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Iransansweb.Ttf
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000055
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/publics/offline-statics/IRANSansWeb.ttf
+    rules: []
+- id: EP-192
+  method: GET
+  path: /web-assets/publics/offline-statics/IRANSansWeb.woff
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Iransansweb.Woff
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000054
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/publics/offline-statics/IRANSansWeb.woff
+    rules: []
+- id: EP-193
+  method: GET
+  path: /web-assets/publics/offline-statics/IRANSansWeb.woff2
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Iransansweb.Woff2
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000053
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/publics/offline-statics/IRANSansWeb.woff2
+    rules: []
+- id: EP-194
+  method: GET
+  path: /web-assets/publics/offline-statics/index.html
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Index.Html
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000047
+  - OBS-000048
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/publics/offline-statics/index.html
+    rules: []
+- id: EP-195
+  method: GET
+  path: /web-assets/publics/offline-statics/logo.svg
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Logo.Svg
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000051
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/publics/offline-statics/logo.svg
+    rules: []
+- id: EP-196
+  method: GET
+  path: /web-assets/publics/offline-statics/offline.svg
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Offline.Svg
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000050
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/publics/offline-statics/offline.svg
+    rules: []
+- id: EP-197
+  method: GET
+  path: /web-assets/publics/offline-statics/styles.css
+  hosts:
+  - s100.divarcdn.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Styles.Css
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000049
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web-assets/publics/offline-statics/styles.css
+    rules: []
+- id: EP-198
+  method: GET
+  path: /web/v3/{v3Id}/loader_v3.12.3.js
+  hosts:
+  - touch.radif.ai
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: V3
+    confidence: medium
+    knowledge_status: INFERRED
+  parameters:
+  - name: v3Id
+    location: path
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000117
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000117
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /web/v3/KkrVXFaVmvHgsczoI3UJ/loader_v3.12.3.js
+    rules:
+    - long_opaque
+- id: EP-199
+  method: GET
+  path: /xjs/_/js/k=xjs.s.en_GB.81JrlhZsdN4.2019.O/am=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQARAAQAQAEAAAEAAAAAAAAAAAAAAAAADAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAgEEQAIAAAAAAAAAIAgAAAAAAAQAAAAAAAAAGABAAAAQQAkAAACAQgAAAAAAAAAAAAAAAAAAAAAAAAgEAAAAEQgQAADAn5lvAACgAQAAAIADAAAAAAAAAAAAAAAAAAAAAAAAAAAASAAAAAAAAAAAAAALAAAABAMAAARAQAAEAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAEAAAAAAAFAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAQAAAAoAAAAAAAAA4AAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAQAADAAAAAAAAAAAAFAAQ8AOAAAgAAAAAAAABAAAAAAAQIAAAAAAAAIAAQACAAQAAAJAD4PEAHCIoAAAAAAAAAAAAAAAAAAAAAAAAAAAIgAKYA0lBAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAASBGeAgAAAAAA2BoAEA/d=1/ed=1/dg=4/br=1/ichc=1/rs=ACT90oEXL7BZjg-ekZ31DTji4nHxufPAGA/ee=ALeJib:B8gLwd;AfeaP:TkrAjf;BMxAGc:E5bFse;BgS6mb:fidj5d;BjwMce:cXX2Wb;CIZTGb:Kqhykb;CxXAWb:YyRLvc;DM55c:imLrKe;DQEued:Fevhcf;DULqB:RKfG5c;Dkk6ge:JZmW9e;DpcR3d:zL72xf;EABSZ:MXZt9d;ESrPQc:mNTJvc;EVNhjf:pw70Gc;EjXHpb:pSHqh;EmZ2Bf:zr1jrb;EnlcNd:WeHg4;F54IAe:ZgsFh;F9mqte:UoRcbe;FSxmUe:fiZR8b;Fkukfc:i8H2c;Fmv9Nc:O1Tzwc;FqHJkd:yQamIb;G0KhTb:LIaoZ;GleZL:J1A7Od;HMDDWe:G8QUdb;HtPxrd:Gx8jAb;IBADCc:RYquRb;IoGlCf:b5lhvb;IsdWVc:qzxzOb;JXJSm:ii1RGf;JXS8fb:Qj0suc;JqSq7d:y9ePhe;JsbNhc:Xd8iUd;K08hxe:zmbGlf;K5nYTd:ZDZcre;KA3P2:C3JnCe;KDb6nb:fE9n2;KOxcK:OZqGte;KQzWid:ZMKkN;KdIHef:BWtNj;KpRAue:Tia57b;LBgRLc:SdcwHb,XVMNvd;LBn8Cf:bJ9L0c;LEikZe:byfTOb,lsjVmc;LXA8b:q7OdKd;LsNahb:ucGLNb;MNkAde:KMCd1d;NJ1rfe:qTnoBf;NPKaK:SdcwHb;NSEoX:lazG7b;NjIwef:YVgi7d;Np8Qkd:Dpx6qc;Nyt6ic:jn2sGd;OIfWUb:qfOYcd;OgagBe:cNTe0;OiqE2c:TFpEK;OoK5v:Sp69O;OohIYe:mpEAQb;Pjplud:PoEs9b;PpTLXd:pJYjx;PqHfGe:im2cZe;Q1Ow7b:x5CSu;Q7iJ9c:bVLZ3d;QE20Be:yxCHBd;QFOGlf:PQ2Aoe;QGR0gd:Mlhmy;QYLF2b:pAQYUd;Qw8Feb:jpavUe;R4IIIb:QWfeKf;R9Ulx:CR7Ufe;RCF5Sd:X1kBmd;RZtOEd:DvKcFe;Raf5me:mgvFMc;SLtqO:Kh1xYe;SMDL4c:fTfGO;SNUn3:ZwDk9d,xD8Kp;SNk4Je:wWMhg;ScI3Yc:e7Hzgb,e7Hzgb;ShpF6e:N0pvGc;Snahre:mGCtob;SwCqAd:fXbCZc;SzQQ3e:dNhofb;TIUVQd:lWTJwd;TroZ1d:vVVzjb;U96pRd:FsR04;UBKJZ:LGDJGb;UDrY1c:N0F29d,W50NVd,eps46d,wciyUe;UVmjEd:EesRsb;UVzb9c:IvPZ6d;UYRIEb:HzTAQc;UyG7Kb:wQd0G;V2HTTe:RolTY;VGRfx:VFqbr;VMuEm:pL7sBc;VN6jIc:ddQyuf;VOcgDe:YquhTb;VhA7bd:vAmQFf;VsAqSb:PGf2Re;W9QSQe:ynCWwc;WDGyFe:jcVOxd;WXtNeb:QU9BMd;Wfmdue:g3MJlb;Wl55ib:NcYlP;Y3c5sd:FGbfLe;YIZmRd:A1yn5d;YV5bee:IvPZ6d;YnHUBf:sNsSob;ZMvdv:PHFPjb;ZSH6tc:QAvyLe;ZWEUA:afR4Cf;Zen4yb:jMF88c;ZlFEdf:fQTtic;ZlOOMb:P0I0Ec;ZnPvub:Acmyhd;a56pNe:JEfCwb;aAJE9c:WHW6Ef;aCJ9tf:qKftvc;aVZq3e:EMeVIb;aZ61od:arTwJ;aci7y:Z5Tr6c;bUIkwb:WMwEHe;bcPXSc:gSZLJb;cEt90b:ws9Tlc;cFTWae:gT8qnd;coJ8e:KvoW8;dIoSBb:ZgGg9b;dLlj2:Qqt3Gf;dXdZV:a7QTqd;dowIGb:ebZ3mb,ebZ3mb;dtl0hd:lLQWFe;eBAeSb:Ck63tb;eBZ5Nd:audvde;eHDfl:ofjVkb;eJKchc:ATg1be;eO3lse:UefOmb;euOXY:OZjbQ;g8nkx:U4MzKc;gaub4:TN6bMe;gbfHR:qZtzib;gtVSi:ekUOYd;h3MYod:ws9Tlc;hK67qb:QWEO5b;hVic1b:Kqhykb;heHB1:sFczq;hjRo6e:F62sG;hlqGX:FWz1ic;hsLsYc:Vl118;hwoVHd:zw4U8c;iFQyKf:QIhFr;jJj2G:kF2o2b;k1O0rf:pnOULd;k2Qxcb:XY51pe;kbAm9d:MkHyGd;lOO0Vd:OTA3Ae;lbfkyf:MqGdUd;liAz7d:kF2o2b;lkq0A:JyBE3e;mMVOGb:qDM7K;mWzs9c:fz5ukf;nBZnZe:CvErjb;nE6OJf:Fi4rsc;nEBWNb:MxKX9d;nJw4Gd:dPFZH;nrDcw:SuEoDe;oGtAuc:sOXFj;oSUNyd:fTfGO,fTfGO;oUlnpc:RagDlc;oiBhre:OuMkRd;okUaUd:wItadb;pKJiXd:VCenhc;pNsl2d:j9Yuyc;pXdRYb:JKoKVe;pj82le:ww04Df;qGV2uc:HHi04c;qQEoOc:KUM7Z,d7YSfd;qZx2Fc:j0xrE;qaS3gd:yiLg6e;qafBPd:sgY6Zb;qavrXe:I0C9u;qddgKe:d7YSfd,x4FYXe;rdexKf:FEkKD;rmWaj:PMS6Sd;ropkZ:hjoqoe;sTsDMc:JksfDf;sZmdvc:rdGEfc;tH4IIe:Ymry6;teSRSb:BMLai;tosKvd:ZCqP3;trZL0b:qY8PFe;twgzJd:Ix7YEd;uknmt:GkPrzb;uuQkY:u2V3ud;vEYCNb:FaqsVd;vRlMvf:Iw9Xo;vfVwPd:lcrkwe;w3bZCb:ZPGaIb;w9w86d:XwhUEb,dt4g2b,gKD90c,lWVZVe;wQlYve:aLUfP;wR5FRb:O1Gjze,TtcOte;wV5Pjc:L8KGxe;x9N9ie:KH4Qof;xBbsrc:NEW1Qc;xbe2wc:wbTLEd;xpaRob:AVqZ9b;yiL5Ab:MT0ZBd;ysNiMc:CpIBjd;yxTchf:KUM7Z;z97YGf:oug9te;zaIgPb:Sl0pxd/ccb=loaded_h_0/m=attn,cdos,gwc,hsm,jsa,mb4ZUb,cEt90b,SNUn3,qddgKe,sTsDMc,dtl0hd,eHDfl,YV5bee,d,csi
+  hosts:
+  - www.google.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: M=Attn,Cdos,Gwc,Hsm,Jsa,Mb4Zub,Cet90B,Snun3,Qddgke,Stsdmc,Dtl0Hd,Ehdfl,Yv5Bee,D,Csi
+    confidence: low
+    knowledge_status: INFERRED
+  parameters:
+  - name: cb
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000012
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000012
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /xjs/_/js/k=xjs.s.en_GB.81JrlhZsdN4.2019.O/am=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQARAAQAQAEAAAEAAAAAAAAAAAAAAAAADAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAgEEQAIAAAAAAAAAIAgAAAAAAAQAAAAAAAAAGABAAAAQQAkAAACAQgAAAAAAAAAAAAAAAAAAAAAAAAgEAAAAEQgQAADAn5lvAACgAQAAAIADAAAAAAAAAAAAAAAAAAAAAAAAAAAASAAAAAAAAAAAAAALAAAABAMAAARAQAAEAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAEAAAAAAAFAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAQAAAAoAAAAAAAAA4AAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAQAADAAAAAAAAAAAAFAAQ8AOAAAgAAAAAAAABAAAAAAAQIAAAAAAAAIAAQACAAQAAAJAD4PEAHCIoAAAAAAAAAAAAAAAAAAAAAAAAAAAIgAKYA0lBAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAASBGeAgAAAAAA2BoAEA/d=1/ed=1/dg=4/br=1/ichc=1/rs=ACT90oEXL7BZjg-ekZ31DTji4nHxufPAGA/ee=ALeJib:B8gLwd;AfeaP:TkrAjf;BMxAGc:E5bFse;BgS6mb:fidj5d;BjwMce:cXX2Wb;CIZTGb:Kqhykb;CxXAWb:YyRLvc;DM55c:imLrKe;DQEued:Fevhcf;DULqB:RKfG5c;Dkk6ge:JZmW9e;DpcR3d:zL72xf;EABSZ:MXZt9d;ESrPQc:mNTJvc;EVNhjf:pw70Gc;EjXHpb:pSHqh;EmZ2Bf:zr1jrb;EnlcNd:WeHg4;F54IAe:ZgsFh;F9mqte:UoRcbe;FSxmUe:fiZR8b;Fkukfc:i8H2c;Fmv9Nc:O1Tzwc;FqHJkd:yQamIb;G0KhTb:LIaoZ;GleZL:J1A7Od;HMDDWe:G8QUdb;HtPxrd:Gx8jAb;IBADCc:RYquRb;IoGlCf:b5lhvb;IsdWVc:qzxzOb;JXJSm:ii1RGf;JXS8fb:Qj0suc;JqSq7d:y9ePhe;JsbNhc:Xd8iUd;K08hxe:zmbGlf;K5nYTd:ZDZcre;KA3P2:C3JnCe;KDb6nb:fE9n2;KOxcK:OZqGte;KQzWid:ZMKkN;KdIHef:BWtNj;KpRAue:Tia57b;LBgRLc:SdcwHb,XVMNvd;LBn8Cf:bJ9L0c;LEikZe:byfTOb,lsjVmc;LXA8b:q7OdKd;LsNahb:ucGLNb;MNkAde:KMCd1d;NJ1rfe:qTnoBf;NPKaK:SdcwHb;NSEoX:lazG7b;NjIwef:YVgi7d;Np8Qkd:Dpx6qc;Nyt6ic:jn2sGd;OIfWUb:qfOYcd;OgagBe:cNTe0;OiqE2c:TFpEK;OoK5v:Sp69O;OohIYe:mpEAQb;Pjplud:PoEs9b;PpTLXd:pJYjx;PqHfGe:im2cZe;Q1Ow7b:x5CSu;Q7iJ9c:bVLZ3d;QE20Be:yxCHBd;QFOGlf:PQ2Aoe;QGR0gd:Mlhmy;QYLF2b:pAQYUd;Qw8Feb:jpavUe;R4IIIb:QWfeKf;R9Ulx:CR7Ufe;RCF5Sd:X1kBmd;RZtOEd:DvKcFe;Raf5me:mgvFMc;SLtqO:Kh1xYe;SMDL4c:fTfGO;SNUn3:ZwDk9d,xD8Kp;SNk4Je:wWMhg;ScI3Yc:e7Hzgb,e7Hzgb;ShpF6e:N0pvGc;Snahre:mGCtob;SwCqAd:fXbCZc;SzQQ3e:dNhofb;TIUVQd:lWTJwd;TroZ1d:vVVzjb;U96pRd:FsR04;UBKJZ:LGDJGb;UDrY1c:N0F29d,W50NVd,eps46d,wciyUe;UVmjEd:EesRsb;UVzb9c:IvPZ6d;UYRIEb:HzTAQc;UyG7Kb:wQd0G;V2HTTe:RolTY;VGRfx:VFqbr;VMuEm:pL7sBc;VN6jIc:ddQyuf;VOcgDe:YquhTb;VhA7bd:vAmQFf;VsAqSb:PGf2Re;W9QSQe:ynCWwc;WDGyFe:jcVOxd;WXtNeb:QU9BMd;Wfmdue:g3MJlb;Wl55ib:NcYlP;Y3c5sd:FGbfLe;YIZmRd:A1yn5d;YV5bee:IvPZ6d;YnHUBf:sNsSob;ZMvdv:PHFPjb;ZSH6tc:QAvyLe;ZWEUA:afR4Cf;Zen4yb:jMF88c;ZlFEdf:fQTtic;ZlOOMb:P0I0Ec;ZnPvub:Acmyhd;a56pNe:JEfCwb;aAJE9c:WHW6Ef;aCJ9tf:qKftvc;aVZq3e:EMeVIb;aZ61od:arTwJ;aci7y:Z5Tr6c;bUIkwb:WMwEHe;bcPXSc:gSZLJb;cEt90b:ws9Tlc;cFTWae:gT8qnd;coJ8e:KvoW8;dIoSBb:ZgGg9b;dLlj2:Qqt3Gf;dXdZV:a7QTqd;dowIGb:ebZ3mb,ebZ3mb;dtl0hd:lLQWFe;eBAeSb:Ck63tb;eBZ5Nd:audvde;eHDfl:ofjVkb;eJKchc:ATg1be;eO3lse:UefOmb;euOXY:OZjbQ;g8nkx:U4MzKc;gaub4:TN6bMe;gbfHR:qZtzib;gtVSi:ekUOYd;h3MYod:ws9Tlc;hK67qb:QWEO5b;hVic1b:Kqhykb;heHB1:sFczq;hjRo6e:F62sG;hlqGX:FWz1ic;hsLsYc:Vl118;hwoVHd:zw4U8c;iFQyKf:QIhFr;jJj2G:kF2o2b;k1O0rf:pnOULd;k2Qxcb:XY51pe;kbAm9d:MkHyGd;lOO0Vd:OTA3Ae;lbfkyf:MqGdUd;liAz7d:kF2o2b;lkq0A:JyBE3e;mMVOGb:qDM7K;mWzs9c:fz5ukf;nBZnZe:CvErjb;nE6OJf:Fi4rsc;nEBWNb:MxKX9d;nJw4Gd:dPFZH;nrDcw:SuEoDe;oGtAuc:sOXFj;oSUNyd:fTfGO,fTfGO;oUlnpc:RagDlc;oiBhre:OuMkRd;okUaUd:wItadb;pKJiXd:VCenhc;pNsl2d:j9Yuyc;pXdRYb:JKoKVe;pj82le:ww04Df;qGV2uc:HHi04c;qQEoOc:KUM7Z,d7YSfd;qZx2Fc:j0xrE;qaS3gd:yiLg6e;qafBPd:sgY6Zb;qavrXe:I0C9u;qddgKe:d7YSfd,x4FYXe;rdexKf:FEkKD;rmWaj:PMS6Sd;ropkZ:hjoqoe;sTsDMc:JksfDf;sZmdvc:rdGEfc;tH4IIe:Ymry6;teSRSb:BMLai;tosKvd:ZCqP3;trZL0b:qY8PFe;twgzJd:Ix7YEd;uknmt:GkPrzb;uuQkY:u2V3ud;vEYCNb:FaqsVd;vRlMvf:Iw9Xo;vfVwPd:lcrkwe;w3bZCb:ZPGaIb;w9w86d:XwhUEb,dt4g2b,gKD90c,lWVZVe;wQlYve:aLUfP;wR5FRb:O1Gjze,TtcOte;wV5Pjc:L8KGxe;x9N9ie:KH4Qof;xBbsrc:NEW1Qc;xbe2wc:wbTLEd;xpaRob:AVqZ9b;yiL5Ab:MT0ZBd;ysNiMc:CpIBjd;yxTchf:KUM7Z;z97YGf:oug9te;zaIgPb:Sl0pxd/ccb=loaded_h_0/m=attn,cdos,gwc,hsm,jsa,mb4ZUb,cEt90b,SNUn3,qddgKe,sTsDMc,dtl0hd,eHDfl,YV5bee,d,csi
+    rules: []
+- id: EP-200
+  method: GET
+  path: /xjs/_/ss/k=xjs.s.TGkh3Xra1hI.L.B1.O/am=AAAQAAAAAAAIAAAAAAAAAAAAAAQAIAIAAAAAAAAAAAAAAAAAAAAEAAIAABAAAAAAAAAAAAAAAAoAAAAAAAAQAAAAIFAAAEAGAAAAAAAAUAAAAAAAAAAAAAAEAAAAAAAAACjkAwAAAAYAAAAAAOABMACOAAAAAAAAAAAAAAAAAAEAQAIAAAAAAAAAIAgAAAAAAAAAAAAQAAAAAABAAAAQQAEAAAAgQAEAABAAAAAAAgAAAAAAAAAAgAAkAAAAAAAQAAAAAAAAAADAAQAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAMQBAAAAAAAACAMAAAAAAAAAAAQAQAAAAAAAAAAAAIgESAAABAAAAAAAAQAAAAAAAAAQABCEQgAABAAFICAAAAAA4DwAIAAAAAAAAAAAABAAAAAAAAAAAAAgAABBAEIAAQAAAAAQAAAAAAAEAAAAQA4AAAAAAABAAAGAAAQAMIIEAECiIAAQAQAEAAACAAAARAAAAAAAFICAAAAAAAAAAAAAAAARAAAAAAAAAAAAAAAJALBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE/d=1/ed=1/br=1/ccb=loaded_h_0/rs=ACT90oEMNmldPgNAYfBeLC9HcEwvcni2LA/m=attn,cdos,gwc,hsm,jsa,mb4ZUb,cEt90b,SNUn3,qddgKe,sTsDMc,dtl0hd,eHDfl,YV5bee,d,csi
+  hosts:
+  - www.google.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: M=Attn,Cdos,Gwc,Hsm,Jsa,Mb4Zub,Cet90B,Snun3,Qddgke,Stsdmc,Dtl0Hd,Ehdfl,Yv5Bee,D,Csi
+    confidence: low
+    knowledge_status: INFERRED
+  parameters:
+  - name: cb
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000008
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000008
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /xjs/_/ss/k=xjs.s.TGkh3Xra1hI.L.B1.O/am=AAAQAAAAAAAIAAAAAAAAAAAAAAQAIAIAAAAAAAAAAAAAAAAAAAAEAAIAABAAAAAAAAAAAAAAAAoAAAAAAAAQAAAAIFAAAEAGAAAAAAAAUAAAAAAAAAAAAAAEAAAAAAAAACjkAwAAAAYAAAAAAOABMACOAAAAAAAAAAAAAAAAAAEAQAIAAAAAAAAAIAgAAAAAAAAAAAAQAAAAAABAAAAQQAEAAAAgQAEAABAAAAAAAgAAAAAAAAAAgAAkAAAAAAAQAAAAAAAAAADAAQAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAMQBAAAAAAAACAMAAAAAAAAAAAQAQAAAAAAAAAAAAIgESAAABAAAAAAAAQAAAAAAAAAQABCEQgAABAAFICAAAAAA4DwAIAAAAAAAAAAAABAAAAAAAAAAAAAgAABBAEIAAQAAAAAQAAAAAAAEAAAAQA4AAAAAAABAAAGAAAQAMIIEAECiIAAQAQAEAAACAAAARAAAAAAAFICAAAAAAAAAAAAAAAARAAAAAAAAAAAAAAAJALBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE/d=1/ed=1/br=1/ccb=loaded_h_0/rs=ACT90oEMNmldPgNAYfBeLC9HcEwvcni2LA/m=attn,cdos,gwc,hsm,jsa,mb4ZUb,cEt90b,SNUn3,qddgKe,sTsDMc,dtl0hd,eHDfl,YV5bee,d,csi
+    rules: []
+- id: EP-201
+  method: OPTIONS
+  path: /chat/api/unread
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Unread
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000110
+  - OBS-000354
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /chat/api/unread
+    rules: []
+- id: EP-202
+  method: OPTIONS
+  path: /v8/auth/open-initiate-page
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: OpenInitiatePage
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000095
+  - OBS-000099
+  - OBS-000103
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/auth/open-initiate-page
+    rules: []
+- id: EP-203
+  method: OPTIONS
+  path: /v8/authenticate/signinup/code/consume
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Consume
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000105
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/authenticate/signinup/code/consume
+    rules: []
+- id: EP-204
+  method: OPTIONS
+  path: /v8/call/call-history/unacted-bundle-count
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: UnactedBundleCount
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000115
+  - OBS-000351
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/call/call-history/unacted-bundle-count
+    rules: []
+- id: EP-205
+  method: OPTIONS
+  path: /v8/mapview/viewport
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Viewport
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000151
+  - OBS-000195
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/mapview/viewport
+    rules: []
+- id: EP-206
+  method: OPTIONS
+  path: /v8/my-divar/web/menu
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Menu
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000066
+  - OBS-000109
+  - OBS-000233
+  - OBS-000350
+  - OBS-000352
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/my-divar/web/menu
+    rules: []
+- id: EP-207
+  method: OPTIONS
+  path: /v8/my-posts/w/list
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: List
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000521
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/my-posts/w/list
+    rules: []
+- id: EP-208
+  method: OPTIONS
+  path: /v8/post-stats/receive-post-stats-batch
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: ReceivePostStatsBatch
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000101
+  - OBS-000250
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/post-stats/receive-post-stats-batch
+    rules: []
+- id: EP-209
+  method: OPTIONS
+  path: /v8/postlist/w/filters
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Filter
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000069
+  - OBS-000128
+  - OBS-000193
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/postlist/w/filters
+    rules: []
+- id: EP-210
+  method: OPTIONS
+  path: /v8/postlist/w/places
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Place
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000184
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/postlist/w/places
+    rules: []
+- id: EP-211
+  method: OPTIONS
+  path: /v8/postlist/w/search
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Search
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000068
+  - OBS-000127
+  - OBS-000192
+  - OBS-000225
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/postlist/w/search
+    rules: []
+- id: EP-212
+  method: OPTIONS
+  path: /v8/posts-v2/web/gahoUVea
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Gahouvea
+    confidence: low
+    knowledge_status: INFERRED
+  parameters:
+  - name: tracker_session_id
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000176
+    knowledge_status: INFERRED
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000176
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/posts-v2/web/gahoUVea
+    rules: []
+- id: EP-213
+  method: OPTIONS
+  path: /v8/premium-user/user-registration-page
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: UserRegistrationPage
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000235
+  - OBS-000453
+  - OBS-000509
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/premium-user/user-registration-page
+    rules: []
+- id: EP-214
+  method: OPTIONS
+  path: /v8/search-bookmark/web/get-search-bar-empty-state
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: GetSearchBarEmptyState
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000065
+  - OBS-000114
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/search-bookmark/web/get-search-bar-empty-state
+    rules: []
+- id: EP-215
+  method: OPTIONS
+  path: /v8/user-profile/user_verification
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: UserVerification
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000242
+  - OBS-000244
+  - OBS-000246
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/user-profile/user_verification
+    rules: []
+- id: EP-216
+  method: OPTIONS
+  path: /v8/users/fp-store
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: FpStore
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000121
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/users/fp-store
+    rules: []
+- id: EP-217
+  method: OPTIONS
+  path: /v8/users/should-store-fp
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: ShouldStoreFp
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000112
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/users/should-store-fp
+    rules: []
+- id: EP-218
+  method: OPTIONS
+  path: /v8/wallet/change-wallet-page
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: ChangeWalletPage
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000258
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/wallet/change-wallet-page
+    rules: []
+- id: EP-219
+  method: OPTIONS
+  path: /v8/wallet/change-wallet/ASAN_PARDAKHT
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: AsanPardakht
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000263
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/wallet/change-wallet/ASAN_PARDAKHT
+    rules: []
+- id: EP-220
+  method: OPTIONS
+  path: /v8/wallet/wallet-and-payments
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WalletAndPayment
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: false
+  state_change_confidence: INFERRED
+  financial_impact: none
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000254
+  - OBS-000267
+  - OBS-000353
+  - OBS-000460
+  - OBS-000516
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/wallet/wallet-and-payments
+    rules: []
+- id: EP-221
+  method: POST
+  path: /
+  hosts:
+  - touch.radif.ai
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Unknown
+    confidence: low
+    knowledge_status: INFERRED
+  parameters:
+  - name: ci
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000119
+    knowledge_status: INFERRED
+  - name: q
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000119
+    knowledge_status: INFERRED
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000119
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /
+    rules: []
+- id: EP-222
+  method: POST
+  path: /api/5/envelope/
+  hosts:
+  - sentry.divar.cloud
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Envelope
+    confidence: low
+    knowledge_status: INFERRED
+  parameters:
+  - name: sentry_client
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000046
+    - OBS-000058
+    - OBS-000059
+    - OBS-000122
+    - OBS-000123
+    - OBS-000171
+    - OBS-000172
+    - OBS-000187
+    - OBS-000188
+    - OBS-000227
+    - OBS-000228
+    - OBS-000239
+    - OBS-000240
+    - OBS-000251
+    - OBS-000252
+    - OBS-000255
+    - OBS-000256
+    - OBS-000264
+    - OBS-000265
+    - OBS-000356
+    - OBS-000450
+    - OBS-000451
+    - OBS-000457
+    - OBS-000458
+    - OBS-000506
+    - OBS-000507
+    - OBS-000513
+    - OBS-000514
+    - OBS-000518
+    - OBS-000519
+    knowledge_status: INFERRED
+  - name: sentry_key
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000046
+    - OBS-000058
+    - OBS-000059
+    - OBS-000122
+    - OBS-000123
+    - OBS-000171
+    - OBS-000172
+    - OBS-000187
+    - OBS-000188
+    - OBS-000227
+    - OBS-000228
+    - OBS-000239
+    - OBS-000240
+    - OBS-000251
+    - OBS-000252
+    - OBS-000255
+    - OBS-000256
+    - OBS-000264
+    - OBS-000265
+    - OBS-000356
+    - OBS-000450
+    - OBS-000451
+    - OBS-000457
+    - OBS-000458
+    - OBS-000506
+    - OBS-000507
+    - OBS-000513
+    - OBS-000514
+    - OBS-000518
+    - OBS-000519
+    knowledge_status: INFERRED
+  - name: sentry_version
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000046
+    - OBS-000058
+    - OBS-000059
+    - OBS-000122
+    - OBS-000123
+    - OBS-000171
+    - OBS-000172
+    - OBS-000187
+    - OBS-000188
+    - OBS-000227
+    - OBS-000228
+    - OBS-000239
+    - OBS-000240
+    - OBS-000251
+    - OBS-000252
+    - OBS-000255
+    - OBS-000256
+    - OBS-000264
+    - OBS-000265
+    - OBS-000356
+    - OBS-000450
+    - OBS-000451
+    - OBS-000457
+    - OBS-000458
+    - OBS-000506
+    - OBS-000507
+    - OBS-000513
+    - OBS-000514
+    - OBS-000518
+    - OBS-000519
+    knowledge_status: INFERRED
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000046
+  - OBS-000058
+  - OBS-000059
+  - OBS-000122
+  - OBS-000123
+  - OBS-000171
+  - OBS-000172
+  - OBS-000187
+  - OBS-000188
+  - OBS-000227
+  - OBS-000228
+  - OBS-000239
+  - OBS-000240
+  - OBS-000251
+  - OBS-000252
+  - OBS-000255
+  - OBS-000256
+  - OBS-000264
+  - OBS-000265
+  - OBS-000356
+  - OBS-000450
+  - OBS-000451
+  - OBS-000457
+  - OBS-000458
+  - OBS-000506
+  - OBS-000507
+  - OBS-000513
+  - OBS-000514
+  - OBS-000518
+  - OBS-000519
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /api/5/envelope/
+    rules: []
+- id: EP-223
+  method: POST
+  path: /chat/api/unread
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Unread
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000107
+  - OBS-000349
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /chat/api/unread
+    rules: []
+- id: EP-224
+  method: POST
+  path: /gen_204
+  hosts:
+  - www.google.com
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Gen204
+    confidence: low
+    knowledge_status: INFERRED
+  parameters:
+  - name: ant
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000005
+    knowledge_status: INFERRED
+  - name: atyp
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000005
+    knowledge_status: INFERRED
+  - name: dt
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000005
+    knowledge_status: INFERRED
+  - name: dtc
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000005
+    knowledge_status: INFERRED
+  - name: ei
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000005
+    knowledge_status: INFERRED
+  - name: ima
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000005
+    knowledge_status: INFERRED
+  - name: imac
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000005
+    knowledge_status: INFERRED
+  - name: imad
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000005
+    knowledge_status: INFERRED
+  - name: imn
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000005
+    knowledge_status: INFERRED
+  - name: nhp
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000005
+    knowledge_status: INFERRED
+  - name: nt
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000005
+    knowledge_status: INFERRED
+  - name: opi
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000005
+    knowledge_status: INFERRED
+  - name: rt
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000005
+    knowledge_status: INFERRED
+  - name: s
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000005
+    knowledge_status: INFERRED
+  - name: stc
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000005
+    knowledge_status: INFERRED
+  - name: t
+    location: query
+    inferred_type: string
+    confidence: medium
+    evidence:
+    - OBS-000005
+    knowledge_status: INFERRED
+  - name: ts
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000005
+    knowledge_status: INFERRED
+  - name: wh
+    location: query
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000005
+    knowledge_status: INFERRED
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000005
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /gen_204
+    rules: []
+- id: EP-225
+  method: POST
+  path: /v1/client-exporter/send-report
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: SendReport
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000057
+  - OBS-000093
+  - OBS-000097
+  - OBS-000124
+  - OBS-000170
+  - OBS-000177
+  - OBS-000185
+  - OBS-000218
+  - OBS-000236
+  - OBS-000248
+  - OBS-000268
+  - OBS-000359
+  - OBS-000522
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v1/client-exporter/send-report
+    rules: []
+- id: EP-226
+  method: POST
+  path: /v8/actionlog/send
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Send
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000197
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/actionlog/send
+    rules: []
+- id: EP-227
+  method: POST
+  path: /v8/auth/open-initiate-page
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: OpenInitiatePage
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000094
+  - OBS-000098
+  - OBS-000102
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/auth/open-initiate-page
+    rules: []
+- id: EP-228
+  method: POST
+  path: /v8/authenticate/signinup/code/consume
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Consume
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000104
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/authenticate/signinup/code/consume
+    rules: []
+- id: EP-229
+  method: POST
+  path: /v8/mapview/viewport
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Viewport
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000150
+  - OBS-000194
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/mapview/viewport
+    rules: []
+- id: EP-230
+  method: POST
+  path: /v8/my-divar/web/menu
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Menu
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000063
+  - OBS-000106
+  - OBS-000232
+  - OBS-000345
+  - OBS-000347
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/my-divar/web/menu
+    rules: []
+- id: EP-231
+  method: POST
+  path: /v8/my-posts/w/list
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: List
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000520
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/my-posts/w/list
+    rules: []
+- id: EP-232
+  method: POST
+  path: /v8/post-stats/receive-post-stats-batch
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: ReceivePostStatsBatch
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000100
+  - OBS-000249
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/post-stats/receive-post-stats-batch
+    rules: []
+- id: EP-233
+  method: POST
+  path: /v8/postlist/w/filters
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Filter
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000067
+  - OBS-000126
+  - OBS-000191
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/postlist/w/filters
+    rules: []
+- id: EP-234
+  method: POST
+  path: /v8/postlist/w/places
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Place
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000183
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/postlist/w/places
+    rules: []
+- id: EP-235
+  method: POST
+  path: /v8/postlist/w/search
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: Search
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000064
+  - OBS-000125
+  - OBS-000190
+  - OBS-000224
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/postlist/w/search
+    rules: []
+- id: EP-236
+  method: POST
+  path: /v8/premium-user/user-registration-page
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: UserRegistrationPage
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000234
+  - OBS-000452
+  - OBS-000508
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/premium-user/user-registration-page
+    rules: []
+- id: EP-237
+  method: POST
+  path: /v8/search-bookmark/web/get-search-bar-empty-state
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: GetSearchBarEmptyState
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000062
+  - OBS-000111
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/search-bookmark/web/get-search-bar-empty-state
+    rules: []
+- id: EP-238
+  method: POST
+  path: /v8/user-profile/user_verification
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: UserVerification
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000241
+  - OBS-000243
+  - OBS-000245
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/user-profile/user_verification
+    rules: []
+- id: EP-239
+  method: POST
+  path: /v8/users/fp-store
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: FpStore
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000120
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/users/fp-store
+    rules: []
+- id: EP-240
+  method: POST
+  path: /v8/users/should-store-fp
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: ShouldStoreFp
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000108
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/users/should-store-fp
+    rules: []
+- id: EP-241
+  method: POST
+  path: /v8/wallet/change-wallet-page
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: ChangeWalletPage
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000257
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/wallet/change-wallet-page
+    rules: []
+- id: EP-242
+  method: POST
+  path: /v8/wallet/change-wallet/ASAN_PARDAKHT
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: AsanPardakht
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000262
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/wallet/change-wallet/ASAN_PARDAKHT
+    rules: []
+- id: EP-243
+  method: POST
+  path: /v8/wallet/wallet-and-payments
+  hosts:
+  - api.divar.ir
+  channels:
+  - UNKNOWN
+  authentication:
+    required: false
+    observed_type: none
+    knowledge_status: INFERRED
+  resource:
+    type: WalletAndPayment
+    confidence: low
+    knowledge_status: INFERRED
+  parameters: []
+  state_change: true
+  state_change_confidence: INFERRED
+  financial_impact: unknown
+  observed_by:
+  - UNKNOWN
+  sources:
+  - OBS-000253
+  - OBS-000266
+  - OBS-000348
+  - OBS-000459
+  - OBS-000515
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /v8/wallet/wallet-and-payments
+    rules: []

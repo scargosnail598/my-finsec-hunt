@@ -1,0 +1,1805 @@
+version: 1
+invariants:
+- id: INV-001
+  key: object-authorization:EP-079:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-079
+  evidence:
+  - EP-079
+  - OBS-000077
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 43db3a3847064fc915a91a4739e309ac0eaf4cdd8cc59b2c81fe5278d22ddd65
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-002
+  key: object-authorization:EP-080:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-080
+  evidence:
+  - EP-080
+  - OBS-000134
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: cbdc0f49e649724f243cb8276309bdbe9e0039d34bbb3a6960e01b7ad273f2ce
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-003
+  key: object-authorization:EP-081:postId
+  category: authorization
+  statement: Operations on Post selected by postId must authorize the calling actor
+    for that specific object.
+  resources:
+  - Post
+  endpoints:
+  - EP-081
+  evidence:
+  - EP-081
+  - OBS-000179
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 3b05a7b9030c3cec498c0b04c7c8e71a7baaa6fb5f843166cdf193d24a97e253
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-004
+  key: object-authorization:EP-082:postId
+  category: authorization
+  statement: Operations on Post selected by postId must authorize the calling actor
+    for that specific object.
+  resources:
+  - Post
+  endpoints:
+  - EP-082
+  evidence:
+  - EP-082
+  - OBS-000178
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: c0e51a15341baf343101ac39c9c6ff576dec0bddd63d293da26fe16e6368a8aa
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-005
+  key: object-authorization:EP-083:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-083
+  evidence:
+  - EP-083
+  - OBS-000080
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 2108cbe06789cfccc85203e923e71d696b6fd5d5b2ab3e4182c5502f1e94c1be
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-006
+  key: object-authorization:EP-084:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-084
+  evidence:
+  - EP-084
+  - OBS-000201
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 6c987b61641d6763b50cb4c8bec3658d23a109e886249b879cf2bd42dffa8376
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-007
+  key: object-authorization:EP-085:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-085
+  evidence:
+  - EP-085
+  - OBS-000181
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 1cd8eb301b9b6305967cf90e05e1e94b8d3c233e05fdbacf064fdfcd879baeed
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-008
+  key: object-authorization:EP-086:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-086
+  evidence:
+  - EP-086
+  - OBS-000207
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 5b743a2f242713a7ecdd938067fbd07f9a6452a8cb0e96ae94309be9bd15f61e
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-009
+  key: object-authorization:EP-087:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-087
+  evidence:
+  - EP-087
+  - OBS-000133
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: bee95d30a08819dc6c79b689357bb6f582957d9501dd0a8604b255a8d2084d3d
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-010
+  key: object-authorization:EP-088:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-088
+  evidence:
+  - EP-088
+  - OBS-000199
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 138f338156186b9b073f1c1b2d89c1e90b4c777ac4bbe8f7cb48d47baf06294b
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-011
+  key: object-authorization:EP-089:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-089
+  evidence:
+  - EP-089
+  - OBS-000220
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 114b64f8b82bbb117b3e9d478a7433921ceaa3675cbb0dae669c24ac642854ae
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-012
+  key: object-authorization:EP-090:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-090
+  evidence:
+  - EP-090
+  - OBS-000079
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: e7a9abf43332d5378765f338364bd3783021eb23da84abcade895171cc9f75ca
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-013
+  key: object-authorization:EP-091:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-091
+  evidence:
+  - EP-091
+  - OBS-000223
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: f23b53b3785023d73a317cd7b11fd22890b0df81df6b0beddeb4c9fb2a43fccc
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-014
+  key: object-authorization:EP-092:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-092
+  evidence:
+  - EP-092
+  - OBS-000213
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: e1a3fda3769baca5c950d59bf572887005047bfe20ecef53ff9f2d1402ae809a
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-015
+  key: object-authorization:EP-093:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-093
+  evidence:
+  - EP-093
+  - OBS-000208
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 7b885a392113578ec1023d595427e47a983b4842b53e4077692fee106c8085e3
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-016
+  key: object-authorization:EP-094:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-094
+  evidence:
+  - EP-094
+  - OBS-000198
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: c47e280875ba37b8e184f0c554223fe70734e59c86ec9cd08914dcc637ec1835
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-017
+  key: object-authorization:EP-095:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-095
+  evidence:
+  - EP-095
+  - OBS-000205
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 90c4881a427cac00d6012ff926b6c44e7deabac5c51c89178c1a3f142dba3f7b
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-018
+  key: object-authorization:EP-096:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-096
+  evidence:
+  - EP-096
+  - OBS-000211
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 92d2665c25a741a888ad613bb87c4079cb338a27899c22bd5fc8ad8d1a7d293f
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-019
+  key: object-authorization:EP-097:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-097
+  evidence:
+  - EP-097
+  - OBS-000076
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: a20917acc45cdbd348f016ad21268859e5b8948dadc04804f2e731e00ce3333f
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-020
+  key: object-authorization:EP-098:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-098
+  evidence:
+  - EP-098
+  - OBS-000082
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: df90cfb887d1b8c8bc36a00601231d06953336ae21743974051100248de41ed4
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-021
+  key: object-authorization:EP-099:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-099
+  evidence:
+  - EP-099
+  - OBS-000222
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: ba3cc31feec156bd01556e90cb2990e71935a845306a394100eb7791097a164d
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-022
+  key: object-authorization:EP-100:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-100
+  evidence:
+  - EP-100
+  - OBS-000214
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 9d4a82271c316fa6bda306fb2d256cf52922b3faf6d1e7a864cb32ac9d1bf6fe
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-023
+  key: object-authorization:EP-101:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-101
+  evidence:
+  - EP-101
+  - OBS-000075
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 52e70f012e728bd5d30a3ebf292e87259b563a0eb68f33685a1fb65010e59314
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-024
+  key: object-authorization:EP-102:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-102
+  evidence:
+  - EP-102
+  - OBS-000209
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: d3fc8f66a6743909d8779ea5a46064b5959a297c9e9d75904cff000282468d9c
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-025
+  key: object-authorization:EP-103:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-103
+  evidence:
+  - EP-103
+  - OBS-000216
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 42cc78a7dc9f6a47dffb0f591049dc64e61ce7b24052503c5f27b4ab0169a1ab
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-026
+  key: object-authorization:EP-104:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-104
+  evidence:
+  - EP-104
+  - OBS-000087
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 537cca77491bbc3a394c2812d34d604ebdb00b064f46be8b282240d74217dc0c
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-027
+  key: object-authorization:EP-105:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-105
+  evidence:
+  - EP-105
+  - OBS-000092
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 177b8edac3eae144a0b6da17734974f2816739aeb244edb0d42fcf76da7f30e5
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-028
+  key: object-authorization:EP-106:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-106
+  evidence:
+  - EP-106
+  - OBS-000091
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 1e3164ad565d14fb0c0526174a410cad13f4864ed00d63a3e58efbe496bc6a10
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-029
+  key: object-authorization:EP-107:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-107
+  evidence:
+  - EP-107
+  - OBS-000203
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 3ac1f23667b6b65a47d166b5f1eb4d2816f47e95b38efaf5d34e83bc16f7aa25
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-030
+  key: object-authorization:EP-108:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-108
+  evidence:
+  - EP-108
+  - OBS-000215
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: d5b8559775ddac0efe4c33ab9ddabf755aab863e56ad40fa0084895c77e94948
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-031
+  key: object-authorization:EP-109:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-109
+  evidence:
+  - EP-109
+  - OBS-000078
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 7b55be235cd38abc5fe585691efc441368daebde46df01bcf26300ad79a6ef4f
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-032
+  key: object-authorization:EP-110:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-110
+  evidence:
+  - EP-110
+  - OBS-000139
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: d33fcc7af5f12563b652d9c1150569660ed9a5e078b39a5e28cf14de20ccb9e2
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-033
+  key: object-authorization:EP-111:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-111
+  evidence:
+  - EP-111
+  - OBS-000204
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 44871e80dcf26e126d07cba64a3ba73b19da16257d34f355c0520c172bcfba05
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-034
+  key: object-authorization:EP-112:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-112
+  evidence:
+  - EP-112
+  - OBS-000081
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 82ab93f13398c600a012b69669fff505197556c98a430714aa8b8eac72f06e09
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-035
+  key: object-authorization:EP-113:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-113
+  evidence:
+  - EP-113
+  - OBS-000135
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 7fb77a250ad875083509c93bb70bd14301db0a7a208ca6113ff2c15ae4dcdd3d
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-036
+  key: object-authorization:EP-114:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-114
+  evidence:
+  - EP-114
+  - OBS-000136
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 60639c3b0a0721ed0ccd2f926a51d38334b4e12a2e69ae0fbe5ce8e59751a87a
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-037
+  key: object-authorization:EP-115:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-115
+  evidence:
+  - EP-115
+  - OBS-000090
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 0378ba8b32ab958312d19afdaec4959548de00783d80916ee9fc319f857c73b8
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-038
+  key: object-authorization:EP-116:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-116
+  evidence:
+  - EP-116
+  - OBS-000210
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 8484a664fbe707c77786f4f31412e98af4341402c1e5baac1813692e29f31674
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-039
+  key: object-authorization:EP-117:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-117
+  evidence:
+  - EP-117
+  - OBS-000212
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 4280e759767f7786d588ad481a4961a8b42fabc081e5fb605806b7050e640dce
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-040
+  key: object-authorization:EP-118:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-118
+  evidence:
+  - EP-118
+  - OBS-000206
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: dfd7654a2638c30a79c8e50aab129f4526e114f659e4bd2eccb1a397e65354f6
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-041
+  key: object-authorization:EP-119:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-119
+  evidence:
+  - EP-119
+  - OBS-000074
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 275b9c6b4fcd5d6e71fade308ab9c2951e0292cac6a1f2f204c1bffa90156d7c
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-042
+  key: object-authorization:EP-120:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-120
+  evidence:
+  - EP-120
+  - OBS-000084
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 7dfb946917c4dc6cc5758c815855d90eed853e9fd168b3cb7e805e17ccc6a156
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-043
+  key: object-authorization:EP-121:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-121
+  evidence:
+  - EP-121
+  - OBS-000200
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 14c396df9e18e0b1c932b15f3abf117d98d076676d662e809f7b13009c1b0933
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-044
+  key: object-authorization:EP-122:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-122
+  evidence:
+  - EP-122
+  - OBS-000138
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 43b65345b84692830b36235806a17f3773e656b0a8b9f62f90a93ea34e5941de
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-045
+  key: object-authorization:EP-123:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-123
+  evidence:
+  - EP-123
+  - OBS-000073
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: cd34898241cc243b2aac8e0d83c490236310710920c16a2b8376befef08750e9
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-046
+  key: object-authorization:EP-124:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-124
+  evidence:
+  - EP-124
+  - OBS-000088
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 4f6c811e50b5df84d5c3b2bcf70a8bf6528dc75b0b8c29ac5aafd32f48f9bdf5
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-047
+  key: object-authorization:EP-125:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-125
+  evidence:
+  - EP-125
+  - OBS-000085
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: cb02a4f6bbfdff9db96289cb5ae736f858adf7201b1c0299052f3f4017184eae
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-048
+  key: object-authorization:EP-126:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-126
+  evidence:
+  - EP-126
+  - OBS-000137
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 63660acf6b7f66e91f31fca53fe3a0fb731270614523e4678c68cbdc96ec227f
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-049
+  key: object-authorization:EP-127:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-127
+  evidence:
+  - EP-127
+  - OBS-000089
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: e92474262271aed8049db62c6219042846c8d2edb1cdd55030dd0b4a18ac9eb4
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-050
+  key: object-authorization:EP-128:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-128
+  evidence:
+  - EP-128
+  - OBS-000217
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 57a932bb27c97a56d9a50f8a69835334658fb83d7d4ee2ef81974cdc7db848b1
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-051
+  key: object-authorization:EP-129:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-129
+  evidence:
+  - EP-129
+  - OBS-000202
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 7c1debfd1285acfc5aa73ab388a2726a59714a133a3319c26fd9e3e40311fe40
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-052
+  key: object-authorization:EP-130:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-130
+  evidence:
+  - EP-130
+  - OBS-000219
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 71c9731f665acf0d1cfcbf35e0a498167a7af3a8ab2c3a21e4e94b7a63a3fc5c
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-053
+  key: object-authorization:EP-131:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-131
+  evidence:
+  - EP-131
+  - OBS-000086
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 3cce8509a01ecbd47ad74a61eea8905e6f3a3df8b5eabfc47c941a8bfc4bca96
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-054
+  key: object-authorization:EP-132:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-132
+  evidence:
+  - EP-132
+  - OBS-000132
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 1b70d9a06b92d1509c5f129c1fc53ea5c0094617adba16bd29f8c91e0fef636e
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-055
+  key: object-authorization:EP-133:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-133
+  evidence:
+  - EP-133
+  - OBS-000131
+  - OBS-000180
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 6588c243c4d4cc6059cb0e4425ba613ac321ec43f9529bc1d97667288e940ebe
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-056
+  key: object-authorization:EP-134:webpThumbnailId
+  category: authorization
+  statement: Operations on WebpThumbnail selected by webpThumbnailId must authorize
+    the calling actor for that specific object.
+  resources:
+  - WebpThumbnail
+  endpoints:
+  - EP-134
+  evidence:
+  - EP-134
+  - OBS-000083
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 0d2d726df9b014c4db590fe6c0215d736e580c596e15404a9055d1f8ad967ae1
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-057
+  key: object-authorization:EP-198:v3Id
+  category: authorization
+  statement: Operations on V3 selected by v3Id must authorize the calling actor for
+    that specific object.
+  resources:
+  - V3
+  endpoints:
+  - EP-198
+  evidence:
+  - EP-198
+  - OBS-000117
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: f8c169ea204bcc7515e3a0a742ed5e7ffd4c3fec13bc2c68403ac1200bc2661c
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-058
+  key: state-integrity:EP-222
+  category: state_integrity
+  statement: POST /api/5/envelope/ must execute only when the current Envelope state
+    permits the requested transition.
+  resources:
+  - Envelope
+  endpoints:
+  - EP-222
+  evidence:
+  - EP-222
+  - OBS-000046
+  - OBS-000058
+  - OBS-000059
+  - OBS-000122
+  - OBS-000123
+  - OBS-000171
+  - OBS-000172
+  - OBS-000187
+  - OBS-000188
+  - OBS-000227
+  - OBS-000228
+  - OBS-000239
+  - OBS-000240
+  - OBS-000251
+  - OBS-000252
+  - OBS-000255
+  - OBS-000256
+  - OBS-000264
+  - OBS-000265
+  - OBS-000356
+  - OBS-000450
+  - OBS-000451
+  - OBS-000457
+  - OBS-000458
+  - OBS-000506
+  - OBS-000507
+  - OBS-000513
+  - OBS-000514
+  - OBS-000518
+  - OBS-000519
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 0cf3e76c09d0650300177a809caf152f37e2bcb0c3831ca0b3836c3e9ca8302c
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-059
+  key: state-integrity:EP-223
+  category: state_integrity
+  statement: POST /chat/api/unread must execute only when the current Unread state
+    permits the requested transition.
+  resources:
+  - Unread
+  endpoints:
+  - EP-223
+  evidence:
+  - EP-223
+  - OBS-000107
+  - OBS-000349
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 6de9406aad380998f5d18e1eba60cd92350f39f587a79e5217df5fa6890814d4
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-060
+  key: state-integrity:EP-224
+  category: state_integrity
+  statement: POST /gen_204 must execute only when the current Gen204 state permits
+    the requested transition.
+  resources:
+  - Gen204
+  endpoints:
+  - EP-224
+  evidence:
+  - EP-224
+  - OBS-000005
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 133679af7803336d0541373ad4a043647508a0ba0b38039eafd3a30b8010d35b
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-061
+  key: state-integrity:EP-225
+  category: state_integrity
+  statement: POST /v1/client-exporter/send-report must execute only when the current
+    SendReport state permits the requested transition.
+  resources:
+  - SendReport
+  endpoints:
+  - EP-225
+  evidence:
+  - EP-225
+  - OBS-000057
+  - OBS-000093
+  - OBS-000097
+  - OBS-000124
+  - OBS-000170
+  - OBS-000177
+  - OBS-000185
+  - OBS-000218
+  - OBS-000236
+  - OBS-000248
+  - OBS-000268
+  - OBS-000359
+  - OBS-000522
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 1c0d0f9a3475a404a7dfae9aca0c2d9d0be6936609db558bfcca1af811728c46
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-062
+  key: state-integrity:EP-226
+  category: state_integrity
+  statement: POST /v8/actionlog/send must execute only when the current Send state
+    permits the requested transition.
+  resources:
+  - Send
+  endpoints:
+  - EP-226
+  evidence:
+  - EP-226
+  - OBS-000197
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 11a1fc6e4e29caabc20445b545eabe48bd45d0a077212e804b4a91b53a3f15fa
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-063
+  key: state-integrity:EP-227
+  category: state_integrity
+  statement: POST /v8/auth/open-initiate-page must execute only when the current OpenInitiatePage
+    state permits the requested transition.
+  resources:
+  - OpenInitiatePage
+  endpoints:
+  - EP-227
+  evidence:
+  - EP-227
+  - OBS-000094
+  - OBS-000098
+  - OBS-000102
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 23964d6689d51836255ed48870a4968a662bff7f5fc0f42647f07b95763177df
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-064
+  key: state-integrity:EP-228
+  category: state_integrity
+  statement: POST /v8/authenticate/signinup/code/consume must execute only when the
+    current Consume state permits the requested transition.
+  resources:
+  - Consume
+  endpoints:
+  - EP-228
+  evidence:
+  - EP-228
+  - OBS-000104
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: eb54263b86b168d51b0d512dd0093fcc47ea763643b896b026c104b11be22434
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-065
+  key: state-integrity:EP-229
+  category: state_integrity
+  statement: POST /v8/mapview/viewport must execute only when the current Viewport
+    state permits the requested transition.
+  resources:
+  - Viewport
+  endpoints:
+  - EP-229
+  evidence:
+  - EP-229
+  - OBS-000150
+  - OBS-000194
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 0ab1408140f3b115fc939b594ef3f91e6dd74dc4fc8e272c128854884f7d44cf
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-066
+  key: state-integrity:EP-230
+  category: state_integrity
+  statement: POST /v8/my-divar/web/menu must execute only when the current Menu state
+    permits the requested transition.
+  resources:
+  - Menu
+  endpoints:
+  - EP-230
+  evidence:
+  - EP-230
+  - OBS-000063
+  - OBS-000106
+  - OBS-000232
+  - OBS-000345
+  - OBS-000347
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 1ed176a4e34950d4dec6100c768007bc0a418ae9a1da21b61bb949bdeefe7d77
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-067
+  key: state-integrity:EP-231
+  category: state_integrity
+  statement: POST /v8/my-posts/w/list must execute only when the current List state
+    permits the requested transition.
+  resources:
+  - List
+  endpoints:
+  - EP-231
+  evidence:
+  - EP-231
+  - OBS-000520
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 710959f1271edfff1d1283e719d5d77759d66a13b5247d2e72d934b330167654
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-068
+  key: state-integrity:EP-232
+  category: state_integrity
+  statement: POST /v8/post-stats/receive-post-stats-batch must execute only when the
+    current ReceivePostStatsBatch state permits the requested transition.
+  resources:
+  - ReceivePostStatsBatch
+  endpoints:
+  - EP-232
+  evidence:
+  - EP-232
+  - OBS-000100
+  - OBS-000249
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 26845ff59191da8738522a2b23e0a24ae15f688f4d3cbd3b7cd08f4c44bf9448
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-069
+  key: state-integrity:EP-233
+  category: state_integrity
+  statement: POST /v8/postlist/w/filters must execute only when the current Filter
+    state permits the requested transition.
+  resources:
+  - Filter
+  endpoints:
+  - EP-233
+  evidence:
+  - EP-233
+  - OBS-000067
+  - OBS-000126
+  - OBS-000191
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 06680be351bbea0329b06f7e6179ea399082d03397216febc98c211eab5b6caa
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-070
+  key: state-integrity:EP-234
+  category: state_integrity
+  statement: POST /v8/postlist/w/places must execute only when the current Place state
+    permits the requested transition.
+  resources:
+  - Place
+  endpoints:
+  - EP-234
+  evidence:
+  - EP-234
+  - OBS-000183
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 600478095a031fd1b8ff20c7005c58f5c9a990ec6de05bec598b67e4459cc717
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-071
+  key: state-integrity:EP-235
+  category: state_integrity
+  statement: POST /v8/postlist/w/search must execute only when the current Search
+    state permits the requested transition.
+  resources:
+  - Search
+  endpoints:
+  - EP-235
+  evidence:
+  - EP-235
+  - OBS-000064
+  - OBS-000125
+  - OBS-000190
+  - OBS-000224
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 3e60e16eb9cf0b50d524e98026d96e9386ef708961217d900412028f038310ee
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-072
+  key: state-integrity:EP-236
+  category: state_integrity
+  statement: POST /v8/premium-user/user-registration-page must execute only when the
+    current UserRegistrationPage state permits the requested transition.
+  resources:
+  - UserRegistrationPage
+  endpoints:
+  - EP-236
+  evidence:
+  - EP-236
+  - OBS-000234
+  - OBS-000452
+  - OBS-000508
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 27929b7deefc883616c40660eab2751fd4884a9e59fe8370d7a29f847e84357d
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-073
+  key: state-integrity:EP-237
+  category: state_integrity
+  statement: POST /v8/search-bookmark/web/get-search-bar-empty-state must execute
+    only when the current GetSearchBarEmptyState state permits the requested transition.
+  resources:
+  - GetSearchBarEmptyState
+  endpoints:
+  - EP-237
+  evidence:
+  - EP-237
+  - OBS-000062
+  - OBS-000111
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: fe99b231f067c492158260fb2f24efc3ef9415ec4f9eeabe48b54c11e725686e
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-074
+  key: state-integrity:EP-238
+  category: state_integrity
+  statement: POST /v8/user-profile/user_verification must execute only when the current
+    UserVerification state permits the requested transition.
+  resources:
+  - UserVerification
+  endpoints:
+  - EP-238
+  evidence:
+  - EP-238
+  - OBS-000241
+  - OBS-000243
+  - OBS-000245
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: deef83cb5174a867a8ab1d459b73ca09023f41c85558451afae13d88a3c3cc00
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-075
+  key: state-integrity:EP-239
+  category: state_integrity
+  statement: POST /v8/users/fp-store must execute only when the current FpStore state
+    permits the requested transition.
+  resources:
+  - FpStore
+  endpoints:
+  - EP-239
+  evidence:
+  - EP-239
+  - OBS-000120
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 10144e8edf11bd8b14ac6baabcbd1b8bf9207c5adc08d0ed22f4ca8d4aa0e066
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-076
+  key: state-integrity:EP-240
+  category: state_integrity
+  statement: POST /v8/users/should-store-fp must execute only when the current ShouldStoreFp
+    state permits the requested transition.
+  resources:
+  - ShouldStoreFp
+  endpoints:
+  - EP-240
+  evidence:
+  - EP-240
+  - OBS-000108
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 9e501f8154ee7c5dfeef32f786cd999ddeaab7dce03c0682bf7e669a350b4955
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-077
+  key: state-integrity:EP-241
+  category: state_integrity
+  statement: POST /v8/wallet/change-wallet-page must execute only when the current
+    ChangeWalletPage state permits the requested transition.
+  resources:
+  - ChangeWalletPage
+  endpoints:
+  - EP-241
+  evidence:
+  - EP-241
+  - OBS-000257
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: d5fc0db803211cea7b2e72112f0c5a070d4d88c2790e81a710065971c2998808
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-078
+  key: state-integrity:EP-242
+  category: state_integrity
+  statement: POST /v8/wallet/change-wallet/ASAN_PARDAKHT must execute only when the
+    current AsanPardakht state permits the requested transition.
+  resources:
+  - AsanPardakht
+  endpoints:
+  - EP-242
+  evidence:
+  - EP-242
+  - OBS-000262
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: a4c86eb07eeccec81643bc32fa9b3cd58d4a661c64aac89508b4de2216737ae6
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2
+- id: INV-079
+  key: state-integrity:EP-243
+  category: state_integrity
+  statement: POST /v8/wallet/wallet-and-payments must execute only when the current
+    WalletAndPayment state permits the requested transition.
+  resources:
+  - WalletAndPayment
+  endpoints:
+  - EP-243
+  evidence:
+  - EP-243
+  - OBS-000253
+  - OBS-000266
+  - OBS-000348
+  - OBS-000459
+  - OBS-000515
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The HTTP method implies a possible state change, but lifecycle states
+    and guards are not confirmed from Phase 1 evidence.
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 30ccc1d775a3d0f409e87e96b07888715572ed0d11aca19cab3a0ac1ac236115
+    source_fingerprint: c4752cc137c90365469a594624158664ca39cbeb2a98e22a9e44333197bf82e2

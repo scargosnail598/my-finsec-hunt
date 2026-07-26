@@ -1,0 +1,116 @@
+version: 1
+plans:
+- id: TEST-002
+  key: plan:HYP-058
+  hypothesis_id: HYP-058
+  purpose: Safely evaluate POST /api/5/envelope/ may accept an invalid Envelope state
+    transition without expanding beyond minimum proof.
+  risk:
+    destructive: false
+    financial: false
+    affects_external_user: true
+    concurrency: false
+    request_budget: 2
+    decision: BLOCKED
+    reasons:
+    - The source endpoint host is not fully covered by target.yaml scope.
+    - A researcher-controlled account is not configured in target.yaml.
+    - No researcher-confirmed lifecycle states are recorded for this resource.
+  accounts: {}
+  preconditions:
+  - Researcher documents the intended lifecycle from direct evidence or program documentation.
+  - Use a researcher-owned object in a reversible, non-financial state.
+  setup:
+  - Document the intended lifecycle from direct evidence.
+  - Prepare a researcher-owned object in a reversible state.
+  actions:
+  - Submit POST /api/5/envelope/ once from the researcher-confirmed disallowed state.
+  - Retrieve the object using an independent read operation.
+  secure_assertions:
+  - The server rejects the forbidden transition and preserves state.
+  interesting_behavior:
+  - The server accepts the operation and creates a forbidden or inconsistent state
+    transition.
+  - Unexpected status codes alone are not proof; verify data or authoritative state.
+  evidence_to_capture:
+  - Evidence for the starting state and expected transition rule.
+  - One redacted request and response.
+  - Before and after state from an independent read operation.
+  stop_conditions:
+  - Any unrelated user data becomes visible.
+  - Any financial movement exceeds the explicitly approved test value.
+  - The operation affects an external user or irreversible state.
+  - Rate limiting, instability, or an unexpected side effect appears.
+  - The minimum evidence needed to classify behavior has been collected.
+  cleanup:
+  - Restore or cancel only researcher-owned reversible test state when permitted.
+  - Store only redacted evidence and keep credentials outside the workspace.
+  human_approval_required: true
+  execution_default: DO_NOT_EXECUTE
+  approval_status: NOT_REQUESTED
+  status: BLOCKED
+  generation:
+    managed: true
+    generator: phase3-test-planner
+    generated_checksum: 7b1d4710c07cf9e86864504d6e5a6b624dff93d2997c207e6323b57ea8cfb7c8
+    source_fingerprint: 2dba619a7f490f265db109cfaa3b3976898aa21515fb38ec1ececa7e650825b1
+- id: TEST-001
+  key: plan:HYP-001
+  hypothesis_id: HYP-001
+  purpose: Safely evaluate Cross-account WebpThumbnail access through webpThumbnailId
+    on GET /static/photo/afra/webp_thumbnail/{webpThumbnailId}/873e3b41-2d8c-4f40-b977-0531cb5a831c.jpg.webp
+    without expanding beyond minimum proof.
+  risk:
+    destructive: false
+    financial: false
+    affects_external_user: true
+    concurrency: false
+    request_budget: 2
+    decision: BLOCKED
+    reasons:
+    - The source endpoint host is not fully covered by target.yaml scope.
+    - Two researcher-controlled accounts are required for this boundary test.
+  accounts: {}
+  preconditions:
+  - Both accounts and the target object belong to the researcher.
+  - Account A owns a non-sensitive test WebpThumbnail in a safe state.
+  - Account B can reproduce the same operation against its own object when applicable.
+  setup:
+  - Researcher Account A creates or selects the test object.
+  - Record object ownership and initial state.
+  - Authenticate separately as Researcher Account B.
+  actions:
+  - Copy the successful GET /static/photo/afra/webp_thumbnail/{webpThumbnailId}/873e3b41-2d8c-4f40-b977-0531cb5a831c.jpg.webp
+    request for Account B's own object when available.
+  - Replace only the object identifier with Account A's researcher-owned identifier.
+  - Submit exactly one modified request.
+  - Retrieve the object again as Account A to verify state and ownership.
+  secure_assertions:
+  - The modified request is rejected without exposing Account A data.
+  - Account A's object state remains unchanged.
+  interesting_behavior:
+  - The server returns Account A's WebpThumbnail data or applies the requested operation
+    to Account A's object.
+  - Unexpected status codes alone are not proof; verify data or authoritative state.
+  evidence_to_capture:
+  - Account A ownership evidence for the test object.
+  - Account B redacted request containing only the substituted identifier.
+  - Server response and Account A before/after state.
+  stop_conditions:
+  - Any unrelated user data becomes visible.
+  - Any financial movement exceeds the explicitly approved test value.
+  - The operation affects an external user or irreversible state.
+  - Rate limiting, instability, or an unexpected side effect appears.
+  - The minimum evidence needed to classify behavior has been collected.
+  cleanup:
+  - Restore or cancel only researcher-owned reversible test state when permitted.
+  - Store only redacted evidence and keep credentials outside the workspace.
+  human_approval_required: true
+  execution_default: DO_NOT_EXECUTE
+  approval_status: NOT_REQUESTED
+  status: BLOCKED
+  generation:
+    managed: true
+    generator: phase3-test-planner
+    generated_checksum: 54cc8841ea59c5c8e3bd3aadd0a0ec22c0f8441f25738f5bc1c56fd7e9b5ee3e
+    source_fingerprint: d1e5f3d54b08003ef9fffedd55edc419b441a3ebe03721310e32ad995c716109
