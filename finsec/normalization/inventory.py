@@ -6,27 +6,110 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from finsec.config.models import TargetDocument
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
 from finsec.modeling.models import (
     AuthenticationType,
     Confidence,
     Endpoint,
+    EndpointAction,
+    EndpointActionType,
     EndpointAuthentication,
+    EndpointClassification,
     EndpointParameter,
+    EndpointPrimaryClassification,
     EndpointResource,
     EndpointStore,
     KnowledgeStatus,
     NormalizationEvidence,
     Observation,
     ObservationStore,
+    ParameterSemanticType,
     ParameterType,
+)
+from finsec.normalization.classification import (
+    ClassificationContext,
+    classify_observation,
+    endpoint_disposition,
 )
 from finsec.normalization.paths import NormalizedPath, normalize_paths
 from finsec.utils.redaction import REDACTED
 from finsec.utils.yaml_store import load_yaml, write_yaml
 
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
+READ_ACTIONS = {
+    "get",
+    "list",
+    "search",
+    "filter",
+    "filters",
+    "menu",
+    "page",
+    "viewport",
+    "preview",
+    "lookup",
+    "status",
+    "history",
+    "details",
+    "config",
+    "places",
+    "suggestions",
+}
+MUTATION_ACTIONS = {
+    "create",
+    "update",
+    "edit",
+    "delete",
+    "remove",
+    "cancel",
+    "confirm",
+    "approve",
+    "reject",
+    "consume",
+    "activate",
+    "deactivate",
+    "submit",
+    "publish",
+    "refund",
+    "withdraw",
+    "transfer",
+    "settle",
+    "verify",
+    "bind",
+    "unbind",
+    "change",
+}
+OBJECT_IDENTIFIER_FIELDS = {
+    "id",
+    "userid",
+    "accountid",
+    "walletid",
+    "paymentid",
+    "transactionid",
+    "withdrawalid",
+    "destinationid",
+    "beneficiaryid",
+    "merchantid",
+    "postid",
+    "invoiceid",
+    "orderid",
+    "resourceid",
+    "ownerid",
+}
+MONETARY_FIELDS = {
+    "amount",
+    "price",
+    "fee",
+    "balance",
+    "credit",
+    "debit",
+    "currency",
+    "quantity",
+    "refundamount",
+}
+STATE_FIELDS = {"status", "state", "action", "operation", "type", "mode", "step", "stage"}
+AUTH_FIELDS = {"code", "otp", "challengeid", "sessionid", "verificationid", "nonce", "token"}
 
 
 @dataclass(frozen=True)
@@ -51,19 +134,53 @@ def _load_endpoints(path: Path) -> EndpointStore:
         raise FinsecError(f"Cannot read endpoint inventory {path}: {error}") from error
 
 
+def _load_target(path: Path) -> TargetDocument:
+    try:
+        return TargetDocument.model_validate(load_yaml(path))
+    except (OSError, ValidationError) as error:
+        raise FinsecError(f"Cannot read target configuration {path}: {error}") from error
+
+
 def _number_from_id(value: str, prefix: str) -> int | None:
     match = re.fullmatch(rf"{re.escape(prefix)}-(\d+)", value)
     return int(match.group(1)) if match else None
 
 
-def _resource_name(path: str) -> tuple[str, Confidence]:
+def _resource_name(
+    path: str, classification: EndpointClassification, action_name: str
+) -> tuple[str, Confidence]:
+    if classification.primary == EndpointPrimaryClassification.STATIC_ASSET:
+        return ("StaticAsset", Confidence.HIGH)
+    if classification.primary in {
+        EndpointPrimaryClassification.TELEMETRY,
+        EndpointPrimaryClassification.ANALYTICS,
+    }:
+        return ("Telemetry", Confidence.HIGH)
+
+    lowered_path = path.lower()
+    if "wallet" in lowered_path:
+        return ("Wallet", Confidence.HIGH)
+    if "payment" in lowered_path:
+        return ("Payment", Confidence.HIGH)
+    if "authenticate" in lowered_path and "/code/" in lowered_path:
+        return ("AuthenticationCode", Confidence.HIGH)
+    if "user_verification" in lowered_path or "user-verification" in lowered_path:
+        return ("UserVerification", Confidence.HIGH)
+    if "my-posts" in lowered_path and action_name == "list":
+        return ("PostCollection", Confidence.HIGH)
+
     placeholders = re.findall(r"\{([A-Za-z][A-Za-z0-9]*)Id\}", path)
     if placeholders:
         return (placeholders[-1][0].upper() + placeholders[-1][1:], Confidence.MEDIUM)
 
     segments = [segment for segment in path.split("/") if segment and not segment.startswith("{")]
-    ignored = {"api", "v1", "v2", "v3"}
-    candidates = [segment for segment in segments if segment.lower() not in ignored]
+    ignored = {"api", "w", action_name, *READ_ACTIONS, *MUTATION_ACTIONS}
+    candidates = [
+        segment
+        for segment in segments
+        if segment.lower() not in ignored
+        and not re.fullmatch(r"v\d+(?:\.\d+){0,2}", segment.lower())
+    ]
     if not candidates:
         return ("Unknown", Confidence.LOW)
     value = candidates[-1].replace("-", "_")
@@ -82,18 +199,25 @@ def _authentication(observations: list[Observation]) -> EndpointAuthentication:
         for item in observations
         if item.authentication.observed_type != "none"
     }
-    successful_without_auth = any(
-        not item.authentication.present and item.status_code is not None and item.status_code < 400
+    anonymous_success_observed = any(
+        not item.authentication.present
+        and item.status_code is not None
+        and 200 <= item.status_code < 300
+        and bool(item.response_fields)
         for item in observations
     )
-    required = bool(present_types) and not successful_without_auth
+    required = bool(present_types)
     if not present_types:
         observed_type: AuthenticationType = "none"
     elif len(present_types) == 1:
         observed_type = next(iter(present_types))
     else:
         observed_type = "mixed"
-    return EndpointAuthentication(required=required, observed_type=observed_type)
+    return EndpointAuthentication(
+        required=required,
+        observed_type=observed_type,
+        anonymous_success_observed=anonymous_success_observed,
+    )
 
 
 def _query_parameters(observations: list[Observation]) -> list[EndpointParameter]:
@@ -135,6 +259,9 @@ def _path_parameters(
             confidence=item.confidence,
             evidence=sources,
             knowledge_status=KnowledgeStatus.INFERRED,
+            semantic_type=("unknown" if item.name == "filename" else "object_identifier"),
+            original_examples=list(item.original_examples),
+            normalization_reasons=list(item.normalization_reason),
         )
         for item in normalized.parameters
     ]
@@ -154,17 +281,250 @@ def _documented_path_parameters(
             confidence=Confidence.HIGH,
             evidence=sources,
             knowledge_status=KnowledgeStatus.INFERRED,
+            semantic_type=("object_identifier" if name.lower().endswith("id") else "unknown"),
+            normalization_reasons=["parameter name is declared by API documentation"],
         )
         for name in sorted(set(re.findall(r"\{([A-Za-z][A-Za-z0-9_]*)\}", path)))
     ]
 
 
+def _field_semantic_type(name: str) -> ParameterSemanticType:
+    compact = re.sub(r"[^a-z0-9]", "", name.lower())
+    if compact in OBJECT_IDENTIFIER_FIELDS:
+        return "object_identifier"
+    if compact in MONETARY_FIELDS:
+        return "monetary_value"
+    if compact in STATE_FIELDS:
+        return "state"
+    if compact in AUTH_FIELDS:
+        return "authentication"
+    if compact in {"cursor", "offset", "limit", "page", "pagesize"}:
+        return "pagination"
+    return "unknown"
+
+
+def _body_parameters(observations: list[Observation]) -> list[EndpointParameter]:
+    evidence: dict[str, set[str]] = {}
+    for observation in observations:
+        for field in observation.request_fields:
+            evidence.setdefault(field, set()).add(observation.id)
+
+    result: list[EndpointParameter] = []
+    for field in sorted(evidence):
+        name = re.split(r"\.|\[\]", field)[-1]
+        if not name:
+            continue
+        json_path = "$." + field.replace("[]", "[*]")
+        semantic_type = _field_semantic_type(name)
+        result.append(
+            EndpointParameter(
+                name=name,
+                location="body",
+                json_path=json_path,
+                inferred_type="string",
+                confidence=Confidence.HIGH if semantic_type != "unknown" else Confidence.MEDIUM,
+                evidence=sorted(evidence[field]),
+                knowledge_status=KnowledgeStatus.OBSERVED,
+                semantic_type=semantic_type,
+                client_controlled=True,
+                normalization_reasons=[f"request JSON contains field {json_path}"],
+            )
+        )
+    return result
+
+
+def _response_parameters(observations: list[Observation]) -> list[EndpointParameter]:
+    evidence: dict[str, set[str]] = {}
+    for observation in observations:
+        for field in observation.response_fields:
+            evidence.setdefault(field, set()).add(observation.id)
+
+    result: list[EndpointParameter] = []
+    for field in sorted(evidence):
+        name = re.split(r"\.|\[\]", field)[-1]
+        if not name:
+            continue
+        json_path = "$." + field.replace("[]", "[*]")
+        semantic_type = _field_semantic_type(name)
+        result.append(
+            EndpointParameter(
+                name=name,
+                location="response_body",
+                source="response",
+                json_path=json_path,
+                inferred_type="string",
+                confidence=Confidence.HIGH,
+                evidence=sorted(evidence[field]),
+                knowledge_status=KnowledgeStatus.OBSERVED,
+                semantic_type=semantic_type,
+                client_controlled=False,
+                normalization_reasons=[f"response JSON contains field {json_path}"],
+            )
+        )
+    return result
+
+
+def _action(path: str, method: str) -> tuple[EndpointAction, bool, list[str]]:
+    segments = [segment.lower().replace("-", "_") for segment in path.split("/") if segment]
+    tokens = [token for segment in segments for token in segment.split("_")]
+    read = next((token for token in reversed(tokens) if token in READ_ACTIONS), None)
+    mutation = next(
+        (
+            token if token in MUTATION_ACTIONS else token[:-1]
+            for token in reversed(tokens)
+            if token in MUTATION_ACTIONS or (token.endswith("s") and token[:-1] in MUTATION_ACTIONS)
+        ),
+        None,
+    )
+    if read and (not mutation or tokens.index(read) > tokens.index(mutation)):
+        return (
+            EndpointAction(
+                name=read,
+                type="read",
+                confidence=Confidence.HIGH,
+                reasons=[f"path contains strong read-like action {read}"],
+            ),
+            False,
+            [f"action verb {read} is read-like"],
+        )
+    if mutation:
+        action_type: EndpointActionType = (
+            "financial_mutation"
+            if mutation in {"refund", "withdraw", "transfer", "settle"}
+            else "mutation"
+        )
+        return (
+            EndpointAction(
+                name=mutation,
+                type=action_type,
+                confidence=Confidence.MEDIUM,
+                reasons=[f"path contains mutation-like action {mutation}"],
+            ),
+            True,
+            [f"action verb {mutation} is mutation-like"],
+        )
+    if method in SAFE_METHODS:
+        return (
+            EndpointAction(
+                name="read",
+                type="read",
+                confidence=Confidence.HIGH,
+                reasons=[f"{method} is a safe HTTP method"],
+            ),
+            False,
+            [f"{method} is a safe HTTP method"],
+        )
+    if method in {"PUT", "PATCH", "DELETE"}:
+        return (
+            EndpointAction(
+                name={"PUT": "replace", "PATCH": "update", "DELETE": "delete"}[method],
+                type="mutation",
+                confidence=Confidence.MEDIUM,
+                reasons=[f"{method} commonly represents mutation but no state delta is observed"],
+            ),
+            True,
+            [f"{method} commonly represents mutation"],
+        )
+    return (
+        EndpointAction(
+            name="unknown",
+            type="unknown",
+            confidence=Confidence.LOW,
+            reasons=["POST without a business action is not sufficient evidence of mutation"],
+        ),
+        False,
+        ["no mutating action or observed state delta"],
+    )
+
+
+def _aggregate_classification(
+    observations: list[Observation], classifications: dict[str, EndpointClassification]
+) -> EndpointClassification:
+    items = [classifications[item.id] for item in observations]
+    primary = max(
+        {item.primary for item in items},
+        key=lambda value: sum(item.primary == value for item in items),
+    )
+    return EndpointClassification(
+        primary=primary,
+        tags=sorted({tag for item in items for tag in item.tags}, key=lambda item: item.value),
+        confidence=max(
+            (item.confidence for item in items),
+            key=lambda value: {Confidence.LOW: 0, Confidence.MEDIUM: 1, Confidence.HIGH: 2}[value],
+        ),
+        reasons=sorted({reason for item in items for reason in item.reasons}),
+    )
+
+
+def _security_relevance(
+    classification: EndpointClassification,
+    authentication: EndpointAuthentication,
+    parameters: list[EndpointParameter],
+    action: EndpointAction,
+) -> tuple[int, list[str]]:
+    score = 2 if classification.primary == EndpointPrimaryClassification.FIRST_PARTY_API else 0
+    reasons: list[str] = []
+    if score:
+        reasons.append("first-party API endpoint")
+    if EndpointPrimaryClassification.AUTHENTICATION in classification.tags:
+        score += 3
+        reasons.append("authentication-sensitive path")
+    if EndpointPrimaryClassification.FINANCIAL in classification.tags:
+        score += 3
+        reasons.append("financial or wallet-related path")
+    if authentication.required:
+        score += 2
+        reasons.append("authenticated endpoint observed")
+    request_parameters = [
+        item for item in parameters if item.source == "request" and item.client_controlled
+    ]
+    if any(item.semantic_type == "object_identifier" for item in request_parameters):
+        score += 2
+        reasons.append("client-controlled object identifier observed")
+    if any(
+        item.semantic_type in {"monetary_value", "authentication"} for item in request_parameters
+    ):
+        score += 2
+        reasons.append("security-sensitive request field observed")
+    if action.type in {"mutation", "financial_mutation"}:
+        score += 2
+        reasons.append("mutation-like business action observed")
+    penalties = {
+        EndpointPrimaryClassification.STATIC_ASSET: (-10, "static asset"),
+        EndpointPrimaryClassification.TELEMETRY: (-8, "telemetry endpoint"),
+        EndpointPrimaryClassification.ANALYTICS: (-8, "analytics endpoint"),
+        EndpointPrimaryClassification.THIRD_PARTY: (-6, "third-party host"),
+    }
+    if classification.primary in penalties:
+        penalty, reason = penalties[classification.primary]
+        score += penalty
+        reasons.append(reason)
+    if not authentication.required:
+        score -= 2
+        reasons.append("no authentication requirement observed")
+    if not request_parameters:
+        score -= 2
+        reasons.append("no client-controlled input structure observed")
+    if action.type == "unknown":
+        score -= 3
+        reasons.append("generic POST with no state evidence")
+    return max(0, min(10, score)), reasons
+
+
 def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
     """Rebuild endpoint inventory while preserving stable endpoint IDs."""
 
+    target = _load_target(workspace.target)
     observation_store = _load_observations(workspace.observations)
     existing_store = _load_endpoints(workspace.endpoints)
-    normalized_by_observation = normalize_paths(observation_store.observations)
+    context = ClassificationContext(target)
+    classifications = {
+        item.id: classify_observation(item, context) for item in observation_store.observations
+    }
+    normalized_by_observation = normalize_paths(
+        observation_store.observations,
+        {item: classification.primary for item, classification in classifications.items()},
+    )
 
     groups: dict[tuple[str, str], list[Observation]] = {}
     for observation in observation_store.observations:
@@ -188,7 +548,9 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
             endpoint_id = f"EP-{next_number:03d}"
             next_number += 1
 
-        resource_name, resource_confidence = _resource_name(path)
+        classification = _aggregate_classification(observations, classifications)
+        action, state_change, state_change_reasons = _action(path, method)
+        resource_name, resource_confidence = _resource_name(path, classification, action.name)
         rules = sorted(
             {
                 rule
@@ -209,6 +571,13 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
             item for item in documented_parameters if item.name not in existing_path_names
         )
         query_parameters = _query_parameters(observations)
+        body_parameters = _body_parameters(observations)
+        response_parameters = _response_parameters(observations)
+        parameters = path_parameters + query_parameters + body_parameters + response_parameters
+        authentication = _authentication(observations)
+        relevance, relevance_reasons = _security_relevance(
+            classification, authentication, parameters, action
+        )
         if documented_parameters:
             rules = sorted({*rules, "documented_template"})
         endpoints.append(
@@ -218,14 +587,24 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
                 path=path,
                 hosts=sorted({item.host for item in observations}),
                 channels=sorted({item.channel for item in observations}),
-                authentication=_authentication(observations),
+                authentication=authentication,
+                classification=classification,
                 resource=EndpointResource(
                     type=resource_name,
                     confidence=resource_confidence,
                 ),
-                parameters=path_parameters + query_parameters,
-                state_change=method not in SAFE_METHODS,
-                financial_impact="none" if method in SAFE_METHODS else "unknown",
+                action=action,
+                parameters=parameters,
+                state_change=state_change,
+                state_change_reasons=state_change_reasons,
+                financial_impact=(
+                    "unknown"
+                    if EndpointPrimaryClassification.FINANCIAL in classification.tags
+                    else "none"
+                ),
+                security_relevance=relevance,
+                relevance_reasons=relevance_reasons,
+                disposition=endpoint_disposition(classification, target),
                 observed_by=sorted({item.actor for item in observations}),
                 sources=sorted(item.id for item in observations),
                 confidence=confidence,

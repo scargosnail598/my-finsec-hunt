@@ -2,7 +2,7 @@
 
 import re
 from pathlib import Path
-from typing import Annotated, Any, cast
+from typing import Annotated, Any, NoReturn, cast
 
 import typer
 from pydantic import ValidationError
@@ -49,7 +49,7 @@ WorkspaceOption = Annotated[
 ALLOWED_CHANNELS = {"WEB", "MOBILE", "PARTNER_API", "PUBLIC_API", "UNKNOWN"}
 
 
-def _abort(error: Exception) -> None:
+def _abort(error: Exception) -> NoReturn:
     console.print(f"[bold red]Error:[/bold red] {error}")
     raise typer.Exit(code=1) from error
 
@@ -68,6 +68,20 @@ def _count_yaml_list(path: Path, key: str) -> int:
     if not isinstance(data, dict) or not isinstance(data.get(key), list):
         return 0
     return len(data[key])
+
+
+def _count_active_yaml_records(path: Path, key: str) -> int:
+    """Count records that are active or predate explicit dispositions."""
+
+    if not path.is_file():
+        return 0
+    data = load_yaml(path)
+    records = data.get(key) if isinstance(data, dict) else None
+    if not isinstance(records, list):
+        return 0
+    return sum(
+        isinstance(item, dict) and item.get("disposition", "ACTIVE") == "ACTIVE" for item in records
+    )
 
 
 def _count_workflows(path: Path) -> int:
@@ -323,6 +337,96 @@ def inventory_command(workspace: WorkspaceOption = None) -> None:
     console.print("Run 'hunt model' to build the evidence-backed domain model.")
 
 
+@app.command("classify")
+def classify_command(workspace: WorkspaceOption = None) -> None:
+    """Show deterministic endpoint classifications and dispositions."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        build_inventory(paths)
+        endpoints = EndpointStore.model_validate(load_yaml(paths.endpoints))
+    except (FinsecError, OSError, ValidationError) as error:
+        _abort(error)
+    table = Table(show_lines=False)
+    table.add_column("ID", style="cyan", no_wrap=True)
+    table.add_column("Classification")
+    table.add_column("Relevance", justify="right")
+    table.add_column("Disposition")
+    table.add_column("Endpoint")
+    for endpoint in endpoints.endpoints:
+        table.add_row(
+            endpoint.id,
+            endpoint.classification.primary,
+            str(endpoint.security_relevance),
+            endpoint.disposition,
+            f"{endpoint.method} {endpoint.path}",
+        )
+    console.print(table)
+
+
+@app.command("noise")
+def noise_command(workspace: WorkspaceOption = None) -> None:
+    """Summarize suppressed traffic and normalization anomalies."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        endpoints = EndpointStore.model_validate(load_yaml(paths.endpoints))
+    except (FinsecError, OSError, ValidationError) as error:
+        _abort(error)
+    suppressed = [item for item in endpoints.endpoints if item.disposition != "ACTIVE"]
+    counts: dict[str, int] = {}
+    for endpoint in suppressed:
+        counts[endpoint.disposition] = counts.get(endpoint.disposition, 0) + 1
+    console.print(f"[bold]Suppressed endpoint families:[/bold] {len(suppressed)}")
+    for disposition, count in sorted(counts.items()):
+        console.print(f"{disposition}: {count}")
+    anomalies = [
+        item
+        for item in endpoints.endpoints
+        if any("opaque" in rule for rule in item.normalization.rules) and item.confidence == "low"
+    ]
+    console.print(f"Normalization anomalies requiring review: {len(anomalies)}")
+
+
+@app.command("explain")
+def explain_endpoint_command(
+    endpoint_id: Annotated[str, typer.Argument(help="Endpoint ID such as EP-001.")],
+    workspace: WorkspaceOption = None,
+) -> None:
+    """Explain one endpoint's classification, action, and relevance."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        endpoints = EndpointStore.model_validate(load_yaml(paths.endpoints))
+    except (FinsecError, OSError, ValidationError) as error:
+        _abort(error)
+    endpoint = next((item for item in endpoints.endpoints if item.id == endpoint_id), None)
+    if endpoint is None:
+        _abort(FinsecError(f"Endpoint not found: {endpoint_id}"))
+    details = [
+        f"[bold]Classification:[/bold] {endpoint.classification.primary}",
+        f"[bold]Tags:[/bold] {', '.join(endpoint.classification.tags) or 'None'}",
+        f"[bold]Resource:[/bold] {endpoint.resource.type}",
+        f"[bold]Action:[/bold] {endpoint.action.name} ({endpoint.action.type})",
+        f"[bold]State changing:[/bold] {endpoint.state_change}",
+        f"[bold]Security relevance:[/bold] {endpoint.security_relevance}/10",
+        f"[bold]Disposition:[/bold] {endpoint.disposition}",
+        "",
+        "[bold]Reasons[/bold]",
+        "\n".join(
+            f"- {item}"
+            for item in [
+                *endpoint.classification.reasons,
+                *endpoint.action.reasons,
+                *endpoint.relevance_reasons,
+            ]
+        ),
+    ]
+    console.print(
+        Panel("\n".join(details), title=f"{endpoint.id}: {endpoint.method} {endpoint.path}")
+    )
+
+
 @app.command("model")
 def model_command(workspace: WorkspaceOption = None) -> None:
     """Build actors, resources, authorization views, and workflow maps."""
@@ -368,6 +472,22 @@ def hypotheses_command(
         str | None,
         typer.Option("--priority", help="Show only P1, P2, or P3 hypotheses."),
     ] = None,
+    include_suppressed: Annotated[
+        bool,
+        typer.Option("--include-suppressed", help="Include suppressed candidates."),
+    ] = False,
+    research_tasks: Annotated[
+        bool,
+        typer.Option("--research-tasks", help="Show research tasks instead of hypotheses."),
+    ] = False,
+    grouped: Annotated[
+        bool,
+        typer.Option("--grouped", help="Show semantic families (the default generation mode)."),
+    ] = False,
+    explain: Annotated[
+        str | None,
+        typer.Option("--explain", help="Explain one hypothesis by ID."),
+    ] = None,
 ) -> None:
     """Generate and display a prioritized, evidence-backed hypothesis backlog."""
 
@@ -380,6 +500,17 @@ def hypotheses_command(
         hypotheses = load_hypotheses(paths).hypotheses
     except FinsecError as error:
         _abort(error)
+    if explain:
+        hypotheses = [item for item in hypotheses if item.id == explain]
+    elif research_tasks:
+        hypotheses = [item for item in hypotheses if item.kind == "RESEARCH_TASK"]
+    else:
+        hypotheses = [
+            item
+            for item in hypotheses
+            if item.kind == "SECURITY_HYPOTHESIS"
+            and (include_suppressed or item.disposition == "ACTIVE")
+        ]
     hypotheses = sorted(
         (
             item
@@ -388,7 +519,16 @@ def hypotheses_command(
         ),
         key=lambda item: ({"P1": 0, "P2": 1, "P3": 2}[item.priority], -item.scores.total, item.id),
     )
-    console.print(f"[green]Backlog contains {result.hypotheses} hypotheses.[/green]")
+    store = load_hypotheses(paths)
+    active_count = sum(
+        item.kind == "SECURITY_HYPOTHESIS" and item.disposition == "ACTIVE"
+        for item in store.hypotheses
+    )
+    task_count = sum(item.kind == "RESEARCH_TASK" for item in store.hypotheses)
+    console.print(
+        f"[green]Backlog contains {active_count} active hypotheses and "
+        f"{task_count} research tasks.[/green]"
+    )
     if result.conflicts:
         console.print(
             "[yellow]Preserved researcher-edited hypotheses:[/yellow] "
@@ -396,6 +536,18 @@ def hypotheses_command(
         )
     if hypotheses:
         console.print(_hypothesis_table(hypotheses))
+        if explain and len(hypotheses) == 1:
+            item = hypotheses[0]
+            console.print("\n[bold]Eligibility evidence[/bold]")
+            console.print(
+                "\n".join(f"- {value}" for value in item.eligibility_evidence) or "- None"
+            )
+            console.print("\n[bold]Missing evidence[/bold]")
+            console.print("\n".join(f"- {value}" for value in item.missing_evidence) or "- None")
+            console.print(
+                f"\nGeneration rule: {item.generation_rule.get('id', 'UNKNOWN')} "
+                f"v{item.generation_rule.get('version', '?')}"
+            )
     else:
         console.print("No hypotheses match the selected priority.")
 
@@ -414,6 +566,7 @@ def show_command(
         _abort(error)
     score = hypothesis.scores
     details = [
+        f"[bold]Kind / Disposition:[/bold] {hypothesis.kind} / {hypothesis.disposition}",
         f"[bold]Category:[/bold] {hypothesis.category}",
         f"[bold]Component:[/bold] {hypothesis.component}",
         f"[bold]Priority / Score:[/bold] {hypothesis.priority} / {score.total} "
@@ -431,6 +584,12 @@ def show_command(
         "",
         "[bold]Reasoning[/bold]",
         hypothesis.reasoning,
+        "",
+        "[bold]Eligibility evidence[/bold]",
+        "\n".join(f"- {item}" for item in hypothesis.eligibility_evidence) or "- None",
+        "",
+        "[bold]Missing evidence[/bold]",
+        "\n".join(f"- {item}" for item in hypothesis.missing_evidence) or "- None",
         "",
         "[bold]Preconditions[/bold]",
         "\n".join(f"- {item}" for item in hypothesis.preconditions),
@@ -616,11 +775,28 @@ def status_command(workspace: WorkspaceOption = None) -> None:
         ("Endpoints", len(endpoints.endpoints)),
         ("GraphQL Operations", _count_yaml_list(paths.graphql, "operations")),
         ("Mobile Discoveries", _count_yaml_list(paths.mobile_discoveries, "discoveries")),
-        ("Resources", _count_yaml_list(paths.root / "model/resources.yaml", "resources")),
+        (
+            "Active Resources",
+            _count_active_yaml_records(paths.root / "model/resources.yaml", "resources"),
+        ),
         ("Actors", _count_yaml_list(paths.root / "model/actors.yaml", "actors")),
         ("Workflows", _count_workflows(paths.root / "model/workflows.md")),
-        ("Invariants", _count_yaml_list(paths.root / "model/invariants.yaml", "invariants")),
-        ("Hypotheses", _count_yaml_list(paths.root / "hypotheses/backlog.yaml", "hypotheses")),
+        (
+            "Active Invariants",
+            _count_active_yaml_records(paths.root / "model/invariants.yaml", "invariants"),
+        ),
+        (
+            "Active Hypotheses",
+            sum(
+                item.kind == "SECURITY_HYPOTHESIS" and item.disposition == "ACTIVE"
+                for item in hypotheses.hypotheses
+            ),
+        ),
+        ("Research Tasks", sum(item.kind == "RESEARCH_TASK" for item in hypotheses.hypotheses)),
+        (
+            "Suppressed Endpoints",
+            sum(item.disposition != "ACTIVE" for item in endpoints.endpoints),
+        ),
         ("Evidence Sets", _count_evidence_sets(paths.root / "evidence")),
         ("Validations", _count_yaml_list(paths.validations, "validations")),
         ("Reports", _count_reports(paths.reports)),
@@ -635,11 +811,21 @@ def status_command(workspace: WorkspaceOption = None) -> None:
         status_table.add_column("Status")
         status_table.add_column("Count", justify="right")
         for status in ("NOT_TESTED", "TEST_PLANNED", "REFUTED", "NEEDS_EVIDENCE", "CONFIRMED"):
-            count = sum(1 for item in hypotheses.hypotheses if item.status == status)
+            count = sum(
+                1
+                for item in hypotheses.hypotheses
+                if item.kind == "SECURITY_HYPOTHESIS"
+                and item.disposition == "ACTIVE"
+                and item.status == status
+            )
             status_table.add_row(status, str(count))
         console.print(status_table)
         highest = sorted(
-            hypotheses.hypotheses,
+            [
+                item
+                for item in hypotheses.hypotheses
+                if item.kind == "SECURITY_HYPOTHESIS" and item.disposition == "ACTIVE"
+            ],
             key=lambda item: (
                 {"P1": 0, "P2": 1, "P3": 2}[item.priority],
                 -item.scores.total,

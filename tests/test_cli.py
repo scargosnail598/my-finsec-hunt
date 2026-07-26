@@ -66,7 +66,7 @@ def test_full_cli_flow(tmp_path: Path, sample_har: tuple[Path, dict[str, Any]]) 
     )
     assert hypotheses.exit_code == 0, hypotheses.output
     assert "HYP-002" in hypotheses.output
-    assert "Cross-account Payment" in hypotheses.output
+    assert "Potential cross-account Payment" in hypotheses.output
 
     shown = runner.invoke(app, ["show", "HYP-002", "--workspace", str(workspace)])
     assert shown.exit_code == 0, shown.output

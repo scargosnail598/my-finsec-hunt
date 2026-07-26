@@ -236,6 +236,11 @@ def generate_plan(workspace: WorkspacePaths, hypothesis_id: str) -> PlanResult:
     """Generate a policy-checked plan and never execute it."""
 
     target, endpoints, resources, hypothesis = _load_inputs(workspace, hypothesis_id)
+    if hypothesis.kind != "SECURITY_HYPOTHESIS" or hypothesis.disposition != "ACTIVE":
+        raise FinsecError(
+            f"{hypothesis.id} is a research or suppressed candidate, not an active security "
+            "hypothesis. Collect the missing evidence and regenerate first."
+        )
     draft = _draft(target, endpoints, resources, hypothesis)
     fingerprint = stable_fingerprint(
         {

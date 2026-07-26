@@ -52,18 +52,36 @@ def test_plan_blocks_incomplete_scope_and_uncontrolled_accounts(
 ) -> None:
     har_path, _ = sample_har
     workspace = create_workspace("blocked", tmp_path / "workspaces")
+    target = load_yaml(workspace.target)
+    target["scope"]["hosts"] = ["api.example.test"]
+    target["accounts"] = [
+        {"id": "ACCOUNT_A", "ownership": "researcher"},
+        {"id": "ACCOUNT_B", "ownership": "researcher"},
+    ]
+    write_yaml(workspace.target, target)
     ingest_har(har_path, workspace, actor="ACCOUNT_A")
     build_inventory(workspace)
     generate_model(workspace)
     generate_invariants(workspace)
     generate_hypotheses(workspace)
+    hypotheses = HypothesisStore.model_validate(load_yaml(workspace.hypotheses))
+    active = next(
+        item
+        for item in hypotheses.hypotheses
+        if item.kind == "SECURITY_HYPOTHESIS" and item.disposition == "ACTIVE"
+    )
 
-    result = generate_plan(workspace, "HYP-002")
+    target = load_yaml(workspace.target)
+    target["scope"]["hosts"] = []
+    target["accounts"][1]["ownership"] = "external"
+    write_yaml(workspace.target, target)
+
+    result = generate_plan(workspace, active.id)
     assert result.plan.status == "BLOCKED"
     assert result.plan.execution_default == "DO_NOT_EXECUTE"
     assert result.plan.risk.affects_external_user is True
     assert "No in-scope hosts" in " ".join(result.plan.risk.reasons)
-    assert "Two researcher-controlled accounts" in " ".join(result.plan.risk.reasons)
+    assert "researcher-controlled account" in " ".join(result.plan.risk.reasons)
 
 
 def test_plan_approval_and_notes_survive_regeneration(

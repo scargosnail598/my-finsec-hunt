@@ -17,6 +17,7 @@ from finsec.modeling.merge import merge_generated_records, stable_fingerprint
 from finsec.modeling.models import (
     Confidence,
     Endpoint,
+    EndpointPrimaryClassification,
     EndpointStore,
     KnowledgeStatus,
     ObservationStore,
@@ -24,6 +25,7 @@ from finsec.modeling.models import (
 from finsec.utils.yaml_store import load_yaml, write_yaml
 
 VERSION_PATTERN = re.compile(r"(?P<prefix>/(?:api/)?)v(?P<version>\d+)(?=/|$)", re.IGNORECASE)
+MUTABLE_PARAMETER_LOCATIONS = {"path", "query", "body", "header", "graphql_variable"}
 
 
 @dataclass(frozen=True)
@@ -86,7 +88,7 @@ def _source(invariant: InvariantRecord) -> dict[str, list[str]]:
 
 
 def _resource_by_name(resources: ResourceStore) -> dict[str, ResourceRecord]:
-    return {item.name: item for item in resources.resources}
+    return {item.name: item for item in resources.resources if item.disposition == "ACTIVE"}
 
 
 def _authentication_hypothesis(
@@ -104,7 +106,7 @@ def _authentication_hypothesis(
     return {
         "key": f"auth-bypass:{endpoint.id}",
         "title": (
-            f"Observed authentication requirement may not be enforced on "
+            f"Anonymous access may expose protected {resource.name} data on "
             f"{endpoint.method} {endpoint.path}"
         ),
         "category": "authentication",
@@ -122,8 +124,8 @@ def _authentication_hypothesis(
             "unauthenticated context."
         ),
         "reasoning": (
-            f"{endpoint.id} was observed with authentication, but traffic alone cannot confirm "
-            "that the server enforces the same requirement."
+            f"{endpoint.id} has an authenticated baseline and an anonymous HTTP 2xx response "
+            "containing structured response data."
         ),
         "preconditions": [
             "Use only a researcher-controlled account and object.",
@@ -174,9 +176,12 @@ def _object_authorization_hypothesis(
     scores = _score(impact, likelihood, confidence, testability)
     action = "modification" if endpoint.state_change else "access"
     return {
-        "key": f"cross-account:{endpoint.id}:{parameter}",
+        "key": (
+            f"auth-object-access:{endpoint.method.lower()}:{endpoint.path}:"
+            f"{resource.name.lower()}:{parameter.lower()}"
+        ),
         "title": (
-            f"Cross-account {resource.name} {action} through {parameter} on "
+            f"Potential cross-account {resource.name} {action} through {parameter} on "
             f"{endpoint.method} {endpoint.path}"
         ),
         "category": "authorization",
@@ -192,11 +197,12 @@ def _object_authorization_hypothesis(
         ],
         "evidence_status": KnowledgeStatus.ASSUMED,
         "hypothesis": (
-            f"Researcher Account B may be able to use Account A's {parameter} with "
+            f"An authenticated Researcher Account B may be able to use Account A's "
+            f"{parameter} with "
             f"{endpoint.method} {endpoint.path} to cross the object-ownership boundary."
         ),
         "reasoning": (
-            f"{endpoint.id} accepts the caller-controlled path identifier {parameter}, while "
+            f"{endpoint.id} accepts the client-controlled identifier {parameter}, while "
             "ownership, delegation, tenant, and role conditions remain unconfirmed."
         ),
         "preconditions": [
@@ -234,71 +240,186 @@ def _object_authorization_hypothesis(
     }
 
 
-def _state_hypothesis(
-    invariant: InvariantRecord, endpoint: Endpoint, resource: ResourceRecord, production: bool
-) -> dict[str, Any]:
-    financial = resource.name.lower() in FINANCIAL_RESOURCES
-    impact = 5 if financial else 3
-    likelihood = 2
-    confidence = _confidence_score(invariant.confidence)
-    testability = 4 if resource.states and not production else 1
-    scores = _score(impact, likelihood, confidence, testability)
+def _research_task(endpoint: Endpoint, reason: str) -> dict[str, Any]:
+    """Create a non-vulnerability task for an interesting but under-evidenced endpoint."""
+
+    title = f"Determine security semantics of {endpoint.method} {endpoint.path}"
+    lowered = endpoint.path.lower()
+    if "code/consume" in lowered:
+        title = "Determine authentication code replay and binding semantics"
+        reason = (
+            "Code consumption is security-sensitive, but replay, challenge, session, and account "
+            "binding have not been observed together."
+        )
+    elif "change-wallet" in lowered:
+        title = "Determine whether change-wallet persists server-side state"
+        reason = (
+            "The route is mutation-like, but no authoritative before/after state or lifecycle "
+            "evidence proves that it persists a server-side change."
+        )
+    elif "/user/verification" in lowered or "user_verification" in lowered:
+        title = "Determine lifecycle and security impact of user verification"
+        reason = (
+            "The verification route is security-sensitive, but the supplied response does not "
+            "prove a verification-state transition."
+        )
+    elif "wallet" in lowered:
+        title = f"Determine wallet operation behavior for {endpoint.method} {endpoint.path}"
+    elif "my-posts" in lowered:
+        title = "Capture an authenticated account baseline for the post collection operation"
+    scores = _score(2, 2, max(2, endpoint.security_relevance // 3), 2)
     return {
-        "key": f"invalid-state:{endpoint.id}",
-        "title": (
-            f"{endpoint.method} {endpoint.path} may accept an invalid "
-            f"{resource.name} state transition"
-        ),
-        "category": "state_integrity",
-        "component": f"{resource.name} / {endpoint.id}",
-        "source": _source(invariant),
-        "invariant": [invariant.id],
-        "observations": _observations(invariant),
-        "mutation_dimensions": ["STATE", "TIME"],
-        "required_state": [
-            "A researcher-confirmed lifecycle and a reversible object state are available."
-        ],
-        "attacker_capability": ["Can invoke the observed state-changing operation once."],
-        "evidence_status": KnowledgeStatus.ASSUMED,
-        "hypothesis": (
-            f"The server may accept {endpoint.method} {endpoint.path} when the {resource.name} "
-            "is in a state where the operation should be forbidden."
-        ),
-        "reasoning": (
-            "The endpoint appears state-changing, but allowed states, transition guards, and "
-            "execution ordering are not yet confirmed."
-        ),
-        "preconditions": [
-            "Researcher documents the intended lifecycle from direct evidence or "
-            "program documentation.",
-            "Use a researcher-owned object in a reversible, non-financial state.",
-        ],
-        "expected_secure_behavior": (
-            "The server rejects the operation and preserves the original state."
-        ),
-        "possible_vulnerable_behavior": (
-            "The server accepts the operation and creates a forbidden or inconsistent "
-            "state transition."
-        ),
-        "potential_impact": {
-            "confidentiality": "none",
-            "integrity": "high",
-            "availability": "low",
-            "financial": "high" if financial else "none",
+        "key": f"research:{endpoint.method.lower()}:{endpoint.path}",
+        "title": title,
+        "kind": "RESEARCH_TASK",
+        "disposition": "NEEDS_RESEARCH",
+        "category": "research",
+        "component": f"{endpoint.resource.type} / {endpoint.id}",
+        "source": {
+            "endpoints": [endpoint.id],
+            "invariants": [],
+            "observations": endpoint.sources,
         },
-        "evidence_to_collect": [
-            "Evidence for the starting state and expected transition rule.",
-            "One redacted request and response.",
-            "Before and after state from an independent read operation.",
-        ],
+        "invariant": [],
+        "observations": endpoint.sources,
+        "mutation_dimensions": [],
+        "required_state": [],
+        "attacker_capability": [],
+        "evidence_status": KnowledgeStatus.INFERRED,
+        "hypothesis": title,
+        "reasoning": reason,
+        "preconditions": ["Collect only authorized passive evidence or researcher annotations."],
+        "expected_secure_behavior": "Not yet defined; this task discovers the intended boundary.",
+        "possible_vulnerable_behavior": "Not asserted until the missing evidence is collected.",
+        "potential_impact": {
+            "confidentiality": "unknown",
+            "integrity": "unknown",
+            "availability": "none",
+            "financial": (
+                "unknown"
+                if EndpointPrimaryClassification.FINANCIAL in endpoint.classification.tags
+                else "none"
+            ),
+        },
+        "evidence_to_collect": (
+            [
+                "Whether a consumed code can be replayed after successful consumption.",
+                "Whether the code is bound to its challenge, session, account, and purpose.",
+                "Matched Account A and Account B challenge baselines without brute force.",
+            ]
+            if "code/consume" in lowered
+            else [
+                "Authenticated baseline request and response field structure.",
+                "Researcher-confirmed resource ownership, action, and lifecycle semantics.",
+            ]
+        ),
+        "eligibility_evidence": endpoint.relevance_reasons,
+        "missing_evidence": [reason],
+        "generation_rule": {"id": "RESEARCH_DISCOVERY", "version": "1"},
+        "priority_rationale": ["Research tasks are not vulnerability priorities."],
         "scores": scores,
-        "priority": _priority(impact, likelihood, confidence, testability),
+        "priority": "P3",
         "status": "NOT_TESTED",
-        "safety_notes": [
-            "Do not test until lifecycle evidence and reversibility are established.",
-            "Do not use a real financial operation in production.",
-        ],
+        "safety_notes": ["This task does not authorize sending requests or executing a test."],
     }
+
+
+def _authentication_research_task(
+    resource_name: str,
+    endpoints: list[Endpoint],
+    invariants: list[InvariantRecord],
+) -> dict[str, Any]:
+    """Group authenticated baselines that lack a concrete enforcement failure signal."""
+
+    first = endpoints[0]
+    title = f"Determine whether authentication is enforced on sensitive {resource_name} endpoints"
+    reason = (
+        "Authenticated baselines are observed, but no anonymous, malformed, expired, or revoked "
+        "credential success demonstrates inconsistent enforcement."
+    )
+    task = _research_task(first, reason)
+    endpoint_ids = sorted(item.id for item in endpoints)
+    invariant_ids = sorted(item.id for item in invariants)
+    observations = sorted({source for item in endpoints for source in item.sources})
+    task.update(
+        {
+            "key": f"auth-enforcement-research:{resource_name.lower()}",
+            "title": title,
+            "component": f"{resource_name} / {', '.join(endpoint_ids)}",
+            "source": {
+                "endpoints": endpoint_ids,
+                "invariants": invariant_ids,
+                "observations": observations,
+            },
+            "invariant": invariant_ids,
+            "observations": observations,
+            "hypothesis": title,
+            "reasoning": reason,
+            "evidence_to_collect": [
+                "One authorized unauthenticated or invalid-credential control response.",
+                "Whether the response contains protected data or applies protected state.",
+            ],
+            "eligibility_evidence": ["authenticated baseline requests are observed"],
+            "missing_evidence": ["no concrete authentication-enforcement failure is observed"],
+            "generation_rule": {"id": "AUTH_ENFORCEMENT_RESEARCH", "version": "1"},
+        }
+    )
+    return task
+
+
+def _state_research_task(
+    invariant: InvariantRecord, endpoint: Endpoint, resource: ResourceRecord
+) -> dict[str, Any]:
+    """Request one concrete forbidden edge instead of asserting a generic transition flaw."""
+
+    action = endpoint.action.name
+    from_state: str | None = None
+    if action == "confirm" and "cancelled" in resource.states:
+        from_state = "cancelled"
+    elif action == "cancel" and "confirmed" in resource.states:
+        from_state = "confirmed"
+    elif action == "confirm" and "completed" in resource.states:
+        from_state = "completed"
+
+    if from_state is not None:
+        title = (
+            f"Determine whether the {action} operation rejects {from_state} {resource.name} objects"
+        )
+        evidence = [
+            f"Researcher-confirmed relevance of {from_state} -> {action} for {resource.name}.",
+            f"The expected state after a rejected {action} attempt from {from_state}.",
+        ]
+    else:
+        title = f"Determine the permitted starting states for {action} on {resource.name}"
+        evidence = [
+            f"The allowed from_state and to_state for {action}.",
+            "At least one specific forbidden transition supported by documentation or annotation.",
+        ]
+    reason = (
+        f"The {action} operation and lifecycle state names are recorded, but no specific "
+        "forbidden transition is supported strongly enough for an active hypothesis."
+    )
+    task = _research_task(endpoint, reason)
+    task.update(
+        {
+            "key": f"research:state-transition:{endpoint.id}",
+            "title": title,
+            "component": f"{resource.name} / {endpoint.id}",
+            "source": _source(invariant),
+            "invariant": [invariant.id],
+            "observations": _observations(invariant),
+            "hypothesis": title,
+            "reasoning": reason,
+            "evidence_to_collect": evidence,
+            "eligibility_evidence": [
+                "mutation-like action observed",
+                "resource lifecycle state names are recorded",
+            ],
+            "missing_evidence": ["a concrete forbidden from_state/action/to_state is not recorded"],
+            "generation_rule": {"id": "STATE_TRANSITION_RESEARCH", "version": "1"},
+        }
+    )
+    return task
 
 
 def _replay_hypothesis(
@@ -389,30 +510,54 @@ def _value_hypotheses(
     endpoint_by_id = {item.id: item for item in endpoints.endpoints}
     invariants_by_endpoint: dict[str, list[InvariantRecord]] = defaultdict(list)
     for invariant in invariants.invariants:
+        if invariant.disposition != "ACTIVE":
+            continue
         for endpoint_id in invariant.endpoints:
             invariants_by_endpoint[endpoint_id].append(invariant)
 
     drafts: list[dict[str, Any]] = []
     for resource in resources.resources:
-        boundary_fields = sorted(
-            {
-                field
-                for field in resource.sensitive_fields
-                if any(
-                    name in field.lower()
-                    for name in ("amount", "currency", "fee", "rate", "precision")
-                )
-            }
-        )
-        if not boundary_fields:
+        if resource.disposition != "ACTIVE":
             continue
         for operation in resource.operations:
             endpoint = endpoint_by_id.get(operation.endpoint)
-            if endpoint is None or not endpoint.state_change:
+            boundary_parameters = (
+                [
+                    item
+                    for item in endpoint.parameters
+                    if item.source == "request"
+                    and item.client_controlled
+                    and item.location in MUTABLE_PARAMETER_LOCATIONS
+                    and item.semantic_type == "monetary_value"
+                ]
+                if endpoint is not None
+                else []
+            )
+            boundary_fields = sorted(
+                {
+                    (
+                        item.json_path.removeprefix("$.").replace("[*]", "[]")
+                        if item.json_path
+                        else item.name
+                    )
+                    for item in boundary_parameters
+                }
+            )
+            mutation_candidate = endpoint is not None and endpoint.state_change
+            if (
+                endpoint is None
+                or endpoint.disposition != "ACTIVE"
+                or not mutation_candidate
+                or not boundary_fields
+                or endpoint.security_relevance
+                < target.analysis.hypothesis_gates.financial_minimum_score
+            ):
                 continue
             related = invariants_by_endpoint.get(endpoint.id, [])
             invariant_ids = sorted(item.id for item in related)
-            observations = sorted({source for item in related for source in _observations(item)})
+            observations = sorted(
+                {source for parameter in boundary_parameters for source in parameter.evidence}
+            )
             financial = resource.name.lower() in FINANCIAL_RESOURCES
             impact = 5 if financial else 3
             likelihood = 2
@@ -450,8 +595,9 @@ def _value_hypotheses(
                         f"combination in {fields} on {endpoint.method} {endpoint.path}."
                     ),
                     "reasoning": (
-                        "Financially relevant field names are observed, but server-side range, "
-                        "precision, currency, and consistency rules are not confirmed."
+                        "Financially relevant fields are directly observed in the request, but "
+                        "server-side range, precision, currency, and consistency rules are not "
+                        "confirmed."
                     ),
                     "preconditions": [
                         "Program rules permit a single boundary-value request.",
@@ -492,14 +638,18 @@ def _value_hypotheses(
 def _version_hypotheses(
     endpoints: EndpointStore, invariants: InvariantStore, resources: ResourceStore
 ) -> list[dict[str, Any]]:
-    resource_names = {item.name for item in resources.resources}
+    resource_names = {item.name for item in resources.resources if item.disposition == "ACTIVE"}
     grouped: dict[tuple[str, str, str], list[Endpoint]] = defaultdict(list)
     for endpoint in endpoints.endpoints:
+        if endpoint.disposition != "ACTIVE":
+            continue
         signature = _version_signature(endpoint.path)
         if endpoint.resource.type in resource_names and signature is not None:
             grouped[(endpoint.resource.type, endpoint.method, signature)].append(endpoint)
     invariants_by_endpoint: dict[str, list[InvariantRecord]] = defaultdict(list)
     for invariant in invariants.invariants:
+        if invariant.disposition != "ACTIVE":
+            continue
         for endpoint_id in invariant.endpoints:
             invariants_by_endpoint[endpoint_id].append(invariant)
 
@@ -592,14 +742,18 @@ def _version_hypotheses(
 def _channel_hypotheses(
     endpoints: EndpointStore, invariants: InvariantStore, resources: ResourceStore
 ) -> list[dict[str, Any]]:
-    resource_names = {item.name for item in resources.resources}
+    resource_names = {item.name for item in resources.resources if item.disposition == "ACTIVE"}
     invariants_by_endpoint: dict[str, list[InvariantRecord]] = defaultdict(list)
     for invariant in invariants.invariants:
+        if invariant.disposition != "ACTIVE":
+            continue
         for endpoint_id in invariant.endpoints:
             invariants_by_endpoint[endpoint_id].append(invariant)
 
     drafts: list[dict[str, Any]] = []
     for endpoint in endpoints.endpoints:
+        if endpoint.disposition != "ACTIVE":
+            continue
         channels = sorted(channel for channel in endpoint.channels if channel != "UNKNOWN")
         if endpoint.resource.type not in resource_names or len(channels) < 2:
             continue
@@ -683,40 +837,198 @@ def _drafts(
     resource_by_name = _resource_by_name(resources)
     researcher_accounts = sum(1 for account in target.accounts if account.ownership == "researcher")
     drafts: list[dict[str, Any]] = []
+    active_endpoint_ids: set[str] = set()
+    authentication_research: dict[str, list[tuple[InvariantRecord, Endpoint, ResourceRecord]]] = (
+        defaultdict(list)
+    )
     for invariant in invariants.invariants:
+        if invariant.disposition != "ACTIVE":
+            continue
         if not invariant.endpoints or not invariant.resources:
             continue
         endpoint = endpoint_by_id.get(invariant.endpoints[0])
         resource = resource_by_name.get(invariant.resources[0])
         if endpoint is None or resource is None:
             continue
+        if endpoint.disposition != "ACTIVE":
+            continue
         if invariant.category == "authentication":
-            drafts.append(
-                _authentication_hypothesis(invariant, endpoint, resource, researcher_accounts)
-            )
+            if (
+                endpoint.security_relevance >= 4
+                and endpoint.authentication.anonymous_success_observed
+            ):
+                draft = _authentication_hypothesis(
+                    invariant, endpoint, resource, researcher_accounts
+                )
+                draft.update(
+                    {
+                        "eligibility_evidence": [
+                            "authenticated baseline observed",
+                            "anonymous 2xx response with structured protected data observed",
+                            *endpoint.relevance_reasons,
+                        ],
+                        "missing_evidence": [
+                            "confirm that the anonymous response exposes protected data or state"
+                        ],
+                        "generation_rule": {"id": "AUTH_ENFORCEMENT", "version": "3"},
+                        "priority_rationale": endpoint.relevance_reasons,
+                    }
+                )
+                drafts.append(draft)
+                active_endpoint_ids.add(endpoint.id)
+            elif endpoint.security_relevance >= 4 and "code/consume" not in endpoint.path.lower():
+                authentication_research[resource.name].append((invariant, endpoint, resource))
         elif invariant.category == "authorization":
             parameter = invariant.key.rsplit(":", 1)[-1]
-            drafts.append(
-                _object_authorization_hypothesis(
+            parameter_record = next(
+                (
+                    item
+                    for item in endpoint.parameters
+                    if item.name == parameter and item.semantic_type == "object_identifier"
+                ),
+                None,
+            )
+            gate = target.analysis.hypothesis_gates.bola_minimum_score
+            if (
+                parameter_record is not None
+                and parameter_record.source == "request"
+                and parameter_record.client_controlled
+                and parameter_record.location in MUTABLE_PARAMETER_LOCATIONS
+                and endpoint.authentication.required
+                and researcher_accounts >= 2
+                and endpoint.security_relevance >= gate
+                and endpoint.classification.primary
+                in {
+                    EndpointPrimaryClassification.FIRST_PARTY_API,
+                    EndpointPrimaryClassification.AUTHENTICATION,
+                    EndpointPrimaryClassification.FINANCIAL,
+                }
+            ):
+                draft = _object_authorization_hypothesis(
                     invariant,
                     endpoint,
                     resource,
                     parameter,
                     researcher_accounts,
                 )
-            )
+                draft.update(
+                    {
+                        "eligibility_evidence": [
+                            "authenticated endpoint observed",
+                            f"client-controlled {parameter} found in {parameter_record.location}",
+                            "two researcher-controlled actors are configured",
+                            *endpoint.relevance_reasons,
+                        ],
+                        "missing_evidence": [
+                            "ownership relationship is not confirmed",
+                            "Account B baseline is not yet captured",
+                        ],
+                        "generation_rule": {"id": "AUTH_OBJECT_ACCESS", "version": "2"},
+                        "priority_rationale": endpoint.relevance_reasons,
+                    }
+                )
+                drafts.append(draft)
+                active_endpoint_ids.add(endpoint.id)
         elif invariant.category == "state_integrity":
-            drafts.append(
-                _state_hypothesis(invariant, endpoint, resource, target.testing.production)
+            gate = target.analysis.hypothesis_gates.state_transition_minimum_score
+            if resource.states and endpoint.state_change and endpoint.security_relevance >= gate:
+                drafts.append(_state_research_task(invariant, endpoint, resource))
+                active_endpoint_ids.add(endpoint.id)
+        elif (
+            invariant.category == "single_execution"
+            and endpoint.action.type == "financial_mutation"
+        ):
+            draft = _replay_hypothesis(invariant, endpoint, resource, target.testing.production)
+            draft.update(
+                {
+                    "eligibility_evidence": ["financial mutation-like action observed"],
+                    "missing_evidence": ["idempotency behavior is not observed"],
+                    "generation_rule": {"id": "SINGLE_EXECUTION", "version": "2"},
+                    "priority_rationale": endpoint.relevance_reasons,
+                }
             )
-        elif invariant.category == "single_execution":
-            drafts.append(
-                _replay_hypothesis(invariant, endpoint, resource, target.testing.production)
+            drafts.append(draft)
+            active_endpoint_ids.add(endpoint.id)
+    for resource_name, entries in sorted(authentication_research.items()):
+        grouped_endpoints = sorted(
+            {endpoint.id: endpoint for _, endpoint, _ in entries}.values(),
+            key=lambda item: item.id,
+        )
+        grouped_invariants = sorted(
+            {invariant.id: invariant for invariant, _, _ in entries}.values(),
+            key=lambda item: item.id,
+        )
+        drafts.append(
+            _authentication_research_task(
+                resource_name,
+                grouped_endpoints,
+                grouped_invariants,
             )
+        )
+        active_endpoint_ids.update(item.id for item in grouped_endpoints)
     drafts.extend(_value_hypotheses(target, endpoints, invariants, resources))
     drafts.extend(_version_hypotheses(endpoints, invariants, resources))
     drafts.extend(_channel_hypotheses(endpoints, invariants, resources))
-    return drafts
+    active_endpoint_ids.update(
+        endpoint_id
+        for draft in drafts
+        for endpoint_id in draft.get("source", {}).get("endpoints", [])
+    )
+    for endpoint in endpoints.endpoints:
+        always_research = any(
+            marker in endpoint.path.lower()
+            for marker in (
+                "user_verification",
+                "/user/verification",
+                "code/consume",
+                "change-wallet",
+            )
+        ) or (
+            endpoint.action.type == "unknown"
+            and EndpointPrimaryClassification.FINANCIAL in endpoint.classification.tags
+        )
+        interesting = bool(
+            set(endpoint.classification.tags)
+            & {
+                EndpointPrimaryClassification.AUTHENTICATION,
+                EndpointPrimaryClassification.FINANCIAL,
+            }
+        ) or any(
+            marker in endpoint.path.lower()
+            for marker in ("my-posts", "user_verification", "code/consume")
+        )
+        if (
+            endpoint.disposition == "ACTIVE"
+            and endpoint.method not in {"HEAD", "OPTIONS"}
+            and interesting
+            and (always_research or endpoint.id not in active_endpoint_ids)
+        ):
+            drafts.append(
+                _research_task(
+                    endpoint,
+                    "The endpoint is security-relevant but lacks sufficient ownership, action, "
+                    "or lifecycle evidence for a vulnerability hypothesis.",
+                )
+            )
+    for draft in drafts:
+        draft.setdefault("kind", "SECURITY_HYPOTHESIS")
+        draft.setdefault("disposition", "ACTIVE")
+        endpoint_ids = draft.get("source", {}).get("endpoints", [])
+        related = [endpoint_by_id[item] for item in endpoint_ids if item in endpoint_by_id]
+        reasons = sorted({reason for item in related for reason in item.relevance_reasons})
+        draft.setdefault("eligibility_evidence", reasons)
+        draft.setdefault("missing_evidence", ["Researcher validation evidence is not collected."])
+        draft.setdefault(
+            "generation_rule",
+            {"id": str(draft.get("category", "UNKNOWN")).upper(), "version": "2"},
+        )
+        draft.setdefault("priority_rationale", reasons)
+    return sorted(
+        drafts,
+        key=lambda item: (
+            0 if item.get("generation_rule", {}).get("id") == "AUTH_ENFORCEMENT_RESEARCH" else 1
+        ),
+    )
 
 
 def generate_hypotheses(workspace: WorkspacePaths) -> HypothesisResult:
@@ -732,15 +1044,59 @@ def generate_hypotheses(workspace: WorkspacePaths) -> HypothesisResult:
             "invariants": invariants.model_dump(mode="json", exclude_none=True),
         }
     )
+    drafts = _drafts(target, endpoints, resources, invariants)
     merge = merge_generated_records(
         workspace.hypotheses,
         "hypotheses",
         "HYP",
         "phase3-hypothesis-generator",
         fingerprint,
-        _drafts(target, endpoints, resources, invariants),
+        drafts,
         preserved_fields=("status", "notes"),
     )
+    draft_keys = {str(item["key"]) for item in drafts}
+    records = merge.document.get("hypotheses", [])
+    if isinstance(records, list):
+        for record in records:
+            if not isinstance(record, dict) or record.get("key") in draft_keys:
+                continue
+            generation = record.get("generation")
+            if not isinstance(generation, dict):
+                continue
+            if generation.get("generator") != "phase3-hypothesis-generator":
+                continue
+            payload = {
+                key: value
+                for key, value in record.items()
+                if key not in {"generation", "status", "notes"}
+            }
+            if generation.get("generated_checksum") != stable_fingerprint(payload):
+                continue
+            record["kind"] = "SECURITY_HYPOTHESIS"
+            record["disposition"] = "SUPPRESSED_INSUFFICIENT_EVIDENCE"
+            record["priority"] = "P3"
+            record["missing_evidence"] = [
+                "The candidate no longer passes the current classification and evidence gates."
+            ]
+            record["generation_rule"] = {
+                "id": "LEGACY_CANDIDATE_REEVALUATION",
+                "version": "2",
+            }
+            record["priority_rationale"] = [
+                "Suppressed candidates do not receive an active security priority."
+            ]
+            normalized = HypothesisRecord.model_validate(record).model_dump(
+                mode="json", exclude_none=True
+            )
+            normalized_generation = normalized["generation"]
+            normalized_payload = {
+                key: value
+                for key, value in normalized.items()
+                if key not in {"generation", "status", "notes"}
+            }
+            normalized_generation["generated_checksum"] = stable_fingerprint(normalized_payload)
+            record.clear()
+            record.update(normalized)
     try:
         store = HypothesisStore.model_validate(merge.document)
     except ValidationError as error:

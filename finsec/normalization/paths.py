@@ -3,7 +3,12 @@
 import re
 from dataclasses import dataclass
 
-from finsec.modeling.models import Confidence, Observation, ParameterType
+from finsec.modeling.models import (
+    Confidence,
+    EndpointPrimaryClassification,
+    Observation,
+    ParameterType,
+)
 
 UUID_PATTERN = re.compile(
     r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-"
@@ -12,6 +17,32 @@ UUID_PATTERN = re.compile(
 ULID_PATTERN = re.compile(r"^[0-7][0-9A-HJKMNP-TV-Z]{25}$", re.IGNORECASE)
 HEX_PATTERN = re.compile(r"^[0-9a-fA-F]{16,64}$")
 OPAQUE_PATTERN = re.compile(r"^[A-Za-z0-9_-]{20,80}$")
+STRUCTURED_ID_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{7,63}$")
+VERSION_PATTERNS = (
+    re.compile(r"^v\d+$", re.IGNORECASE),
+    re.compile(r"^v\d+\.\d+$", re.IGNORECASE),
+    re.compile(r"^v\d+\.\d+\.\d+$", re.IGNORECASE),
+    re.compile(r"^version[-_]?\d+$", re.IGNORECASE),
+    re.compile(r"^api[-_]?v\d+$", re.IGNORECASE),
+)
+STATIC_EXTENSIONS = {
+    "jpg",
+    "jpeg",
+    "png",
+    "webp",
+    "gif",
+    "svg",
+    "ico",
+    "css",
+    "js",
+    "map",
+    "woff",
+    "woff2",
+    "ttf",
+    "eot",
+    "mp4",
+    "webm",
+}
 NON_RESOURCE_SEGMENTS = {
     "api",
     "page",
@@ -33,6 +64,8 @@ class PathParameter:
     inferred_type: ParameterType
     confidence: Confidence
     rule: str
+    original_examples: tuple[str, ...] = ()
+    normalization_reason: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -48,7 +81,20 @@ def _segments(path: str) -> list[str]:
     return [segment for segment in path.split("/") if segment]
 
 
+def is_version_segment(segment: str) -> bool:
+    """Return whether a segment is an explicit API or asset version."""
+
+    return any(pattern.fullmatch(segment) for pattern in VERSION_PATTERNS)
+
+
+def _is_static_filename(segment: str) -> bool:
+    _, separator, extension = segment.rpartition(".")
+    return bool(separator) and extension.lower() in STATIC_EXTENSIONS
+
+
 def _strong_identifier(segment: str) -> tuple[ParameterType, str] | None:
+    if is_version_segment(segment):
+        return None
     if UUID_PATTERN.fullmatch(segment):
         return ("uuid", "uuid")
     if ULID_PATTERN.fullmatch(segment):
@@ -57,6 +103,12 @@ def _strong_identifier(segment: str) -> tuple[ParameterType, str] | None:
         return ("string", "long_hex")
     if OPAQUE_PATTERN.fullmatch(segment) and any(char.isdigit() for char in segment):
         return ("string", "long_opaque")
+    if STRUCTURED_ID_PATTERN.fullmatch(segment):
+        separators = segment.count("-") + segment.count("_")
+        has_digit = any(char.isdigit() for char in segment)
+        has_uppercase = any(char.isupper() for char in segment)
+        if (separators >= 2 and (has_digit or has_uppercase)) or (separators >= 1 and has_digit):
+            return ("string", "structured_opaque")
     return None
 
 
@@ -68,12 +120,14 @@ def _is_numeric_candidate(segment: str, previous: str | None) -> bool:
     return not previous or previous.lower() not in NON_RESOURCE_SEGMENTS
 
 
-def _signature(path: str) -> tuple[str, ...]:
+def _signature(path: str, static_asset: bool = False) -> tuple[str, ...]:
     result: list[str] = []
     segments = _segments(path)
     for index, segment in enumerate(segments):
         previous = segments[index - 1] if index else None
-        if _strong_identifier(segment):
+        if static_asset and _is_static_filename(segment):
+            result.append("<FILENAME>")
+        elif _strong_identifier(segment):
             result.append("<STRONG_ID>")
         elif _is_numeric_candidate(segment, previous):
             result.append("<NUMERIC_CANDIDATE>")
@@ -101,12 +155,19 @@ def _parameter_name(previous: str | None) -> str:
     return f"{camel}Id"
 
 
-def normalize_paths(observations: list[Observation]) -> dict[str, NormalizedPath]:
+def normalize_paths(
+    observations: list[Observation],
+    classifications: dict[str, EndpointPrimaryClassification] | None = None,
+) -> dict[str, NormalizedPath]:
     """Normalize strong identifiers and repeated numeric segments only."""
 
     groups: dict[tuple[str, str, tuple[str, ...]], list[Observation]] = {}
     for observation in observations:
-        key = (observation.method, observation.host, _signature(observation.path))
+        static_asset = (
+            classifications is not None
+            and classifications.get(observation.id) == EndpointPrimaryClassification.STATIC_ASSET
+        )
+        key = (observation.method, observation.host, _signature(observation.path, static_asset))
         groups.setdefault(key, []).append(observation)
 
     results: dict[str, NormalizedPath] = {}
@@ -127,17 +188,56 @@ def normalize_paths(observations: list[Observation]) -> dict[str, NormalizedPath
             for index, segment in enumerate(original):
                 previous = original[index - 1] if index else None
                 strong = _strong_identifier(segment)
-                if strong:
+                if signature[index] == "<FILENAME>":
+                    filenames = {_segments(item.path)[index] for item in items}
+                    if len(filenames) > 1:
+                        normalized.append("{filename}")
+                        parameters.append(
+                            PathParameter(
+                                "filename",
+                                "string",
+                                Confidence.HIGH,
+                                "static_filename",
+                                tuple(sorted(filenames)),
+                                ("static asset filename grouped into one route family",),
+                            )
+                        )
+                        rules.append("static_filename")
+                    else:
+                        normalized.append(segment)
+                elif strong:
                     inferred_type, rule = strong
                     name = _parameter_name(previous)
+                    if (
+                        classifications
+                        and classifications.get(observation.id)
+                        == EndpointPrimaryClassification.STATIC_ASSET
+                    ):
+                        name = "uuid" if rule == "uuid" else "opaqueId"
                     normalized.append(f"{{{name}}}")
-                    parameters.append(PathParameter(name, inferred_type, Confidence.HIGH, rule))
+                    parameters.append(
+                        PathParameter(
+                            name,
+                            inferred_type,
+                            Confidence.HIGH,
+                            rule,
+                            (segment,),
+                            (f"segment matches {rule} pattern",),
+                        )
+                    )
                     rules.append(rule)
                 elif index in numeric_positions:
                     name = _parameter_name(previous)
                     normalized.append(f"{{{name}}}")
                     parameters.append(
-                        PathParameter(name, "integer", Confidence.MEDIUM, "repeated_numeric")
+                        PathParameter(
+                            name,
+                            "integer",
+                            Confidence.MEDIUM,
+                            "repeated_numeric",
+                            tuple(sorted({_segments(item.path)[index] for item in items})),
+                            ("same route structure observed with multiple integer values",),
+                        )
                     )
                     rules.append("repeated_numeric")
                 else:

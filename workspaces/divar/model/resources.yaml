@@ -1,70 +1,6 @@
 version: 1
 resources:
 - id: RES-001
-  key: resource:0255.pbf
-  name: 0255.Pbf
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-061
-    action: read
-    method: GET
-    path: /static/fonts/Open%20Sans%20Regular,Arial%20Unicode%20MS%20Regular/0-255.pbf
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000158
-    knowledge_status: INFERRED
-  - endpoint: EP-063
-    action: read
-    method: GET
-    path: /static/fonts/Vazir%20Bold,Arial%20Unicode%20MS%20Regular/0-255.pbf
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000168
-    knowledge_status: INFERRED
-  - endpoint: EP-065
-    action: read
-    method: GET
-    path: /static/fonts/Vazir%20Light,Arial%20Unicode%20MS%20Regular/0-255.pbf
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000164
-    knowledge_status: INFERRED
-  - endpoint: EP-069
-    action: read
-    method: GET
-    path: /static/fonts/Vazir%20Regular,Arial%20Unicode%20MS%20Regular/0-255.pbf
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000160
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-061
-  - EP-063
-  - EP-065
-  - EP-069
-  - OBS-000158
-  - OBS-000160
-  - OBS-000164
-  - OBS-000168
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: ec783b2343386cee077996068a9ff0b23d1497b35f8f053d87cef33599eaf913
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-002
   key: resource:100.pbf
   name: 100.Pbf
   identifiers: []
@@ -74,7 +10,7 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-144
+  - endpoint: EP-048
     action: read
     method: GET
     path: /tiles/freezed_zoom_11/8/164/100.pbf
@@ -83,7 +19,7 @@ resources:
     evidence:
     - OBS-000147
     knowledge_status: INFERRED
-  - endpoint: EP-146
+  - endpoint: EP-050
     action: read
     method: GET
     path: /tiles/high/8/164/100.pbf
@@ -92,7 +28,7 @@ resources:
     evidence:
     - OBS-000143
     knowledge_status: INFERRED
-  - endpoint: EP-148
+  - endpoint: EP-052
     action: read
     method: GET
     path: /tiles/low/8/164/100.pbf
@@ -104,20 +40,21 @@ resources:
   states: []
   sensitive_fields: []
   evidence:
-  - EP-144
-  - EP-146
-  - EP-148
+  - EP-048
+  - EP-050
+  - EP-052
   - OBS-000143
   - OBS-000145
   - OBS-000147
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: e3947bfe452790f62b90d8333673a556186d3df380dfc3cca7d91dca454be2de
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-003
+    generated_checksum: de0cad19569ffd0e871d0ccf8ea171ab2666bbfff359438bc5648cd4df96facf
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-002
   key: resource:101.pbf
   name: 101.Pbf
   identifiers: []
@@ -127,7 +64,7 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-145
+  - endpoint: EP-049
     action: read
     method: GET
     path: /tiles/freezed_zoom_11/8/164/101.pbf
@@ -136,7 +73,7 @@ resources:
     evidence:
     - OBS-000148
     knowledge_status: INFERRED
-  - endpoint: EP-147
+  - endpoint: EP-051
     action: read
     method: GET
     path: /tiles/high/8/164/101.pbf
@@ -145,7 +82,7 @@ resources:
     evidence:
     - OBS-000144
     knowledge_status: INFERRED
-  - endpoint: EP-149
+  - endpoint: EP-053
     action: read
     method: GET
     path: /tiles/low/8/164/101.pbf
@@ -157,239 +94,21 @@ resources:
   states: []
   sensitive_fields: []
   evidence:
-  - EP-145
-  - EP-147
-  - EP-149
+  - EP-049
+  - EP-051
+  - EP-053
   - OBS-000144
   - OBS-000146
   - OBS-000148
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: a8e7cc860a9bbe25ec6d052e49f8ccc9ff6a65ba2f7174facb53712a8e266be5
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-004
-  key: resource:15361791.pbf
-  name: 15361791.Pbf
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-062
-    action: read
-    method: GET
-    path: /static/fonts/Open%20Sans%20Regular,Arial%20Unicode%20MS%20Regular/1536-1791.pbf
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000159
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-062
-  - OBS-000159
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: e7fb42249401a188e376c06a219df6bedca2c168c65cb60b45573fb0531bcfbe
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-005
-  key: resource:1pconversion
-  name: 1PConversion
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-054
-    action: read
-    method: GET
-    path: /pagead/1p-conversion/16521530460/
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000007
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-054
-  - OBS-000007
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 01186badc520a1b46daf26595cd3338f35e574534b6c0571b75520771c3ec3c3
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-006
-  key: resource:369.7fa0e4a4.desktop.css
-  name: 369.7Fa0E4A4.Desktop.Css
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-154
-    action: read
-    method: GET
-    path: /web-assets/2026/07/369.7fa0e4a4.desktop.css
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000129
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-154
-  - OBS-000129
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: b9f4e834ba43671620df85a3f827b5f1b7855264eb8954606865ae11a3dc5bc3
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-007
-  key: resource:4uagrenhsxjlgdugo1oill3owp4.woff2
-  name: 4Uagrenhsxjlgdugo1Oill3Owp4.Woff2
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-057
-    action: read
-    method: GET
-    path: /s/googlesans/v29/4UaGrENHsxJlGDuGo1OIlL3Owp4.woff2
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000002
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-057
-  - OBS-000002
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: aee024713750e4bf56d187d681f39d092a8fa9cec68bd2ac7fcc2e9bb3f0610b
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-008
-  key: resource:6425664511.pbf
-  name: 6425664511.Pbf
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-066
-    action: read
-    method: GET
-    path: /static/fonts/Vazir%20Light,Arial%20Unicode%20MS%20Regular/64256-64511.pbf
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000166
-    knowledge_status: INFERRED
-  - endpoint: EP-070
-    action: read
-    method: GET
-    path: /static/fonts/Vazir%20Regular,Arial%20Unicode%20MS%20Regular/64256-64511.pbf
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000162
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-066
-  - EP-070
-  - OBS-000162
-  - OBS-000166
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 1db7bb45e30758ec844c146f38b75c1a4219784943654e6461edc04d32ecb2a3
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-009
-  key: resource:6502465279.pbf
-  name: 6502465279.Pbf
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-064
-    action: read
-    method: GET
-    path: /static/fonts/Vazir%20Bold,Arial%20Unicode%20MS%20Regular/65024-65279.pbf
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000169
-    knowledge_status: INFERRED
-  - endpoint: EP-067
-    action: read
-    method: GET
-    path: /static/fonts/Vazir%20Light,Arial%20Unicode%20MS%20Regular/65024-65279.pbf
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000167
-    knowledge_status: INFERRED
-  - endpoint: EP-071
-    action: read
-    method: GET
-    path: /static/fonts/Vazir%20Regular,Arial%20Unicode%20MS%20Regular/65024-65279.pbf
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000163
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-064
-  - EP-067
-  - EP-071
-  - OBS-000163
-  - OBS-000167
-  - OBS-000169
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: bc1031a82294927ca07b67d95662b6b8a7166ec6f4919f74502907e7b2b62cfb
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-010
+    generated_checksum: 07f4a99a52cb505fe3fbfb3c2b95675390033448489ca46b47d91349e4798378
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-003
   key: resource:7qhl7e
   name: 7Qhl7E
   identifiers: []
@@ -399,7 +118,7 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-058
+  - endpoint: EP-021
     action: read
     method: GET
     path: /sD6lXN/7QhL7e/8
@@ -411,58 +130,17 @@ resources:
   states: []
   sensitive_fields: []
   evidence:
-  - EP-058
+  - EP-021
   - OBS-000118
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 8b378b48e15b7699c795da1a57d432ca453358de83e55f4a4744392a9dec7f9a
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-011
-  key: resource:81928447.pbf
-  name: 81928447.Pbf
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-068
-    action: read
-    method: GET
-    path: /static/fonts/Vazir%20Light,Arial%20Unicode%20MS%20Regular/8192-8447.pbf
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000165
-    knowledge_status: INFERRED
-  - endpoint: EP-072
-    action: read
-    method: GET
-    path: /static/fonts/Vazir%20Regular,Arial%20Unicode%20MS%20Regular/8192-8447.pbf
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000161
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-068
-  - EP-072
-  - OBS-000161
-  - OBS-000165
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 5bd3e9ef691e53f0d001f85c7c97a995e9bef33f4a6e17a8a794c3961a1576af
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-012
+    generated_checksum: f3ffc3171f0849391de8abf05a267b3ecf89c277eff398cc9906626a64426f87
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-004
   key: resource:alskrh1ygh7ez9pzhx7kilbtj1usrmul4vppyz01gltu9eyhatfy4eazpjrcqaanhdi3wym5fe9kqrztxlndncxqaywap03tfskwyewhi63hidfbcmhnc6hsuucaiwj0xwpqdxyitlaybn6apadxumg
   name: Alskrh1Ygh7Ez9Pzhx7Kilbtj1Usrmul4Vppyz01Gltu9Eyhatfy4Eazpjrcqaanhdi3Wym5Fe9KqrztXlndncxqaywap03Tfskwyewhi63Hidfbcmhnc6Hsuucaiwj0Xwpqdxyitlaybn6Apadxumg
   identifiers: []
@@ -472,11 +150,11 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-153
-    action: read
+  - endpoint: EP-057
+    action: verify
     method: GET
     path: /verify/ALSKRH1YgH7ez9PZHX7KIlBTJ1USRMUl4VPpYz01Gltu9eYHAtfY4eaZPJrCqaAnhDI3wym5fE9kQRzt_XLnDncXqAYWaP03TFSkWyEWHi63hIdfbCmHNc-6HSUucAiwJ0XwpQDXYITLaYBN6-aPadxUMg
-    state_change: false
+    state_change: true
     authentication_required: false
     evidence:
     - OBS-000003
@@ -485,19 +163,20 @@ resources:
   states: []
   sensitive_fields: []
   evidence:
-  - EP-153
+  - EP-057
   - OBS-000003
   - OBS-000010
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 5f54219591fd18d81a5f515add0f7bf2fde7b72c5d9873c2a53fc4d63704f8a0
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-013
-  key: resource:androidchrome192x192.png
-  name: AndroidChrome192X192.Png
+    generated_checksum: 72af9eaeb1ead894880080f967978fdfe0d77ee5c92f708ef25c3b4dc49d42a5
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-005
+  key: resource:authenticationcode
+  name: AuthenticationCode
   identifiers: []
   owner:
     value: unknown
@@ -505,702 +184,17 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-188
-    action: read
-    method: GET
-    path: /web-assets/publics/android-chrome-192x192.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000045
-    - OBS-000355
-    - OBS-000404
-    - OBS-000449
-    - OBS-000505
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-188
-  - OBS-000045
-  - OBS-000355
-  - OBS-000404
-  - OBS-000449
-  - OBS-000505
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 985361172745c36bb1d09515d80a0484ced97e3b50570957a55edafe6be0938c
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-014
-  key: resource:appiconcafebazaar.png
-  name: AppIconCafebazaar.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-021
-    action: read
-    method: GET
-    path: /newsite/images/app-icon-cafebazaar.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000281
-    - OBS-000372
-    - OBS-000417
-    - OBS-000473
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-021
-  - OBS-000281
-  - OBS-000372
-  - OBS-000417
-  - OBS-000473
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 7b90931819d5d9a61d47f46e206cbe06261ba9147795ae290d158844a870d9c3
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-015
-  key: resource:appiconmyket.png
-  name: AppIconMyket.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-022
-    action: read
-    method: GET
-    path: /newsite/images/app-icon-myket.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000286
-    - OBS-000377
-    - OBS-000422
-    - OBS-000478
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-022
-  - OBS-000286
-  - OBS-000377
-  - OBS-000422
-  - OBS-000478
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 8fc9c488743fd556e8e22a6e686b1809b258b8ed8a3ffed17d1547ff9ac513c1
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-016
-  key: resource:apresponsivehelpers.css
-  name: ApResponsiveHelpers.Css
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-011
-    action: read
-    method: GET
-    path: /newsite/Content/ap-responsive-helpers.css
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000274
-    - OBS-000365
-    - OBS-000410
-    - OBS-000466
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-011
-  - OBS-000274
-  - OBS-000365
-  - OBS-000410
-  - OBS-000466
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 193a9f979bb1717588fab1102ba3f60c9aec72618c0cf97b7fa334b84176cce8
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-017
-  key: resource:asanpardakht
-  name: AsanPardakht
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-219
-    action: inspect_options
-    method: OPTIONS
-    path: /v8/wallet/change-wallet/ASAN_PARDAKHT
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000263
-    knowledge_status: INFERRED
-  - endpoint: EP-242
-    action: create_or_execute
-    method: POST
-    path: /v8/wallet/change-wallet/ASAN_PARDAKHT
-    state_change: true
-    authentication_required: false
-    evidence:
-    - OBS-000262
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-219
-  - EP-242
-  - OBS-000262
-  - OBS-000263
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: fddd9155a92e50490a550b134cba4e533d9ec481861765c77b345e810b3d8e51
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-018
-  key: resource:asanpardakhtlogo.png
-  name: AsanPardakhtLogo.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-135
-    action: read
-    method: GET
-    path: /static/public/core/payment/asan_pardakht_logo.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000259
-    - OBS-000357
-    - OBS-000517
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-135
-  - OBS-000259
-  - OBS-000357
-  - OBS-000517
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: fe55ff5deacb25db515ba965101775efc06dddccf34b8bb0fa8c846edb13eba5
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-019
-  key: resource:autopromotion.png
-  name: AutoPromotion.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-139
-    action: read
-    method: GET
-    path: /static/public/pro/registration/auto_promotion.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000455
-    - OBS-000511
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-139
-  - OBS-000455
-  - OBS-000511
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: fe61502267cfdc5b91dfe538eb944426e11f74029b6b6c40a4ffdedd64165cbc
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-020
-  key: resource:back1.jpg
-  name: Back1.Jpg
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-023
-    action: read
-    method: GET
-    path: /newsite/images/back1.jpg
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000308
-    - OBS-000399
-    - OBS-000444
-    - OBS-000500
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-023
-  - OBS-000308
-  - OBS-000399
-  - OBS-000444
-  - OBS-000500
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 47afac75af1d28f78add5ee881f54708cb922e8eb29eb74ca6122d3dab4a0132
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-021
-  key: resource:bazaarpaylogo.png
-  name: BazaarPayLogo.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-136
-    action: read
-    method: GET
-    path: /static/public/core/payment/bazaar_pay_logo.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000261
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-136
-  - OBS-000261
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: e29493e68e7f07e8ff10e30a094312eb7ed1716cab2f96440fdff8fe2538f1c1
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-022
-  key: resource:bootstrap.css
-  name: Bootstrap.Css
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-013
-    action: read
-    method: GET
-    path: /newsite/Content/bootstrap.css
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000270
-    - OBS-000361
-    - OBS-000406
-    - OBS-000462
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-013
-  - OBS-000270
-  - OBS-000361
-  - OBS-000406
-  - OBS-000462
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: c4eac7537e3ff9f7cd2a1cbf9534587d100eddaefb417231fe9d07d4c884db7a
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-023
-  key: resource:bootstrap.j
-  name: Bootstrap.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-017
-    action: read
-    method: GET
-    path: /newsite/Scripts/bootstrap.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000305
-    - OBS-000396
-    - OBS-000441
-    - OBS-000497
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-017
-  - OBS-000305
-  - OBS-000396
-  - OBS-000441
-  - OBS-000497
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 820515f20ec92ed0dafc041feb5d8078e01c2d5afae08c4baf2f0a43a8420905
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-024
-  key: resource:bootstrap547.3f4fb2a1.desktop.css
-  name: Bootstrap547.3F4Fb2A1.Desktop.Css
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-158
-    action: read
-    method: GET
-    path: /web-assets/2026/07/bootstrap-547.3f4fb2a1.desktop.css
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000038
-    - OBS-000340
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-158
-  - OBS-000038
-  - OBS-000340
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: abdf1080291ec73e38c24ca53df3ab3f97367495c3fabe9c0c76b77e88202d38
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-025
-  key: resource:bootstrap547.58da18da.desktop.j
-  name: Bootstrap547.58Da18Da.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-159
-    action: read
-    method: GET
-    path: /web-assets/2026/07/bootstrap-547.58da18da.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000029
-    - OBS-000329
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-159
-  - OBS-000029
-  - OBS-000329
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: a832e976e7e78a8964bd61d47fffc54005f76ee7f794bdda8b2d6c3912043b3a
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-026
-  key: resource:bootstraprtl.css
-  name: BootstrapRtl.Css
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-012
-    action: read
-    method: GET
-    path: /newsite/Content/bootstrap-rtl.css
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000271
-    - OBS-000362
-    - OBS-000407
-    - OBS-000463
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-012
-  - OBS-000271
-  - OBS-000362
-  - OBS-000407
-  - OBS-000463
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: d9c9ec1cbb103957f790c3568b72c143a0667cab5fedcf0c9fa9b42ca29d9f9d
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-027
-  key: resource:byekan.woff
-  name: Byekan.Woff
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-018
-    action: read
-    method: GET
-    path: /newsite/fonts/BYekan.woff
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000312
-    - OBS-000403
-    - OBS-000448
-    - OBS-000504
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-018
-  - OBS-000312
-  - OBS-000403
-  - OBS-000448
-  - OBS-000504
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 09ab2ea5e9b726b4c0fec86214c2ddde3cae324d5cd07c41056fb22db16f38b5
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-028
-  key: resource:camera.png
-  name: Camera.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-076
-    action: read
-    method: GET
-    path: /static/imgs/widget-icons/light/white_primary/v1/camera.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000071
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-076
-  - OBS-000071
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 52a461cd224c76f703a38f287ab7f04afe4e00fdd477451a0d5b48b6e3e173b1
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-029
-  key: resource:changewalletpage
-  name: ChangeWalletPage
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-218
-    action: inspect_options
-    method: OPTIONS
-    path: /v8/wallet/change-wallet-page
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000258
-    knowledge_status: INFERRED
-  - endpoint: EP-241
-    action: create_or_execute
-    method: POST
-    path: /v8/wallet/change-wallet-page
-    state_change: true
-    authentication_required: false
-    evidence:
-    - OBS-000257
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-218
-  - EP-241
-  - OBS-000257
-  - OBS-000258
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 1903c0d8191beb34bc2a475872f7f86df67efc3f039feb8f87bcded8fb2187cb
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-030
-  key: resource:clickhere.png
-  name: ClickHere.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-024
-    action: read
-    method: GET
-    path: /newsite/images/click-here.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000277
-    - OBS-000368
-    - OBS-000413
-    - OBS-000469
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-024
-  - OBS-000277
-  - OBS-000368
-  - OBS-000413
-  - OBS-000469
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 50ec2dc97305f971a55f7c91ba43fe4d9c3890ec61a25460c4baab9454973c95
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-031
-  key: resource:components179.8105de45.desktop.j
-  name: Components179.8105De45.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-160
-    action: read
-    method: GET
-    path: /web-assets/2026/07/components-179.8105de45.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000024
-    - OBS-000324
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-160
-  - OBS-000024
-  - OBS-000324
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 5667c6149747730e28df773ebaa0a162e07f384f95478ce612f2e4f5ae199483
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-032
-  key: resource:consume
-  name: Consume
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-203
-    action: inspect_options
+  - endpoint: EP-067
+    action: consume
     method: OPTIONS
     path: /v8/authenticate/signinup/code/consume
-    state_change: false
+    state_change: true
     authentication_required: false
     evidence:
     - OBS-000105
     knowledge_status: INFERRED
-  - endpoint: EP-228
-    action: create_or_execute
+  - endpoint: EP-092
+    action: consume
     method: POST
     path: /v8/authenticate/signinup/code/consume
     state_change: true
@@ -1212,545 +206,19 @@ resources:
   sensitive_fields:
   - status
   evidence:
-  - EP-203
-  - EP-228
+  - EP-067
+  - EP-092
   - OBS-000104
   - OBS-000105
-  confidence: low
+  confidence: high
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 6761a87edcb055e7195674007f1ba1f3cc5871d38b052df05e4f86b98c24871a
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-033
-  key: resource:conversion
-  name: Conversion
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-055
-    action: read
-    method: GET
-    path: /pagead/conversion/16521530460/
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000006
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-055
-  - OBS-000006
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: e8242feec20ead282b36d9edfc6a7cde21d9461cef6253c458a72a7df1da51e2
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-034
-  key: resource:digipaylogo.png
-  name: DigiPayLogo.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-137
-    action: read
-    method: GET
-    path: /static/public/core/payment/digi_pay_logo.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000260
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-137
-  - OBS-000260
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: e4cb1849cee4060549ee2fec901179d8dd0b02f50cba530664ae92ed9ccc53d8
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-035
-  key: resource:downloadapp.jpg
-  name: DownloadApp.Jpg
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-025
-    action: read
-    method: GET
-    path: /newsite/images/download-app.jpg
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000309
-    - OBS-000400
-    - OBS-000445
-    - OBS-000501
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-025
-  - OBS-000309
-  - OBS-000400
-  - OBS-000445
-  - OBS-000501
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: ada727ebe3d6876217db9fad7e9f17b82bfde9b58804fd972c7be9a86b9e4393
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-036
-  key: resource:editprice.png
-  name: EditPrice.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-140
-    action: read
-    method: GET
-    path: /static/public/pro/registration/edit_price.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000456
-    - OBS-000512
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-140
-  - OBS-000456
-  - OBS-000512
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 165ff0e75bf2c7b2df5104111628fa3610eac26e329e310b0d4c45c103eef65d
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-037
-  key: resource:envelope
-  name: Envelope
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-222
-    action: create_or_execute
-    method: POST
-    path: /api/5/envelope/
-    state_change: true
-    authentication_required: false
-    evidence:
-    - OBS-000046
-    - OBS-000058
-    - OBS-000059
-    - OBS-000122
-    - OBS-000123
-    - OBS-000171
-    - OBS-000172
-    - OBS-000187
-    - OBS-000188
-    - OBS-000227
-    - OBS-000228
-    - OBS-000239
-    - OBS-000240
-    - OBS-000251
-    - OBS-000252
-    - OBS-000255
-    - OBS-000256
-    - OBS-000264
-    - OBS-000265
-    - OBS-000356
-    - OBS-000450
-    - OBS-000451
-    - OBS-000457
-    - OBS-000458
-    - OBS-000506
-    - OBS-000507
-    - OBS-000513
-    - OBS-000514
-    - OBS-000518
-    - OBS-000519
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-222
-  - OBS-000046
-  - OBS-000058
-  - OBS-000059
-  - OBS-000122
-  - OBS-000123
-  - OBS-000171
-  - OBS-000172
-  - OBS-000187
-  - OBS-000188
-  - OBS-000227
-  - OBS-000228
-  - OBS-000239
-  - OBS-000240
-  - OBS-000251
-  - OBS-000252
-  - OBS-000255
-  - OBS-000256
-  - OBS-000264
-  - OBS-000265
-  - OBS-000356
-  - OBS-000450
-  - OBS-000451
-  - OBS-000457
-  - OBS-000458
-  - OBS-000506
-  - OBS-000507
-  - OBS-000513
-  - OBS-000514
-  - OBS-000518
-  - OBS-000519
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: e463e0768678e5b8fc6031565b38a44e135b38d44fed68a40070c8186fec91cc
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-038
-  key: resource:favicon.ico
-  name: Favicon.Ico
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-005
-    action: read
-    method: GET
-    path: /favicon.ico
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000313
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-005
-  - OBS-000313
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: e494732f9417b0188cf9388bdc4a75d5ce0cb4e0361c9d72c3bd1dd03d4423df
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-039
-  key: resource:favicon32x32.png
-  name: Favicon32X32.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-189
-    action: read
-    method: GET
-    path: /web-assets/publics/favicon-32x32.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000044
-    - OBS-000056
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-189
-  - OBS-000044
-  - OBS-000056
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: aefe8c2559f26b68966ad7640352d9721413b0dc00be79515deceb4715d9840a
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-040
-  key: resource:filter
-  name: Filter
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-209
-    action: inspect_options
-    method: OPTIONS
-    path: /v8/postlist/w/filters
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000069
-    - OBS-000128
-    - OBS-000193
-    knowledge_status: INFERRED
-  - endpoint: EP-233
-    action: create_or_execute
-    method: POST
-    path: /v8/postlist/w/filters
-    state_change: true
-    authentication_required: false
-    evidence:
-    - OBS-000067
-    - OBS-000126
-    - OBS-000191
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-209
-  - EP-233
-  - OBS-000067
-  - OBS-000069
-  - OBS-000126
-  - OBS-000128
-  - OBS-000191
-  - OBS-000193
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: cc1895c283d4c89c383114fdb0dede77e3dd6970733005d365f746864513ec2b
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-041
-  key: resource:filtersconfig.json
-  name: FiltersConfig.Json
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-142
-    action: read
-    method: GET
-    path: /static/public/search/filters-config.json
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000015
-    - OBS-000315
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields:
-  - category_values_to_slugs.accounting-and-finance
-  - category_values_to_slugs.accounting-finance-legal
-  - category_values_to_slugs.sim-card
-  - filter_types.body_status
-  - filter_types.chassis_status
-  - filter_types.destination
-  - filter_types.military_service_status
-  - filter_types.motor_status
-  - filter_types.multi_sim_card_support
-  - filter_types.sim_card_slot
-  - filter_types.status
-  - path_filters_per_category.accounting-and-finance
-  - path_filters_per_category.accounting-and-finance[].name
-  - path_filters_per_category.sim-card
-  - path_filters_per_category.sim-card[].name
-  - path_filters_values_per_category.accounting-and-finance
-  - path_filters_values_per_category.accounting-and-finance.expertises
-  - path_filters_values_per_category.accounting-and-finance.expertises.accident-insurance
-  - path_filters_values_per_category.accounting-and-finance.expertises.accounting-audit-services
-  - path_filters_values_per_category.accounting-and-finance.expertises.body-insurance
-  - path_filters_values_per_category.accounting-and-finance.expertises.brand-registration
-  - path_filters_values_per_category.accounting-and-finance.expertises.business-license
-  - path_filters_values_per_category.accounting-and-finance.expertises.company-registration
-  - path_filters_values_per_category.accounting-and-finance.expertises.contract-negotiation
-  - path_filters_values_per_category.accounting-and-finance.expertises.criminal-lawsuits
-  - path_filters_values_per_category.accounting-and-finance.expertises.family-lawsuits
-  - path_filters_values_per_category.accounting-and-finance.expertises.finance-taxation-services
-  - path_filters_values_per_category.accounting-and-finance.expertises.financing-accounting-insurance-others
-  - path_filters_values_per_category.accounting-and-finance.expertises.inheritance-litigation
-  - path_filters_values_per_category.accounting-and-finance.expertises.insurance-services
-  - path_filters_values_per_category.accounting-and-finance.expertises.labor-litigation
-  - path_filters_values_per_category.accounting-and-finance.expertises.legal-services
-  - 'path_filters_values_per_category.accounting-and-finance.expertises.life-insurance '
-  - path_filters_values_per_category.accounting-and-finance.expertises.real-estate-lawsuit
-  - path_filters_values_per_category.accounting-and-finance.expertises.registration-services
-  - path_filters_values_per_category.accounting-and-finance.expertises.supplementary-insurance
-  - path_filters_values_per_category.accounting-and-finance.expertises.tax-business-documents-claims
-  - path_filters_values_per_category.accounting-and-finance.expertises.tax-services
-  - path_filters_values_per_category.accounting-and-finance.expertises.third-party-insurance
-  - path_filters_values_per_category.catering.expertises.wedding-card-printing
-  - path_filters_values_per_category.default.status
-  - path_filters_values_per_category.default.status.ALL_POSSIBLE_OPTIONS
-  - path_filters_values_per_category.default.status.like-new
-  - path_filters_values_per_category.default.status.new
-  - path_filters_values_per_category.default.status.repair-needed
-  - path_filters_values_per_category.default.status.used
-  - path_filters_values_per_category.mobile-phones.brand_model.samsung z3 corporate
-  - path_filters_values_per_category.sim-card
-  - path_filters_values_per_category.sim-card.type
-  - path_filters_values_per_category.sim-card.type.ایرانسل
-  - path_filters_values_per_category.sim-card.type.رایتل
-  - path_filters_values_per_category.sim-card.type.شاتل موبایل
-  - path_filters_values_per_category.sim-card.type.همراه اول
-  - path_filters_values_per_category.teaching.expertises.accounting-software
-  evidence:
-  - EP-142
-  - OBS-000015
-  - OBS-000315
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: f76e0fe83f64a99a325fc69ba8ee664f949b622de7fabda4143fa98573fdfa6d
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-042
-  key: resource:fontawesome.css
-  name: FontAwesome.Css
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-014
-    action: read
-    method: GET
-    path: /newsite/Content/font-awesome.css
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000272
-    - OBS-000363
-    - OBS-000408
-    - OBS-000464
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-014
-  - OBS-000272
-  - OBS-000363
-  - OBS-000408
-  - OBS-000464
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: f4ba664bbf80dad88bbd48f73594961d62af5aded7370517c8e3d1a21f1ca6be
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-043
-  key: resource:fontawesomewebfont.woff2
-  name: FontawesomeWebfont.Woff2
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-020
-    action: read
-    method: GET
-    path: /newsite/fonts/fontawesome-webfont.woff2
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000311
-    - OBS-000402
-    - OBS-000447
-    - OBS-000503
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-020
-  - OBS-000311
-  - OBS-000402
-  - OBS-000447
-  - OBS-000503
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 68e546b757921f3b2c0298170d39687ed8a5da19597e9f51c95220a6ab1daca4
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-044
-  key: resource:fppb580.58c24cb2.desktop.j
-  name: FpPb580.58C24Cb2.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-161
-    action: read
-    method: GET
-    path: /web-assets/2026/07/fp-pb-580.58c24cb2.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000116
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-161
-  - OBS-000116
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: f5219de5b515e3672ee4c1ddaefc7cf8148fd7a959bd3828b9a70913aadff474
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-045
+    generated_checksum: 26f7f895307dea7b35c819f66eddde818f859c7e09006eabb5e336f09d4f09f1
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-006
   key: resource:fpstore
   name: FpStore
   identifiers: []
@@ -1760,8 +228,8 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-216
-    action: inspect_options
+  - endpoint: EP-080
+    action: read
     method: OPTIONS
     path: /v8/users/fp-store
     state_change: false
@@ -1769,11 +237,11 @@ resources:
     evidence:
     - OBS-000121
     knowledge_status: INFERRED
-  - endpoint: EP-239
+  - endpoint: EP-103
     action: create_or_execute
     method: POST
     path: /v8/users/fp-store
-    state_change: true
+    state_change: false
     authentication_required: false
     evidence:
     - OBS-000120
@@ -1781,51 +249,19 @@ resources:
   states: []
   sensitive_fields: []
   evidence:
-  - EP-216
-  - EP-239
+  - EP-080
+  - EP-103
   - OBS-000120
   - OBS-000121
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: e75a0eea28d52501a7e078a901008be2bd86d64c68cd537d3daaba36f059e717
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-046
-  key: resource:frameworkpb535.ad67f7ff.desktop.j
-  name: FrameworkPb535.Ad67F7Ff.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-162
-    action: read
-    method: GET
-    path: /web-assets/2026/07/framework-pb-535.ad67f7ff.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000022
-    - OBS-000322
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-162
-  - OBS-000022
-  - OBS-000322
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 0dee3c580848c072f59ac11657bfbd4c2fbc3f4637c54e54b9588bd0933d51d2
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-047
+    generated_checksum: 064638aa5a0606760af4d1d06945a94d4e35d2b64f57ffa3f8399746301882f9
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-007
   key: resource:gahouvea
   name: Gahouvea
   identifiers: []
@@ -1835,7 +271,7 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-152
+  - endpoint: EP-056
     action: read
     method: GET
     path: /v8/posts-v2/web/gahoUVea
@@ -1844,8 +280,8 @@ resources:
     evidence:
     - OBS-000175
     knowledge_status: INFERRED
-  - endpoint: EP-212
-    action: inspect_options
+  - endpoint: EP-076
+    action: read
     method: OPTIONS
     path: /v8/posts-v2/web/gahoUVea
     state_change: false
@@ -1857,86 +293,19 @@ resources:
   sensitive_fields:
   - webengage.status
   evidence:
-  - EP-152
-  - EP-212
+  - EP-056
+  - EP-076
   - OBS-000175
   - OBS-000176
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: addc042dfea8eef5362ee0ae6205ccbc54c31ee3d74a4a3502f94b53f9d3aa3e
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-048
-  key: resource:gen204
-  name: Gen204
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-224
-    action: create_or_execute
-    method: POST
-    path: /gen_204
-    state_change: true
-    authentication_required: false
-    evidence:
-    - OBS-000005
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-224
-  - OBS-000005
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 2bfa5b83d3b36539928bbd6ec0a7ba543d5bfd2e326509f7cae4e13d7086f748
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-049
-  key: resource:getapp.png
-  name: GetApp.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-026
-    action: read
-    method: GET
-    path: /newsite/images/get-app.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000279
-    - OBS-000370
-    - OBS-000415
-    - OBS-000471
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-026
-  - OBS-000279
-  - OBS-000370
-  - OBS-000415
-  - OBS-000471
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 3dad5a1217cea89a7872f0aa4628fa251c883eb2ef179e7a20ecd7d6d2238146
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-050
+    generated_checksum: dc0a05293dd2147f27a4a27bf468237faea24f670fa53b82dbaa2b74ac83cee5
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-008
   key: resource:getsearchbaremptystate
   name: GetSearchBarEmptyState
   identifiers: []
@@ -1946,8 +315,8 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-214
-    action: inspect_options
+  - endpoint: EP-078
+    action: search
     method: OPTIONS
     path: /v8/search-bookmark/web/get-search-bar-empty-state
     state_change: false
@@ -1956,11 +325,11 @@ resources:
     - OBS-000065
     - OBS-000114
     knowledge_status: INFERRED
-  - endpoint: EP-237
-    action: create_or_execute
+  - endpoint: EP-101
+    action: search
     method: POST
     path: /v8/search-bookmark/web/get-search-bar-empty-state
-    state_change: true
+    state_change: false
     authentication_required: false
     evidence:
     - OBS-000062
@@ -1969,90 +338,21 @@ resources:
   states: []
   sensitive_fields: []
   evidence:
-  - EP-214
-  - EP-237
+  - EP-078
+  - EP-101
   - OBS-000062
   - OBS-000065
   - OBS-000111
   - OBS-000114
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: db4a9be01ef8a7abcfe1e04b408fe0b2be5c3bf4694ce679b13165a37cad6a73
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-051
-  key: resource:hal.healthapp.jpg
-  name: Hal.HealthApp.Jpg
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-027
-    action: read
-    method: GET
-    path: /newsite/images/hal.health-app.jpg
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000300
-    - OBS-000391
-    - OBS-000436
-    - OBS-000492
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-027
-  - OBS-000300
-  - OBS-000391
-  - OBS-000436
-  - OBS-000492
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: f014332ec1af52cde4eaae3f8e35c230ab4232366fc361985b33a450c3e55621
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-052
-  key: resource:icpb930.3797c625.desktop.j
-  name: IcPb930.3797C625.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-163
-    action: read
-    method: GET
-    path: /web-assets/2026/07/ic-pb-930.3797c625.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000032
-    - OBS-000332
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-163
-  - OBS-000032
-  - OBS-000332
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 87c2827bd563cc6b7ec6ee57cfa2023ef9accdf7132d662fb9e924a86e8f8469
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-053
+    generated_checksum: 8f8332f59f6f1d004505692215e97a528effa36ba83a6dc39f92ff6296071317
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-009
   key: resource:index.html
   name: Index.Html
   identifiers: []
@@ -2062,7 +362,7 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-194
+  - endpoint: EP-059
     action: read
     method: GET
     path: /web-assets/publics/offline-statics/index.html
@@ -2075,424 +375,18 @@ resources:
   states: []
   sensitive_fields: []
   evidence:
-  - EP-194
+  - EP-059
   - OBS-000047
   - OBS-000048
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 4c4964c866a86ca998aae1794a9ad125df5c124fcc38a643c56f89ba517ba069
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-054
-  key: resource:index.j
-  name: Index.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-007
-    action: read
-    method: GET
-    path: /js/index.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000306
-    - OBS-000397
-    - OBS-000442
-    - OBS-000498
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-007
-  - OBS-000306
-  - OBS-000397
-  - OBS-000442
-  - OBS-000498
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 5cf9277dbf459bb665794cd85738d004ad4b11c0bcc422fcb8fa1a3fbb53e419
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-055
-  key: resource:insight.png
-  name: Insight.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-141
-    action: read
-    method: GET
-    path: /static/public/pro/registration/insight.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000454
-    - OBS-000510
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-141
-  - OBS-000454
-  - OBS-000510
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: bac969d7026755ae4685f6eb15592317cfd20eb3c38e3a65f0e2b82421cdf9d5
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-056
-  key: resource:iransansweb.cdb118d6.woff2
-  name: Iransansweb.Cdb118D6.Woff2
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-155
-    action: read
-    method: GET
-    path: /web-assets/2026/07/IRANSansWeb.cdb118d6.woff2
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000030
-    - OBS-000226
-    - OBS-000330
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-155
-  - OBS-000030
-  - OBS-000226
-  - OBS-000330
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 1c41fea4d788a883ca429f76a4fe8fffdf1a568ffb7ca8185a65dc31aaa4940a
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-057
-  key: resource:iransansweb.eot
-  name: Iransansweb.Eot
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-190
-    action: read
-    method: GET
-    path: /web-assets/publics/offline-statics/IRANSansWeb.eot
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000052
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-190
-  - OBS-000052
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: dc9a4dfab55b79db7c423c4da5bb6c53a26b10d0d4346f60f4ea84087e9291c7
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-058
-  key: resource:iransansweb.ttf
-  name: Iransansweb.Ttf
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-191
-    action: read
-    method: GET
-    path: /web-assets/publics/offline-statics/IRANSansWeb.ttf
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000055
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-191
-  - OBS-000055
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 9fed4d8d064c3bd1c116867e79708fb6a9d45604d9e20c382a2cf2d6f7f35224
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-059
-  key: resource:iransansweb.woff
-  name: Iransansweb.Woff
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-192
-    action: read
-    method: GET
-    path: /web-assets/publics/offline-statics/IRANSansWeb.woff
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000054
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-192
-  - OBS-000054
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 233d9720363284cd03959b314e6d111ab86538562161df217dc56ecd7d7241fc
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-060
-  key: resource:iransansweb.woff2
-  name: Iransansweb.Woff2
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-193
-    action: read
-    method: GET
-    path: /web-assets/publics/offline-statics/IRANSansWeb.woff2
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000053
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-193
-  - OBS-000053
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: f3aa7f903e994ae4f7a5bc3e06bf70d215ae16f51e44a0a4e6e22bee53295aa0
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-061
-  key: resource:iransanswebbold.94bdf556.woff2
-  name: IransanswebBold.94Bdf556.Woff2
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-156
-    action: read
-    method: GET
-    path: /web-assets/2026/07/IRANSansWeb_Bold.94bdf556.woff2
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000096
-    - OBS-000189
-    - OBS-000358
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-156
-  - OBS-000096
-  - OBS-000189
-  - OBS-000358
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 444aad757d5122cecfba134ebaa7ae59d507a4ae15048e9b56d106fa2ad37265
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-062
-  key: resource:iransanswebmedium.9f338149.woff2
-  name: IransanswebMedium.9F338149.Woff2
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-157
-    action: read
-    method: GET
-    path: /web-assets/2026/07/IRANSansWeb_Medium.9f338149.woff2
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000040
-    - OBS-000060
-    - OBS-000343
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-157
-  - OBS-000040
-  - OBS-000060
-  - OBS-000343
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: b9ac311a71d9b1e5e4f166d2e9553489468ee51529117fceb965bb0fb7a14efe
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-063
-  key: resource:khesht326.ecf36801.desktop.j
-  name: Khesht326.Ecf36801.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-164
-    action: read
-    method: GET
-    path: /web-assets/2026/07/khesht-326.ecf36801.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000023
-    - OBS-000323
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-164
-  - OBS-000023
-  - OBS-000323
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 47bd2f69f66c4665fb9e80ee1ba800250426234008ed704621e6b249830911fc
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-064
-  key: resource:lazyplaceselector329.e93cd19d.desktop.j
-  name: Lazyplaceselector329.E93Cd19D.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-165
-    action: read
-    method: GET
-    path: /web-assets/2026/07/lazyplaceselector-329.e93cd19d.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000034
-    - OBS-000336
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-165
-  - OBS-000034
-  - OBS-000336
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: cd47841a224611a461aff9b9f01cb6b0ed323f95983358224ac91d52eee9ce97
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-065
-  key: resource:list
-  name: List
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-207
-    action: inspect_options
-    method: OPTIONS
-    path: /v8/my-posts/w/list
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000521
-    knowledge_status: INFERRED
-  - endpoint: EP-231
-    action: create_or_execute
-    method: POST
-    path: /v8/my-posts/w/list
-    state_change: true
-    authentication_required: false
-    evidence:
-    - OBS-000520
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-207
-  - EP-231
-  - OBS-000520
-  - OBS-000521
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 45abd406632254626c52ce9e4ba6440d485a94ce5b59bc4a373d344fcbd17ace
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-066
+    generated_checksum: 374aef20004542e377f702b107c5dedd34f43a21b44786ea6918a8889b333c11
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-010
   key: resource:logo.aspx
   name: Logo.Aspx
   identifiers: []
@@ -2528,265 +422,13 @@ resources:
   - OBS-000499
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: ae0f04aeca77a0b8bb3b3ceb8f937b2d246d76f25e933056bafcb8cda11c9cc5
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-067
-  key: resource:logo.png
-  name: Logo.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-028
-    action: read
-    method: GET
-    path: /newsite/images/logo.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000276
-    - OBS-000367
-    - OBS-000412
-    - OBS-000468
-    knowledge_status: INFERRED
-  - endpoint: EP-138
-    action: read
-    method: GET
-    path: /static/public/pro/landing/logo.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000237
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-028
-  - EP-138
-  - OBS-000237
-  - OBS-000276
-  - OBS-000367
-  - OBS-000412
-  - OBS-000468
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: ebacf0807e049da5555c4a034a81a951260e507c92ab4502ba5342e30792d9b4
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-068
-  key: resource:logo.svg
-  name: Logo.Svg
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-195
-    action: read
-    method: GET
-    path: /web-assets/publics/offline-statics/logo.svg
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000051
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-195
-  - OBS-000051
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 8472d4ba6d5a41037a224aba9330650efb104bb5c26039d883249d87f86654d1
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-069
-  key: resource:m=attn,cdos,gwc,hsm,jsa,mb4zub,cet90b,snun3,qddgke,stsdmc,dtl0hd,ehdfl,yv5bee,d,csi
-  name: M=Attn,Cdos,Gwc,Hsm,Jsa,Mb4Zub,Cet90B,Snun3,Qddgke,Stsdmc,Dtl0Hd,Ehdfl,Yv5Bee,D,Csi
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-199
-    action: read
-    method: GET
-    path: /xjs/_/js/k=xjs.s.en_GB.81JrlhZsdN4.2019.O/am=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQARAAQAQAEAAAEAAAAAAAAAAAAAAAAADAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAgEEQAIAAAAAAAAAIAgAAAAAAAQAAAAAAAAAGABAAAAQQAkAAACAQgAAAAAAAAAAAAAAAAAAAAAAAAgEAAAAEQgQAADAn5lvAACgAQAAAIADAAAAAAAAAAAAAAAAAAAAAAAAAAAASAAAAAAAAAAAAAALAAAABAMAAARAQAAEAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAEAAAAAAAFAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAQAAAAoAAAAAAAAA4AAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAQAADAAAAAAAAAAAAFAAQ8AOAAAgAAAAAAAABAAAAAAAQIAAAAAAAAIAAQACAAQAAAJAD4PEAHCIoAAAAAAAAAAAAAAAAAAAAAAAAAAAIgAKYA0lBAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAASBGeAgAAAAAA2BoAEA/d=1/ed=1/dg=4/br=1/ichc=1/rs=ACT90oEXL7BZjg-ekZ31DTji4nHxufPAGA/ee=ALeJib:B8gLwd;AfeaP:TkrAjf;BMxAGc:E5bFse;BgS6mb:fidj5d;BjwMce:cXX2Wb;CIZTGb:Kqhykb;CxXAWb:YyRLvc;DM55c:imLrKe;DQEued:Fevhcf;DULqB:RKfG5c;Dkk6ge:JZmW9e;DpcR3d:zL72xf;EABSZ:MXZt9d;ESrPQc:mNTJvc;EVNhjf:pw70Gc;EjXHpb:pSHqh;EmZ2Bf:zr1jrb;EnlcNd:WeHg4;F54IAe:ZgsFh;F9mqte:UoRcbe;FSxmUe:fiZR8b;Fkukfc:i8H2c;Fmv9Nc:O1Tzwc;FqHJkd:yQamIb;G0KhTb:LIaoZ;GleZL:J1A7Od;HMDDWe:G8QUdb;HtPxrd:Gx8jAb;IBADCc:RYquRb;IoGlCf:b5lhvb;IsdWVc:qzxzOb;JXJSm:ii1RGf;JXS8fb:Qj0suc;JqSq7d:y9ePhe;JsbNhc:Xd8iUd;K08hxe:zmbGlf;K5nYTd:ZDZcre;KA3P2:C3JnCe;KDb6nb:fE9n2;KOxcK:OZqGte;KQzWid:ZMKkN;KdIHef:BWtNj;KpRAue:Tia57b;LBgRLc:SdcwHb,XVMNvd;LBn8Cf:bJ9L0c;LEikZe:byfTOb,lsjVmc;LXA8b:q7OdKd;LsNahb:ucGLNb;MNkAde:KMCd1d;NJ1rfe:qTnoBf;NPKaK:SdcwHb;NSEoX:lazG7b;NjIwef:YVgi7d;Np8Qkd:Dpx6qc;Nyt6ic:jn2sGd;OIfWUb:qfOYcd;OgagBe:cNTe0;OiqE2c:TFpEK;OoK5v:Sp69O;OohIYe:mpEAQb;Pjplud:PoEs9b;PpTLXd:pJYjx;PqHfGe:im2cZe;Q1Ow7b:x5CSu;Q7iJ9c:bVLZ3d;QE20Be:yxCHBd;QFOGlf:PQ2Aoe;QGR0gd:Mlhmy;QYLF2b:pAQYUd;Qw8Feb:jpavUe;R4IIIb:QWfeKf;R9Ulx:CR7Ufe;RCF5Sd:X1kBmd;RZtOEd:DvKcFe;Raf5me:mgvFMc;SLtqO:Kh1xYe;SMDL4c:fTfGO;SNUn3:ZwDk9d,xD8Kp;SNk4Je:wWMhg;ScI3Yc:e7Hzgb,e7Hzgb;ShpF6e:N0pvGc;Snahre:mGCtob;SwCqAd:fXbCZc;SzQQ3e:dNhofb;TIUVQd:lWTJwd;TroZ1d:vVVzjb;U96pRd:FsR04;UBKJZ:LGDJGb;UDrY1c:N0F29d,W50NVd,eps46d,wciyUe;UVmjEd:EesRsb;UVzb9c:IvPZ6d;UYRIEb:HzTAQc;UyG7Kb:wQd0G;V2HTTe:RolTY;VGRfx:VFqbr;VMuEm:pL7sBc;VN6jIc:ddQyuf;VOcgDe:YquhTb;VhA7bd:vAmQFf;VsAqSb:PGf2Re;W9QSQe:ynCWwc;WDGyFe:jcVOxd;WXtNeb:QU9BMd;Wfmdue:g3MJlb;Wl55ib:NcYlP;Y3c5sd:FGbfLe;YIZmRd:A1yn5d;YV5bee:IvPZ6d;YnHUBf:sNsSob;ZMvdv:PHFPjb;ZSH6tc:QAvyLe;ZWEUA:afR4Cf;Zen4yb:jMF88c;ZlFEdf:fQTtic;ZlOOMb:P0I0Ec;ZnPvub:Acmyhd;a56pNe:JEfCwb;aAJE9c:WHW6Ef;aCJ9tf:qKftvc;aVZq3e:EMeVIb;aZ61od:arTwJ;aci7y:Z5Tr6c;bUIkwb:WMwEHe;bcPXSc:gSZLJb;cEt90b:ws9Tlc;cFTWae:gT8qnd;coJ8e:KvoW8;dIoSBb:ZgGg9b;dLlj2:Qqt3Gf;dXdZV:a7QTqd;dowIGb:ebZ3mb,ebZ3mb;dtl0hd:lLQWFe;eBAeSb:Ck63tb;eBZ5Nd:audvde;eHDfl:ofjVkb;eJKchc:ATg1be;eO3lse:UefOmb;euOXY:OZjbQ;g8nkx:U4MzKc;gaub4:TN6bMe;gbfHR:qZtzib;gtVSi:ekUOYd;h3MYod:ws9Tlc;hK67qb:QWEO5b;hVic1b:Kqhykb;heHB1:sFczq;hjRo6e:F62sG;hlqGX:FWz1ic;hsLsYc:Vl118;hwoVHd:zw4U8c;iFQyKf:QIhFr;jJj2G:kF2o2b;k1O0rf:pnOULd;k2Qxcb:XY51pe;kbAm9d:MkHyGd;lOO0Vd:OTA3Ae;lbfkyf:MqGdUd;liAz7d:kF2o2b;lkq0A:JyBE3e;mMVOGb:qDM7K;mWzs9c:fz5ukf;nBZnZe:CvErjb;nE6OJf:Fi4rsc;nEBWNb:MxKX9d;nJw4Gd:dPFZH;nrDcw:SuEoDe;oGtAuc:sOXFj;oSUNyd:fTfGO,fTfGO;oUlnpc:RagDlc;oiBhre:OuMkRd;okUaUd:wItadb;pKJiXd:VCenhc;pNsl2d:j9Yuyc;pXdRYb:JKoKVe;pj82le:ww04Df;qGV2uc:HHi04c;qQEoOc:KUM7Z,d7YSfd;qZx2Fc:j0xrE;qaS3gd:yiLg6e;qafBPd:sgY6Zb;qavrXe:I0C9u;qddgKe:d7YSfd,x4FYXe;rdexKf:FEkKD;rmWaj:PMS6Sd;ropkZ:hjoqoe;sTsDMc:JksfDf;sZmdvc:rdGEfc;tH4IIe:Ymry6;teSRSb:BMLai;tosKvd:ZCqP3;trZL0b:qY8PFe;twgzJd:Ix7YEd;uknmt:GkPrzb;uuQkY:u2V3ud;vEYCNb:FaqsVd;vRlMvf:Iw9Xo;vfVwPd:lcrkwe;w3bZCb:ZPGaIb;w9w86d:XwhUEb,dt4g2b,gKD90c,lWVZVe;wQlYve:aLUfP;wR5FRb:O1Gjze,TtcOte;wV5Pjc:L8KGxe;x9N9ie:KH4Qof;xBbsrc:NEW1Qc;xbe2wc:wbTLEd;xpaRob:AVqZ9b;yiL5Ab:MT0ZBd;ysNiMc:CpIBjd;yxTchf:KUM7Z;z97YGf:oug9te;zaIgPb:Sl0pxd/ccb=loaded_h_0/m=attn,cdos,gwc,hsm,jsa,mb4ZUb,cEt90b,SNUn3,qddgKe,sTsDMc,dtl0hd,eHDfl,YV5bee,d,csi
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000012
-    knowledge_status: INFERRED
-  - endpoint: EP-200
-    action: read
-    method: GET
-    path: /xjs/_/ss/k=xjs.s.TGkh3Xra1hI.L.B1.O/am=AAAQAAAAAAAIAAAAAAAAAAAAAAQAIAIAAAAAAAAAAAAAAAAAAAAEAAIAABAAAAAAAAAAAAAAAAoAAAAAAAAQAAAAIFAAAEAGAAAAAAAAUAAAAAAAAAAAAAAEAAAAAAAAACjkAwAAAAYAAAAAAOABMACOAAAAAAAAAAAAAAAAAAEAQAIAAAAAAAAAIAgAAAAAAAAAAAAQAAAAAABAAAAQQAEAAAAgQAEAABAAAAAAAgAAAAAAAAAAgAAkAAAAAAAQAAAAAAAAAADAAQAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAMQBAAAAAAAACAMAAAAAAAAAAAQAQAAAAAAAAAAAAIgESAAABAAAAAAAAQAAAAAAAAAQABCEQgAABAAFICAAAAAA4DwAIAAAAAAAAAAAABAAAAAAAAAAAAAgAABBAEIAAQAAAAAQAAAAAAAEAAAAQA4AAAAAAABAAAGAAAQAMIIEAECiIAAQAQAEAAACAAAARAAAAAAAFICAAAAAAAAAAAAAAAARAAAAAAAAAAAAAAAJALBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE/d=1/ed=1/br=1/ccb=loaded_h_0/rs=ACT90oEMNmldPgNAYfBeLC9HcEwvcni2LA/m=attn,cdos,gwc,hsm,jsa,mb4ZUb,cEt90b,SNUn3,qddgKe,sTsDMc,dtl0hd,eHDfl,YV5bee,d,csi
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000008
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-199
-  - EP-200
-  - OBS-000008
-  - OBS-000012
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 7af26b5897d583011bcb9e0d24b77b03ba8edfb7a39d1ea73e759f6ea2d99645
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-070
-  key: resource:main.65268493.desktop.j
-  name: Main.65268493.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-167
-    action: read
-    method: GET
-    path: /web-assets/2026/07/main.65268493.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000020
-    - OBS-000320
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-167
-  - OBS-000020
-  - OBS-000320
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 8399f4e85360b628ba55bb6a317b1d084fa120ecf126df4dd5af6ab463d2c243
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-071
-  key: resource:main792.53b8328e.desktop.css
-  name: Main792.53B8328E.Desktop.Css
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-166
-    action: read
-    method: GET
-    path: /web-assets/2026/07/main-792.53b8328e.desktop.css
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000036
-    - OBS-000338
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-166
-  - OBS-000036
-  - OBS-000338
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 67fc4215d91a0bdba9865b2421dc2f83062e1497a141406a91da79e0ae99b51a
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-072
-  key: resource:manage738.b47a0e56.desktop.j
-  name: Manage738.B47A0E56.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-168
-    action: read
-    method: GET
-    path: /web-assets/2026/07/manage-738.b47a0e56.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000231
-    - OBS-000334
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-168
-  - OBS-000231
-  - OBS-000334
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: f7185b5bfa5878cd1e43c651a51e20512217c5507f4760465cd5f48c3851328b
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-073
-  key: resource:manage738.db5bfca8.desktop.css
-  name: Manage738.Db5Bfca8.Desktop.Css
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-169
-    action: read
-    method: GET
-    path: /web-assets/2026/07/manage-738.db5bfca8.desktop.css
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000230
-    - OBS-000341
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-169
-  - OBS-000230
-  - OBS-000341
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 02eaff5702c0d27f9f732a266994e6d338063f7748884ad19f157437736e3718
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-074
+    generated_checksum: e676cb222c1d3d5822da474e186b4b975bc6810987d90793ec9699e42533064f
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-011
   key: resource:manifest.json
   name: Manifest.Json
   identifiers: []
@@ -2814,14 +456,15 @@ resources:
   - OBS-000344
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: c4144c7ded537c699ab543582f1707ca2305fca4b0932bf9926e0947ebf3e9f8
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-075
-  key: resource:mapboxglrtltext.min.j
-  name: MapboxGlRtlText.Min.J
+    generated_checksum: 626a316c502b73fd3ed915c2af1023a49259fc7abfc3f02410ecf9deedd091a1
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-012
+  key: resource:mapview
+  name: Mapview
   identifiers: []
   owner:
     value: unknown
@@ -2829,504 +472,45 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-143
-    action: read
-    method: GET
-    path: /static/public/web/mapbox-gl-rtl-text.min.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000149
-    - OBS-000152
-    - OBS-000153
-    - OBS-000154
-    - OBS-000155
-    - OBS-000156
-    - OBS-000157
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-143
-  - OBS-000149
-  - OBS-000152
-  - OBS-000153
-  - OBS-000154
-  - OBS-000155
-  - OBS-000156
-  - OBS-000157
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: bed3ccf4b4c420c4f66b315180e55c5885e373cc2d055cd2f745e80bd13bde73
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-076
-  key: resource:mapboxpb369.31264a00.desktop.j
-  name: MapboxPb369.31264A00.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-170
-    action: read
-    method: GET
-    path: /web-assets/2026/07/mapbox-pb-369.31264a00.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000130
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-170
-  - OBS-000130
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 72a396910cc302f5105e506b53aa0ba35542af81e454c319675684b4f5688876
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-077
-  key: resource:mapboxpb388.b6605a5a.desktop.j
-  name: MapboxPb388.B6605A5A.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-171
-    action: read
-    method: GET
-    path: /web-assets/2026/07/mapbox-pb-388.b6605a5a.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000033
-    - OBS-000335
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-171
-  - OBS-000033
-  - OBS-000335
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 7ccdcc9b365134ecff62da83b7e100f0ff3aa9408cda98e696a00961e2616aca
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-078
-  key: resource:mapimage
-  name: Mapimage
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-151
-    action: read
-    method: GET
-    path: /v8/mapimage
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000182
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-151
-  - OBS-000182
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: b824cd928c15e7da228ef3bd687d7f8f3212aeecfd85ba2eef6e7d197a63572a
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-079
-  key: resource:menu
-  name: Menu
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-206
-    action: inspect_options
+  - endpoint: EP-069
+    action: viewport
     method: OPTIONS
-    path: /v8/my-divar/web/menu
+    path: /v8/mapview/viewport
     state_change: false
     authentication_required: false
     evidence:
-    - OBS-000066
-    - OBS-000109
-    - OBS-000233
-    - OBS-000350
-    - OBS-000352
+    - OBS-000151
+    - OBS-000195
     knowledge_status: INFERRED
-  - endpoint: EP-230
-    action: create_or_execute
+  - endpoint: EP-093
+    action: viewport
     method: POST
-    path: /v8/my-divar/web/menu
-    state_change: true
-    authentication_required: false
-    evidence:
-    - OBS-000063
-    - OBS-000106
-    - OBS-000232
-    - OBS-000345
-    - OBS-000347
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-206
-  - EP-230
-  - OBS-000063
-  - OBS-000066
-  - OBS-000106
-  - OBS-000109
-  - OBS-000232
-  - OBS-000233
-  - OBS-000345
-  - OBS-000347
-  - OBS-000350
-  - OBS-000352
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: dcb2cb13372d7db0bff53f692372b6a6e9d14922537d5bb56f0d5d84683ec212
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-080
-  key: resource:menuhandphone.png
-  name: Menuhandphone.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-029
-    action: read
-    method: GET
-    path: /newsite/images/menuhandphone.png
+    path: /v8/mapview/viewport
     state_change: false
     authentication_required: false
     evidence:
-    - OBS-000280
-    - OBS-000371
-    - OBS-000416
-    - OBS-000472
+    - OBS-000150
+    - OBS-000194
     knowledge_status: INFERRED
   states: []
-  sensitive_fields: []
+  sensitive_fields:
+  - clusters[].properties.properties.destination_zoom
   evidence:
-  - EP-029
-  - OBS-000280
-  - OBS-000371
-  - OBS-000416
-  - OBS-000472
+  - EP-069
+  - EP-093
+  - OBS-000150
+  - OBS-000151
+  - OBS-000194
+  - OBS-000195
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 8e69ac97cb10dd07f16642c080ca1d22b3a5aeb3b797d0930c6e07794d7d5e48
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-081
-  key: resource:mobile.png
-  name: Mobile.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-030
-    action: read
-    method: GET
-    path: /newsite/images/mobile.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000278
-    - OBS-000369
-    - OBS-000414
-    - OBS-000470
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-030
-  - OBS-000278
-  - OBS-000369
-  - OBS-000414
-  - OBS-000470
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 15152b444d0b756729cfd6e51a42bb03a9cbf5032eb4b0844d8b6988a76abdd4
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-082
-  key: resource:mojudi1.png
-  name: Mojudi1.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-031
-    action: read
-    method: GET
-    path: /newsite/images/mojudi1.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000289
-    - OBS-000380
-    - OBS-000425
-    - OBS-000481
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-031
-  - OBS-000289
-  - OBS-000380
-  - OBS-000425
-  - OBS-000481
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 98160a951f8de0831c2cf77505b932b461aa9b598f55b15416b213e08d81dbac
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-083
-  key: resource:moredesc.png
-  name: MoreDesc.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-032
-    action: read
-    method: GET
-    path: /newsite/images/more-desc.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000291
-    - OBS-000382
-    - OBS-000427
-    - OBS-000483
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-032
-  - OBS-000291
-  - OBS-000382
-  - OBS-000427
-  - OBS-000483
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: fd129a75ca179eacc7a2259baae3a98dcc52eb0d8ded0d82d14e630b3a368e22
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-084
-  key: resource:myket.qr.new.png
-  name: Myket.Qr.New.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-033
-    action: read
-    method: GET
-    path: /newsite/images/myket.qr.new.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000285
-    - OBS-000376
-    - OBS-000421
-    - OBS-000477
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-033
-  - OBS-000285
-  - OBS-000376
-  - OBS-000421
-  - OBS-000477
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 6a6c7515508155e2ae644b990b51d3aa1130cd77918ec80de6b0b126823346fa
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-085
-  key: resource:navlogo321.webp
-  name: NavLogo321.Webp
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-006
-    action: read
-    method: GET
-    path: /images/nav_logo321.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000004
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-006
-  - OBS-000004
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 95908284aa4c77a3909b3b62ec4e4e05d9e6eb621c9f868ec5fc869bf28f9a31
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-086
-  key: resource:note.png
-  name: Note.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-073
-    action: read
-    method: GET
-    path: /static/imgs/widget-icons/light/grey_50/v1/note.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000247
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-073
-  - OBS-000247
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 0154ea9d3ca59e9edbad76e5dd8df5d9e199c62d629773b05dce5d245b463e19
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-087
-  key: resource:observerpb256.4d955262.desktop.j
-  name: ObserverPb256.4D955262.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-172
-    action: read
-    method: GET
-    path: /web-assets/2026/07/observer-pb-256.4d955262.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000031
-    - OBS-000331
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-172
-  - OBS-000031
-  - OBS-000331
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: d8f32d9978416969a2313aeb5413339b49a0f4ecf3a14e898c43a90539e86e6e
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-088
-  key: resource:offline.svg
-  name: Offline.Svg
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-196
-    action: read
-    method: GET
-    path: /web-assets/publics/offline-statics/offline.svg
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000050
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-196
-  - OBS-000050
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 0b49068d38095f85a9929be049d124f238b43e4e2666d03b450e5e0dded06a77
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-089
+    generated_checksum: 969f181b782afbeadabdfc9111a68a65d15a7c63809d5b02c44dc9259394f587
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-013
   key: resource:openinitiatepage
   name: OpenInitiatePage
   identifiers: []
@@ -3336,8 +520,8 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-202
-    action: inspect_options
+  - endpoint: EP-066
+    action: page
     method: OPTIONS
     path: /v8/auth/open-initiate-page
     state_change: false
@@ -3347,11 +531,11 @@ resources:
     - OBS-000099
     - OBS-000103
     knowledge_status: INFERRED
-  - endpoint: EP-227
-    action: create_or_execute
+  - endpoint: EP-091
+    action: page
     method: POST
     path: /v8/auth/open-initiate-page
-    state_change: true
+    state_change: false
     authentication_required: false
     evidence:
     - OBS-000094
@@ -3361,8 +545,8 @@ resources:
   states: []
   sensitive_fields: []
   evidence:
-  - EP-202
-  - EP-227
+  - EP-066
+  - EP-091
   - OBS-000094
   - OBS-000095
   - OBS-000098
@@ -3371,118 +555,13 @@ resources:
   - OBS-000103
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 088fc98c6d6b5308626e5c32371e058c8eb097206f1c258071d24acc6b4e2556
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-090
-  key: resource:payment.png
-  name: Payment.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-075
-    action: read
-    method: GET
-    path: /static/imgs/widget-icons/light/success_secondary/v1/payment.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000221
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-075
-  - OBS-000221
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: b42d728d2aea54dc8a40db3773a02f605bdc72e91134a780d7f5f9a58558c8aa
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-091
-  key: resource:perlocalization713.34a8cfc1.desktop.j
-  name: PerLocalization713.34A8Cfc1.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-173
-    action: read
-    method: GET
-    path: /web-assets/2026/07/per-localization-713.34a8cfc1.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000028
-    - OBS-000328
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-173
-  - OBS-000028
-  - OBS-000328
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 0d4be903d8521b9efc52459191c2c65827fbbc13b5be19073811be2be778fe2e
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-092
-  key: resource:place
-  name: Place
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-210
-    action: inspect_options
-    method: OPTIONS
-    path: /v8/postlist/w/places
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000184
-    knowledge_status: INFERRED
-  - endpoint: EP-234
-    action: create_or_execute
-    method: POST
-    path: /v8/postlist/w/places
-    state_change: true
-    authentication_required: false
-    evidence:
-    - OBS-000183
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-210
-  - EP-234
-  - OBS-000183
-  - OBS-000184
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 5b10d89a3d4e8267503c7f2eaa6976660d2136bb17a565174d20347c15c8f0e0
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-093
+    generated_checksum: b42f4273d9f3f80cb4bfa3176302f89491b4caed1dab22873650d77fa154b88a
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-014
   key: resource:placesweb.json
   name: PlacesWeb.Json
   identifiers: []
@@ -3492,8 +571,8 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-056
-    action: read
+  - endpoint: EP-019
+    action: places
     method: GET
     path: /places-web.json
     state_change: false
@@ -3505,19 +584,20 @@ resources:
   states: []
   sensitive_fields: []
   evidence:
-  - EP-056
+  - EP-019
   - OBS-000016
   - OBS-000316
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: aa6d31092095f9750fe510f5601f19ac1394aae5f96cb5c66dee0668b8ff3a53
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-094
-  key: resource:polyfills.a4bcd583.desktop.j
-  name: Polyfills.A4Bcd583.Desktop.J
+    generated_checksum: 7d5e9b3cff03260ce82851e19ada629577c61edb15a6f735e02fec3c50a94952
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-015
+  key: resource:postcollection
+  name: PostCollection
   identifiers: []
   owner:
     value: unknown
@@ -3525,362 +605,42 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-174
-    action: read
-    method: GET
-    path: /web-assets/2026/07/polyfills.a4bcd583.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000018
-    - OBS-000318
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-174
-  - OBS-000018
-  - OBS-000318
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 1898bc1755247744cb991c379261a9df84e5fccc62437e78a37e83a9e4b5dcfc
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-095
-  key: resource:post
-  name: Post
-  identifiers:
-  - postId
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-081
-    action: read
-    method: GET
-    path: /static/photo/neda/post/{postId}/2dd5f96c-0f52-4696-9d9e-efd575360497.jpg.jpg
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000179
-    knowledge_status: INFERRED
-  - endpoint: EP-082
-    action: read
-    method: GET
-    path: /static/photo/neda/post/{postId}/fdeec762-1505-43e0-b5d1-1f29c4d9d7e7.jpg.jpg
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000178
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-081
-  - EP-082
-  - OBS-000178
-  - OBS-000179
-  confidence: medium
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: b0c7411bb09a42b566b3143931780422721d1965d788a38191645a092fad24d7
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-096
-  key: resource:postview782.89280520.desktop.css
-  name: Postview782.89280520.Desktop.Css
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-175
-    action: read
-    method: GET
-    path: /web-assets/2026/07/postview-782.89280520.desktop.css
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000173
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-175
-  - OBS-000173
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: ef5423cffb150e96616e34b0101fff581acdd39f45d120852fceaff1b1e5e1d7
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-097
-  key: resource:postview782.ce2f6e85.desktop.j
-  name: Postview782.Ce2F6E85.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-176
-    action: read
-    method: GET
-    path: /web-assets/2026/07/postview-782.ce2f6e85.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000174
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-176
-  - OBS-000174
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 5cace2ae0ae30054e31d52deeb9515e9779c23abe04ad4c8da33f9fb053eadc9
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-098
-  key: resource:qrcafebazar.png
-  name: QrCafebazar.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-034
-    action: read
-    method: GET
-    path: /newsite/images/qr-cafebazar.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000282
-    - OBS-000373
-    - OBS-000418
-    - OBS-000474
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-034
-  - OBS-000282
-  - OBS-000373
-  - OBS-000418
-  - OBS-000474
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 55b779921de24b5c9f059f0950859c63722f87d852ce6797ce98d3ae83c3965d
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-099
-  key: resource:qrcodev6.png
-  name: QrCodeV6.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-035
-    action: read
-    method: GET
-    path: /newsite/images/qr-code-v6.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000284
-    - OBS-000375
-    - OBS-000420
-    - OBS-000476
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-035
-  - OBS-000284
-  - OBS-000375
-  - OBS-000420
-  - OBS-000476
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 979df8927c2f00f8d4670218239f2c7e7b68f240f862c726448c1cddda5e931b
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-100
-  key: resource:qrdirectandroid.png
-  name: QrDirectAndroid.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-036
-    action: read
-    method: GET
-    path: /newsite/images/qr-direct-android.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000283
-    - OBS-000374
-    - OBS-000419
-    - OBS-000475
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-036
-  - OBS-000283
-  - OBS-000374
-  - OBS-000419
-  - OBS-000475
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 0c5e09362787833557a1a876d33c745ff03e0a7cb8eabd2c79168c6f2dd70b95
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-101
-  key: resource:qriosdirect.png
-  name: QrIosDirect.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-037
-    action: read
-    method: GET
-    path: /newsite/images/qr-ios-direct.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000287
-    - OBS-000378
-    - OBS-000423
-    - OBS-000479
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-037
-  - OBS-000287
-  - OBS-000378
-  - OBS-000423
-  - OBS-000479
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 83d76d4b6042e09dafe8367ec8ed22e572fb6328d3c723b152b9d4193e7c1f90
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-102
-  key: resource:realestate.efdfc654.png
-  name: RealEstate.Efdfc654.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-177
-    action: read
-    method: GET
-    path: /web-assets/2026/07/real-estate.efdfc654.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000186
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-177
-  - OBS-000186
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: f5bc9118e4fa942a106b110cc975e38b6188d9e02dea11efdb54bed823d106cb
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-103
-  key: resource:receivepoststatsbatch
-  name: ReceivePostStatsBatch
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-208
-    action: inspect_options
+  - endpoint: EP-071
+    action: list
     method: OPTIONS
-    path: /v8/post-stats/receive-post-stats-batch
+    path: /v8/my-posts/w/list
     state_change: false
     authentication_required: false
     evidence:
-    - OBS-000101
-    - OBS-000250
+    - OBS-000521
     knowledge_status: INFERRED
-  - endpoint: EP-232
-    action: create_or_execute
+  - endpoint: EP-095
+    action: list
     method: POST
-    path: /v8/post-stats/receive-post-stats-batch
-    state_change: true
+    path: /v8/my-posts/w/list
+    state_change: false
     authentication_required: false
     evidence:
-    - OBS-000100
-    - OBS-000249
+    - OBS-000520
     knowledge_status: INFERRED
   states: []
   sensitive_fields: []
   evidence:
-  - EP-208
-  - EP-232
-  - OBS-000100
-  - OBS-000101
-  - OBS-000249
-  - OBS-000250
-  confidence: low
+  - EP-071
+  - EP-095
+  - OBS-000520
+  - OBS-000521
+  confidence: high
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 7af0cc284bd1054a90727cdbc68ff2a4bb2b68b7fec6263566d3661018c66d6e
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-104
-  key: resource:roundediconbankapp.gif
-  name: RoundedIconBankApp.Gif
+    generated_checksum: 626a9a18d411a2753b7c2c15e4134f18a0a38892823a27c43dce3a64f95858a2
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-016
+  key: resource:postlist
+  name: Postlist
   identifiers: []
   owner:
     value: unknown
@@ -3888,519 +648,48 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-038
-    action: read
-    method: GET
-    path: /newsite/images/rounded-icon-Bank-App.gif
+  - endpoint: EP-073
+    action: filters
+    method: OPTIONS
+    path: /v8/postlist/w/filters
     state_change: false
     authentication_required: false
     evidence:
-    - OBS-000292
-    - OBS-000383
-    - OBS-000428
-    - OBS-000484
+    - OBS-000069
+    - OBS-000128
+    - OBS-000193
     knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-038
-  - OBS-000292
-  - OBS-000383
-  - OBS-000428
-  - OBS-000484
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 9b84b6ac09b859352a63f4e331af29a4b0280cc37e3dd274f31d1fdcc28763ad
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-105
-  key: resource:roundediconbuycharge.jpg
-  name: RoundedIconBuyCharge.Jpg
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-039
-    action: read
-    method: GET
-    path: /newsite/images/rounded-icon-buy-charge.jpg
+  - endpoint: EP-097
+    action: filters
+    method: POST
+    path: /v8/postlist/w/filters
     state_change: false
     authentication_required: false
     evidence:
-    - OBS-000290
-    - OBS-000381
-    - OBS-000426
-    - OBS-000482
+    - OBS-000067
+    - OBS-000126
+    - OBS-000191
     knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-039
-  - OBS-000290
-  - OBS-000381
-  - OBS-000426
-  - OBS-000482
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 25c8fa37c4fb5fc662a3c67834d821205b1b4c492d4561151215719d3fec151a
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-106
-  key: resource:roundediconcar.jpg
-  name: RoundedIconCar.Jpg
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-040
-    action: read
-    method: GET
-    path: /newsite/images/rounded-icon-car.jpg
+  - endpoint: EP-074
+    action: places
+    method: OPTIONS
+    path: /v8/postlist/w/places
     state_change: false
     authentication_required: false
     evidence:
-    - OBS-000301
-    - OBS-000392
-    - OBS-000437
-    - OBS-000493
+    - OBS-000184
     knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-040
-  - OBS-000301
-  - OBS-000392
-  - OBS-000437
-  - OBS-000493
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 746989c11542cd07a0c0a58b88911b31c31dac02ff811ada961bfa71ee08116b
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-107
-  key: resource:roundediconcharity.jpg
-  name: RoundedIconCharity.Jpg
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-041
-    action: read
-    method: GET
-    path: /newsite/images/rounded-icon-charity.jpg
+  - endpoint: EP-098
+    action: places
+    method: POST
+    path: /v8/postlist/w/places
     state_change: false
     authentication_required: false
     evidence:
-    - OBS-000295
-    - OBS-000386
-    - OBS-000431
-    - OBS-000487
+    - OBS-000183
     knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-041
-  - OBS-000295
-  - OBS-000386
-  - OBS-000431
-  - OBS-000487
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 424ebf7de3af3ef7688731a198b5c45ecebce9b2348328cf6b017a1bc2599cef
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-108
-  key: resource:roundediconinsurance.jpg
-  name: RoundedIconInsurance.Jpg
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-042
-    action: read
-    method: GET
-    path: /newsite/images/rounded-icon-insurance.jpg
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000297
-    - OBS-000388
-    - OBS-000433
-    - OBS-000489
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-042
-  - OBS-000297
-  - OBS-000388
-  - OBS-000433
-  - OBS-000489
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 018e90cc2ceb69d31a80074a72db0e2a85b35d921096ff6e77bd6add61048c6b
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-109
-  key: resource:roundediconinternetcharge.jpg
-  name: RoundedIconInternetCharge.Jpg
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-043
-    action: read
-    method: GET
-    path: /newsite/images/rounded-icon-internet-charge.jpg
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000293
-    - OBS-000384
-    - OBS-000429
-    - OBS-000485
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-043
-  - OBS-000293
-  - OBS-000384
-  - OBS-000429
-  - OBS-000485
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: ea29cf53cd657f0c1c5b52e7c297a7b1b35b1dc164eb5e3dd38170eba1280026
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-110
-  key: resource:roundediconmobilebill.jpg
-  name: RoundedIconMobileBill.Jpg
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-044
-    action: read
-    method: GET
-    path: /newsite/images/rounded-icon-mobile-bill.jpg
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000294
-    - OBS-000385
-    - OBS-000430
-    - OBS-000486
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-044
-  - OBS-000294
-  - OBS-000385
-  - OBS-000430
-  - OBS-000486
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 379c067a69ee3793219e4c9ba6d04fe255fd320134f39c8ed835ab7375fe4683
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-111
-  key: resource:roundediconservicebill.jpg
-  name: RoundedIconServiceBill.Jpg
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-045
-    action: read
-    method: GET
-    path: /newsite/images/rounded-icon-service-bill.jpg
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000296
-    - OBS-000387
-    - OBS-000432
-    - OBS-000488
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-045
-  - OBS-000296
-  - OBS-000387
-  - OBS-000432
-  - OBS-000488
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: ef140217201ba84719885986de9ea8d0c5270e7502be05c39fd0311913b1ab0b
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-112
-  key: resource:roundediconshake.jpg
-  name: RoundedIconShake.Jpg
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-046
-    action: read
-    method: GET
-    path: /newsite/images/rounded-icon-shake.jpg
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000299
-    - OBS-000390
-    - OBS-000435
-    - OBS-000491
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-046
-  - OBS-000299
-  - OBS-000390
-  - OBS-000435
-  - OBS-000491
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 94ed6f72361acbcb8eb5ec22855c6042b56ffa014368ab8cb8ed88879a38c5bb
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-113
-  key: resource:roundedicontelepardaz.jpg
-  name: RoundedIconTelePardaz.Jpg
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-047
-    action: read
-    method: GET
-    path: /newsite/images/rounded-icon-tele-pardaz.jpg
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000298
-    - OBS-000389
-    - OBS-000434
-    - OBS-000490
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-047
-  - OBS-000298
-  - OBS-000389
-  - OBS-000434
-  - OBS-000490
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 5839778fcc2f178187117b72c1e10503174a9e97aa97b35f8394bcc1d3623743
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-114
-  key: resource:rs=aa2yrttex7pugoauetyjvpmcy8ijqj0ihq
-  name: Rs=Aa2Yrttex7Pugoauetyjvpmcy8Ijqj0Ihq
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-053
-    action: read
-    method: GET
-    path: /og/_/ss/k=og.asy.kDNUSkL2BhY.L.W.O/m=ll_tdm,adcgm3,ll_fw/excm=/d=1/ed=1/ct=zgms/rs=AA2YrTtex7puGoauetYjvpmcy8ijqj0ihQ
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000011
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-053
-  - OBS-000011
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: ad329c690b0cb2c18aa3b91234e849fab2bada162a33951898a15346c853420a
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-115
-  key: resource:rs=aa2yrttjt2gplx0nj84rzssd9ux1tzayq
-  name: Rs=Aa2Yrttjt2Gplx0Nj84RzssD9Ux1Tzayq
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-052
-    action: read
-    method: GET
-    path: /og/_/js/k=og.asy.en_US.M_7ghikQAkA.2019.O/rt=j/m=_ac,_awd,ada,lldp,qads/exm=/d=1/ed=1/rs=AA2YrTtJT2GPlx0nJ84RzsS-D9uX1TzAyQ
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000009
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-052
-  - OBS-000009
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 3823570f3fd8cbc72cb9850fe9bb658a5d5db17236a5c6210c72f857afbb7198
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-116
-  key: resource:rubickpres.css
-  name: RubickPres.Css
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-015
-    action: read
-    method: GET
-    path: /newsite/Content/rubick_pres.css
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000273
-    - OBS-000364
-    - OBS-000409
-    - OBS-000465
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-015
-  - OBS-000273
-  - OBS-000364
-  - OBS-000409
-  - OBS-000465
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 8688668efc3ca076f9d5c4b22330af010c23aa4b336dc11c6075e49a1f92bd28
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-117
-  key: resource:runtime.14f55c20.desktop.j
-  name: Runtime.14F55C20.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-178
-    action: read
-    method: GET
-    path: /web-assets/2026/07/runtime.14f55c20.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000017
-    - OBS-000317
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-178
-  - OBS-000017
-  - OBS-000317
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: d43f58b839e0c621b155b47aed2c45d32eb97cb95671af8818a79e702fef7969
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-118
-  key: resource:search
-  name: Search
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-059
-    action: read
-    method: GET
-    path: /search
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000001
-    knowledge_status: INFERRED
-  - endpoint: EP-211
-    action: inspect_options
+  - endpoint: EP-075
+    action: search
     method: OPTIONS
     path: /v8/postlist/w/search
     state_change: false
@@ -4411,11 +700,11 @@ resources:
     - OBS-000192
     - OBS-000225
     knowledge_status: INFERRED
-  - endpoint: EP-235
-    action: create_or_execute
+  - endpoint: EP-099
+    action: search
     method: POST
     path: /v8/postlist/w/search
-    state_change: true
+    state_change: false
     authentication_required: false
     evidence:
     - OBS-000064
@@ -4427,28 +716,39 @@ resources:
   sensitive_fields:
   - list_widgets[].data.should_indicate_seen_status
   evidence:
-  - EP-059
-  - EP-211
-  - EP-235
-  - OBS-000001
+  - EP-073
+  - EP-074
+  - EP-075
+  - EP-097
+  - EP-098
+  - EP-099
   - OBS-000064
+  - OBS-000067
   - OBS-000068
+  - OBS-000069
   - OBS-000125
+  - OBS-000126
   - OBS-000127
+  - OBS-000128
+  - OBS-000183
+  - OBS-000184
   - OBS-000190
+  - OBS-000191
   - OBS-000192
+  - OBS-000193
   - OBS-000224
   - OBS-000225
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: fbeafd90496b5ac92a7bde74284f3da249767c8628be4bdc1daa8d3e66b1a09e
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-119
-  key: resource:send
-  name: Send
+    generated_checksum: 8bc28b0b66cab5fe0d06677dae8bf38da8e0af93eef477f4f7a6286fde7dbd9c
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-017
+  key: resource:receivepoststatsbatch
+  name: ReceivePostStatsBatch
   identifiers: []
   owner:
     value: unknown
@@ -4456,180 +756,44 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-226
+  - endpoint: EP-072
+    action: read
+    method: OPTIONS
+    path: /v8/post-stats/receive-post-stats-batch
+    state_change: false
+    authentication_required: false
+    evidence:
+    - OBS-000101
+    - OBS-000250
+    knowledge_status: INFERRED
+  - endpoint: EP-096
     action: create_or_execute
     method: POST
-    path: /v8/actionlog/send
-    state_change: true
-    authentication_required: false
-    evidence:
-    - OBS-000197
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-226
-  - OBS-000197
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: d30f518590c2440810967200dbdf337e236489f1f5e0605348e9cd40e1e3d2bf
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-120
-  key: resource:sendreport
-  name: SendReport
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-225
-    action: create_or_execute
-    method: POST
-    path: /v1/client-exporter/send-report
-    state_change: true
-    authentication_required: false
-    evidence:
-    - OBS-000057
-    - OBS-000093
-    - OBS-000097
-    - OBS-000124
-    - OBS-000170
-    - OBS-000177
-    - OBS-000185
-    - OBS-000218
-    - OBS-000236
-    - OBS-000248
-    - OBS-000268
-    - OBS-000359
-    - OBS-000522
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-225
-  - OBS-000057
-  - OBS-000093
-  - OBS-000097
-  - OBS-000124
-  - OBS-000170
-  - OBS-000177
-  - OBS-000185
-  - OBS-000218
-  - OBS-000236
-  - OBS-000248
-  - OBS-000268
-  - OBS-000359
-  - OBS-000522
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 9f53be6614beb420045b8d67e6dae37a76676bc3f45c315f46231a8010adb7ec
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-121
-  key: resource:services671.1c1d7fc5.desktop.j
-  name: Services671.1C1D7Fc5.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-179
-    action: read
-    method: GET
-    path: /web-assets/2026/07/services-671.1c1d7fc5.desktop.js
+    path: /v8/post-stats/receive-post-stats-batch
     state_change: false
     authentication_required: false
     evidence:
-    - OBS-000026
-    - OBS-000326
+    - OBS-000100
+    - OBS-000249
     knowledge_status: INFERRED
   states: []
   sensitive_fields: []
   evidence:
-  - EP-179
-  - OBS-000026
-  - OBS-000326
+  - EP-072
+  - EP-096
+  - OBS-000100
+  - OBS-000101
+  - OBS-000249
+  - OBS-000250
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 3c71b348b62098efc6eac768b8d6ed572fa6d48a480253ce63ecd4df88f311b2
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-122
-  key: resource:serviceworker.j
-  name: ServiceWorker.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-060
-    action: read
-    method: GET
-    path: /service-worker.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000042
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-060
-  - OBS-000042
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 5aa4e11e7354b793237f123cf94a78ae51cfbe5eeaa2729dcb889d4a10abb8ca
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-123
-  key: resource:shf25b5f90828.8f5f569c.desktop.j
-  name: ShF25B5F90828.8F5F569C.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-180
-    action: read
-    method: GET
-    path: /web-assets/2026/07/sh-f25b5f90-828.8f5f569c.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000229
-    - OBS-000333
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-180
-  - OBS-000229
-  - OBS-000333
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: a398ad4e00f78f2ac2a816cb6e0fb87e7451eff212621fdbca1dc5f047846f7c
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-124
+    generated_checksum: 6a77d659a354150f420787266db1738fffbdae3025e03fa5e1a41c09e6fb095e
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-018
   key: resource:shouldstorefp
   name: ShouldStoreFp
   identifiers: []
@@ -4639,8 +803,8 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-217
-    action: inspect_options
+  - endpoint: EP-081
+    action: read
     method: OPTIONS
     path: /v8/users/should-store-fp
     state_change: false
@@ -4648,11 +812,11 @@ resources:
     evidence:
     - OBS-000112
     knowledge_status: INFERRED
-  - endpoint: EP-240
+  - endpoint: EP-104
     action: create_or_execute
     method: POST
     path: /v8/users/should-store-fp
-    state_change: true
+    state_change: false
     authentication_required: false
     evidence:
     - OBS-000108
@@ -4660,236 +824,19 @@ resources:
   states: []
   sensitive_fields: []
   evidence:
-  - EP-217
-  - EP-240
+  - EP-081
+  - EP-104
   - OBS-000108
   - OBS-000112
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 51882a09f537291b02bb6826e2518c99372670214e5cb7ed7a7508c866a181a8
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-125
-  key: resource:sibappiconappstore.png
-  name: SibappIconAppstore.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-048
-    action: read
-    method: GET
-    path: /newsite/images/sibapp-icon-appstore.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000288
-    - OBS-000379
-    - OBS-000424
-    - OBS-000480
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-048
-  - OBS-000288
-  - OBS-000379
-  - OBS-000424
-  - OBS-000480
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 805bc6c9e73470589a7ff0997708c33a3e0e23c606b18d93be486a7bfb99d4d6
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-126
-  key: resource:site.css
-  name: Site.Css
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-016
-    action: read
-    method: GET
-    path: /newsite/Content/site.css
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000275
-    - OBS-000366
-    - OBS-000411
-    - OBS-000467
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-016
-  - OBS-000275
-  - OBS-000366
-  - OBS-000411
-  - OBS-000467
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 77019f61a107aaa03b9ba916084fd1e85813f681f56bf16f5a71ccd6c9cb45bc
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-127
-  key: resource:socialinstagram.png
-  name: SocialInstagram.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-049
-    action: read
-    method: GET
-    path: /newsite/images/social-instagram.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000304
-    - OBS-000395
-    - OBS-000440
-    - OBS-000496
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-049
-  - OBS-000304
-  - OBS-000395
-  - OBS-000440
-  - OBS-000496
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 5a80ea6566a6b5139db823722f1d7c950fe6ac840cb73032902e9293e010350f
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-128
-  key: resource:socialtelegram.png
-  name: SocialTelegram.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-050
-    action: read
-    method: GET
-    path: /newsite/images/social-telegram.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000303
-    - OBS-000394
-    - OBS-000439
-    - OBS-000495
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-050
-  - OBS-000303
-  - OBS-000394
-  - OBS-000439
-  - OBS-000495
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: c430f7a298821983b16fffb86050a2a2bcb639d6d54c56b30d537a10fc56f30c
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-129
-  key: resource:socialtwitter.png
-  name: SocialTwitter.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-051
-    action: read
-    method: GET
-    path: /newsite/images/social-twitter.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000302
-    - OBS-000393
-    - OBS-000438
-    - OBS-000494
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-051
-  - OBS-000302
-  - OBS-000393
-  - OBS-000438
-  - OBS-000494
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 7defade1715c1729d648893a8051c3bd38c5f7d79e5b680b030eb2905d75caf0
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-130
-  key: resource:sonnaticons.5c5c2d1b.woff2
-  name: SonnatIcons.5C5C2D1B.Woff2
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-181
-    action: read
-    method: GET
-    path: /web-assets/2026/07/sonnat-icons.5c5c2d1b.woff2
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000039
-    - OBS-000342
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-181
-  - OBS-000039
-  - OBS-000342
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 3957608daba3e8d261bbda5944c1c91b855eb1e0d05ee1342d059a2878754bcc
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-131
+    generated_checksum: 79a074dabe442faa8308e86f35e975e955e70362a54e89743439ad0c742f8a68
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-019
   key: resource:sprite.json
   name: Sprite.Json
   identifiers: []
@@ -4951,138 +898,13 @@ resources:
   - OBS-000141
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 94503c0418e8c247295e2f14387acc799583f958d02d292a4213513f6768074a
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-132
-  key: resource:sprite.png
-  name: Sprite.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-003
-    action: read
-    method: GET
-    path: /back/style/prod/sprite/v1.0.0-b66a929c/sprite.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000142
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-003
-  - OBS-000142
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: d9f28b7f650964d56408ad34b93b19763cd95b8819e9d66668bffe53e594ce02
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-133
-  key: resource:stairs.png
-  name: Stairs.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-077
-    action: read
-    method: GET
-    path: /static/imgs/widget-icons/light/white_primary/v1/stairs.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000070
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-077
-  - OBS-000070
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 74ddc5183069b3af65c9e3ad2f0672c8552ad0f467c15f3a353b5c7ee9caaf55
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-134
-  key: resource:star.png
-  name: Star.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-074
-    action: read
-    method: GET
-    path: /static/imgs/widget-icons/light/icon_secondary/v1/star.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000238
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-074
-  - OBS-000238
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: d833b7d121d7ff6411a4697d5faf7100a8c2291ae865e301953836f6691098f3
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-135
-  key: resource:store962.a166a37e.desktop.j
-  name: Store962.A166A37E.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-182
-    action: read
-    method: GET
-    path: /web-assets/2026/07/store-962.a166a37e.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000027
-    - OBS-000327
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-182
-  - OBS-000027
-  - OBS-000327
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 2301de3a219064a1cf6748c80b8ec5b39b803d0d7ec58ea0761dad661d4da256
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-136
+    generated_checksum: 380bb60aadc58d53783e5718ea9b80512e445d663fb30a6cfa13a2ebf5a85bba
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-020
   key: resource:stylelightviewportv1.0.0b66a929cbalad.json
   name: StyleLightViewPortV1.0.0B66A929CBalad.Json
   identifiers: []
@@ -5108,43 +930,13 @@ resources:
   - OBS-000140
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: b2171f27f1e5f160d6d715a97daebc1c0fb2b27d59d98eed98dc94446672f5a8
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-137
-  key: resource:styles.css
-  name: Styles.Css
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-197
-    action: read
-    method: GET
-    path: /web-assets/publics/offline-statics/styles.css
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000049
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-197
-  - OBS-000049
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 53f3733335c20f82e108917873c1222a97cc8a4cb894af5071224253a019a3ca
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-138
+    generated_checksum: 8496261d30440d6b285cbd74812d8d9c0a941de16bc79f1b9d630da88db82f60
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-021
   key: resource:unactedbundlecount
   name: UnactedBundleCount
   identifiers: []
@@ -5154,8 +946,8 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-150
-    action: read
+  - endpoint: EP-054
+    action: history
     method: GET
     path: /v8/call/call-history/unacted-bundle-count
     state_change: false
@@ -5164,8 +956,8 @@ resources:
     - OBS-000113
     - OBS-000346
     knowledge_status: INFERRED
-  - endpoint: EP-204
-    action: inspect_options
+  - endpoint: EP-068
+    action: history
     method: OPTIONS
     path: /v8/call/call-history/unacted-bundle-count
     state_change: false
@@ -5177,20 +969,21 @@ resources:
   states: []
   sensitive_fields: []
   evidence:
-  - EP-150
-  - EP-204
+  - EP-054
+  - EP-068
   - OBS-000113
   - OBS-000115
   - OBS-000346
   - OBS-000351
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: aa228dc8bef14d773d6a23808f519134fe8103ccfc706eb3ec2ddae52aa5d879
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-139
+    generated_checksum: 8230938a48a57c7d21d1a30b6b2f0c712c90c7a7f17cf450608fc9972e7ac862
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-022
   key: resource:unread
   name: Unread
   identifiers: []
@@ -5200,8 +993,8 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-201
-    action: inspect_options
+  - endpoint: EP-065
+    action: read
     method: OPTIONS
     path: /chat/api/unread
     state_change: false
@@ -5210,11 +1003,11 @@ resources:
     - OBS-000110
     - OBS-000354
     knowledge_status: INFERRED
-  - endpoint: EP-223
+  - endpoint: EP-087
     action: create_or_execute
     method: POST
     path: /chat/api/unread
-    state_change: true
+    state_change: false
     authentication_required: false
     evidence:
     - OBS-000107
@@ -5223,20 +1016,21 @@ resources:
   states: []
   sensitive_fields: []
   evidence:
-  - EP-201
-  - EP-223
+  - EP-065
+  - EP-087
   - OBS-000107
   - OBS-000110
   - OBS-000349
   - OBS-000354
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 07de49b174b51d060223141812c85c91622187ee3f3a9b125cdb511104eff163
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-140
+    generated_checksum: 27f93b787d498ba23058a971b921b9f3429eeec5aec62e78f8ccd43ca3bfff6c
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-023
   key: resource:userregistrationpage
   name: UserRegistrationPage
   identifiers: []
@@ -5246,8 +1040,8 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-213
-    action: inspect_options
+  - endpoint: EP-077
+    action: page
     method: OPTIONS
     path: /v8/premium-user/user-registration-page
     state_change: false
@@ -5257,11 +1051,11 @@ resources:
     - OBS-000453
     - OBS-000509
     knowledge_status: INFERRED
-  - endpoint: EP-236
-    action: create_or_execute
+  - endpoint: EP-100
+    action: page
     method: POST
     path: /v8/premium-user/user-registration-page
-    state_change: true
+    state_change: false
     authentication_required: false
     evidence:
     - OBS-000234
@@ -5271,8 +1065,8 @@ resources:
   states: []
   sensitive_fields: []
   evidence:
-  - EP-213
-  - EP-236
+  - EP-077
+  - EP-100
   - OBS-000234
   - OBS-000235
   - OBS-000452
@@ -5281,12 +1075,13 @@ resources:
   - OBS-000509
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: c003746b32787b3bb0b436ff59e4a987429b3afbcdf9bd9447c1be92bd0903a1
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-141
+    generated_checksum: c42595b4546bec38caf198ba377b74c829d8715c83f0d90f32fa30d476c28c50
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-024
   key: resource:userverification
   name: UserVerification
   identifiers: []
@@ -5296,8 +1091,8 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-215
-    action: inspect_options
+  - endpoint: EP-079
+    action: read
     method: OPTIONS
     path: /v8/user-profile/user_verification
     state_change: false
@@ -5307,11 +1102,11 @@ resources:
     - OBS-000244
     - OBS-000246
     knowledge_status: INFERRED
-  - endpoint: EP-238
+  - endpoint: EP-102
     action: create_or_execute
     method: POST
     path: /v8/user-profile/user_verification
-    state_change: true
+    state_change: false
     authentication_required: false
     evidence:
     - OBS-000241
@@ -5321,235 +1116,25 @@ resources:
   states: []
   sensitive_fields: []
   evidence:
-  - EP-215
-  - EP-238
+  - EP-079
+  - EP-102
   - OBS-000241
   - OBS-000242
   - OBS-000243
   - OBS-000244
   - OBS-000245
   - OBS-000246
-  confidence: low
+  confidence: high
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: c0d0428e3bef3a344cd99ec6b6999944487b2f989c37c3813cc69e50acb9f420
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-142
-  key: resource:utils357.7d05c725.desktop.j
-  name: Utils357.7D05C725.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-183
-    action: read
-    method: GET
-    path: /web-assets/2026/07/utils-357.7d05c725.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000025
-    - OBS-000325
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-183
-  - OBS-000025
-  - OBS-000325
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: e7e98e528ab75439446ba010d5da21752699487b50e199dfea5c21b968266956
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-143
-  key: resource:v3
-  name: V3
-  identifiers:
-  - v3Id
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-198
-    action: read
-    method: GET
-    path: /web/v3/{v3Id}/loader_v3.12.3.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000117
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-198
-  - OBS-000117
-  confidence: medium
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 665b6e3618701cd093d5a1e5528ae05c41a25ac8e4f1d48a9a950b9d35f2bbe0
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-144
-  key: resource:vendorspb.48b084f5.desktop.j
-  name: VendorsPb.48B084F5.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-185
-    action: read
-    method: GET
-    path: /web-assets/2026/07/vendors-pb.48b084f5.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000019
-    - OBS-000319
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-185
-  - OBS-000019
-  - OBS-000319
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: f3b24653c3733978de138a93072d4c59f9919ac613e4118f4d138ee674b202a1
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-145
-  key: resource:vendorspb159.400a4952.desktop.css
-  name: VendorsPb159.400A4952.Desktop.Css
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-184
-    action: read
-    method: GET
-    path: /web-assets/2026/07/vendors-pb-159.400a4952.desktop.css
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000035
-    - OBS-000337
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-184
-  - OBS-000035
-  - OBS-000337
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: cac6704bf5e55808258b8e59ec6b9382cd619d2fa0214c06b8bc3ddb68b35579
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-146
-  key: resource:videocam.png
-  name: Videocam.Png
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-078
-    action: read
-    method: GET
-    path: /static/imgs/widget-icons/light/white_primary/v1/videocam.png
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000072
-    - OBS-000196
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-078
-  - OBS-000072
-  - OBS-000196
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: f9524953dbded6b8e715c7b78c2ce00a91b81728d202dbcde349b15c3d01b21f
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-147
-  key: resource:viewport
-  name: Viewport
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-205
-    action: inspect_options
-    method: OPTIONS
-    path: /v8/mapview/viewport
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000151
-    - OBS-000195
-    knowledge_status: INFERRED
-  - endpoint: EP-229
-    action: create_or_execute
-    method: POST
-    path: /v8/mapview/viewport
-    state_change: true
-    authentication_required: false
-    evidence:
-    - OBS-000150
-    - OBS-000194
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields:
-  - clusters[].properties.properties.destination_zoom
-  evidence:
-  - EP-205
-  - EP-229
-  - OBS-000150
-  - OBS-000151
-  - OBS-000194
-  - OBS-000195
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 555d6bac6973ff4ff9466bba9957793860293f7422860dfa7b6f1d7db2e05c4b
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-148
-  key: resource:walletandpayment
-  name: WalletAndPayment
+    generated_checksum: 658d4e19ab9e5b81f9afdcfcddda735eabaa6bbb5cb68a04c0fae729d68a26f8
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-025
+  key: resource:wallet
+  name: Wallet
   identifiers: []
   owner:
     value: unknown
@@ -5566,8 +1151,44 @@ resources:
     evidence:
     - OBS-000314
     knowledge_status: INFERRED
-  - endpoint: EP-220
-    action: inspect_options
+  - endpoint: EP-082
+    action: page
+    method: OPTIONS
+    path: /v8/wallet/change-wallet-page
+    state_change: false
+    authentication_required: false
+    evidence:
+    - OBS-000258
+    knowledge_status: INFERRED
+  - endpoint: EP-105
+    action: page
+    method: POST
+    path: /v8/wallet/change-wallet-page
+    state_change: false
+    authentication_required: false
+    evidence:
+    - OBS-000257
+    knowledge_status: INFERRED
+  - endpoint: EP-083
+    action: change
+    method: OPTIONS
+    path: /v8/wallet/change-wallet/ASAN_PARDAKHT
+    state_change: true
+    authentication_required: false
+    evidence:
+    - OBS-000263
+    knowledge_status: INFERRED
+  - endpoint: EP-106
+    action: change
+    method: POST
+    path: /v8/wallet/change-wallet/ASAN_PARDAKHT
+    state_change: true
+    authentication_required: false
+    evidence:
+    - OBS-000262
+    knowledge_status: INFERRED
+  - endpoint: EP-084
+    action: read
     method: OPTIONS
     path: /v8/wallet/wallet-and-payments
     state_change: false
@@ -5579,11 +1200,11 @@ resources:
     - OBS-000460
     - OBS-000516
     knowledge_status: INFERRED
-  - endpoint: EP-243
+  - endpoint: EP-107
     action: create_or_execute
     method: POST
     path: /v8/wallet/wallet-and-payments
-    state_change: true
+    state_change: false
     authentication_required: false
     evidence:
     - OBS-000253
@@ -5596,10 +1217,18 @@ resources:
   sensitive_fields: []
   evidence:
   - EP-010
-  - EP-220
-  - EP-243
+  - EP-082
+  - EP-083
+  - EP-084
+  - EP-105
+  - EP-106
+  - EP-107
   - OBS-000253
   - OBS-000254
+  - OBS-000257
+  - OBS-000258
+  - OBS-000262
+  - OBS-000263
   - OBS-000266
   - OBS-000267
   - OBS-000314
@@ -5609,730 +1238,70 @@ resources:
   - OBS-000460
   - OBS-000515
   - OBS-000516
-  confidence: low
+  confidence: high
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 61494c612aa845c647e62bb315478d63f033de92ab93911f1ded4349e748f3ff
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-149
-  key: resource:webpthumbnail
-  name: WebpThumbnail
-  identifiers:
-  - webpThumbnailId
+    generated_checksum: 8f6b98e1c892a29c5aae1a222954600f01e8a0db76613c3316e47cb0c87b9d70
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+- id: RES-026
+  key: resource:web
+  name: Web
+  identifiers: []
   owner:
     value: unknown
     knowledge_status: ASSUMED
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-079
-    action: read
-    method: GET
-    path: /static/photo/afra/webp_thumbnail/{webpThumbnailId}/873e3b41-2d8c-4f40-b977-0531cb5a831c.jpg.webp
+  - endpoint: EP-070
+    action: menu
+    method: OPTIONS
+    path: /v8/my-divar/web/menu
     state_change: false
     authentication_required: false
     evidence:
-    - OBS-000077
-    knowledge_status: INFERRED
-  - endpoint: EP-080
-    action: read
-    method: GET
-    path: /static/photo/afra/webp_thumbnail/{webpThumbnailId}/aff8f2b9-a848-4337-9ec4-6d037745bd84.jpg.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000134
-    knowledge_status: INFERRED
-  - endpoint: EP-083
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/10d6241c-725d-4205-aa11-419beb5c217b.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000080
-    knowledge_status: INFERRED
-  - endpoint: EP-084
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/1c4a1004-8ecc-4426-bdf9-e1eddca508b1.jpg.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000201
-    knowledge_status: INFERRED
-  - endpoint: EP-085
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/2dd5f96c-0f52-4696-9d9e-efd575360497.jpg.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000181
-    knowledge_status: INFERRED
-  - endpoint: EP-086
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/3640adb5-2b87-44a6-8c7a-a116177018e3.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000207
-    knowledge_status: INFERRED
-  - endpoint: EP-087
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/3a225fc6-60ce-4c6d-a1c6-5d63cdb4a977.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000133
-    knowledge_status: INFERRED
-  - endpoint: EP-088
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/3a29b601-75d2-43e1-959d-50cd62046cf4.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000199
-    knowledge_status: INFERRED
-  - endpoint: EP-089
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/3a5d8082-125f-40e2-b0f1-563b4cb89733.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000220
-    knowledge_status: INFERRED
-  - endpoint: EP-090
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/446f6855-9e0a-49a2-9a92-d57f5649a379.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000079
-    knowledge_status: INFERRED
-  - endpoint: EP-091
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/478cb5ae-6a52-4d14-a050-e65c27867568.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000223
-    knowledge_status: INFERRED
-  - endpoint: EP-092
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/49ce9a6a-652b-4f63-a984-f06e2af75c39.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000213
-    knowledge_status: INFERRED
-  - endpoint: EP-093
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/565aa3cc-b4bc-4f5f-a2f5-76fa4258f8e1.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000208
+    - OBS-000066
+    - OBS-000109
+    - OBS-000233
+    - OBS-000350
+    - OBS-000352
     knowledge_status: INFERRED
   - endpoint: EP-094
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/56dc01bf-3f5f-4c0c-a374-978e4ff01cee.webp
+    action: menu
+    method: POST
+    path: /v8/my-divar/web/menu
     state_change: false
     authentication_required: false
     evidence:
-    - OBS-000198
-    knowledge_status: INFERRED
-  - endpoint: EP-095
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/592aeac7-3cbb-455c-82e0-415ce89ab8ff.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000205
-    knowledge_status: INFERRED
-  - endpoint: EP-096
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/5f17e17a-0eb8-4c91-81ca-98e46a061d59.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000211
-    knowledge_status: INFERRED
-  - endpoint: EP-097
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/6773e422-a0c4-4ed5-8c3b-762da5d47a3e.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000076
-    knowledge_status: INFERRED
-  - endpoint: EP-098
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/6ebdedb8-1a51-4a6f-ad00-c3bb3a901607.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000082
-    knowledge_status: INFERRED
-  - endpoint: EP-099
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/787ead9b-900b-47da-805c-f99ddcecab4a.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000222
-    knowledge_status: INFERRED
-  - endpoint: EP-100
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/7a51aa64-4e77-4c03-bc1d-2ed783acd291.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000214
-    knowledge_status: INFERRED
-  - endpoint: EP-101
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/7e5ef07c-7fcc-4ab0-a162-55d15615f9b9.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000075
-    knowledge_status: INFERRED
-  - endpoint: EP-102
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/865e0edd-4b3b-4064-9c0b-cf9d7a327750.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000209
-    knowledge_status: INFERRED
-  - endpoint: EP-103
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/87d9a6f1-cac0-4781-ade4-7b6d37cc3a83.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000216
-    knowledge_status: INFERRED
-  - endpoint: EP-104
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/8838d88d-1282-49e5-bc88-c152424f8947.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000087
-    knowledge_status: INFERRED
-  - endpoint: EP-105
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/88569945-1351-4d70-8ea4-79631a8d7d1c.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000092
-    knowledge_status: INFERRED
-  - endpoint: EP-106
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/8aa496a6-d987-4787-806e-88da1ec7f646.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000091
-    knowledge_status: INFERRED
-  - endpoint: EP-107
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/8f4444ba-05f1-47da-b99d-88f9b477a708.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000203
-    knowledge_status: INFERRED
-  - endpoint: EP-108
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/8fec2276-186a-40b8-99f8-851910feabc5.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000215
-    knowledge_status: INFERRED
-  - endpoint: EP-109
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/95fdf04a-fdb6-4305-ae27-b6959c5a5bb7.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000078
-    knowledge_status: INFERRED
-  - endpoint: EP-110
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/9f5aacb4-19dc-4a05-ae1e-ec2576ac2324.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000139
-    knowledge_status: INFERRED
-  - endpoint: EP-111
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/a54df2f3-df5f-4ca7-9024-a98710b803c9.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000204
-    knowledge_status: INFERRED
-  - endpoint: EP-112
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/a578ba3e-fed7-4e0c-ab62-76dd182e2193.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000081
-    knowledge_status: INFERRED
-  - endpoint: EP-113
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/abb996e5-05a7-407e-ab1c-11318e5290a4.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000135
-    knowledge_status: INFERRED
-  - endpoint: EP-114
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/ac7b8cfe-33ed-4f53-a499-b9bd253ae43a.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000136
-    knowledge_status: INFERRED
-  - endpoint: EP-115
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/aefa08ce-5144-4365-ae9f-5518b69fa09e.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000090
-    knowledge_status: INFERRED
-  - endpoint: EP-116
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/b30e7f1f-68e3-40f0-840c-9af719547b9e.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000210
-    knowledge_status: INFERRED
-  - endpoint: EP-117
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/b7072dbf-348c-41ca-9c20-715f4e07bbfc.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000212
-    knowledge_status: INFERRED
-  - endpoint: EP-118
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/b8bdb611-dd3e-4bcb-bfee-1f81899c4577.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000206
-    knowledge_status: INFERRED
-  - endpoint: EP-119
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/b9ac2750-d1c2-4123-b580-d98779fc45b6.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000074
-    knowledge_status: INFERRED
-  - endpoint: EP-120
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/bad47bd7-18e0-4330-b71b-45c9bf8dddc9.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000084
-    knowledge_status: INFERRED
-  - endpoint: EP-121
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/bfcf5a76-b10f-4f56-800e-b310244d4949.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000200
-    knowledge_status: INFERRED
-  - endpoint: EP-122
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/c3999216-6076-4f28-93f1-7303397b902a.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000138
-    knowledge_status: INFERRED
-  - endpoint: EP-123
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/cc495ab1-afc9-4cc5-9cdf-82e4f2b20997.jpg.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000073
-    knowledge_status: INFERRED
-  - endpoint: EP-124
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/cc77820e-20ca-45f6-ae3a-4223be599290.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000088
-    knowledge_status: INFERRED
-  - endpoint: EP-125
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/dbf7290c-e77b-4d40-ad38-2d6de74ad463.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000085
-    knowledge_status: INFERRED
-  - endpoint: EP-126
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/e8a76e53-8273-4153-ae0c-860b6de65be5.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000137
-    knowledge_status: INFERRED
-  - endpoint: EP-127
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/e9436395-9798-409c-af0a-f73e3c7d90df.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000089
-    knowledge_status: INFERRED
-  - endpoint: EP-128
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/eea129dc-7a7a-4278-a5fb-89a4311a4039.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000217
-    knowledge_status: INFERRED
-  - endpoint: EP-129
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/f6973d3b-01c1-42f4-a729-16458cb15362.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000202
-    knowledge_status: INFERRED
-  - endpoint: EP-130
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/f9f76f35-35e9-471a-b3e9-4d376489ccf5.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000219
-    knowledge_status: INFERRED
-  - endpoint: EP-131
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/fb0fdf04-1eb5-4688-9d55-e99d0cafbccf.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000086
-    knowledge_status: INFERRED
-  - endpoint: EP-132
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/fc5925e3-e4aa-4074-95a0-eddb0e8df80d.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000132
-    knowledge_status: INFERRED
-  - endpoint: EP-133
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/fdeec762-1505-43e0-b5d1-1f29c4d9d7e7.jpg.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000131
-    - OBS-000180
-    knowledge_status: INFERRED
-  - endpoint: EP-134
-    action: read
-    method: GET
-    path: /static/photo/neda/webp_thumbnail/{webpThumbnailId}/ff5ec32d-45c9-47e1-b25b-e4ba1e24795e.webp
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000083
+    - OBS-000063
+    - OBS-000106
+    - OBS-000232
+    - OBS-000345
+    - OBS-000347
     knowledge_status: INFERRED
   states: []
   sensitive_fields: []
   evidence:
-  - EP-079
-  - EP-080
-  - EP-083
-  - EP-084
-  - EP-085
-  - EP-086
-  - EP-087
-  - EP-088
-  - EP-089
-  - EP-090
-  - EP-091
-  - EP-092
-  - EP-093
+  - EP-070
   - EP-094
-  - EP-095
-  - EP-096
-  - EP-097
-  - EP-098
-  - EP-099
-  - EP-100
-  - EP-101
-  - EP-102
-  - EP-103
-  - EP-104
-  - EP-105
-  - EP-106
-  - EP-107
-  - EP-108
-  - EP-109
-  - EP-110
-  - EP-111
-  - EP-112
-  - EP-113
-  - EP-114
-  - EP-115
-  - EP-116
-  - EP-117
-  - EP-118
-  - EP-119
-  - EP-120
-  - EP-121
-  - EP-122
-  - EP-123
-  - EP-124
-  - EP-125
-  - EP-126
-  - EP-127
-  - EP-128
-  - EP-129
-  - EP-130
-  - EP-131
-  - EP-132
-  - EP-133
-  - EP-134
-  - OBS-000073
-  - OBS-000074
-  - OBS-000075
-  - OBS-000076
-  - OBS-000077
-  - OBS-000078
-  - OBS-000079
-  - OBS-000080
-  - OBS-000081
-  - OBS-000082
-  - OBS-000083
-  - OBS-000084
-  - OBS-000085
-  - OBS-000086
-  - OBS-000087
-  - OBS-000088
-  - OBS-000089
-  - OBS-000090
-  - OBS-000091
-  - OBS-000092
-  - OBS-000131
-  - OBS-000132
-  - OBS-000133
-  - OBS-000134
-  - OBS-000135
-  - OBS-000136
-  - OBS-000137
-  - OBS-000138
-  - OBS-000139
-  - OBS-000180
-  - OBS-000181
-  - OBS-000198
-  - OBS-000199
-  - OBS-000200
-  - OBS-000201
-  - OBS-000202
-  - OBS-000203
-  - OBS-000204
-  - OBS-000205
-  - OBS-000206
-  - OBS-000207
-  - OBS-000208
-  - OBS-000209
-  - OBS-000210
-  - OBS-000211
-  - OBS-000212
-  - OBS-000213
-  - OBS-000214
-  - OBS-000215
-  - OBS-000216
-  - OBS-000217
-  - OBS-000219
-  - OBS-000220
-  - OBS-000222
-  - OBS-000223
-  confidence: medium
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 1a10e68dfe3910ed72bc8acf55b64a8c4bb608fb5dc5bc9dd4b636817b95169c
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-150
-  key: resource:widgetbase183.1693463d.desktop.j
-  name: WidgetBase183.1693463D.Desktop.J
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-186
-    action: read
-    method: GET
-    path: /web-assets/2026/07/widget-base-183.1693463d.desktop.js
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000021
-    - OBS-000321
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-186
-  - OBS-000021
-  - OBS-000321
+  - OBS-000063
+  - OBS-000066
+  - OBS-000106
+  - OBS-000109
+  - OBS-000232
+  - OBS-000233
+  - OBS-000345
+  - OBS-000347
+  - OBS-000350
+  - OBS-000352
   confidence: low
   knowledge_status: INFERRED
+  disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 28c405200eef1836991b51ba2122201b39d04107a7318eae9b67e2ec5518ce08
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-151
-  key: resource:widgetbase183.7a67a804.desktop.css
-  name: WidgetBase183.7A67A804.Desktop.Css
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-187
-    action: read
-    method: GET
-    path: /web-assets/2026/07/widget-base-183.7a67a804.desktop.css
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000037
-    - OBS-000339
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-187
-  - OBS-000037
-  - OBS-000339
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: a74a1648121361fde4047583c051746fb1dd6e1792ee2842d410b0c12b18b6a9
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
-- id: RES-152
-  key: resource:yekan.woff
-  name: Yekan.Woff
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-019
-    action: read
-    method: GET
-    path: /newsite/fonts/Yekan.woff
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000310
-    - OBS-000401
-    - OBS-000446
-    - OBS-000502
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-019
-  - OBS-000310
-  - OBS-000401
-  - OBS-000446
-  - OBS-000502
-  confidence: low
-  knowledge_status: INFERRED
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: a8ded6c38998dd796032743d6fcebe58529ef511764a9ffa578c83203d1f1db0
-    source_fingerprint: dd6d4c5d88510daa7117f43d0d05729875d220438165b266999738b30e7475d1
+    generated_checksum: 410d5c906b33480e49f43fa4e1cf9d7fd799ec54741126cc274f57d50abbfa5d
+    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25

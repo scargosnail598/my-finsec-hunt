@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
-from finsec.modeling.domain import InvariantStore, ResourceStore
+from finsec.modeling.domain import InvariantRecord, InvariantStore, ResourceStore
 from finsec.modeling.merge import merge_generated_records, stable_fingerprint
 from finsec.modeling.models import Confidence, Endpoint, EndpointStore, KnowledgeStatus
 from finsec.utils.yaml_store import load_yaml, write_yaml
@@ -65,13 +65,16 @@ def _base(
         "knowledge_status": status,
         "validation_status": "NOT_CONFIRMED",
         "rationale": rationale,
+        "disposition": "ACTIVE",
     }
 
 
 def _drafts(endpoints: EndpointStore, resources: ResourceStore) -> list[dict[str, Any]]:
-    known_resources = {item.name for item in resources.resources}
+    known_resources = {item.name for item in resources.resources if item.disposition == "ACTIVE"}
     drafts: list[dict[str, Any]] = []
     for endpoint in endpoints.endpoints:
+        if endpoint.disposition != "ACTIVE":
+            continue
         resource = endpoint.resource.type
         if resource not in known_resources:
             continue
@@ -92,10 +95,12 @@ def _drafts(endpoints: EndpointStore, resources: ResourceStore) -> list[dict[str
                 )
             )
 
-        path_parameters = [
-            parameter.name for parameter in endpoint.parameters if parameter.location == "path"
+        object_parameters = [
+            parameter.name
+            for parameter in endpoint.parameters
+            if parameter.semantic_type == "object_identifier" and parameter.client_controlled
         ]
-        for parameter in path_parameters:
+        for parameter in object_parameters:
             drafts.append(
                 _base(
                     f"object-authorization:{endpoint.id}:{parameter}",
@@ -111,7 +116,8 @@ def _drafts(endpoints: EndpointStore, resources: ResourceStore) -> list[dict[str
                 )
             )
 
-        if endpoint.state_change:
+        resource_record = next(item for item in resources.resources if item.name == resource)
+        if endpoint.state_change and resource_record.states:
             drafts.append(
                 _base(
                     f"state-integrity:{endpoint.id}",
@@ -122,12 +128,16 @@ def _drafts(endpoints: EndpointStore, resources: ResourceStore) -> list[dict[str
                     resource,
                     KnowledgeStatus.ASSUMED,
                     Confidence.LOW,
-                    "The HTTP method implies a possible state change, but lifecycle states "
-                    "and guards are not confirmed from Phase 1 evidence.",
+                    "A mutation-like action and researcher-recorded lifecycle states exist; "
+                    "the exact transition guard is not yet confirmed.",
                 )
             )
 
-        if endpoint.state_change and resource.lower() in FINANCIAL_RESOURCES:
+        if (
+            endpoint.state_change
+            and endpoint.action.type == "financial_mutation"
+            and resource.lower() in FINANCIAL_RESOURCES
+        ):
             drafts.append(
                 _base(
                     f"single-execution:{endpoint.id}",
@@ -155,14 +165,40 @@ def generate_invariants(workspace: WorkspacePaths) -> InvariantResult:
             "resources": resources.model_dump(mode="json", exclude_none=True),
         }
     )
+    drafts = _drafts(endpoints, resources)
     merge = merge_generated_records(
         workspace.invariants,
         "invariants",
         "INV",
         "phase2-invariant-extractor",
         fingerprint,
-        _drafts(endpoints, resources),
+        drafts,
     )
+    draft_keys = {str(item["key"]) for item in drafts}
+    records = merge.document.get("invariants", [])
+    if isinstance(records, list):
+        for record in records:
+            if not isinstance(record, dict) or record.get("key") in draft_keys:
+                continue
+            generation = record.get("generation")
+            if not isinstance(generation, dict):
+                continue
+            if generation.get("generator") != "phase2-invariant-extractor":
+                continue
+            payload = {key: value for key, value in record.items() if key != "generation"}
+            if generation.get("generated_checksum") != stable_fingerprint(payload):
+                continue
+            record["disposition"] = "SUPPRESSED_INSUFFICIENT_EVIDENCE"
+            normalized = InvariantRecord.model_validate(record).model_dump(
+                mode="json", exclude_none=True
+            )
+            normalized_generation = normalized["generation"]
+            normalized_payload = {
+                key: value for key, value in normalized.items() if key != "generation"
+            }
+            normalized_generation["generated_checksum"] = stable_fingerprint(normalized_payload)
+            record.clear()
+            record.update(normalized)
     try:
         store = InvariantStore.model_validate(merge.document)
     except ValidationError as error:
@@ -170,4 +206,6 @@ def generate_invariants(workspace: WorkspacePaths) -> InvariantResult:
             f"Cannot validate invariant model {workspace.invariants}: {error}"
         ) from error
     write_yaml(workspace.invariants, store.model_dump(mode="json", exclude_none=True))
-    return InvariantResult(len(store.invariants), merge.conflicts)
+    return InvariantResult(
+        sum(item.disposition == "ACTIVE" for item in store.invariants), merge.conflicts
+    )

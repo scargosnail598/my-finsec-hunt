@@ -23,11 +23,13 @@ def test_hypotheses_are_specific_traceable_and_transparently_prioritized(
     store = HypothesisStore.model_validate(load_yaml(phase3_workspace.hypotheses))
     by_id = {item.id: item for item in store.hypotheses}
 
-    assert result.hypotheses == 3
+    assert result.hypotheses == 4
     assert result.conflicts == ()
-    assert set(by_id) == {"HYP-001", "HYP-002", "HYP-003"}
+    assert set(by_id) == {"HYP-001", "HYP-002", "HYP-003", "HYP-004"}
 
-    payment = by_id["HYP-002"]
+    payment = next(
+        item for item in store.hypotheses if item.generation_rule.get("id") == "AUTH_OBJECT_ACCESS"
+    )
     assert payment.priority == "P1"
     assert payment.scores.total == 14
     assert payment.scores.total == (
@@ -44,6 +46,11 @@ def test_hypotheses_are_specific_traceable_and_transparently_prioritized(
     assert "Account A" in payment.hypothesis
     assert "Account B" in payment.hypothesis
     assert "test for idor" not in payment.hypothesis.lower()
+    assert payment.generation_rule == {"id": "AUTH_OBJECT_ACCESS", "version": "2"}
+    assert payment.eligibility_evidence
+    assert payment.missing_evidence
+    assert sum(item.kind == "SECURITY_HYPOTHESIS" for item in store.hypotheses) == 1
+    assert sum(item.kind == "RESEARCH_TASK" for item in store.hypotheses) == 3
     assert all(item.status == "NOT_TESTED" for item in store.hypotheses)
 
 
@@ -52,28 +59,56 @@ def test_hypothesis_lifecycle_fields_survive_regeneration(
 ) -> None:
     generate_hypotheses(phase3_workspace)
     document = load_yaml(phase3_workspace.hypotheses)
-    payment = next(item for item in document["hypotheses"] if item["id"] == "HYP-002")
+    payment = next(
+        item
+        for item in document["hypotheses"]
+        if item["generation_rule"]["id"] == "AUTH_OBJECT_ACCESS"
+    )
+    payment_id = payment["id"]
     payment["status"] = "NEEDS_EVIDENCE"
     payment["notes"] = "Confirm that both accounts have identical KYC tier."
     write_yaml(phase3_workspace.hypotheses, document)
 
     preserved = generate_hypotheses(phase3_workspace)
     store = HypothesisStore.model_validate(load_yaml(phase3_workspace.hypotheses))
-    payment_record = next(item for item in store.hypotheses if item.id == "HYP-002")
+    payment_record = next(item for item in store.hypotheses if item.id == payment_id)
     assert preserved.conflicts == ()
     assert payment_record.status == "NEEDS_EVIDENCE"
     assert payment_record.notes == "Confirm that both accounts have identical KYC tier."
 
     document = load_yaml(phase3_workspace.hypotheses)
-    payment = next(item for item in document["hypotheses"] if item["id"] == "HYP-002")
+    payment = next(item for item in document["hypotheses"] if item["id"] == payment_id)
     payment["reasoning"] = "Researcher-edited reasoning."
     write_yaml(phase3_workspace.hypotheses, document)
 
     conflict = generate_hypotheses(phase3_workspace)
-    assert conflict.conflicts == ("cross-account:EP-001:paymentId",)
+    assert conflict.conflicts == (
+        "auth-object-access:get:/api/payments/{paymentId}:payment:paymentid",
+    )
     store = HypothesisStore.model_validate(load_yaml(phase3_workspace.hypotheses))
-    payment_record = next(item for item in store.hypotheses if item.id == "HYP-002")
+    payment_record = next(item for item in store.hypotheses if item.id == payment_id)
     assert payment_record.reasoning == "Researcher-edited reasoning."
+
+
+def test_legacy_candidate_is_suppressed_when_it_no_longer_passes_gates(
+    phase3_workspace: WorkspacePaths,
+) -> None:
+    generate_hypotheses(phase3_workspace)
+    target = load_yaml(phase3_workspace.target)
+    target["accounts"] = target["accounts"][:1]
+    write_yaml(phase3_workspace.target, target)
+
+    generate_hypotheses(phase3_workspace)
+    store = HypothesisStore.model_validate(load_yaml(phase3_workspace.hypotheses))
+    payment = next(
+        item
+        for item in store.hypotheses
+        if item.key == "auth-object-access:get:/api/payments/{paymentId}:payment:paymentid"
+    )
+
+    assert payment.disposition == "SUPPRESSED_INSUFFICIENT_EVIDENCE"
+    assert payment.priority == "P3"
+    assert payment.generation_rule.get("id") == "LEGACY_CANDIDATE_REEVALUATION"
 
 
 def test_version_and_channel_hypotheses_require_observed_differentials(
@@ -108,7 +143,7 @@ def test_version_and_channel_hypotheses_require_observed_differentials(
     assert channel.source.endpoints == ["EP-001"]
 
 
-def test_state_time_and_value_mutations_require_matching_evidence(
+def test_generic_post_does_not_create_unsupported_mutation_hypotheses(
     tmp_path: Path, sample_har: tuple[Path, dict[str, Any]]
 ) -> None:
     _, original = sample_har
@@ -136,7 +171,8 @@ def test_state_time_and_value_mutations_require_matching_evidence(
     generate_hypotheses(workspace)
 
     store = HypothesisStore.model_validate(load_yaml(workspace.hypotheses))
-    categories = {item.category: item for item in store.hypotheses}
-    assert categories["state_integrity"].mutation_dimensions == ["STATE", "TIME"]
-    assert categories["replay"].mutation_dimensions == ["TIME"]
-    assert categories["value_validation"].mutation_dimensions == ["VALUE"]
+    categories = {item.category for item in store.hypotheses}
+    assert "state_integrity" not in categories
+    assert "replay" not in categories
+    assert "value_validation" not in categories
+    assert any(item.kind == "RESEARCH_TASK" for item in store.hypotheses)

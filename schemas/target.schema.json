@@ -55,7 +55,19 @@
         "destructive_actions": {"type": "boolean"}
       }
     },
-    "focus": {"type": "array", "items": {"type": "string"}}
+    "focus": {"type": "array", "items": {"type": "string"}},
+    "analysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "include_hosts": {"type": "array", "items": {"type": "string"}},
+        "exclude_hosts": {"type": "array", "items": {"type": "string"}},
+        "suppress": {"type": "object"},
+        "excluded_extensions": {"type": "array", "items": {"type": "string"}},
+        "excluded_path_patterns": {"type": "array", "items": {"type": "string"}},
+        "hypothesis_gates": {"type": "object"},
+        "classification_overrides": {"type": "object", "additionalProperties": {"type": "string"}}
+      }
+    }
   }
 }
-

@@ -7,7 +7,31 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 AuthenticationType = Literal["none", "bearer", "basic", "cookie", "api_key", "mixed"]
-ParameterType = Literal["string", "integer", "uuid"]
+ParameterType = Literal["string", "integer", "uuid", "ulid", "hash", "date", "version"]
+ParameterSemanticType = Literal[
+    "object_identifier",
+    "monetary_value",
+    "state",
+    "authentication",
+    "pagination",
+    "unknown",
+]
+ParameterSource = Literal[
+    "request",
+    "response",
+    "derived_resource_schema",
+    "related_endpoint_schema",
+]
+EndpointActionType = Literal["read", "mutation", "financial_mutation", "authentication", "unknown"]
+EndpointDisposition = Literal[
+    "ACTIVE",
+    "SUPPRESSED_STATIC_ASSET",
+    "SUPPRESSED_TELEMETRY",
+    "SUPPRESSED_ANALYTICS",
+    "SUPPRESSED_THIRD_PARTY",
+    "SUPPRESSED_PUBLIC_RESOURCE",
+    "SUPPRESSED_INSUFFICIENT_EVIDENCE",
+]
 ChannelType = Literal["WEB", "MOBILE", "PARTNER_API", "PUBLIC_API", "UNKNOWN"]
 ObservationSource = Literal["HAR", "BURP_XML", "CAIDO_JSON", "OPENAPI"]
 
@@ -34,6 +58,39 @@ class Confidence(StrEnum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
+
+
+class EndpointPrimaryClassification(StrEnum):
+    """Primary traffic role used to gate downstream security analysis."""
+
+    FIRST_PARTY_API = "FIRST_PARTY_API"
+    STATIC_ASSET = "STATIC_ASSET"
+    TELEMETRY = "TELEMETRY"
+    ANALYTICS = "ANALYTICS"
+    THIRD_PARTY = "THIRD_PARTY"
+    PAGE_NAVIGATION = "PAGE_NAVIGATION"
+    FILE_DOWNLOAD = "FILE_DOWNLOAD"
+    AUTHENTICATION = "AUTHENTICATION"
+    FINANCIAL = "FINANCIAL"
+    UNKNOWN = "UNKNOWN"
+
+
+class EndpointClassification(StrictModel):
+    """Explainable deterministic endpoint classification."""
+
+    primary: EndpointPrimaryClassification = EndpointPrimaryClassification.UNKNOWN
+    tags: list[EndpointPrimaryClassification] = Field(default_factory=list)
+    confidence: Confidence = Confidence.LOW
+    reasons: list[str] = Field(default_factory=list)
+
+
+class EndpointAction(StrictModel):
+    """Business action separated from the inferred resource."""
+
+    name: str = "unknown"
+    type: EndpointActionType = "unknown"
+    confidence: Confidence = Confidence.LOW
+    reasons: list[str] = Field(default_factory=list)
 
 
 class AuthenticationObservation(StrictModel):
@@ -73,6 +130,7 @@ class EndpointAuthentication(StrictModel):
 
     required: bool
     observed_type: AuthenticationType
+    anonymous_success_observed: bool = False
     knowledge_status: KnowledgeStatus = KnowledgeStatus.INFERRED
 
 
@@ -88,11 +146,25 @@ class EndpointParameter(StrictModel):
     """Observed or inferred endpoint input parameter."""
 
     name: str
-    location: Literal["path", "query"]
+    location: Literal[
+        "path",
+        "query",
+        "body",
+        "header",
+        "cookie",
+        "graphql_variable",
+        "response_body",
+    ]
+    source: ParameterSource = "request"
     inferred_type: ParameterType
     confidence: Confidence
     evidence: list[str] = Field(default_factory=list)
     knowledge_status: KnowledgeStatus
+    json_path: str | None = None
+    semantic_type: ParameterSemanticType = "unknown"
+    client_controlled: bool = True
+    original_examples: list[str] = Field(default_factory=list)
+    normalization_reasons: list[str] = Field(default_factory=list)
 
 
 class NormalizationEvidence(StrictModel):
@@ -111,11 +183,17 @@ class Endpoint(StrictModel):
     hosts: list[str]
     channels: list[ChannelType] = Field(default_factory=list)
     authentication: EndpointAuthentication
+    classification: EndpointClassification = Field(default_factory=EndpointClassification)
     resource: EndpointResource
+    action: EndpointAction = Field(default_factory=EndpointAction)
     parameters: list[EndpointParameter] = Field(default_factory=list)
     state_change: bool
     state_change_confidence: KnowledgeStatus = KnowledgeStatus.INFERRED
+    state_change_reasons: list[str] = Field(default_factory=list)
     financial_impact: Literal["none", "unknown"] = "unknown"
+    security_relevance: int = Field(default=0, ge=0, le=10)
+    relevance_reasons: list[str] = Field(default_factory=list)
+    disposition: EndpointDisposition = "ACTIVE"
     observed_by: list[str] = Field(default_factory=list)
     sources: list[str]
     confidence: Confidence

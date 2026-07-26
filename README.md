@@ -17,7 +17,7 @@ HAR / Burp XML / Caido JSON / OpenAPI / GraphQL / mobile artifacts
 
 Facts, inferences, assumptions, hypotheses, tests, evidence, and findings remain separate throughout the workspace.
 
-For setup and usage instructions, see [quick-install.md](quick-install.md) and [how-to-use.md](how-to-use.md).
+For setup and usage instructions, see [quick-install.md](quick-install.md), [how-to-use.md](how-to-use.md), and [synthetic-validation-how-to.md](synthetic-validation-how-to.md).
 
 ## Architecture
 
@@ -262,6 +262,30 @@ Generated YAML records contain `generation.generated_checksum`. On rerun:
 - Reports are never overwritten; changed confirmed narratives create the next `vN` report.
 
 Markdown artifacts use `FINSEC-GENERATED` blocks. Generated blocks refresh while researcher text outside them remains untouched. To intentionally regenerate an edited YAML record, first preserve its notes, remove only that record, and rerun the relevant command.
+
+## Noise Reduction and Explainability
+
+Endpoint inventory generation classifies every route as first-party API, static asset, telemetry, analytics, third-party traffic, navigation, authentication, financial, or unknown. Suppressed traffic remains in `api/endpoints.yaml` for audit, but does not produce ownership or state-transition hypotheses by default.
+
+```bash
+hunt classify --workspace workspaces/demo
+hunt noise --workspace workspaces/demo
+hunt explain EP-001 --workspace workspaces/demo
+hunt hypotheses --research-tasks --workspace workspaces/demo
+hunt hypotheses --explain HYP-001 --workspace workspaces/demo
+```
+
+`hunt hypotheses` shows active security hypotheses only. Under-evidenced authentication, wallet, verification, and account-scoped operations appear separately as research tasks. Configure host inclusion, suppression rules, extensions, path patterns, classification overrides, and hypothesis thresholds under `analysis` in `target.yaml`. Defaults suppress static assets, telemetry, analytics, and third-party traffic.
+
+Run the complete offline SyntheticPay validation from a development environment:
+
+```bash
+./scripts/run_synthetic_validation.sh
+```
+
+The command builds two isolated workspaces under `/tmp/finsec-synthetic-validation`, verifies deterministic output, redaction, regeneration preservation, safety gates, and real-workspace checksums, then writes `results/VALIDATION_REPORT.md`. It never sends network requests.
+
+See [synthetic-validation-how-to.md](synthetic-validation-how-to.md) for individual script usage, result inspection, testing, cleanup, and troubleshooting.
 
 ## Conservative Normalization
 

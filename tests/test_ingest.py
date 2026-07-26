@@ -6,7 +6,7 @@ from typing import Any
 from finsec.config.workspace import create_workspace
 from finsec.ingest.har import ingest_har
 from finsec.modeling.models import KnowledgeStatus, ObservationStore
-from finsec.utils.redaction import REDACTED
+from finsec.utils.redaction import REDACTED, redact_data
 from finsec.utils.yaml_store import load_yaml
 
 
@@ -62,3 +62,21 @@ def test_source_har_is_not_copied_unredacted(
     assert files == [result.redacted_har]
     assert result.redacted_har.name.endswith("-redacted.har")
     assert har_path.resolve() != result.redacted_har.resolve()
+
+
+def test_numeric_authentication_codes_are_redacted_without_hiding_status_codes() -> None:
+    redacted = redact_data(
+        {
+            "code": "123456",
+            "verification_code": "654321",
+            "statusCode": 200,
+            "result": "code_sent",
+        }
+    )
+
+    assert redacted == {
+        "code": REDACTED,
+        "verification_code": REDACTED,
+        "statusCode": 200,
+        "result": "code_sent",
+    }

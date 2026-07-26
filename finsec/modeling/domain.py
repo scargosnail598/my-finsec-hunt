@@ -75,6 +75,7 @@ class ResourceRecord(EditableModel):
     evidence: list[str] = Field(default_factory=list)
     confidence: Confidence
     knowledge_status: KnowledgeStatus = KnowledgeStatus.INFERRED
+    disposition: Literal["ACTIVE", "SUPPRESSED_INSUFFICIENT_EVIDENCE"] = "ACTIVE"
     notes: str | None = None
     generation: GenerationMetadata | None = None
 
@@ -101,6 +102,7 @@ class InvariantRecord(EditableModel):
     knowledge_status: KnowledgeStatus
     validation_status: Literal["NOT_CONFIRMED"] = "NOT_CONFIRMED"
     rationale: str
+    disposition: Literal["ACTIVE", "SUPPRESSED_INSUFFICIENT_EVIDENCE"] = "ACTIVE"
     notes: str | None = None
     generation: GenerationMetadata | None = None
 

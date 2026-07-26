@@ -220,7 +220,14 @@ def test_openapi_import_creates_documented_observations_and_inventory(tmp_path: 
     assert {(item.name, item.location) for item in endpoint.parameters} == {
         ("paymentId", "path"),
         ("expand", "query"),
+        ("id", "response_body"),
+        ("status", "response_body"),
     }
+    assert all(
+        item.source == "response" and not item.client_controlled
+        for item in endpoint.parameters
+        if item.location == "response_body"
+    )
     assert by_method["POST"].sources == ["OBS-000002"]
 
 

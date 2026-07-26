@@ -2,9 +2,7 @@ target:
   name: divar
   type: fintech
 scope:
-  hosts: 
-    - divar.ir
-    - api.divar.ir 
+  hosts: []
 accounts: []
 testing:
   production: false
@@ -16,6 +14,49 @@ restrictions:
   social_engineering: false
   spam: false
   destructive_actions: false
+analysis:
+  include_hosts: []
+  exclude_hosts: []
+  suppress:
+    static_assets: true
+    telemetry: true
+    analytics: true
+    third_party: true
+  excluded_extensions:
+  - jpg
+  - jpeg
+  - png
+  - webp
+  - gif
+  - svg
+  - ico
+  - css
+  - js
+  - map
+  - woff
+  - woff2
+  - ttf
+  - eot
+  - mp4
+  - webm
+  excluded_path_patterns:
+  - /static/
+  - /assets/
+  - /images/
+  - /img/
+  - /fonts/
+  - /css/
+  - /js/
+  - /media/
+  - /gen_204
+  - /envelope/
+  - /client-exporter/
+  - /actionlog/
+  hypothesis_gates:
+    bola_minimum_score: 6
+    state_transition_minimum_score: 7
+    financial_minimum_score: 5
+  classification_overrides: {}
 focus:
 - authorization
 - business_logic

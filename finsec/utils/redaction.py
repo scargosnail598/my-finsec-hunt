@@ -24,6 +24,8 @@ SENSITIVE_HEADER_LINE_PATTERN = re.compile(
     r"(?im)^(\s*(?:authorization|proxy-authorization|cookie|set-cookie|"
     r"x-api-key|api-key|x-csrf-token|csrf-token)\s*:\s*).*$"
 )
+SENSITIVE_CODE_NAME = re.compile(r"(?:^|[-_])(?:code|pin)(?:$|[-_])", re.IGNORECASE)
+NUMERIC_CODE_PATTERN = re.compile(r"\d{4,10}")
 
 
 def is_sensitive_name(name: str) -> bool:
@@ -103,7 +105,12 @@ def redact_data(value: Any) -> Any:
         result: dict[str, Any] = {}
         named_secret = isinstance(value.get("name"), str) and is_sensitive_name(value["name"])
         for key, item in value.items():
-            if (key == "value" and named_secret) or is_sensitive_name(str(key)):
+            numeric_code = (
+                isinstance(item, str)
+                and SENSITIVE_CODE_NAME.search(str(key))
+                and NUMERIC_CODE_PATTERN.fullmatch(item)
+            )
+            if (key == "value" and named_secret) or is_sensitive_name(str(key)) or numeric_code:
                 result[key] = REDACTED
             else:
                 result[key] = redact_data(item)

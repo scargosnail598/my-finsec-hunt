@@ -14,6 +14,7 @@ from finsec.modeling.domain import (
     ActorStore,
     KnowledgeClaim,
     ResourceOperation,
+    ResourceRecord,
     ResourceStore,
 )
 from finsec.modeling.merge import (
@@ -156,6 +157,8 @@ def _actor_drafts(target: TargetDocument, observations: list[Observation]) -> li
 
 
 def _operation_action(endpoint: Endpoint) -> str:
+    if endpoint.action.name != "unknown":
+        return endpoint.action.name
     segments = [segment for segment in endpoint.path.rstrip("/").split("/") if segment]
     last = segments[-1].lower() if segments else ""
     if not last.startswith("{") and last in ACTION_SEGMENTS:
@@ -190,7 +193,10 @@ def _resource_drafts(
     grouped: dict[str, list[Endpoint]] = defaultdict(list)
     for endpoint in endpoints:
         is_resource = (
-            endpoint.resource.type not in NON_RESOURCE_COMPONENTS
+            endpoint.disposition == "ACTIVE"
+            and endpoint.classification.primary.value
+            not in {"STATIC_ASSET", "TELEMETRY", "ANALYTICS", "THIRD_PARTY"}
+            and endpoint.resource.type not in NON_RESOURCE_COMPONENTS
             and endpoint.resource.type != "Unknown"
         )
         if is_resource:
@@ -205,7 +211,9 @@ def _resource_drafts(
                 parameter.name
                 for endpoint in items
                 for parameter in endpoint.parameters
-                if parameter.location == "path"
+                if parameter.semantic_type == "object_identifier"
+                and parameter.source == "request"
+                and parameter.client_controlled
             }
         )
         operations = [
@@ -246,6 +254,7 @@ def _resource_drafts(
                 "evidence": evidence,
                 "confidence": confidence,
                 "knowledge_status": KnowledgeStatus.INFERRED,
+                "disposition": "ACTIVE",
             }
         )
     return drafts
@@ -296,11 +305,13 @@ def _render_architecture(
         ]
     )
     for resource in resources.resources:
+        if resource.disposition != "ACTIVE":
+            continue
         lines.append(
             f"| {_escape(resource.name)} | {len(resource.operations)} | "
             f"{', '.join(resource.identifiers) or 'None observed'} | {resource.knowledge_status} |"
         )
-    if not resources.resources:
+    if not any(item.disposition == "ACTIVE" for item in resources.resources):
         lines.append("| No resource objects inferred | 0 | - | NOT CONFIRMED |")
 
     authenticated = sum(1 for item in endpoints.endpoints if item.authentication.required)
@@ -331,6 +342,8 @@ def _render_authorization(endpoints: EndpointStore) -> str:
         "|---|---|---|---|---|---|",
     ]
     for endpoint in endpoints.endpoints:
+        if endpoint.disposition != "ACTIVE":
+            continue
         auth = (
             f"Required (`{endpoint.authentication.observed_type}`, INFERRED)"
             if endpoint.authentication.required
@@ -350,6 +363,8 @@ def _render_workflows(resources: ResourceStore) -> str:
         "not inferred without direct evidence.",
     ]
     for resource in resources.resources:
+        if resource.disposition != "ACTIVE":
+            continue
         lines.extend(
             [
                 "",
@@ -373,7 +388,7 @@ def _render_workflows(resources: ResourceStore) -> str:
                 "- Transition order: `NOT CONFIRMED`",
             ]
         )
-    if not resources.resources:
+    if not any(item.disposition == "ACTIVE" for item in resources.resources):
         lines.extend(["", "No workflows can be derived from the current inventory."])
     return "\n".join(lines)
 
@@ -384,6 +399,8 @@ def _render_state_machines(resources: ResourceStore) -> str:
         "insufficient.",
     ]
     for resource in resources.resources:
+        if resource.disposition != "ACTIVE":
+            continue
         lines.extend(
             [
                 "",
@@ -472,14 +489,40 @@ def generate_model(workspace: WorkspacePaths) -> ModelResult:
         fingerprint,
         _actor_drafts(target, observations.observations),
     )
+    resource_drafts = _resource_drafts(endpoints.endpoints, observations.observations)
     resource_merge = merge_generated_records(
         workspace.resources,
         "resources",
         "RES",
         "phase2-modeler",
         fingerprint,
-        _resource_drafts(endpoints.endpoints, observations.observations),
+        resource_drafts,
     )
+    resource_keys = {str(item["key"]) for item in resource_drafts}
+    resource_records = resource_merge.document.get("resources", [])
+    if isinstance(resource_records, list):
+        for record in resource_records:
+            if not isinstance(record, dict) or record.get("key") in resource_keys:
+                continue
+            generation = record.get("generation")
+            if not isinstance(generation, dict):
+                continue
+            if generation.get("generator") != "phase2-modeler":
+                continue
+            payload = {key: value for key, value in record.items() if key != "generation"}
+            if generation.get("generated_checksum") != stable_fingerprint(payload):
+                continue
+            record["disposition"] = "SUPPRESSED_INSUFFICIENT_EVIDENCE"
+            normalized = ResourceRecord.model_validate(record).model_dump(
+                mode="json", exclude_none=True
+            )
+            normalized_generation = normalized["generation"]
+            normalized_payload = {
+                key: value for key, value in normalized.items() if key != "generation"
+            }
+            normalized_generation["generated_checksum"] = stable_fingerprint(normalized_payload)
+            record.clear()
+            record.update(normalized)
     actors = _validate_and_write_actor_store(workspace.actors, actor_merge)
     resources = _validate_and_write_resource_store(workspace.resources, resource_merge)
     _write_model_markdown(workspace, target, observations, endpoints, resources)
@@ -491,7 +534,7 @@ def generate_model(workspace: WorkspacePaths) -> ModelResult:
     )
     return ModelResult(
         actors=len(actors.actors),
-        resources=len(resources.resources),
-        workflows=len(resources.resources),
+        resources=sum(item.disposition == "ACTIVE" for item in resources.resources),
+        workflows=sum(item.disposition == "ACTIVE" for item in resources.resources),
         conflicts=conflicts,
     )

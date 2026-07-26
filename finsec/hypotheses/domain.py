@@ -59,6 +59,17 @@ class HypothesisRecord(EditableModel):
     id: str
     key: str
     title: str
+    kind: Literal["SECURITY_HYPOTHESIS", "RESEARCH_TASK"] = "SECURITY_HYPOTHESIS"
+    disposition: Literal[
+        "ACTIVE",
+        "SUPPRESSED_STATIC_ASSET",
+        "SUPPRESSED_TELEMETRY",
+        "SUPPRESSED_THIRD_PARTY",
+        "SUPPRESSED_PUBLIC_RESOURCE",
+        "SUPPRESSED_INSUFFICIENT_EVIDENCE",
+        "SUPPRESSED_DUPLICATE",
+        "NEEDS_RESEARCH",
+    ] = "ACTIVE"
     category: Literal[
         "authentication",
         "authorization",
@@ -67,6 +78,7 @@ class HypothesisRecord(EditableModel):
         "value_validation",
         "version_parity",
         "channel_parity",
+        "research",
     ]
     component: str
     source: HypothesisSource
@@ -83,6 +95,10 @@ class HypothesisRecord(EditableModel):
     possible_vulnerable_behavior: str
     potential_impact: PotentialImpact
     evidence_to_collect: list[str]
+    eligibility_evidence: list[str] = Field(default_factory=list)
+    missing_evidence: list[str] = Field(default_factory=list)
+    generation_rule: dict[str, str] = Field(default_factory=dict)
+    priority_rationale: list[str] = Field(default_factory=list)
     scores: HypothesisScores
     priority: HypothesisPriority
     status: HypothesisStatus = "NOT_TESTED"

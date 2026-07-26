@@ -43,8 +43,10 @@ def test_inventory_groups_dynamic_paths_conservatively(
     assert transaction.sources == ["OBS-000004"]
 
     login = by_path[("POST", "/api/login")]
-    assert login.state_change is True
-    assert login.financial_impact == "unknown"
+    assert login.state_change is False
+    assert login.action.type == "unknown"
+    assert "POST without a business action" in login.action.reasons[0]
+    assert login.financial_impact == "none"
 
 
 def test_inventory_rebuild_preserves_endpoint_ids(
