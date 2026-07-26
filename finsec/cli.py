@@ -30,9 +30,11 @@ from finsec.normalization.inventory import build_inventory
 from finsec.recon.graphql import ingest_graphql
 from finsec.recon.mobile import scan_mobile
 from finsec.reporting.generator import generate_report
+from finsec.setup import run_setup_wizard
 from finsec.testing.planner import generate_plan
 from finsec.utils.yaml_store import load_yaml
 from finsec.validation.validator import validate_hypothesis
+from finsec.workflow import run_offline_workflow
 
 app = typer.Typer(
     name="hunt",
@@ -136,6 +138,159 @@ def init_command(
         _abort(error)
     console.print(f"[green]Created workspace:[/green] {workspace.root}")
     console.print("Review target.yaml and scope restrictions before any active research.")
+
+
+@app.command("setup")
+def setup_command(
+    name: Annotated[
+        str | None,
+        typer.Option("--name", help="Project display name; omit to be prompted."),
+    ] = None,
+    slug: Annotated[
+        str | None,
+        typer.Option("--slug", help="Path-safe workspace slug; defaults to the project name."),
+    ] = None,
+    host: Annotated[
+        list[str] | None,
+        typer.Option("--host", help="In-scope host. Repeat for multiple hosts."),
+    ] = None,
+    account: Annotated[
+        list[str] | None,
+        typer.Option("--account", help="Researcher-owned account label. Repeat as needed."),
+    ] = None,
+    workspace_root: Annotated[
+        Path,
+        typer.Option("--workspace-root", help="Directory that contains target workspaces."),
+    ] = Path("workspaces"),
+    capture_root: Annotated[
+        Path,
+        typer.Option("--capture-root", help="Directory that contains sanitized HAR captures."),
+    ] = Path("captures"),
+    yes: Annotated[
+        bool,
+        typer.Option("--yes", "-y", help="Use safe defaults and skip confirmation prompts."),
+    ] = False,
+    synthetic: Annotated[
+        bool,
+        typer.Option("--synthetic", help="Create a synthetic/local workspace, not production."),
+    ] = False,
+) -> None:
+    """Interactively create a validated workspace without collecting credentials."""
+
+    try:
+        run_setup_wizard(
+            console,
+            name=name,
+            slug=slug,
+            hosts=host,
+            account_labels=account,
+            workspace_root=workspace_root,
+            capture_root=capture_root,
+            assume_yes=yes,
+            synthetic=synthetic,
+        )
+    except (KeyboardInterrupt, typer.Abort) as error:
+        console.print("\nSetup cancelled; no partial workspace was created.")
+        raise typer.Exit(code=130) from error
+    except (FinsecError, OSError, ValidationError) as error:
+        _abort(error)
+
+
+@app.command("workflow")
+def workflow_command(
+    workspace: WorkspaceOption = None,
+    manifest: Annotated[
+        Path | None,
+        typer.Option(
+            "--manifest",
+            help="Explicit workflow.yaml containing HAR filename, actor, and channel mappings.",
+        ),
+    ] = None,
+    capture_root: Annotated[
+        Path | None,
+        typer.Option(
+            "--capture-root",
+            help="Capture root used to locate <slug>/workflow.yaml when --manifest is omitted.",
+        ),
+    ] = None,
+    no_ingest: Annotated[
+        bool,
+        typer.Option(
+            "--no-ingest",
+            help="Skip the capture manifest and analyze observations already in the workspace.",
+        ),
+    ] = False,
+) -> None:
+    """Run passive ingestion and the complete deterministic offline analysis workflow."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        target = TargetDocument.model_validate(load_yaml(paths.target))
+        selected_manifest: Path | None = None
+        if not no_ingest:
+            if manifest is not None:
+                selected_manifest = manifest.expanduser().resolve()
+                if not selected_manifest.is_file():
+                    raise FinsecError(f"Workflow manifest not found: {selected_manifest}")
+            else:
+                slug = target.target.slug or paths.root.name
+                if capture_root is not None:
+                    base = capture_root.expanduser().resolve()
+                elif paths.root.parent.name == "workspaces":
+                    base = paths.root.parent.parent / "captures"
+                else:
+                    base = Path("captures").resolve()
+                candidate = base / slug / "workflow.yaml"
+                if candidate.is_file():
+                    selected_manifest = candidate
+        result = run_offline_workflow(
+            paths,
+            manifest_path=selected_manifest,
+            progress=lambda message: console.print(f"[cyan]Workflow:[/cyan] {message}"),
+        )
+    except (FinsecError, OSError, ValidationError) as error:
+        _abort(error)
+
+    if selected_manifest is None:
+        console.print("[dim]No capture manifest was used; analyzed existing observations.[/dim]")
+    if result.ingested:
+        console.print("\n[bold]Passive ingestion[/bold]")
+        ingest_table = Table("File", "Actor", "Channel", "Imported", "Already present")
+        for item in result.ingested:
+            ingest_table.add_row(
+                item.file,
+                item.actor,
+                item.channel,
+                str(item.imported),
+                str(item.skipped),
+            )
+        console.print(ingest_table)
+
+    console.print("\n[bold green]Automated offline workflow completed.[/bold green]")
+    table = Table(show_header=False, box=None, pad_edge=False)
+    table.add_column("Artifact")
+    table.add_column("Count", justify="right")
+    for label, count in (
+        ("Observations", result.observations),
+        ("Endpoint families", result.endpoints),
+        ("Suppressed endpoints", result.suppressed_endpoints),
+        ("Actors", result.actors),
+        ("Resources", result.resources),
+        ("Workflows", result.workflows),
+        ("Invariants", result.invariants),
+        ("Active hypotheses", result.active_hypotheses),
+        ("Research tasks", result.research_tasks),
+    ):
+        table.add_row(label, str(count))
+    console.print(table)
+    if result.conflicts:
+        console.print(
+            "[yellow]Preserved researcher-edited records:[/yellow] " + ", ".join(result.conflicts)
+        )
+    console.print(
+        "\nThe automated workflow stops here. Active testing, evidence confirmation, and "
+        "report generation still require explicit human review and supplied evidence."
+    )
 
 
 @app.command("ingest")

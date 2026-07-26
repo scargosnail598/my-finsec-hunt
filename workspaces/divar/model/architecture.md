@@ -11,9 +11,9 @@
 
 | Host | Evidence status |
 |---|---|
-| `api.divar.ir` | OBSERVED in HAR |
+| `api.divar.ir` | OBSERVED in HAR, OBSERVED in target configuration |
 | `app.733.ir` | OBSERVED in HAR |
-| `divar.ir` | OBSERVED in HAR |
+| `divar.ir` | OBSERVED in HAR, OBSERVED in target configuration |
 | `fonts.gstatic.com` | OBSERVED in HAR |
 | `map.divar.ir` | OBSERVED in HAR |
 | `map.divarcdn.com` | OBSERVED in HAR |
@@ -32,30 +32,21 @@
 
 | Resource | Endpoints | Identifiers | Status |
 |---|---:|---|---|
-| 100.Pbf | 3 | None observed | INFERRED |
-| 101.Pbf | 3 | None observed | INFERRED |
-| 7Qhl7E | 1 | None observed | INFERRED |
-| Alskrh1Ygh7Ez9Pzhx7Kilbtj1Usrmul4Vppyz01Gltu9Eyhatfy4Eazpjrcqaanhdi3Wym5Fe9KqrztXlndncxqaywap03Tfskwyewhi63Hidfbcmhnc6Hsuucaiwj0Xwpqdxyitlaybn6Apadxumg | 1 | None observed | INFERRED |
 | AuthenticationCode | 2 | None observed | INFERRED |
 | FpStore | 2 | None observed | INFERRED |
-| Gahouvea | 2 | None observed | INFERRED |
 | GetSearchBarEmptyState | 2 | None observed | INFERRED |
-| Index.Html | 1 | None observed | INFERRED |
-| Logo.Aspx | 1 | None observed | INFERRED |
 | Manifest.Json | 1 | None observed | INFERRED |
 | Mapview | 2 | None observed | INFERRED |
 | OpenInitiatePage | 2 | None observed | INFERRED |
-| PlacesWeb.Json | 1 | None observed | INFERRED |
 | PostCollection | 2 | None observed | INFERRED |
 | Postlist | 6 | None observed | INFERRED |
 | ReceivePostStatsBatch | 2 | None observed | INFERRED |
 | ShouldStoreFp | 2 | None observed | INFERRED |
-| Sprite.Json | 1 | None observed | INFERRED |
-| StyleLightViewPortV1.0.0B66A929CBalad.Json | 1 | None observed | INFERRED |
 | UnactedBundleCount | 2 | None observed | INFERRED |
 | Unread | 2 | None observed | INFERRED |
 | UserRegistrationPage | 2 | None observed | INFERRED |
 | UserVerification | 2 | None observed | INFERRED |
+| V8 | 2 | v8Id | INFERRED |
 | Wallet | 7 | None observed | INFERRED |
 | Web | 2 | None observed | INFERRED |
 

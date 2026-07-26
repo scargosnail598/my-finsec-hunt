@@ -191,6 +191,17 @@ hunt model --workspace workspaces/example-fintech
 
 Review the generated actor, resource, authorization, architecture, and workflow files under `model/`. Generated content distinguishes observed and inferred knowledge and preserves researcher edits.
 
+To run passive ingestion and every deterministic offline stage with one command, record explicit
+HAR filename, actor, and channel assignments in `captures/<slug>/workflow.yaml`, then run:
+
+```bash
+hunt workflow --workspace workspaces/<slug>
+```
+
+Use `--manifest PATH` when the capture directory is not `captures/<slug>/`. The workflow ends at
+hypotheses and status. Active tests, evidence conclusions, validation, and reporting remain
+human-controlled.
+
 Do not treat an inferred owner, role, workflow state, or authorization relationship as confirmed without evidence.
 
 ## 6. Generate Security Invariants

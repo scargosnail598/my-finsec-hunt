@@ -11,7 +11,11 @@
       "additionalProperties": false,
       "required": ["name", "type"],
       "properties": {
-        "name": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"},
+        "name": {"type": "string", "minLength": 1, "maxLength": 100},
+        "slug": {
+          "type": ["string", "null"],
+          "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
+        },
         "type": {"type": "string"}
       }
     },
@@ -29,7 +33,20 @@
         "required": ["id", "ownership"],
         "properties": {
           "id": {"type": "string"},
-          "ownership": {"enum": ["researcher", "external"]}
+          "ownership": {"enum": ["researcher", "external"]},
+          "role": {"type": "string"},
+          "authenticated": {"type": "boolean"},
+          "attributes": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "verification_level": {"type": "string"},
+              "channel": {"enum": ["web", "mobile", "api", "unknown"]},
+              "tier": {"type": ["string", "null"]},
+              "merchant_customer_role": {"type": ["string", "null"]},
+              "notes": {"type": ["string", "null"]}
+            }
+          }
         }
       }
     },
@@ -39,8 +56,10 @@
       "required": ["production", "human_approval_required", "destructive_testing"],
       "properties": {
         "production": {"type": "boolean"},
+        "synthetic": {"type": "boolean"},
         "human_approval_required": {"type": "boolean"},
-        "destructive_testing": {"type": "boolean"}
+        "destructive_testing": {"type": "boolean"},
+        "maximum_parallel_requests": {"type": "integer", "minimum": 1}
       }
     },
     "restrictions": {
@@ -52,7 +71,8 @@
         "brute_force": {"type": "boolean"},
         "social_engineering": {"type": "boolean"},
         "spam": {"type": "boolean"},
-        "destructive_actions": {"type": "boolean"}
+        "destructive_actions": {"type": "boolean"},
+        "real_user_testing": {"type": "boolean"}
       }
     },
     "focus": {"type": "array", "items": {"type": "string"}},

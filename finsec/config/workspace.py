@@ -148,7 +148,7 @@ def create_workspace(name: str, workspace_root: Path) -> WorkspacePaths:
         (root / relative).mkdir(parents=True, exist_ok=True)
 
     paths = WorkspacePaths(root)
-    target = TargetDocument(target=TargetIdentity(name=target_name))
+    target = TargetDocument(target=TargetIdentity(name=target_name, slug=target_name))
     write_yaml(paths.target, target.model_dump(mode="json"))
     write_yaml(paths.observations, ObservationStore().model_dump(mode="json"))
     write_yaml(paths.endpoints, EndpointStore().model_dump(mode="json"))

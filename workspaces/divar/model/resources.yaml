@@ -1,180 +1,6 @@
 version: 1
 resources:
 - id: RES-001
-  key: resource:100.pbf
-  name: 100.Pbf
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-048
-    action: read
-    method: GET
-    path: /tiles/freezed_zoom_11/8/164/100.pbf
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000147
-    knowledge_status: INFERRED
-  - endpoint: EP-050
-    action: read
-    method: GET
-    path: /tiles/high/8/164/100.pbf
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000143
-    knowledge_status: INFERRED
-  - endpoint: EP-052
-    action: read
-    method: GET
-    path: /tiles/low/8/164/100.pbf
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000145
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-048
-  - EP-050
-  - EP-052
-  - OBS-000143
-  - OBS-000145
-  - OBS-000147
-  confidence: low
-  knowledge_status: INFERRED
-  disposition: ACTIVE
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: de0cad19569ffd0e871d0ccf8ea171ab2666bbfff359438bc5648cd4df96facf
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-002
-  key: resource:101.pbf
-  name: 101.Pbf
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-049
-    action: read
-    method: GET
-    path: /tiles/freezed_zoom_11/8/164/101.pbf
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000148
-    knowledge_status: INFERRED
-  - endpoint: EP-051
-    action: read
-    method: GET
-    path: /tiles/high/8/164/101.pbf
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000144
-    knowledge_status: INFERRED
-  - endpoint: EP-053
-    action: read
-    method: GET
-    path: /tiles/low/8/164/101.pbf
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000146
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-049
-  - EP-051
-  - EP-053
-  - OBS-000144
-  - OBS-000146
-  - OBS-000148
-  confidence: low
-  knowledge_status: INFERRED
-  disposition: ACTIVE
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 07f4a99a52cb505fe3fbfb3c2b95675390033448489ca46b47d91349e4798378
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-003
-  key: resource:7qhl7e
-  name: 7Qhl7E
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-021
-    action: read
-    method: GET
-    path: /sD6lXN/7QhL7e/8
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000118
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-021
-  - OBS-000118
-  confidence: low
-  knowledge_status: INFERRED
-  disposition: ACTIVE
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: f3ffc3171f0849391de8abf05a267b3ecf89c277eff398cc9906626a64426f87
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-004
-  key: resource:alskrh1ygh7ez9pzhx7kilbtj1usrmul4vppyz01gltu9eyhatfy4eazpjrcqaanhdi3wym5fe9kqrztxlndncxqaywap03tfskwyewhi63hidfbcmhnc6hsuucaiwj0xwpqdxyitlaybn6apadxumg
-  name: Alskrh1Ygh7Ez9Pzhx7Kilbtj1Usrmul4Vppyz01Gltu9Eyhatfy4Eazpjrcqaanhdi3Wym5Fe9KqrztXlndncxqaywap03Tfskwyewhi63Hidfbcmhnc6Hsuucaiwj0Xwpqdxyitlaybn6Apadxumg
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-057
-    action: verify
-    method: GET
-    path: /verify/ALSKRH1YgH7ez9PZHX7KIlBTJ1USRMUl4VPpYz01Gltu9eYHAtfY4eaZPJrCqaAnhDI3wym5fE9kQRzt_XLnDncXqAYWaP03TFSkWyEWHi63hIdfbCmHNc-6HSUucAiwJ0XwpQDXYITLaYBN6-aPadxUMg
-    state_change: true
-    authentication_required: false
-    evidence:
-    - OBS-000003
-    - OBS-000010
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-057
-  - OBS-000003
-  - OBS-000010
-  confidence: low
-  knowledge_status: INFERRED
-  disposition: ACTIVE
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 72af9eaeb1ead894880080f967978fdfe0d77ee5c92f708ef25c3b4dc49d42a5
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-005
   key: resource:authenticationcode
   name: AuthenticationCode
   identifiers: []
@@ -216,9 +42,9 @@ resources:
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 26f7f895307dea7b35c819f66eddde818f859c7e09006eabb5e336f09d4f09f1
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-006
+    generated_checksum: fc2cf0557720212f7b2510ef03e2e4fdeda946950c03ef7c4e8aee54a53c79ae
+    source_fingerprint: 20399d5a082e949f77b32a90d8424088694f9b2dd190ca3a58103d76f0c4b624
+- id: RES-002
   key: resource:fpstore
   name: FpStore
   identifiers: []
@@ -228,7 +54,7 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-080
+  - endpoint: EP-079
     action: read
     method: OPTIONS
     path: /v8/users/fp-store
@@ -249,7 +75,7 @@ resources:
   states: []
   sensitive_fields: []
   evidence:
-  - EP-080
+  - EP-079
   - EP-103
   - OBS-000120
   - OBS-000121
@@ -259,53 +85,9 @@ resources:
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 064638aa5a0606760af4d1d06945a94d4e35d2b64f57ffa3f8399746301882f9
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-007
-  key: resource:gahouvea
-  name: Gahouvea
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-056
-    action: read
-    method: GET
-    path: /v8/posts-v2/web/gahoUVea
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000175
-    knowledge_status: INFERRED
-  - endpoint: EP-076
-    action: read
-    method: OPTIONS
-    path: /v8/posts-v2/web/gahoUVea
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000176
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields:
-  - webengage.status
-  evidence:
-  - EP-056
-  - EP-076
-  - OBS-000175
-  - OBS-000176
-  confidence: low
-  knowledge_status: INFERRED
-  disposition: ACTIVE
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: dc0a05293dd2147f27a4a27bf468237faea24f670fa53b82dbaa2b74ac83cee5
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-008
+    generated_checksum: bd040f5b0a256aa161b270302f7957dd5764b1b17e1792b5395f1cecd872928f
+    source_fingerprint: 20399d5a082e949f77b32a90d8424088694f9b2dd190ca3a58103d76f0c4b624
+- id: RES-003
   key: resource:getsearchbaremptystate
   name: GetSearchBarEmptyState
   identifiers: []
@@ -315,7 +97,7 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-078
+  - endpoint: EP-077
     action: search
     method: OPTIONS
     path: /v8/search-bookmark/web/get-search-bar-empty-state
@@ -338,7 +120,7 @@ resources:
   states: []
   sensitive_fields: []
   evidence:
-  - EP-078
+  - EP-077
   - EP-101
   - OBS-000062
   - OBS-000065
@@ -350,85 +132,9 @@ resources:
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 8f8332f59f6f1d004505692215e97a528effa36ba83a6dc39f92ff6296071317
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-009
-  key: resource:index.html
-  name: Index.Html
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-059
-    action: read
-    method: GET
-    path: /web-assets/publics/offline-statics/index.html
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000047
-    - OBS-000048
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-059
-  - OBS-000047
-  - OBS-000048
-  confidence: low
-  knowledge_status: INFERRED
-  disposition: ACTIVE
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 374aef20004542e377f702b107c5dedd34f43a21b44786ea6918a8889b333c11
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-010
-  key: resource:logo.aspx
-  name: Logo.Aspx
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-008
-    action: read
-    method: GET
-    path: /logo.aspx
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000043
-    - OBS-000061
-    - OBS-000307
-    - OBS-000398
-    - OBS-000443
-    - OBS-000499
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-008
-  - OBS-000043
-  - OBS-000061
-  - OBS-000307
-  - OBS-000398
-  - OBS-000443
-  - OBS-000499
-  confidence: low
-  knowledge_status: INFERRED
-  disposition: ACTIVE
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: e676cb222c1d3d5822da474e186b4b975bc6810987d90793ec9699e42533064f
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-011
+    generated_checksum: eee17aa2b4268a0b810f00461ef9110ed246cb2a36206d481e2ac7f96e112368
+    source_fingerprint: 20399d5a082e949f77b32a90d8424088694f9b2dd190ca3a58103d76f0c4b624
+- id: RES-004
   key: resource:manifest.json
   name: Manifest.Json
   identifiers: []
@@ -460,9 +166,9 @@ resources:
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 626a316c502b73fd3ed915c2af1023a49259fc7abfc3f02410ecf9deedd091a1
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-012
+    generated_checksum: 7c26c558438e50ab885732d1fb696ba1bb157c7b3767701d90fa7c1d6aed71c5
+    source_fingerprint: 20399d5a082e949f77b32a90d8424088694f9b2dd190ca3a58103d76f0c4b624
+- id: RES-005
   key: resource:mapview
   name: Mapview
   identifiers: []
@@ -508,9 +214,9 @@ resources:
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 969f181b782afbeadabdfc9111a68a65d15a7c63809d5b02c44dc9259394f587
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-013
+    generated_checksum: 144687ff7f83e3cbb994a45c455327f46296795b3ca04365457e2516ac5962f5
+    source_fingerprint: 20399d5a082e949f77b32a90d8424088694f9b2dd190ca3a58103d76f0c4b624
+- id: RES-006
   key: resource:openinitiatepage
   name: OpenInitiatePage
   identifiers: []
@@ -559,43 +265,9 @@ resources:
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: b42f4273d9f3f80cb4bfa3176302f89491b4caed1dab22873650d77fa154b88a
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-014
-  key: resource:placesweb.json
-  name: PlacesWeb.Json
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-019
-    action: places
-    method: GET
-    path: /places-web.json
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000016
-    - OBS-000316
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-019
-  - OBS-000016
-  - OBS-000316
-  confidence: low
-  knowledge_status: INFERRED
-  disposition: ACTIVE
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 7d5e9b3cff03260ce82851e19ada629577c61edb15a6f735e02fec3c50a94952
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-015
+    generated_checksum: 49d97e7f9a4e4b154f6d2e770bc4d526195462048f0946dc68344b0eabfe862f
+    source_fingerprint: 20399d5a082e949f77b32a90d8424088694f9b2dd190ca3a58103d76f0c4b624
+- id: RES-007
   key: resource:postcollection
   name: PostCollection
   identifiers: []
@@ -636,9 +308,9 @@ resources:
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 626a9a18d411a2753b7c2c15e4134f18a0a38892823a27c43dce3a64f95858a2
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-016
+    generated_checksum: 2153c33201b44b9a977e85d556060e90758db61ab4d1b2064a2e9c3d5edf526c
+    source_fingerprint: 20399d5a082e949f77b32a90d8424088694f9b2dd190ca3a58103d76f0c4b624
+- id: RES-008
   key: resource:postlist
   name: Postlist
   identifiers: []
@@ -744,9 +416,9 @@ resources:
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 8bc28b0b66cab5fe0d06677dae8bf38da8e0af93eef477f4f7a6286fde7dbd9c
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-017
+    generated_checksum: 1ccd6f9165907370da5fcfe76be409eb86cd2fde8f7e3514726ba7dbefa53c26
+    source_fingerprint: 20399d5a082e949f77b32a90d8424088694f9b2dd190ca3a58103d76f0c4b624
+- id: RES-009
   key: resource:receivepoststatsbatch
   name: ReceivePostStatsBatch
   identifiers: []
@@ -791,9 +463,9 @@ resources:
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 6a77d659a354150f420787266db1738fffbdae3025e03fa5e1a41c09e6fb095e
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-018
+    generated_checksum: 8dcecbcb6634325762093cc0052bdab07fd42025b6792628d5bc60f30d6e5f68
+    source_fingerprint: 20399d5a082e949f77b32a90d8424088694f9b2dd190ca3a58103d76f0c4b624
+- id: RES-010
   key: resource:shouldstorefp
   name: ShouldStoreFp
   identifiers: []
@@ -803,7 +475,7 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-081
+  - endpoint: EP-080
     action: read
     method: OPTIONS
     path: /v8/users/should-store-fp
@@ -824,7 +496,7 @@ resources:
   states: []
   sensitive_fields: []
   evidence:
-  - EP-081
+  - EP-080
   - EP-104
   - OBS-000108
   - OBS-000112
@@ -834,109 +506,9 @@ resources:
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 79a074dabe442faa8308e86f35e975e955e70362a54e89743439ad0c742f8a68
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-019
-  key: resource:sprite.json
-  name: Sprite.Json
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-002
-    action: read
-    method: GET
-    path: /back/style/prod/sprite/v1.0.0-b66a929c/sprite.json
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000141
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields:
-  - Pin-destination
-  - Pin-destination.height
-  - Pin-destination.pixelRatio
-  - Pin-destination.width
-  - Pin-destination.x
-  - Pin-destination.y
-  - bank-15
-  - bank-15-closed
-  - bank-15-closed.height
-  - bank-15-closed.pixelRatio
-  - bank-15-closed.width
-  - bank-15-closed.x
-  - bank-15-closed.y
-  - bank-15-dark
-  - bank-15-dark.height
-  - bank-15-dark.pixelRatio
-  - bank-15-dark.width
-  - bank-15-dark.x
-  - bank-15-dark.y
-  - bank-15-preview
-  - bank-15-preview.height
-  - bank-15-preview.pixelRatio
-  - bank-15-preview.width
-  - bank-15-preview.x
-  - bank-15-preview.y
-  - bank-15.height
-  - bank-15.pixelRatio
-  - bank-15.width
-  - bank-15.x
-  - bank-15.y
-  - bank-preview
-  - bank-preview.height
-  - bank-preview.pixelRatio
-  - bank-preview.width
-  - bank-preview.x
-  - bank-preview.y
-  evidence:
-  - EP-002
-  - OBS-000141
-  confidence: low
-  knowledge_status: INFERRED
-  disposition: ACTIVE
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 380bb60aadc58d53783e5718ea9b80512e445d663fb30a6cfa13a2ebf5a85bba
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-020
-  key: resource:stylelightviewportv1.0.0b66a929cbalad.json
-  name: StyleLightViewPortV1.0.0B66A929CBalad.Json
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-004
-    action: read
-    method: GET
-    path: /back/style/prod/style-light-view-port-v1.0.0-b66a929c-balad.json
-    state_change: false
-    authentication_required: false
-    evidence:
-    - OBS-000140
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-004
-  - OBS-000140
-  confidence: low
-  knowledge_status: INFERRED
-  disposition: ACTIVE
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 8496261d30440d6b285cbd74812d8d9c0a941de16bc79f1b9d630da88db82f60
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-021
+    generated_checksum: 3a895f6c8359ac07a2283622c1310a153af9d4819651326d08ac2f767029f836
+    source_fingerprint: 20399d5a082e949f77b32a90d8424088694f9b2dd190ca3a58103d76f0c4b624
+- id: RES-011
   key: resource:unactedbundlecount
   name: UnactedBundleCount
   identifiers: []
@@ -981,9 +553,9 @@ resources:
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 8230938a48a57c7d21d1a30b6b2f0c712c90c7a7f17cf450608fc9972e7ac862
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-022
+    generated_checksum: 895e293c13148b28e246c22497c0d6afd424f04cecfa0a0d31b6ae6558ea8654
+    source_fingerprint: 20399d5a082e949f77b32a90d8424088694f9b2dd190ca3a58103d76f0c4b624
+- id: RES-012
   key: resource:unread
   name: Unread
   identifiers: []
@@ -1028,9 +600,9 @@ resources:
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 27f93b787d498ba23058a971b921b9f3429eeec5aec62e78f8ccd43ca3bfff6c
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-023
+    generated_checksum: fdd06d1837e31e654a7ffb20be7d99ed55a86f8f1adba1c124614bd4dd22599b
+    source_fingerprint: 20399d5a082e949f77b32a90d8424088694f9b2dd190ca3a58103d76f0c4b624
+- id: RES-013
   key: resource:userregistrationpage
   name: UserRegistrationPage
   identifiers: []
@@ -1040,7 +612,7 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-077
+  - endpoint: EP-076
     action: page
     method: OPTIONS
     path: /v8/premium-user/user-registration-page
@@ -1065,7 +637,7 @@ resources:
   states: []
   sensitive_fields: []
   evidence:
-  - EP-077
+  - EP-076
   - EP-100
   - OBS-000234
   - OBS-000235
@@ -1079,9 +651,9 @@ resources:
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: c42595b4546bec38caf198ba377b74c829d8715c83f0d90f32fa30d476c28c50
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-024
+    generated_checksum: a99b06862b74d0b0714940261810e74bbf5262d6f66d2906609642ab428cfe02
+    source_fingerprint: 20399d5a082e949f77b32a90d8424088694f9b2dd190ca3a58103d76f0c4b624
+- id: RES-014
   key: resource:userverification
   name: UserVerification
   identifiers: []
@@ -1091,7 +663,7 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-079
+  - endpoint: EP-078
     action: read
     method: OPTIONS
     path: /v8/user-profile/user_verification
@@ -1116,7 +688,7 @@ resources:
   states: []
   sensitive_fields: []
   evidence:
-  - EP-079
+  - EP-078
   - EP-102
   - OBS-000241
   - OBS-000242
@@ -1130,9 +702,54 @@ resources:
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 658d4e19ab9e5b81f9afdcfcddda735eabaa6bbb5cb68a04c0fae729d68a26f8
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-025
+    generated_checksum: f1e0e3b6e8bb1ea4101749b909ccfd5941a98dbb9179b296260b784cf93b76d3
+    source_fingerprint: 20399d5a082e949f77b32a90d8424088694f9b2dd190ca3a58103d76f0c4b624
+- id: RES-015
+  key: resource:v8
+  name: V8
+  identifiers:
+  - v8Id
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-056
+    action: read
+    method: GET
+    path: /v8/{v8Id}/web/gahoUVea
+    state_change: false
+    authentication_required: false
+    evidence:
+    - OBS-000175
+    knowledge_status: INFERRED
+  - endpoint: EP-084
+    action: read
+    method: OPTIONS
+    path: /v8/{v8Id}/web/gahoUVea
+    state_change: false
+    authentication_required: false
+    evidence:
+    - OBS-000176
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields:
+  - webengage.status
+  evidence:
+  - EP-056
+  - EP-084
+  - OBS-000175
+  - OBS-000176
+  confidence: medium
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 9661520473b7a16931ab15b2b854ba9fc40090dc8c6bbdfb1bad8c98c7a93b63
+    source_fingerprint: 20399d5a082e949f77b32a90d8424088694f9b2dd190ca3a58103d76f0c4b624
+- id: RES-016
   key: resource:wallet
   name: Wallet
   identifiers: []
@@ -1151,7 +768,7 @@ resources:
     evidence:
     - OBS-000314
     knowledge_status: INFERRED
-  - endpoint: EP-082
+  - endpoint: EP-081
     action: page
     method: OPTIONS
     path: /v8/wallet/change-wallet-page
@@ -1169,7 +786,7 @@ resources:
     evidence:
     - OBS-000257
     knowledge_status: INFERRED
-  - endpoint: EP-083
+  - endpoint: EP-082
     action: change
     method: OPTIONS
     path: /v8/wallet/change-wallet/ASAN_PARDAKHT
@@ -1187,7 +804,7 @@ resources:
     evidence:
     - OBS-000262
     knowledge_status: INFERRED
-  - endpoint: EP-084
+  - endpoint: EP-083
     action: read
     method: OPTIONS
     path: /v8/wallet/wallet-and-payments
@@ -1217,9 +834,9 @@ resources:
   sensitive_fields: []
   evidence:
   - EP-010
+  - EP-081
   - EP-082
   - EP-083
-  - EP-084
   - EP-105
   - EP-106
   - EP-107
@@ -1244,9 +861,9 @@ resources:
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 8f6b98e1c892a29c5aae1a222954600f01e8a0db76613c3316e47cb0c87b9d70
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
-- id: RES-026
+    generated_checksum: 3839afdecf279bb0f5847eb4a77b8460eabbff7c8cb5f8262ef078c9b61a6714
+    source_fingerprint: 20399d5a082e949f77b32a90d8424088694f9b2dd190ca3a58103d76f0c4b624
+- id: RES-017
   key: resource:web
   name: Web
   identifiers: []
@@ -1303,5 +920,5 @@ resources:
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 410d5c906b33480e49f43fa4e1cf9d7fd799ec54741126cc274f57d50abbfa5d
-    source_fingerprint: 8c1dfc9ac0143a7536ac47c37070a4109a761cb4eb211b1adcab2689f4109d25
+    generated_checksum: 07974a63740bed06ad0df8f9914fb1d49df14a88c23976c1858c4151d3aafb53
+    source_fingerprint: 20399d5a082e949f77b32a90d8424088694f9b2dd190ca3a58103d76f0c4b624

@@ -1,3 +1,12 @@
-# Scope
+# In-Scope Assets
 
-Record authorized hosts, APIs, and applications.
+- divar.ir
+- api.divar.ir
+
+## Out-of-Scope Assets
+
+Not recorded.
+
+## Notes
+
+Confirm the official scope before active testing.

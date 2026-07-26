@@ -1,2 +1,519 @@
 version: 1
-hypotheses: []
+hypotheses:
+- id: HYP-001
+  key: research:get:/my-divar/wallet-and-payments
+  title: Determine wallet operation behavior for GET /my-divar/wallet-and-payments
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Wallet / EP-010
+  source:
+    endpoints:
+    - EP-010
+    invariants: []
+    observations:
+    - OBS-000314
+  invariant: []
+  observations:
+  - OBS-000314
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine wallet operation behavior for GET /my-divar/wallet-and-payments
+  reasoning: The endpoint is security-relevant but lacks sufficient ownership, action,
+    or lifecycle evidence for a vulnerability hypothesis.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: unknown
+  evidence_to_collect:
+  - Authenticated baseline request and response field structure.
+  - Researcher-confirmed resource ownership, action, and lifecycle semantics.
+  eligibility_evidence:
+  - financial or wallet-related path
+  - no authentication requirement observed
+  - no client-controlled input structure observed
+  missing_evidence:
+  - The endpoint is security-relevant but lacks sufficient ownership, action, or lifecycle
+    evidence for a vulnerability hypothesis.
+  generation_rule:
+    id: RESEARCH_DISCOVERY
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: e611e82819cc7ad54cdad1ad89bb8d1dac5015d188f9add609b3bae30eac1559
+    source_fingerprint: 68cbf7a5f012dd8594371c3b98571944413d6404bccb0976494cf533c72d6a68
+- id: HYP-002
+  key: research:post:/v8/auth/open-initiate-page
+  title: Determine security semantics of POST /v8/auth/open-initiate-page
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: OpenInitiatePage / EP-091
+  source:
+    endpoints:
+    - EP-091
+    invariants: []
+    observations:
+    - OBS-000094
+    - OBS-000098
+    - OBS-000102
+  invariant: []
+  observations:
+  - OBS-000094
+  - OBS-000098
+  - OBS-000102
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine security semantics of POST /v8/auth/open-initiate-page
+  reasoning: The endpoint is security-relevant but lacks sufficient ownership, action,
+    or lifecycle evidence for a vulnerability hypothesis.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - Authenticated baseline request and response field structure.
+  - Researcher-confirmed resource ownership, action, and lifecycle semantics.
+  eligibility_evidence:
+  - first-party API endpoint
+  - authentication-sensitive path
+  - security-sensitive request field observed
+  - no authentication requirement observed
+  missing_evidence:
+  - The endpoint is security-relevant but lacks sufficient ownership, action, or lifecycle
+    evidence for a vulnerability hypothesis.
+  generation_rule:
+    id: RESEARCH_DISCOVERY
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 2b971cd357c00f2ba7720bfac8ae7a75ca6b03ced4d9e0228f34245f8505f6b9
+    source_fingerprint: 68cbf7a5f012dd8594371c3b98571944413d6404bccb0976494cf533c72d6a68
+- id: HYP-003
+  key: research:post:/v8/authenticate/signinup/code/consume
+  title: Determine authentication code replay and binding semantics
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: AuthenticationCode / EP-092
+  source:
+    endpoints:
+    - EP-092
+    invariants: []
+    observations:
+    - OBS-000104
+  invariant: []
+  observations:
+  - OBS-000104
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine authentication code replay and binding semantics
+  reasoning: Code consumption is security-sensitive, but replay, challenge, session,
+    and account binding have not been observed together.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - Whether a consumed code can be replayed after successful consumption.
+  - Whether the code is bound to its challenge, session, account, and purpose.
+  - Matched Account A and Account B challenge baselines without brute force.
+  eligibility_evidence:
+  - first-party API endpoint
+  - authentication-sensitive path
+  - mutation-like business action observed
+  - no authentication requirement observed
+  missing_evidence:
+  - Code consumption is security-sensitive, but replay, challenge, session, and account
+    binding have not been observed together.
+  generation_rule:
+    id: RESEARCH_DISCOVERY
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 41551126ca16c98c61890cdb5c6e2dfbaf06ec9110694cfc645d6c4f0225242f
+    source_fingerprint: 68cbf7a5f012dd8594371c3b98571944413d6404bccb0976494cf533c72d6a68
+- id: HYP-004
+  key: research:post:/v8/my-posts/w/list
+  title: Capture an authenticated account baseline for the post collection operation
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: PostCollection / EP-095
+  source:
+    endpoints:
+    - EP-095
+    invariants: []
+    observations:
+    - OBS-000520
+  invariant: []
+  observations:
+  - OBS-000520
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Capture an authenticated account baseline for the post collection operation
+  reasoning: The endpoint is security-relevant but lacks sufficient ownership, action,
+    or lifecycle evidence for a vulnerability hypothesis.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - Authenticated baseline request and response field structure.
+  - Researcher-confirmed resource ownership, action, and lifecycle semantics.
+  eligibility_evidence:
+  - first-party API endpoint
+  - no authentication requirement observed
+  missing_evidence:
+  - The endpoint is security-relevant but lacks sufficient ownership, action, or lifecycle
+    evidence for a vulnerability hypothesis.
+  generation_rule:
+    id: RESEARCH_DISCOVERY
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: bbcb8322d290cf3981633cf27fd2f5c688ca4d85abceaef4d0624fa82d971549
+    source_fingerprint: 68cbf7a5f012dd8594371c3b98571944413d6404bccb0976494cf533c72d6a68
+- id: HYP-005
+  key: research:post:/v8/user-profile/user_verification
+  title: Determine lifecycle and security impact of user verification
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: UserVerification / EP-102
+  source:
+    endpoints:
+    - EP-102
+    invariants: []
+    observations:
+    - OBS-000241
+    - OBS-000243
+    - OBS-000245
+  invariant: []
+  observations:
+  - OBS-000241
+  - OBS-000243
+  - OBS-000245
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine lifecycle and security impact of user verification
+  reasoning: The verification route is security-sensitive, but the supplied response
+    does not prove a verification-state transition.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - Authenticated baseline request and response field structure.
+  - Researcher-confirmed resource ownership, action, and lifecycle semantics.
+  eligibility_evidence:
+  - first-party API endpoint
+  - authentication-sensitive path
+  - no authentication requirement observed
+  - generic POST with no state evidence
+  missing_evidence:
+  - The verification route is security-sensitive, but the supplied response does not
+    prove a verification-state transition.
+  generation_rule:
+    id: RESEARCH_DISCOVERY
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: b7c2b4902145c29d446b8ff09dfecafb93e0bf5ac50e0bf26026d4e7531d2c80
+    source_fingerprint: 68cbf7a5f012dd8594371c3b98571944413d6404bccb0976494cf533c72d6a68
+- id: HYP-006
+  key: research:post:/v8/wallet/change-wallet-page
+  title: Determine whether change-wallet persists server-side state
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Wallet / EP-105
+  source:
+    endpoints:
+    - EP-105
+    invariants: []
+    observations:
+    - OBS-000257
+  invariant: []
+  observations:
+  - OBS-000257
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether change-wallet persists server-side state
+  reasoning: The route is mutation-like, but no authoritative before/after state or
+    lifecycle evidence proves that it persists a server-side change.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: unknown
+  evidence_to_collect:
+  - Authenticated baseline request and response field structure.
+  - Researcher-confirmed resource ownership, action, and lifecycle semantics.
+  eligibility_evidence:
+  - first-party API endpoint
+  - financial or wallet-related path
+  - no authentication requirement observed
+  missing_evidence:
+  - The route is mutation-like, but no authoritative before/after state or lifecycle
+    evidence proves that it persists a server-side change.
+  generation_rule:
+    id: RESEARCH_DISCOVERY
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 0e37453d0ce9b805b08827088615119377f2673911b7265dd9d9ad273886caf6
+    source_fingerprint: 68cbf7a5f012dd8594371c3b98571944413d6404bccb0976494cf533c72d6a68
+- id: HYP-007
+  key: research:post:/v8/wallet/change-wallet/ASAN_PARDAKHT
+  title: Determine whether change-wallet persists server-side state
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Wallet / EP-106
+  source:
+    endpoints:
+    - EP-106
+    invariants: []
+    observations:
+    - OBS-000262
+  invariant: []
+  observations:
+  - OBS-000262
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether change-wallet persists server-side state
+  reasoning: The route is mutation-like, but no authoritative before/after state or
+    lifecycle evidence proves that it persists a server-side change.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: unknown
+  evidence_to_collect:
+  - Authenticated baseline request and response field structure.
+  - Researcher-confirmed resource ownership, action, and lifecycle semantics.
+  eligibility_evidence:
+  - first-party API endpoint
+  - financial or wallet-related path
+  - mutation-like business action observed
+  - no authentication requirement observed
+  missing_evidence:
+  - The route is mutation-like, but no authoritative before/after state or lifecycle
+    evidence proves that it persists a server-side change.
+  generation_rule:
+    id: RESEARCH_DISCOVERY
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 2383fccffe69c4aea9a37ad4f17c494779af86fbe71a7babd402320fba55dcda
+    source_fingerprint: 68cbf7a5f012dd8594371c3b98571944413d6404bccb0976494cf533c72d6a68
+- id: HYP-008
+  key: research:post:/v8/wallet/wallet-and-payments
+  title: Determine wallet operation behavior for POST /v8/wallet/wallet-and-payments
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Wallet / EP-107
+  source:
+    endpoints:
+    - EP-107
+    invariants: []
+    observations:
+    - OBS-000253
+    - OBS-000266
+    - OBS-000348
+    - OBS-000459
+    - OBS-000515
+  invariant: []
+  observations:
+  - OBS-000253
+  - OBS-000266
+  - OBS-000348
+  - OBS-000459
+  - OBS-000515
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine wallet operation behavior for POST /v8/wallet/wallet-and-payments
+  reasoning: The endpoint is security-relevant but lacks sufficient ownership, action,
+    or lifecycle evidence for a vulnerability hypothesis.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: unknown
+  evidence_to_collect:
+  - Authenticated baseline request and response field structure.
+  - Researcher-confirmed resource ownership, action, and lifecycle semantics.
+  eligibility_evidence:
+  - first-party API endpoint
+  - financial or wallet-related path
+  - no authentication requirement observed
+  - generic POST with no state evidence
+  missing_evidence:
+  - The endpoint is security-relevant but lacks sufficient ownership, action, or lifecycle
+    evidence for a vulnerability hypothesis.
+  generation_rule:
+    id: RESEARCH_DISCOVERY
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 93ff88f9e8718d0e7f53136f5b08c17cd79e26da7defd7396878a6ef5edf5f76
+    source_fingerprint: 68cbf7a5f012dd8594371c3b98571944413d6404bccb0976494cf533c72d6a68

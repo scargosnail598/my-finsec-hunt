@@ -11,6 +11,8 @@ dist/
 *.egg-info/
 
 # Keep potentially sensitive captures and raw evidence out of Git.
+captures/
+*.har
 workspaces/*/observations/raw/*
 workspaces/*/observations/har/*
 workspaces/*/observations/screenshots/*

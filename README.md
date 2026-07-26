@@ -65,6 +65,94 @@ py -3.12 -m venv .venv
 python -m pip install -e ".[dev]"
 ```
 
+## Interactive Workspace Setup
+
+Run:
+
+```bash
+hunt setup
+```
+
+The wizard creates:
+
+- A validated target workspace
+- Scope documents
+- Safe, researcher-owned account labels
+- Project-specific HAR capture directories
+- An empty `workflow.yaml` for explicit HAR-to-actor assignments
+- A conservative default analysis policy
+
+It never asks for passwords, tokens, cookies, OTP values, email addresses, phone numbers, or
+other personal identifiers. New HAR files remain outside the workspace in
+`captures/<slug>/incoming/` until the researcher explicitly chooses passive ingestion.
+
+Example session:
+
+```text
+FinSec Hunt Workspace Setup
+Project display name: Divar
+Suggested slug: divar
+Workspace slug [divar]:
+Is this a real production bug-bounty target? [Y/n]:
+Host: divar.ir
+Host: api.divar.ir
+Host:
+How many researcher-owned test accounts will be used? [2]: 2
+Configure advanced settings? [y/N]: n
+Create workspace with these settings? [Y/n]: y
+
+Workspace setup completed.
+HAR input directory: captures/divar/incoming
+```
+
+For a small non-interactive setup using the same safe defaults:
+
+```bash
+hunt setup \
+  --name Divar \
+  --slug divar \
+  --host divar.ir \
+  --host api.divar.ir \
+  --account ACCOUNT_A \
+  --account ACCOUNT_B \
+  --yes
+```
+
+### Automated Offline Workflow
+
+After placing sanitized HAR files in `captures/<slug>/incoming/`, assign each file explicitly in
+`captures/<slug>/workflow.yaml`:
+
+```yaml
+version: 1
+captures:
+  - file: 01-account-a-login.har
+    actor: ACCOUNT_A
+    channel: WEB
+  - file: 02-account-b-payments.har
+    actor: ACCOUNT_B
+    channel: WEB
+```
+
+Then run the complete passive and deterministic offline flow:
+
+```bash
+hunt workflow --workspace workspaces/<slug>
+```
+
+For an advanced capture location, pass its manifest explicitly:
+
+```bash
+hunt workflow \
+  --workspace workspaces/<slug> \
+  --manifest path/to/captures/workflow.yaml
+```
+
+The command passively ingests assigned HARs, classifies and inventories endpoints, builds the
+model, extracts invariants, generates hypotheses and research tasks, and prints final status
+counts. Reruns are idempotent. It never sends requests and stops before active testing, evidence
+confirmation, or report generation, which still require explicit human review.
+
 ## Quick Start
 
 Create a target workspace:

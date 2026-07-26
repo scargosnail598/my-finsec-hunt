@@ -15,6 +15,7 @@ class TargetIdentity(StrictModel):
     """Basic target identity."""
 
     name: str
+    slug: str | None = None
     type: str = "fintech"
 
 
@@ -24,19 +25,34 @@ class ScopeConfig(StrictModel):
     hosts: list[str] = Field(default_factory=list)
 
 
+class AccountAttributes(StrictModel):
+    """Non-sensitive researcher-supplied account context."""
+
+    verification_level: str = "unknown"
+    channel: Literal["web", "mobile", "api", "unknown"] = "web"
+    tier: str | None = None
+    merchant_customer_role: str | None = None
+    notes: str | None = None
+
+
 class AccountConfig(StrictModel):
     """A non-secret account label used in observations and tests."""
 
     id: str
     ownership: Literal["researcher", "external"] = "researcher"
+    role: str = "user"
+    authenticated: bool = True
+    attributes: AccountAttributes = Field(default_factory=AccountAttributes)
 
 
 class TestingConfig(StrictModel):
     """Safety controls for later active-testing phases."""
 
     production: bool = False
+    synthetic: bool = False
     human_approval_required: bool = True
     destructive_testing: bool = False
+    maximum_parallel_requests: int = Field(default=1, ge=1)
 
 
 class RestrictionsConfig(StrictModel):
@@ -47,6 +63,7 @@ class RestrictionsConfig(StrictModel):
     social_engineering: bool = False
     spam: bool = False
     destructive_actions: bool = False
+    real_user_testing: bool = False
 
 
 class SuppressionConfig(StrictModel):
