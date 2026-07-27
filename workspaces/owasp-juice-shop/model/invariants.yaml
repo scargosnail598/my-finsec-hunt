@@ -1,0 +1,56 @@
+version: 1
+invariants:
+- id: INV-001
+  key: object-authorization:EP-003:productId
+  category: authorization
+  statement: Operations on Product selected by productId must authorize the calling
+    actor for that specific object.
+  resources:
+  - Product
+  endpoints:
+  - EP-003
+  evidence:
+  - EP-003
+  - OBS-000057
+  - OBS-000117
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 563fa69a7ed7eb5d8c248bd9f49557fe8d12c91a6438f8b17d20866981ae4856
+    source_fingerprint: 6d94626b57e11ab34f671077c6df192d35f4168a521a175a0bb8d7a6b50df872
+- id: INV-002
+  key: object-authorization:EP-012:basketId
+  category: authorization
+  statement: Operations on Basket selected by basketId must authorize the calling
+    actor for that specific object.
+  resources:
+  - Basket
+  endpoints:
+  - EP-012
+  evidence:
+  - EP-012
+  - OBS-000025
+  - OBS-000055
+  - OBS-000058
+  - OBS-000059
+  - OBS-000085
+  - OBS-000115
+  - OBS-000118
+  - OBS-000119
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 3b30dbb5dadba37b00ac9987686937fed24e0d78d771cbc777a186f55ccfac87
+    source_fingerprint: 6d94626b57e11ab34f671077c6df192d35f4168a521a175a0bb8d7a6b50df872

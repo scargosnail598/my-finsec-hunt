@@ -1,7 +1,0 @@
-hypothesis_id: HYP-002
-plan_id: TEST-001
-plan_checksum: 10938f9ec621b51f73c84901fd8e2c22709f520d0f402602a5323a4e167f0666
-target_policy_checksum: 75c9b40f8fd2b9ee5da482c80a1dd96b4f63b2baef51333d4eab245478e7cf73
-request_count: 1
-outcome: BASELINE_FAILED
-final_vulnerability_status: NOT CONFIRMED

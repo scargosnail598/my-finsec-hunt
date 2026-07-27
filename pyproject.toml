@@ -11,6 +11,7 @@ requires-python = ">=3.12"
 authors = [{ name = "FinSec Hunt Contributors" }]
 dependencies = [
   "jinja2>=3.1.4",
+  "mcp>=1.28.1,<2",
   "pydantic>=2.7.0",
   "pyyaml>=6.0.1",
   "rich>=13.7.1",
@@ -27,6 +28,7 @@ dev = [
 
 [project.scripts]
 hunt = "finsec.cli:app"
+hunt-mcp = "finsec.mcp_server:main"
 
 [tool.setuptools.packages.find]
 include = ["finsec*"]
