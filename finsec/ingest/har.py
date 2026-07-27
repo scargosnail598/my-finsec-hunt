@@ -30,8 +30,12 @@ class IngestResult:
 
     imported: int
     skipped: int
+    relabeled: int
     total: int
     redacted_har: Path
+
+
+MAX_HAR_BYTES = 50_000_000
 
 
 def _headers(items: Any) -> dict[str, str]:
@@ -229,6 +233,9 @@ def ingest_har(
     if not source_path.is_file():
         raise HarFormatError(f"HAR file not found: {source_path}")
     try:
+        size = source_path.stat().st_size
+        if size > MAX_HAR_BYTES:
+            raise HarFormatError(f"HAR import is limited to {MAX_HAR_BYTES} bytes per file.")
         raw = source_path.read_bytes()
         document = json.loads(raw.decode("utf-8-sig"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
@@ -247,14 +254,20 @@ def ingest_har(
     _write_redacted_har(redacted_path, redact_data(document))
 
     store = _load_store(workspace.observations)
-    known_fingerprints = {item.source_fingerprint for item in store.observations}
+    known_fingerprints = {item.source_fingerprint: item for item in store.observations}
     next_number = _next_observation_number(store.observations)
     imported = 0
     skipped = 0
+    relabeled = 0
 
     for index, entry in enumerate(entries):
         fingerprint = hashlib.sha256(f"{digest}:{index}".encode()).hexdigest()
-        if fingerprint in known_fingerprints:
+        existing = known_fingerprints.get(fingerprint)
+        if existing is not None:
+            if existing.actor != actor or existing.channel != channel:
+                existing.actor = actor
+                existing.channel = channel
+                relabeled += 1
             skipped += 1
             continue
         observation_id = f"OBS-{next_number:06d}"
@@ -268,9 +281,9 @@ def ingest_har(
             channel,
         )
         store.observations.append(observation)
-        known_fingerprints.add(fingerprint)
+        known_fingerprints[fingerprint] = observation
         imported += 1
         next_number += 1
 
     write_yaml(workspace.observations, store.model_dump(mode="json", exclude_none=True))
-    return IngestResult(imported, skipped, len(store.observations), redacted_path)
+    return IngestResult(imported, skipped, relabeled, len(store.observations), redacted_path)

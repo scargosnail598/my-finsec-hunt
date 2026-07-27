@@ -1,55 +1,52 @@
 # FinSec Hunt Quick Install
 
-FinSec Hunt requires Python 3.12 or newer. It runs locally and does not require a database, browser, LLM provider, or external service.
+FinSec Hunt requires Python 3.12 or newer. It runs locally and needs no database, browser, LLM
+provider, or external service.
 
-## Automatic Installation
+## Linux And macOS
 
-On Linux or macOS, run:
-
-```bash
-./install.sh
-source .venv/bin/activate
-```
-
-Install the development tools as well:
+Install the CLI and development tools:
 
 ```bash
 ./install.sh --dev
 source .venv/bin/activate
 ```
 
-Useful options:
+Runtime-only install:
 
 ```bash
-./install.sh --python python3.12
-./install.sh --venv .venv-dev --dev
+./install.sh
+source .venv/bin/activate
+```
+
+Installer options:
+
+```text
+--dev             install pytest, Ruff, mypy, and type stubs
+--python COMMAND  choose a Python 3.12+ interpreter
+--venv PATH       choose the virtual-environment directory
+--offline         use only packages already installed/available locally
+```
+
+Examples:
+
+```bash
+./install.sh --python python3.12 --venv .venv-dev --dev
 ./install.sh --offline
 ./install.sh --help
 ```
 
-`--offline` disables package-index access. Run the normal installer once first so the virtual environment contains setuptools 69+ and the project dependencies.
+Offline mode is intended for a previously prepared virtual environment. It disables index access
+and requires setuptools 69+ plus the project dependencies to already be available.
 
-The manual installation steps remain available below.
-
-## Linux and macOS
-
-From the project directory:
+## Manual Install
 
 ```bash
 python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -e .
+python -m pip install -e ".[dev]"
 ```
-
-Verify the installation:
-
-```bash
-hunt --help
-python -c "import finsec; print(finsec.__version__)"
-```
-
-The expected version is `0.5.0`.
 
 ## Windows PowerShell
 
@@ -57,78 +54,59 @@ The expected version is `0.5.0`.
 py -3.12 -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install -e .
-```
-
-Verify the installation:
-
-```powershell
-hunt --help
-python -c "import finsec; print(finsec.__version__)"
-```
-
-## Development Install
-
-Install test and quality-check dependencies:
-
-```bash
 python -m pip install -e ".[dev]"
 ```
 
-Run the checks:
+## Verify
 
 ```bash
-ruff format --check .
-ruff check .
-mypy finsec
-pytest
+hunt --help
+python -c "import finsec; print(finsec.__version__)"
+./scripts/check.sh
 ```
 
 ## First Run
 
-Create a workspace and import the included synthetic HAR:
+For a safe synthetic demonstration:
 
 ```bash
-hunt init demo
-hunt ingest examples/demo.har \
-  --workspace workspaces/demo \
-  --actor ACCOUNT_A \
-  --channel WEB
-hunt inventory --workspace workspaces/demo
-hunt status --workspace workspaces/demo
+python scripts/run_demo_workflow.py
 ```
+
+For a real authorized target:
+
+```bash
+hunt setup
+```
+
+The demo creates a unique temporary workspace and never overwrites an existing one. The setup
+wizard creates explicit scope, researcher-owned account labels, capture directories, and a
+`workflow.yaml` manifest without collecting credentials.
 
 ## Troubleshooting
 
 ### Python version error
 
-Confirm that the active interpreter is Python 3.12 or newer:
-
 ```bash
 python --version
+./install.sh --python /path/to/python3.12 --dev
 ```
 
-### `hunt` command not found
+### `hunt` not found
 
-Activate the virtual environment, then reinstall the project:
+Activate the environment and reinstall:
 
 ```bash
 source .venv/bin/activate
-python -m pip install -e .
+python -m pip install -e ".[dev]"
 ```
 
-On Windows PowerShell, activate with:
+### Build dependency download failure
 
-```powershell
-.venv\Scripts\Activate.ps1
-```
-
-### Build dependency download fails
-
-Check network access to the Python package index. If compatible build dependencies are already installed locally, try:
+If compatible build tools are already installed locally:
 
 ```bash
-python -m pip install -e . --no-build-isolation
+python -m pip install -e ".[dev]" --no-build-isolation
 ```
 
 ### Multiple workspaces found
@@ -139,6 +117,5 @@ Pass the target explicitly:
 hunt status --workspace workspaces/example-fintech
 ```
 
-## Safety Reminder
-
-FinSec Hunt is for explicitly authorized research. Installation does not enable active testing: the project contains no request executor, autonomous exploitation, browser automation, denial-of-service tooling, or credential attack functionality.
+Installation does not enable active testing. FinSec Hunt contains no request executor, browser
+automation, denial-of-service tooling, or credential attack functionality.

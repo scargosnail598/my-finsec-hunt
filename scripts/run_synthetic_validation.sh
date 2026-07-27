@@ -99,7 +99,6 @@ capture "final-status.txt" "$HUNT_BIN" status -w "$RUN1_WORKSPACE"
 capture "active-hypotheses.txt" "$HUNT_BIN" hypotheses -w "$RUN1_WORKSPACE"
 capture "research-tasks.txt" "$HUNT_BIN" hypotheses --research-tasks -w "$RUN1_WORKSPACE"
 capture "suppressed-candidates.txt" "$HUNT_BIN" hypotheses --include-suppressed -w "$RUN1_WORKSPACE"
-capture "grouped-hypotheses.txt" "$HUNT_BIN" hypotheses --grouped -w "$RUN1_WORKSPACE"
 capture "noise.txt" "$HUNT_BIN" noise -w "$RUN1_WORKSPACE"
 
 find workspaces -type f -print0 | sort -z | xargs -0 sha256sum \

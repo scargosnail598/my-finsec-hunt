@@ -1,398 +1,403 @@
-# How to Use FinSec Hunt
+# How To Use FinSec Hunt
 
-FinSec Hunt turns authorized passive evidence into a structured research workspace. It separates facts, inferences, hypotheses, test plans, evidence, validation decisions, and reports.
+This guide covers the intended workflow from authorized passive evidence to a report. FinSec Hunt
+never sends a request or executes a generated plan.
 
-```text
-Passive artifact
-  -> redacted observation or static lead
-  -> endpoint and product model
-  -> security invariant
-  -> attack hypothesis
-  -> human-reviewed test plan
-  -> manually collected evidence
-  -> skeptical validation
-  -> versioned report
-```
-
-FinSec Hunt does not send requests or execute proposed tests.
-
-Install and activate it first:
+## 1. Install And Verify
 
 ```bash
-./install.sh
+./install.sh --dev
 source .venv/bin/activate
+hunt --help
 ```
 
-See `quick-install.md` for manual, development, offline, and Windows installation options.
-
-## 1. Create a Target Workspace
+For an isolated demonstration before using target data:
 
 ```bash
-hunt init example-fintech
+python scripts/run_demo_workflow.py
 ```
 
-This creates:
+The script creates a unique `/tmp/finsec-hunt-demo-*` root, leaves it available for inspection,
+and refuses to overwrite an existing target workspace.
+
+## 2. Create The Workspace
+
+Prefer the validated setup wizard:
+
+```bash
+hunt setup
+```
+
+The wizard asks for:
+
+- A display name and path-safe slug.
+- Exact or leading-wildcard in-scope hosts.
+- Non-secret labels for researcher-owned accounts.
+- Optional analysis and capture-directory settings.
+
+It does not ask for usernames, email addresses, phone numbers, passwords, cookies, tokens, OTPs,
+or API keys.
+
+Non-interactive example:
+
+```bash
+hunt setup \
+  --name "Example Fintech" \
+  --slug example-fintech \
+  --host example.test \
+  --host '*.example.test' \
+  --account ACCOUNT_A \
+  --account ACCOUNT_B \
+  --yes
+```
+
+`*.example.test` covers subdomains such as `api.example.test`; it does not cover the apex
+`example.test`. Record both if both are authorized.
+
+The lower-level `hunt init NAME` command remains available for scripts and migrations, but it
+creates an intentionally incomplete target that must be edited before useful analysis.
+
+## 3. Record Authoritative Rules
+
+Review `workspaces/<slug>/target.yaml` and the files under `scope/`:
 
 ```text
-workspaces/example-fintech/
-├── target.yaml
-├── scope/
-├── observations/
-├── api/
-├── model/
-├── hypotheses/
-├── tests/
-├── evidence/
-├── findings/
-└── reports/
+scope/program.md        official program source and review date
+scope/scope.md          included and excluded assets
+scope/restrictions.md   rate, transaction, account, and technique restrictions
 ```
 
-## 2. Record Scope and Accounts
+The `target.yaml` booleans are default-deny policy inputs. The setup wizard keeps destructive
+testing, real-user testing, denial of service, brute force, spam, and social engineering disabled.
+Do not loosen them without an explicit program-policy review.
 
-Edit `workspaces/example-fintech/target.yaml` before planning tests:
+Analysis settings include:
 
 ```yaml
-scope:
-  hosts:
-    - api.example.test
-
-accounts:
-  - id: ACCOUNT_A
-    ownership: researcher
-  - id: ACCOUNT_B
-    ownership: researcher
-
-testing:
-  production: true
-  human_approval_required: true
-  destructive_testing: false
+analysis:
+  include_hosts:
+    - example.test
+    - '*.example.test'
+  exclude_hosts:
+    - telemetry.vendor.test
+  suppress:
+    static_assets: true
+    telemetry: true
+    analytics: true
+    third_party: true
+  excluded_path_patterns:
+    - /internal-noise/
+  hypothesis_gates:
+    bola_minimum_score: 6
+    state_transition_minimum_score: 7
+    financial_minimum_score: 5
 ```
 
-Also record the authoritative program rules in:
+Custom excluded path patterns are enforced as `SUPPRESSED_INSUFFICIENT_EVIDENCE`. Exact path
+classification overrides take precedence and must use a documented classification value.
+Hypothesis gates accept scores from 0 to 10.
+
+The `focus` list records researcher emphasis for review and reporting. It does not override the
+evidence and safety gates.
+
+## 4. Prepare Passive Captures
+
+Export sanitized HAR files obtained within program authorization. Place them in:
 
 ```text
-scope/program.md
-scope/scope.md
-scope/restrictions.md
+captures/<slug>/incoming/
 ```
 
-Never place passwords, cookies, JWTs, API keys, OTPs, or other credentials in `target.yaml` or research notes.
+Recommended practice:
 
-## 3. Import Passive Evidence
+- Use one account and one coherent workflow per HAR.
+- Prefer Fetch/XHR traffic when possible.
+- Remove unrelated browsing and third-party noise before import.
+- Keep original captures outside the repository.
+- Review every file for credentials and personal data.
 
-Use only artifacts obtained within the program's authorization and restrictions.
+Assign every imported HAR in `captures/<slug>/workflow.yaml`:
 
-### HAR traffic
-
-```bash
-hunt ingest traffic.har \
-  --workspace workspaces/example-fintech \
-  --actor ACCOUNT_A \
-  --channel WEB
+```yaml
+version: 1
+captures:
+  - file: 01-account-a-profile.har
+    actor: ACCOUNT_A
+    channel: WEB
+  - file: 02-account-b-profile.har
+    actor: ACCOUNT_B
+    channel: WEB
+  - file: 03-account-a-mobile.har
+    actor: ACCOUNT_A
+    channel: MOBILE
 ```
 
-### Burp XML history
+Valid manifest channels are `WEB`, `MOBILE`, `API`, `PARTNER_API`, `PUBLIC_API`, and `UNKNOWN`.
+`API` is normalized to `PUBLIC_API`. Disabled entries may use `enabled: false`.
 
-```bash
-hunt ingest-burp burp-history.xml \
-  --workspace workspaces/example-fintech \
-  --actor ACCOUNT_A \
-  --channel WEB
-```
+The manifest accepts filenames only, never directories, so each source resolves beneath the
+manifest's `incoming/` directory. Actors must be configured account labels, `ANONYMOUS`, or
+`UNKNOWN`.
 
-### Caido-style JSON
+## 5. Run The Offline Workflow
 
-```bash
-hunt ingest-caido caido-export.json \
-  --workspace workspaces/example-fintech \
-  --actor ACCOUNT_A \
-  --channel WEB
-```
-
-### OpenAPI or Swagger
-
-```bash
-hunt ingest-openapi openapi.yaml \
-  --workspace workspaces/example-fintech
-```
-
-If the document has no absolute server URL:
-
-```bash
-hunt ingest-openapi openapi.yaml \
-  --workspace workspaces/example-fintech \
-  --base-url https://api.example.test
-```
-
-OpenAPI operations are labeled as documentation evidence. They are not proof that an endpoint is reachable or behaves as documented.
-
-### GraphQL SDL or introspection JSON
-
-```bash
-hunt ingest-graphql schema.graphql \
-  --workspace workspaces/example-fintech \
-  --endpoint https://api.example.test/graphql
-```
-
-GraphQL operations are stored in `api/graphql.yaml`. They remain schema-derived leads and do not become confirmed runtime observations.
-
-### Static mobile or APK artifact
-
-```bash
-hunt scan-mobile authorized-app.apk \
-  --workspace workspaces/example-fintech
-```
-
-You may also scan a JADX output directory or an individual text/binary artifact:
-
-```bash
-hunt scan-mobile jadx-output \
-  --workspace workspaces/example-fintech
-```
-
-The scanner performs bounded string discovery only. It does not execute, install, or extract the application to the workspace.
-
-Supported channel labels are:
-
-```text
-WEB
-MOBILE
-PARTNER_API
-PUBLIC_API
-UNKNOWN
-```
-
-Use non-secret actor labels such as `ACCOUNT_A`, `ACCOUNT_B`, or `ANONYMOUS`.
-
-## 4. Build the Endpoint Inventory
-
-After importing HAR, Burp, Caido, or OpenAPI evidence:
-
-```bash
-hunt inventory --workspace workspaces/example-fintech
-```
-
-Review:
-
-```text
-observations/normalized/observations.yaml
-api/endpoints.yaml
-api/graphql.yaml
-observations/mobile/discoveries.yaml
-```
-
-Check the source observation IDs and normalization rules before relying on a grouped endpoint. Numeric paths are grouped only when repeated evidence supports the inference; explicit OpenAPI templates are labeled `documented_template`.
-
-## 5. Build the Product Model
-
-```bash
-hunt model --workspace workspaces/example-fintech
-```
-
-Review the generated actor, resource, authorization, architecture, and workflow files under `model/`. Generated content distinguishes observed and inferred knowledge and preserves researcher edits.
-
-To run passive ingestion and every deterministic offline stage with one command, record explicit
-HAR filename, actor, and channel assignments in `captures/<slug>/workflow.yaml`, then run:
+With the default capture layout:
 
 ```bash
 hunt workflow --workspace workspaces/<slug>
 ```
 
-Use `--manifest PATH` when the capture directory is not `captures/<slug>/`. The workflow ends at
-hypotheses and status. Active tests, evidence conclusions, validation, and reporting remain
-human-controlled.
-
-Do not treat an inferred owner, role, workflow state, or authorization relationship as confirmed without evidence.
-
-## 6. Generate Security Invariants
+With a custom manifest:
 
 ```bash
-hunt invariants --workspace workspaces/example-fintech
+hunt workflow \
+  --workspace workspaces/<slug> \
+  --manifest /path/to/captures/workflow.yaml
 ```
 
-Review `model/invariants.yaml`. Invariants describe properties that should hold, such as ownership enforcement, authentication requirements, state integrity, and single execution. They are not findings.
-
-## 7. Generate and Prioritize Hypotheses
+To analyze already imported observations without reading a manifest:
 
 ```bash
-hunt hypotheses --workspace workspaces/example-fintech
+hunt workflow --workspace workspaces/<slug> --no-ingest
 ```
 
-Show only the highest-priority queue:
+The choice is explicit. A missing manifest without `--no-ingest` is an error. `--no-ingest`
+cannot be combined with `--manifest` or `--capture-root`.
+
+The workflow performs, in order:
+
+1. Passive HAR ingestion and redacted derivative creation.
+2. Classification and conservative endpoint normalization.
+3. Actor, resource, authorization-view, and operation-map generation.
+4. Invariant extraction.
+5. Evidence-gated security hypotheses and research tasks.
+6. Final deterministic counts.
+
+The command stops at the human-review boundary. It never plans all hypotheses automatically,
+approves a plan, sends a request, collects evidence, validates a claim, or writes a report.
+
+Rerunning the same manifest does not duplicate observations. If the same capture is reassigned to
+a different actor or channel, the existing observation IDs remain stable and the labels are
+refreshed. If one capture fails after earlier captures succeeded, the successful passive imports
+remain in the workspace; fix the failed input and rerun.
+
+## 6. Import Other Passive Artifacts
+
+HAR:
 
 ```bash
-hunt hypotheses --priority P1 \
-  --workspace workspaces/example-fintech
+hunt ingest traffic.har -w workspaces/<slug> --actor ACCOUNT_A --channel WEB
 ```
 
-Inspect one hypothesis:
+Burp XML history:
 
 ```bash
-hunt show HYP-002 --workspace workspaces/example-fintech
+hunt ingest-burp burp-history.xml -w workspaces/<slug> \
+  --actor ACCOUNT_A --channel WEB
 ```
 
-Every hypothesis should identify its endpoint, invariant, observations, mutation dimensions, preconditions, expected secure behavior, possible vulnerable behavior, and safety constraints.
-
-A hypothesis is not a vulnerability.
-
-## 8. Generate a Safe Test Plan
+Caido JSON:
 
 ```bash
-hunt plan HYP-002 --workspace workspaces/example-fintech
+hunt ingest-caido caido-export.json -w workspaces/<slug> \
+  --actor ACCOUNT_A --channel MOBILE
 ```
 
-Plans default to:
+OpenAPI or Swagger:
+
+```bash
+hunt ingest-openapi openapi.yaml -w workspaces/<slug>
+hunt ingest-openapi openapi.yaml -w workspaces/<slug> \
+  --base-url https://api.example.test
+```
+
+OpenAPI operations feed the endpoint inventory as documentation evidence. They can create model
+and invariant leads, but they cannot create an active security hypothesis without matching runtime
+traffic evidence from HAR, Burp, or Caido.
+
+GraphQL schema:
+
+```bash
+hunt ingest-graphql schema.graphql -w workspaces/<slug> \
+  --endpoint https://api.example.test/graphql
+```
+
+Static mobile artifact:
+
+```bash
+hunt scan-mobile authorized-app.apk -w workspaces/<slug>
+hunt scan-mobile jadx-output -w workspaces/<slug>
+```
+
+GraphQL and mobile discoveries remain separate from runtime observations. Mobile scanning is
+bounded string extraction and never executes or installs the application.
+
+## 7. Review Classification And Models
+
+```bash
+hunt classify -w workspaces/<slug>
+hunt noise -w workspaces/<slug>
+hunt explain EP-001 -w workspaces/<slug>
+hunt status -w workspaces/<slug>
+```
+
+Review these artifacts before relying on downstream output:
+
+```text
+observations/normalized/observations.yaml
+api/endpoints.yaml
+model/architecture.md
+model/authorization.md
+model/workflows.md
+model/state-machines.md
+model/invariants.yaml
+```
+
+Path normalization replaces UUIDs, ULIDs, strong opaque identifiers, and repeated numeric values
+only when the evidence supports grouping. API version segments and four-digit years remain
+literal. Endpoint families that contain mixed classifications resolve ties conservatively.
+
+Generated YAML records contain checksums. Untouched records refresh with stable IDs; edited
+generated records are preserved and reported as conflicts. Generated records no longer supported
+by evidence are retained with a suppressed disposition rather than deleted.
+
+## 8. Review Hypotheses And Research Tasks
+
+```bash
+hunt hypotheses -w workspaces/<slug>
+hunt hypotheses --priority P1 -w workspaces/<slug>
+hunt hypotheses --research-tasks -w workspaces/<slug>
+hunt hypotheses --include-suppressed -w workspaces/<slug>
+hunt hypotheses --explain HYP-002 -w workspaces/<slug>
+hunt show HYP-002 -w workspaces/<slug>
+```
+
+Active hypotheses require specific evidence for one or more mutation dimensions:
+
+```text
+ACTOR  OBJECT  STATE  TIME  VALUE  CHANNEL  VERSION
+```
+
+Under-evidenced routes become research tasks instead of generic vulnerability claims. A high
+priority means the question is important and testable; it does not mean a vulnerability exists.
+
+## 9. Generate And Approve A Plan
+
+```bash
+hunt plan HYP-002 -w workspaces/<slug>
+```
+
+Every plan contains:
 
 ```yaml
 human_approval_required: true
 execution_default: DO_NOT_EXECUTE
+approval_status: NOT_REQUESTED
+status: BLOCKED  # or READY_FOR_REVIEW
 ```
 
-Review `tests/plans/plans.yaml`. Confirm that the plan uses researcher-controlled accounts, minimal requests, reversible actions, small values, and no unrelated users. A plan may remain `BLOCKED` when scope, account ownership, lifecycle evidence, or financial-testing authorization is incomplete.
+`BLOCKED` means a safety prerequisite is missing, such as complete host scope, two controlled
+accounts, lifecycle evidence, or production financial-testing permission. Resolve the prerequisite
+and regenerate; do not simply edit `status`.
 
-FinSec Hunt never executes the plan. The researcher must independently confirm program authorization and perform any allowed test manually.
+For a `READY_FOR_REVIEW` plan, independently verify current program authorization and review every
+action, request budget, stop condition, and cleanup step. If approved, edit only the lifecycle field
+in `tests/plans/plans.yaml`:
 
-## 9. Create and Add Evidence
+```yaml
+approval_status: APPROVED
+notes: "Approved by the researcher for the stated accounts and minimum request budget."
+```
 
-Create the evidence workspace:
+Approval is an audit annotation. FinSec Hunt still does not execute the plan.
+
+## 10. Add Redacted Evidence
+
+Create the evidence scaffold:
 
 ```bash
-hunt evidence HYP-002 --workspace workspaces/example-fintech
+hunt evidence HYP-002 -w workspaces/<slug>
 ```
 
-Add request and response evidence:
+Add artifacts:
 
 ```bash
-hunt evidence HYP-002 \
-  --workspace workspaces/example-fintech \
-  --add request.txt \
-  --kind request
-
-hunt evidence HYP-002 \
-  --workspace workspaces/example-fintech \
-  --add response.json \
-  --kind response
+hunt evidence HYP-002 -w workspaces/<slug> --add request.txt --kind request
+hunt evidence HYP-002 -w workspaces/<slug> --add response.json --kind response
+hunt evidence HYP-002 -w workspaces/<slug> --add before.json --kind before
+hunt evidence HYP-002 -w workspaces/<slug> --add after.json --kind after
 ```
 
-Supported evidence kinds include:
-
-```text
-request
-response
-before
-after
-screenshot
-ownership
-other
-```
-
-Text and JSON evidence is automatically redacted before storage. Binary artifacts require manual review and explicit confirmation:
+Screenshots and binary files require manual review:
 
 ```bash
-hunt evidence HYP-002 \
-  --workspace workspaces/example-fintech \
-  --add screenshot.png \
-  --kind screenshot \
-  --already-redacted
+hunt evidence HYP-002 -w workspaces/<slug> \
+  --add screenshot.png --kind screenshot --already-redacted
 ```
 
-Review `evidence/HYP-002/metadata.yaml` and `conclusion.md`. Record negative controls, clean-session reproduction, ownership evidence, actual behavior, uncertainties, and realistic impact without exaggeration.
+Review `evidence/HYP-002/metadata.yaml` and `conclusion.md`. Complete the skeptical assessment and
+report narrative with factual, non-secret text. State-changing endpoints require before/after JSON;
+version and channel comparisons require matched request/response pairs for both paths.
 
-## 10. Validate Skeptically
+## 11. Validate Skeptically
 
 ```bash
-hunt validate HYP-002 --workspace workspaces/example-fintech
+hunt validate HYP-002 -w workspaces/<slug>
 ```
 
-The validator returns one of:
+The validator checks:
 
-```text
-CONFIRMED
-REFUTED
-NEEDS_MORE_EVIDENCE
-OUT_OF_SCOPE
-EXPECTED_BEHAVIOR
-```
+- Source endpoint resolution and exact/wildcard scope coverage.
+- A `READY_FOR_REVIEW`, explicitly `APPROVED` plan.
+- Artifact existence, path containment, and SHA-256 integrity.
+- Request/response counts and required state evidence.
+- Negative controls, clean-session reproduction, authoritative verification, impact, redaction,
+  intended-behavior review, and alternative explanations recorded by the researcher.
 
-Ambiguous evidence must remain `NEEDS_MORE_EVIDENCE`. Documentation, intended delegation, caching, UI-only behavior, missing boundary evidence, unrealistic prerequisites, or incomplete controls can refute or downgrade a suspected issue.
+It returns `CONFIRMED`, `REFUTED`, `NEEDS_MORE_EVIDENCE`, `OUT_OF_SCOPE`, or
+`EXPECTED_BEHAVIOR`. The validator checks structure, consistency, and explicit researcher claims;
+it cannot independently authenticate the truth of an external system interaction.
 
-## 11. Generate a Report
+## 12. Generate A Versioned Report
 
-Reports are available only for a currently validated, report-ready `CONFIRMED` result:
+Complete every narrative field in `evidence/HYP-002/metadata.yaml`, then run:
 
 ```bash
-hunt report HYP-002 --workspace workspaces/example-fintech
+hunt report HYP-002 -w workspaces/<slug>
 ```
 
-Reports are written as immutable revisions:
+The command revalidates current inputs. It refuses to report a non-confirmed or conflicted result.
+Unchanged content reuses the existing report; changed confirmed content creates the next immutable
+revision:
 
 ```text
 reports/HYP-002-report-v1.md
 reports/HYP-002-report-v2.md
 ```
 
-The report includes prerequisites, root cause, expected and actual behavior, violated invariant, evidence, impact, severity rationale, and remediation guidance.
+## 13. Troubleshooting
 
-## 12. Check Workspace Status
+`No workflow manifest was found`:
 
-```bash
-hunt status --workspace workspaces/example-fintech
-```
+- Create/edit `captures/<slug>/workflow.yaml`, pass `--manifest PATH`, or use `--no-ingest` when
+  observations were already imported intentionally.
 
-Status includes counts for observations, endpoints, GraphQL operations, mobile discoveries, resources, actors, workflows, invariants, hypotheses, evidence sets, validations, and reports.
+`Multiple workspaces found`:
 
-## Included Synthetic Demo
+- Pass `--workspace workspaces/<slug>` explicitly.
 
-The repository includes safe synthetic artifacts:
+`Preserved researcher-edited records`:
 
-```bash
-hunt init demo
+- Review the reported keys. Preserve notes, remove only the record you intentionally want
+  regenerated, and rerun the relevant stage.
 
-hunt ingest examples/demo.har \
-  --workspace workspaces/demo --actor ACCOUNT_A --channel WEB
-hunt ingest-burp examples/demo-burp.xml \
-  --workspace workspaces/demo --actor ACCOUNT_A --channel WEB
-hunt ingest-caido examples/demo-caido.json \
-  --workspace workspaces/demo --actor ACCOUNT_A --channel WEB
-hunt ingest-openapi examples/demo-openapi.yaml \
-  --workspace workspaces/demo
-hunt ingest-graphql examples/demo-schema.graphql \
-  --workspace workspaces/demo \
-  --endpoint https://api.example.test/graphql
-hunt scan-mobile examples/demo-mobile-strings.txt \
-  --workspace workspaces/demo
+`No active hypotheses`:
 
-hunt inventory --workspace workspaces/demo
-hunt status --workspace workspaces/demo
-```
+- Review `hunt hypotheses --research-tasks`; missing runtime baselines, ownership, lifecycle, or
+  channel evidence is intentionally not promoted to a vulnerability hypothesis.
 
-## Operational Safety Rules
+`Report template is missing` should not occur in a normal install; the template is packaged with
+the Python module and verified by tests and CI.
 
-- Work only on explicitly authorized targets and features.
-- Use researcher-controlled accounts whenever possible.
-- Do not access unrelated user data beyond minimal proof.
-- Do not create financial loss, denial of service, spam, destructive changes, or persistent access.
-- Keep request volume minimal and within program rules.
-- Keep original captures and credentials outside Git.
-- Review all redacted derivatives before sharing them.
-- Never turn a suspicious endpoint directly into a vulnerability claim.
-
-The required research progression is:
-
-```text
-Observation
-  -> hypothesis
-  -> controlled manual test
-  -> evidence
-  -> skeptical validation
-  -> finding
-```
-
-## Current Limitations
-
-- OpenAPI `$ref`, callbacks, links, and external documents are not resolved.
-- GraphQL processing inventories root fields but does not test resolver behavior.
-- Caido export layouts vary; only common structures are supported.
-- Mobile scanning is string-based static discovery, not full decompilation.
-- Redaction is defense in depth and still requires human review.
-- There is no live proxy plugin, browser automation, request executor, autonomous exploitation, or active scanner.
+For the design reasoning behind these decisions, see
+[docs/workflow-rationale.md](docs/workflow-rationale.md).

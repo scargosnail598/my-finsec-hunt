@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finsec-hunt.local/schemas/workflow.schema.json",
+  "title": "FinSec Hunt Capture Workflow",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "captures"],
+  "properties": {
+    "version": {"const": 1},
+    "captures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "actor"],
+        "properties": {
+          "file": {
+            "type": "string",
+            "pattern": "^[^/\\\\]+\\.[Hh][Aa][Rr]$"
+          },
+          "actor": {"type": "string", "minLength": 1},
+          "channel": {
+            "enum": ["WEB", "MOBILE", "API", "PARTNER_API", "PUBLIC_API", "UNKNOWN"]
+          },
+          "enabled": {"type": "boolean", "default": true}
+        }
+      }
+    }
+  }
+}

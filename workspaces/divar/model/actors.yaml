@@ -23,4 +23,4 @@ actors:
     managed: true
     generator: phase2-modeler
     generated_checksum: 2e4957692a880470a1a5524bf219b791ecf6a308eed312fdf93a3fc74febde92
-    source_fingerprint: 20399d5a082e949f77b32a90d8424088694f9b2dd190ca3a58103d76f0c4b624
+    source_fingerprint: 730bc486ca816da08becb769d861c4b5b13f6146f9a99e8b32053728e015f475

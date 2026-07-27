@@ -4,6 +4,19 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+ClassificationOverride = Literal[
+    "FIRST_PARTY_API",
+    "STATIC_ASSET",
+    "TELEMETRY",
+    "ANALYTICS",
+    "THIRD_PARTY",
+    "PAGE_NAVIGATION",
+    "FILE_DOWNLOAD",
+    "AUTHENTICATION",
+    "FINANCIAL",
+    "UNKNOWN",
+]
+
 
 class StrictModel(BaseModel):
     """Reject unknown fields so workspace configuration stays explicit."""
@@ -56,7 +69,7 @@ class TestingConfig(StrictModel):
 
 
 class RestrictionsConfig(StrictModel):
-    """Explicitly disabled test categories."""
+    """Explicit program permissions; every category is denied by default."""
 
     denial_of_service: bool = False
     brute_force: bool = False
@@ -78,9 +91,9 @@ class SuppressionConfig(StrictModel):
 class HypothesisGateConfig(StrictModel):
     """Minimum relevance required before a candidate becomes active."""
 
-    bola_minimum_score: int = 6
-    state_transition_minimum_score: int = 7
-    financial_minimum_score: int = 5
+    bola_minimum_score: int = Field(default=6, ge=0, le=10)
+    state_transition_minimum_score: int = Field(default=7, ge=0, le=10)
+    financial_minimum_score: int = Field(default=5, ge=0, le=10)
 
 
 class AnalysisConfig(StrictModel):
@@ -126,7 +139,7 @@ class AnalysisConfig(StrictModel):
         ]
     )
     hypothesis_gates: HypothesisGateConfig = Field(default_factory=HypothesisGateConfig)
-    classification_overrides: dict[str, str] = Field(default_factory=dict)
+    classification_overrides: dict[str, ClassificationOverride] = Field(default_factory=dict)
 
 
 class TargetDocument(StrictModel):
@@ -144,6 +157,6 @@ class TargetDocument(StrictModel):
             "business_logic",
             "financial_workflows",
             "authentication",
-            "race_conditions",
+            "replay_and_idempotency",
         ]
     )

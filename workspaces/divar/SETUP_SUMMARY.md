@@ -1,6 +1,6 @@
 # Workspace Setup Summary
 
-Creation date: 2026-07-27T00:08:04+03:30
+Creation date: 2026-07-27T08:34:14+03:30
 
 Project name: divar
 
@@ -10,9 +10,9 @@ Scope hosts: divar.ir, api.divar.ir
 
 Account labels: saeedmehmandoust
 
-Workspace path: /home/saeed/my-finsec-hunt/workspaces/divar
+Workspace path: /home/saeed/bb/my-finsec-hunt/workspaces/divar
 
-HAR input directory: /home/saeed/my-finsec-hunt/captures/divar/incoming
+HAR input directory: /home/saeed/bb/my-finsec-hunt/captures/divar/incoming
 
 ## Safety Settings
 
@@ -32,6 +32,6 @@ HAR input directory: /home/saeed/my-finsec-hunt/captures/divar/incoming
 
 ## Recommended Next Commands
 
-- Edit `/home/saeed/my-finsec-hunt/captures/divar/workflow.yaml` with explicit HAR assignments.
-- `hunt workflow --workspace /home/saeed/my-finsec-hunt/workspaces/divar --manifest /home/saeed/my-finsec-hunt/captures/divar/workflow.yaml`
-- `hunt ingest FILE --workspace /home/saeed/my-finsec-hunt/workspaces/divar --actor ACCOUNT_A --channel WEB`
+- Edit `/home/saeed/bb/my-finsec-hunt/captures/divar/workflow.yaml` with explicit HAR assignments.
+- `hunt workflow --workspace /home/saeed/bb/my-finsec-hunt/workspaces/divar --manifest /home/saeed/bb/my-finsec-hunt/captures/divar/workflow.yaml`
+- `hunt ingest FILE --workspace /home/saeed/bb/my-finsec-hunt/workspaces/divar --actor ACCOUNT_A --channel WEB`

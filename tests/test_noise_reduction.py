@@ -155,3 +155,24 @@ def test_classification_noise_and_explain_cli(tmp_path: Path) -> None:
     assert "SUPPRESSED_TELEMETRY: 4" in noise.output
     assert explained.exit_code == 0
     assert "Security relevance" in explained.output
+
+
+def test_wildcard_scope_and_configured_path_exclusions_are_enforced(tmp_path: Path) -> None:
+    workspace = _workspace(tmp_path, "post-read-endpoints.har", accounts=1)
+    target = load_yaml(workspace.target)
+    target["scope"]["hosts"] = ["*.example.test"]
+    target["analysis"]["include_hosts"] = ["*.example.test"]
+    target["analysis"]["excluded_path_patterns"].append("/search")
+    write_yaml(workspace.target, target)
+
+    build_inventory(workspace)
+    endpoints = _endpoints(workspace).endpoints
+    search = next(item for item in endpoints if item.path.endswith("/search"))
+    remaining = [item for item in endpoints if item is not search]
+
+    assert search.disposition == "SUPPRESSED_INSUFFICIENT_EVIDENCE"
+    assert "configured exclusion pattern /search" in " ".join(search.classification.reasons)
+    assert all(
+        item.classification.primary == EndpointPrimaryClassification.FIRST_PARTY_API
+        for item in remaining
+    )

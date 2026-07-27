@@ -12,7 +12,7 @@
 - `hunt init`, `hunt ingest`, `hunt classify`, `hunt inventory`
 - `hunt model`, `hunt invariants`, `hunt hypotheses`, `hunt status`
 - `hunt plan`, `hunt explain`, `hunt noise`
-- `hunt hypotheses --research-tasks --include-suppressed --grouped`
+- `hunt hypotheses --research-tasks --include-suppressed`
 - `python scripts/validate_synthetic_workspace.py validate ...`
 
 ## Input

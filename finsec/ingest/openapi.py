@@ -305,5 +305,5 @@ def ingest_openapi(
             ),
         },
     )
-    imported, skipped, total = append_observations(workspace, drafts)
-    return PassiveIngestResult(imported, skipped, total, capture_path)
+    imported, skipped, relabeled, total = append_observations(workspace, drafts)
+    return PassiveIngestResult(imported, skipped, relabeled, total, capture_path)

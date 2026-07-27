@@ -126,8 +126,8 @@ def ingest_burp_xml(
             }
         )
     write_redacted_json(capture_path, {"source": "BURP_XML", "items": redacted_items})
-    imported, skipped, total = append_observations(workspace, drafts)
-    return PassiveIngestResult(imported, skipped, total, capture_path)
+    imported, skipped, relabeled, total = append_observations(workspace, drafts)
+    return PassiveIngestResult(imported, skipped, relabeled, total, capture_path)
 
 
 def _entries(document: Any) -> list[dict[str, Any]]:
@@ -222,5 +222,5 @@ def ingest_caido_json(
             )
         )
     write_redacted_json(capture_path, document)
-    imported, skipped, total = append_observations(workspace, drafts)
-    return PassiveIngestResult(imported, skipped, total, capture_path)
+    imported, skipped, relabeled, total = append_observations(workspace, drafts)
+    return PassiveIngestResult(imported, skipped, relabeled, total, capture_path)

@@ -7,6 +7,7 @@ from typing import Any
 from pydantic import ValidationError
 
 from finsec.config.models import TargetDocument
+from finsec.config.scope import hosts_are_covered
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
 from finsec.hypotheses.domain import HypothesisRecord
@@ -156,15 +157,14 @@ def _draft(
     request_budget = 2
     requires_two_accounts = hypothesis.category == "authorization"
     blockers: list[str] = []
-    scoped_hosts = set(target.scope.hosts)
     endpoint_hosts = {host for item in source_endpoints for host in item.hosts}
     if not hypothesis.source.endpoints:
         blockers.append("The hypothesis has no source endpoint for scope validation.")
     elif len(source_endpoints) != len(set(hypothesis.source.endpoints)):
         blockers.append("One or more hypothesis source endpoints cannot be resolved.")
-    if not scoped_hosts:
+    if not target.scope.hosts:
         blockers.append("No in-scope hosts are recorded in target.yaml.")
-    elif endpoint_hosts and not endpoint_hosts.issubset(scoped_hosts):
+    elif endpoint_hosts and not hosts_are_covered(endpoint_hosts, target.scope.hosts):
         blockers.append("The source endpoint host is not fully covered by target.yaml scope.")
     if requires_two_accounts and len(researcher_accounts) < 2:
         blockers.append("Two researcher-controlled accounts are required for this boundary test.")

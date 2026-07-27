@@ -114,10 +114,19 @@ def test_legacy_candidate_is_suppressed_when_it_no_longer_passes_gates(
 def test_version_and_channel_hypotheses_require_observed_differentials(
     phase3_workspace: WorkspacePaths,
 ) -> None:
+    observation_document = load_yaml(phase3_workspace.observations)
+    mobile = copy.deepcopy(observation_document["observations"][0])
+    mobile["id"] = "OBS-000099"
+    mobile["source_fingerprint"] = "mobile-channel-observation"
+    mobile["channel"] = "MOBILE"
+    observation_document["observations"].append(mobile)
+    write_yaml(phase3_workspace.observations, observation_document)
+
     endpoint_document = load_yaml(phase3_workspace.endpoints)
     payment = endpoint_document["endpoints"][0]
     payment["path"] = "/api/v1/payments/{paymentId}"
     payment["channels"] = ["WEB", "MOBILE"]
+    payment["sources"].append("OBS-000099")
     alternate = copy.deepcopy(payment)
     alternate["id"] = "EP-099"
     alternate["path"] = "/api/v2/payments/{paymentId}"

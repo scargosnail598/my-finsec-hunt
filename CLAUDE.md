@@ -1,43 +1,62 @@
-# CLAUDE.md
+# Claude Code Guidance
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Follow `AGENTS.md` as the repository-wide source of truth. This file adds a concise operational map
+for Claude Code sessions.
 
-## Commands
+## Environment
 
-### Development Setup & Virtual Environment
-A virtual environment is required (Python >= 3.12). If using the local virtual environment `.myvenv2`:
-- Use Python binaries from `.myvenv2/bin/` (e.g., `.myvenv2/bin/pytest`, `.myvenv2/bin/ruff`, `.myvenv2/bin/mypy`).
+Python 3.12+ is required. Prefer the project environment:
 
-### Testing & Quality Controls
-- **Run all tests**: `.myvenv2/bin/pytest`
-- **Run a specific test file**: `.myvenv2/bin/pytest tests/test_ingest.py`
-- **Run a single test**: `.myvenv2/bin/pytest tests/test_ingest.py -k test_har_ingestion`
-- **Lint check**: `.myvenv2/bin/ruff check .`
-- **Type check**: `.myvenv2/bin/mypy finsec`
+```bash
+./install.sh --dev
+source .venv/bin/activate
+```
 
-### CLI Tool Usage
-- **Run CLI commands directly**: `python -m finsec.cli --help` or `hunt --help` (when environment is activated)
-- **Initialize a workspace**: `python -m finsec.cli init <workspace_name>`
+Run all checks with:
 
-## Code Architecture & Design Principles
+```bash
+./scripts/check.sh
+```
 
-FinSec Hunt is a local-first, file-based research workspace for authorized fintech Web/API/Mobile bug bounty analysis. It operates strictly via a deterministic pipeline over local YAML files and network captures. It does not send live network requests, run active attacks, or execute database operations.
+Run the deeper offline validation with:
 
-### High-Level Architecture & Pipeline Stages
+```bash
+./scripts/check.sh --synthetic
+```
 
-1. **`finsec/config/`**: Target configuration, workspace creation, discovery, and file paths.
-2. **`finsec/ingest/`**: Ingestion modules for HAR, Burp XML, Caido JSON, and OpenAPI specs. Handles data sanitization, shared secret redaction, and deterministic observation ID generation.
-3. **`finsec/normalization/`**: Path parameter grouping and endpoint inventory construction.
-4. **`finsec/recon/`**: Schema/GraphQL inventory parsing and static mobile/APK architecture discovery.
-5. **`finsec/modeling/`**: Domain model creation (actors, resources, workflows, state invariants) and non-destructive YAML model merging.
-6. **`finsec/hypotheses/`**: Mutation-based attack hypothesis generation and transparent prioritization rules.
-7. **`finsec/testing/`**: Policy-checked, non-executing test-plan generator enforcing safety gates.
-8. **`finsec/evidence/`**: Evidence scaffold creation, checksum tracking, and secret sanitization.
-9. **`finsec/validation/`**: Disproof/validation engines verifying proof requirements against evidence.
-10. **`finsec/reporting/`**: Jinja2-based versioned markdown report compilation from validated evidence.
-11. **`finsec/utils/`**: Atomic YAML reading/writing and string/dict secret redaction utilities.
+## Architecture
 
-### Core Architecture Concepts
-- **Workspace Memory**: `workspaces/<target>/` acts as human-editable shared memory consisting of YAML files (e.g., `target.yaml`, `observations.yaml`, `endpoints.yaml`, `model.yaml`, `hypotheses.yaml`, `test_plan.yaml`, `evidence.yaml`, `findings.yaml`).
-- **Data Isolation**: Facts (observations), inferences (endpoints/models), hypotheses, test plans, evidence, and confirmed findings remain strictly isolated across separate YAML artifacts.
-- **Atomic Operations**: All file persistence uses atomic write/replace patterns (`finsec/utils/yaml.py`) to prevent corrupting workspace state.
+The runtime is deterministic, local-first, and file-based:
+
+```text
+config -> ingest -> normalization -> modeling -> invariants -> hypotheses
+       -> non-executing plans -> evidence -> validation -> reporting
+```
+
+GraphQL and mobile discovery are passive side inventories. They do not become runtime observations
+or active hypotheses without traffic evidence.
+
+Key modules:
+
+- `finsec/config/`: target models, workspace paths, setup, and wildcard scope matching.
+- `finsec/ingest/`: bounded HAR/Burp/Caido/OpenAPI ingestion and redaction.
+- `finsec/normalization/`: classification, path normalization, and endpoint inventory.
+- `finsec/modeling/`: domain artifacts, invariants, checksums, and edit-preserving merges.
+- `finsec/hypotheses/`: runtime-evidence gates, mutation candidates, and scoring.
+- `finsec/testing/`: safety-gated procedures with no execution capability.
+- `finsec/evidence/`, `finsec/validation/`, `finsec/reporting/`: proof handling and reports.
+- `finsec/utils/yaml_store.py`: atomic YAML persistence.
+
+## Safety And Workspace Handling
+
+- Never delete, reset, or regenerate a real workspace as part of a demo or test.
+- Treat `workspaces/` and `captures/` as potentially sensitive user data.
+- Use `tmp_path` in tests and `/tmp` only through the guarded synthetic harness.
+- Do not add live requests, browser execution, credential handling, or weakened approval gates.
+- Preserve generated-record conflicts and researcher text outside managed Markdown blocks.
+
+The agent driver at `.claude/skills/run-finsec-hunt/driver.py` delegates to the non-destructive
+`scripts/run_demo_workflow.py`. It creates a new synthetic root and never removes an existing
+workspace.
+
+See `docs/workflow-rationale.md` before changing stage boundaries or evidence requirements.

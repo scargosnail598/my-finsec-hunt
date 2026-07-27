@@ -2,6 +2,7 @@
 
 import re
 from dataclasses import dataclass
+from importlib.resources import files
 from pathlib import Path
 
 from jinja2 import Environment, StrictUndefined
@@ -83,13 +84,11 @@ def _render(
         raise FinsecError(
             "Report narrative is incomplete; fill metadata.yaml fields: " + ", ".join(missing)
         )
-    template_path = Path(__file__).parents[2] / "templates" / "report.md.j2"
-    if not template_path.is_file():
-        raise FinsecError(f"Report template is missing: {template_path}")
+    template_resource = files("finsec.reporting.templates").joinpath("report.md.j2")
     environment = Environment(
         undefined=StrictUndefined, autoescape=False, keep_trailing_newline=True
     )
-    template = environment.from_string(template_path.read_text(encoding="utf-8"))
+    template = environment.from_string(template_resource.read_text(encoding="utf-8"))
     invariants = _load_invariants(workspace)
     return (
         template.render(

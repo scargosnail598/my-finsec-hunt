@@ -441,10 +441,23 @@ def _aggregate_classification(
     observations: list[Observation], classifications: dict[str, EndpointClassification]
 ) -> EndpointClassification:
     items = [classifications[item.id] for item in observations]
-    primary = max(
-        {item.primary for item in items},
-        key=lambda value: sum(item.primary == value for item in items),
-    )
+    counts = {
+        value: sum(item.primary == value for item in items)
+        for value in EndpointPrimaryClassification
+    }
+    conservative_order = {
+        EndpointPrimaryClassification.THIRD_PARTY: 10,
+        EndpointPrimaryClassification.STATIC_ASSET: 9,
+        EndpointPrimaryClassification.TELEMETRY: 8,
+        EndpointPrimaryClassification.ANALYTICS: 7,
+        EndpointPrimaryClassification.UNKNOWN: 6,
+        EndpointPrimaryClassification.PAGE_NAVIGATION: 5,
+        EndpointPrimaryClassification.FILE_DOWNLOAD: 4,
+        EndpointPrimaryClassification.AUTHENTICATION: 3,
+        EndpointPrimaryClassification.FINANCIAL: 2,
+        EndpointPrimaryClassification.FIRST_PARTY_API: 1,
+    }
+    primary = max(counts, key=lambda value: (counts[value], conservative_order[value]))
     return EndpointClassification(
         primary=primary,
         tags=sorted({tag for item in items for tag in item.tags}, key=lambda item: item.value),

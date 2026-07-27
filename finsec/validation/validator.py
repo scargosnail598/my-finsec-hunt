@@ -9,6 +9,7 @@ from typing import Any
 from pydantic import ValidationError
 
 from finsec.config.models import TargetDocument
+from finsec.config.scope import hosts_are_covered
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
 from finsec.evidence.domain import (
@@ -208,8 +209,7 @@ def _scope_check(
             detail="One or more source endpoints cannot be resolved.",
         )
     hosts = {host for endpoint in endpoints for host in endpoint.hosts}
-    scoped = set(target.scope.hosts)
-    if not scoped or not hosts.issubset(scoped):
+    if not target.scope.hosts or not hosts_are_covered(hosts, target.scope.hosts):
         return ValidationCheck(
             id="SCOPE-ENDPOINTS",
             question="Are all source endpoint hosts explicitly in scope?",

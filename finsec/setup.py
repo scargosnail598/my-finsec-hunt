@@ -417,6 +417,8 @@ def _capture_readme() -> str:
         "- Do not commit HAR files\n"
         "- Do not include credentials\n"
         "- Review files before ingestion\n\n"
+        "Actor and channel assignments are security-relevant metadata. Correcting an assignment "
+        "and rerunning keeps stable observation IDs while refreshing those labels.\n\n"
         "## Automated Offline Workflow\n\n"
         "Assign every HAR to an explicit actor and channel in `workflow.yaml`, then run:\n\n"
         "```bash\n"
@@ -425,7 +427,8 @@ def _capture_readme() -> str:
         "```\n\n"
         "The workflow performs passive ingestion, inventory/classification, modeling, "
         "invariant extraction, hypothesis generation, and status reporting. It never sends "
-        "requests or bypasses human approval.\n"
+        "requests or bypasses human approval. Use `--no-ingest` only when intentionally analyzing "
+        "observations that were imported previously.\n"
     )
 
 
@@ -637,12 +640,17 @@ def _prompt_validated(label: str, validator: Any, *, default: str | None = None)
             typer.echo(f"Error: {error}")
 
 
-def _prompt_integer(label: str, *, default: int, minimum: int = 0) -> int:
+def _prompt_integer(
+    label: str, *, default: int, minimum: int = 0, maximum: int | None = None
+) -> int:
     while True:
         value = typer.prompt(label, default=default, type=int)
-        if value >= minimum:
+        if value >= minimum and (maximum is None or value <= maximum):
             return int(value)
-        typer.echo(f"Error: value must be at least {minimum}.")
+        if maximum is None:
+            typer.echo(f"Error: value must be at least {minimum}.")
+        else:
+            typer.echo(f"Error: value must be between {minimum} and {maximum}.")
 
 
 def _collect_hosts(
@@ -892,14 +900,19 @@ def _collect_advanced(
     console.print("\n[bold]Current hypothesis gates[/bold]")
     gates = HypothesisGateConfig(
         bola_minimum_score=_prompt_integer(
-            "BOLA minimum score", default=base.hypothesis_gates.bola_minimum_score
+            "BOLA minimum score",
+            default=base.hypothesis_gates.bola_minimum_score,
+            maximum=10,
         ),
         state_transition_minimum_score=_prompt_integer(
             "State-transition minimum score",
             default=base.hypothesis_gates.state_transition_minimum_score,
+            maximum=10,
         ),
         financial_minimum_score=_prompt_integer(
-            "Financial minimum score", default=base.hypothesis_gates.financial_minimum_score
+            "Financial minimum score",
+            default=base.hypothesis_gates.financial_minimum_score,
+            maximum=10,
         ),
     )
     capture_relative = validate_capture_relative(

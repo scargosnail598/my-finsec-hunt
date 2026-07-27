@@ -75,18 +75,69 @@
         "real_user_testing": {"type": "boolean"}
       }
     },
-    "focus": {"type": "array", "items": {"type": "string"}},
+    "focus": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "authorization",
+          "authentication",
+          "business_logic",
+          "financial_workflows",
+          "state_transitions",
+          "replay_and_idempotency",
+          "api_version_differences",
+          "channel_differences"
+        ]
+      }
+    },
     "analysis": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "include_hosts": {"type": "array", "items": {"type": "string"}},
         "exclude_hosts": {"type": "array", "items": {"type": "string"}},
-        "suppress": {"type": "object"},
+        "suppress": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "static_assets": {"type": "boolean"},
+            "telemetry": {"type": "boolean"},
+            "analytics": {"type": "boolean"},
+            "third_party": {"type": "boolean"}
+          }
+        },
         "excluded_extensions": {"type": "array", "items": {"type": "string"}},
         "excluded_path_patterns": {"type": "array", "items": {"type": "string"}},
-        "hypothesis_gates": {"type": "object"},
-        "classification_overrides": {"type": "object", "additionalProperties": {"type": "string"}}
+        "hypothesis_gates": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "bola_minimum_score": {"type": "integer", "minimum": 0, "maximum": 10},
+            "state_transition_minimum_score": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "financial_minimum_score": {"type": "integer", "minimum": 0, "maximum": 10}
+          }
+        },
+        "classification_overrides": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": [
+              "FIRST_PARTY_API",
+              "STATIC_ASSET",
+              "TELEMETRY",
+              "ANALYTICS",
+              "THIRD_PARTY",
+              "PAGE_NAVIGATION",
+              "FILE_DOWNLOAD",
+              "AUTHENTICATION",
+              "FINANCIAL",
+              "UNKNOWN"
+            ]
+          }
+        }
       }
     }
   }

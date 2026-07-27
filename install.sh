@@ -164,4 +164,5 @@ printf 'Activate the environment with:\n'
 printf '  source %q\n' "$finsec_venv_path/bin/activate"
 printf 'Then run:\n'
 printf '  hunt --help\n'
-printf '  hunt init demo\n'
+printf '  python scripts/run_demo_workflow.py\n'
+printf '  hunt setup\n'

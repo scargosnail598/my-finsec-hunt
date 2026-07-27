@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import PurePosixPath
 
 from finsec.config.models import TargetDocument
+from finsec.config.scope import host_is_covered
 from finsec.modeling.models import (
     Confidence,
     EndpointClassification,
@@ -97,8 +98,11 @@ def classify_observation(
     tags: list[EndpointPrimaryClassification] = []
     reasons: list[str] = []
 
-    is_third_party = bool(context.included_hosts) and observation.host not in context.included_hosts
-    if observation.host in context.target.analysis.exclude_hosts:
+    included_patterns = list(context.included_hosts)
+    is_third_party = bool(included_patterns) and not host_is_covered(
+        observation.host, included_patterns
+    )
+    if host_is_covered(observation.host, context.target.analysis.exclude_hosts):
         is_third_party = True
 
     static_reasons: list[str] = []
@@ -160,6 +164,24 @@ def classify_observation(
             ],
         )
 
+    configured_exclusions = [
+        pattern
+        for pattern in context.target.analysis.excluded_path_patterns
+        if pattern.lower() in path
+    ]
+    if configured_exclusions:
+        if is_third_party:
+            tags.append(EndpointPrimaryClassification.THIRD_PARTY)
+        return EndpointClassification(
+            primary=EndpointPrimaryClassification.UNKNOWN,
+            tags=tags,
+            confidence=Confidence.HIGH,
+            reasons=[
+                f"path matches configured exclusion pattern {pattern}"
+                for pattern in configured_exclusions
+            ],
+        )
+
     if any(hint in path for hint in AUTHENTICATION_HINTS):
         tags.append(EndpointPrimaryClassification.AUTHENTICATION)
     if any(hint in path for hint in FINANCIAL_HINTS):
@@ -171,7 +193,7 @@ def classify_observation(
     elif observation.method == "GET" and content_type.startswith("text/html"):
         primary = EndpointPrimaryClassification.PAGE_NAVIGATION
         reasons.append("GET response content type is text/html")
-    elif observation.host in context.included_hosts:
+    elif host_is_covered(observation.host, included_patterns):
         primary = EndpointPrimaryClassification.FIRST_PARTY_API
         reasons.append("host is included in target analysis scope")
     else:
@@ -203,4 +225,9 @@ def endpoint_disposition(
         return "SUPPRESSED_ANALYTICS"
     if primary == EndpointPrimaryClassification.THIRD_PARTY and suppress.third_party:
         return "SUPPRESSED_THIRD_PARTY"
+    if any(
+        reason.startswith("path matches configured exclusion pattern ")
+        for reason in classification.reasons
+    ):
+        return "SUPPRESSED_INSUFFICIENT_EVIDENCE"
     return "ACTIVE"

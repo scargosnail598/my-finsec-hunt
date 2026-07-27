@@ -86,6 +86,7 @@ class WorkflowIngestResult:
     channel: ChannelType
     imported: int
     skipped: int
+    relabeled: int
 
 
 @dataclass(frozen=True)
@@ -212,6 +213,7 @@ def _ingest_manifest(
                 channel=_manifest_channel(capture.channel),
                 imported=result.imported,
                 skipped=result.skipped,
+                relabeled=result.relabeled,
             )
         )
     if failures:

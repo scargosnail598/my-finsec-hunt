@@ -61,7 +61,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: e611e82819cc7ad54cdad1ad89bb8d1dac5015d188f9add609b3bae30eac1559
-    source_fingerprint: 68cbf7a5f012dd8594371c3b98571944413d6404bccb0976494cf533c72d6a68
+    source_fingerprint: c9c0421911634eed556c5f761e9fde6ab534bb77b0acf06e3c866b5c39196e22
 - id: HYP-002
   key: research:post:/v8/auth/open-initiate-page
   title: Determine security semantics of POST /v8/auth/open-initiate-page
@@ -128,7 +128,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: 2b971cd357c00f2ba7720bfac8ae7a75ca6b03ced4d9e0228f34245f8505f6b9
-    source_fingerprint: 68cbf7a5f012dd8594371c3b98571944413d6404bccb0976494cf533c72d6a68
+    source_fingerprint: c9c0421911634eed556c5f761e9fde6ab534bb77b0acf06e3c866b5c39196e22
 - id: HYP-003
   key: research:post:/v8/authenticate/signinup/code/consume
   title: Determine authentication code replay and binding semantics
@@ -192,7 +192,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: 41551126ca16c98c61890cdb5c6e2dfbaf06ec9110694cfc645d6c4f0225242f
-    source_fingerprint: 68cbf7a5f012dd8594371c3b98571944413d6404bccb0976494cf533c72d6a68
+    source_fingerprint: c9c0421911634eed556c5f761e9fde6ab534bb77b0acf06e3c866b5c39196e22
 - id: HYP-004
   key: research:post:/v8/my-posts/w/list
   title: Capture an authenticated account baseline for the post collection operation
@@ -253,7 +253,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: bbcb8322d290cf3981633cf27fd2f5c688ca4d85abceaef4d0624fa82d971549
-    source_fingerprint: 68cbf7a5f012dd8594371c3b98571944413d6404bccb0976494cf533c72d6a68
+    source_fingerprint: c9c0421911634eed556c5f761e9fde6ab534bb77b0acf06e3c866b5c39196e22
 - id: HYP-005
   key: research:post:/v8/user-profile/user_verification
   title: Determine lifecycle and security impact of user verification
@@ -320,7 +320,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: b7c2b4902145c29d446b8ff09dfecafb93e0bf5ac50e0bf26026d4e7531d2c80
-    source_fingerprint: 68cbf7a5f012dd8594371c3b98571944413d6404bccb0976494cf533c72d6a68
+    source_fingerprint: c9c0421911634eed556c5f761e9fde6ab534bb77b0acf06e3c866b5c39196e22
 - id: HYP-006
   key: research:post:/v8/wallet/change-wallet-page
   title: Determine whether change-wallet persists server-side state
@@ -382,7 +382,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: 0e37453d0ce9b805b08827088615119377f2673911b7265dd9d9ad273886caf6
-    source_fingerprint: 68cbf7a5f012dd8594371c3b98571944413d6404bccb0976494cf533c72d6a68
+    source_fingerprint: c9c0421911634eed556c5f761e9fde6ab534bb77b0acf06e3c866b5c39196e22
 - id: HYP-007
   key: research:post:/v8/wallet/change-wallet/ASAN_PARDAKHT
   title: Determine whether change-wallet persists server-side state
@@ -445,7 +445,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: 2383fccffe69c4aea9a37ad4f17c494779af86fbe71a7babd402320fba55dcda
-    source_fingerprint: 68cbf7a5f012dd8594371c3b98571944413d6404bccb0976494cf533c72d6a68
+    source_fingerprint: c9c0421911634eed556c5f761e9fde6ab534bb77b0acf06e3c866b5c39196e22
 - id: HYP-008
   key: research:post:/v8/wallet/wallet-and-payments
   title: Determine wallet operation behavior for POST /v8/wallet/wallet-and-payments
@@ -516,4 +516,4 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: 93ff88f9e8718d0e7f53136f5b08c17cd79e26da7defd7396878a6ef5edf5f76
-    source_fingerprint: 68cbf7a5f012dd8594371c3b98571944413d6404bccb0976494cf533c72d6a68
+    source_fingerprint: c9c0421911634eed556c5f761e9fde6ab534bb77b0acf06e3c866b5c39196e22

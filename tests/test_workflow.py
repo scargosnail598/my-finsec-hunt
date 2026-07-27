@@ -10,6 +10,7 @@ from typer.testing import CliRunner
 
 from finsec.cli import app
 from finsec.errors import FinsecError
+from finsec.modeling.models import ObservationStore
 from finsec.setup import AccountInput, build_setup_config, create_setup_workspace
 from finsec.utils.yaml_store import load_yaml, write_yaml
 from finsec.workflow import (
@@ -89,6 +90,25 @@ def test_workflow_rerun_is_idempotent(
     assert first.observations == second.observations == 5
     assert second.ingested[0].imported == 0
     assert second.ingested[0].skipped == 5
+    assert second.ingested[0].relabeled == 0
+
+
+def test_workflow_manifest_correction_refreshes_labels(
+    tmp_path: Path, sample_har: tuple[Path, dict[str, Any]]
+) -> None:
+    created, manifest, _ = _assign_sample_har(tmp_path, sample_har)
+    run_offline_workflow(created.workspace, manifest_path=manifest)
+    merge_workflow_assignments(
+        manifest,
+        [WorkflowCapture(file="account-a.har", actor="ACCOUNT_B", channel="MOBILE")],
+    )
+
+    corrected = run_offline_workflow(created.workspace, manifest_path=manifest)
+
+    assert corrected.ingested[0].relabeled == 5
+    observations = ObservationStore.model_validate(load_yaml(created.workspace.observations))
+    assert {item.actor for item in observations.observations} == {"ACCOUNT_B"}
+    assert {item.channel for item in observations.observations} == {"MOBILE"}
 
 
 def test_workflow_rejects_unconfigured_actor_before_ingestion(
@@ -145,3 +165,30 @@ def test_workflow_cli_runs_to_human_review_boundary(
     assert "Active hypotheses" in result.output
     assert "stops here" in result.output
     assert "human review" in result.output
+
+
+def test_workflow_cli_requires_explicit_ingestion_choice(
+    tmp_path: Path, sample_har: tuple[Path, dict[str, Any]]
+) -> None:
+    created, manifest, _ = _assign_sample_har(tmp_path, sample_har)
+    run_offline_workflow(created.workspace, manifest_path=manifest)
+
+    missing_manifest = RUNNER.invoke(
+        app,
+        [
+            "workflow",
+            "--workspace",
+            str(created.workspace.root),
+            "--capture-root",
+            str(tmp_path / "no-captures-here"),
+        ],
+    )
+    existing_only = RUNNER.invoke(
+        app,
+        ["workflow", "--workspace", str(created.workspace.root), "--no-ingest"],
+    )
+
+    assert missing_manifest.exit_code == 1
+    assert "No workflow manifest was found" in missing_manifest.output
+    assert existing_only.exit_code == 0, existing_only.output
+    assert "explicitly skipped" in existing_only.output

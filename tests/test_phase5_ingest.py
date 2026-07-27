@@ -9,12 +9,16 @@ import pytest
 
 from finsec.config.workspace import create_workspace
 from finsec.errors import FinsecError
+from finsec.hypotheses.domain import HypothesisStore
+from finsec.hypotheses.generator import generate_hypotheses
 from finsec.ingest.openapi import ingest_openapi
 from finsec.ingest.traffic import ingest_burp_xml, ingest_caido_json
+from finsec.modeling.generator import generate_model
+from finsec.modeling.invariants import generate_invariants
 from finsec.modeling.models import EndpointStore, ObservationStore
 from finsec.normalization.inventory import build_inventory
 from finsec.utils.redaction import REDACTED
-from finsec.utils.yaml_store import load_yaml
+from finsec.utils.yaml_store import load_yaml, write_yaml
 
 
 def _burp_export(path: Path) -> None:
@@ -243,3 +247,30 @@ def test_openapi_without_server_requires_explicit_base_url(tmp_path: Path) -> No
 
     result = ingest_openapi(source, workspace, base_url="https://api.example.test")
     assert result.imported == 1
+
+
+def test_openapi_only_evidence_does_not_create_active_security_hypotheses(
+    tmp_path: Path,
+) -> None:
+    workspace = create_workspace("documented-only", tmp_path / "workspaces")
+    target = load_yaml(workspace.target)
+    target["scope"]["hosts"] = ["api.example.test"]
+    target["accounts"] = [
+        {"id": "ACCOUNT_A", "ownership": "researcher"},
+        {"id": "ACCOUNT_B", "ownership": "researcher"},
+    ]
+    write_yaml(workspace.target, target)
+    source = tmp_path / "openapi.json"
+    source.write_text(json.dumps(_openapi_document()), encoding="utf-8")
+
+    ingest_openapi(source, workspace)
+    build_inventory(workspace)
+    generate_model(workspace)
+    generate_invariants(workspace)
+    generate_hypotheses(workspace)
+
+    hypotheses = HypothesisStore.model_validate(load_yaml(workspace.hypotheses)).hypotheses
+    assert not any(
+        item.kind == "SECURITY_HYPOTHESIS" and item.disposition == "ACTIVE" for item in hypotheses
+    )
+    assert any(item.kind == "RESEARCH_TASK" for item in hypotheses)

@@ -31,6 +31,9 @@ hunt = "finsec.cli:app"
 [tool.setuptools.packages.find]
 include = ["finsec*"]
 
+[tool.setuptools.package-data]
+"finsec.reporting.templates" = ["*.j2"]
+
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]

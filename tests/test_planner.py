@@ -47,6 +47,20 @@ def test_plan_is_review_only_and_uses_researcher_controlled_accounts(
     assert payment.status == "TEST_PLANNED"
 
 
+def test_plan_accepts_explicit_wildcard_scope_coverage(
+    phase3_workspace: WorkspacePaths,
+) -> None:
+    target = load_yaml(phase3_workspace.target)
+    target["scope"]["hosts"] = ["*.example.test"]
+    write_yaml(phase3_workspace.target, target)
+    generate_hypotheses(phase3_workspace)
+
+    plan = generate_plan(phase3_workspace, "HYP-002").plan
+
+    assert plan.status == "READY_FOR_REVIEW"
+    assert not any("not fully covered" in reason for reason in plan.risk.reasons)
+
+
 def test_plan_blocks_incomplete_scope_and_uncontrolled_accounts(
     tmp_path: Path, sample_har: tuple[Path, dict[str, Any]]
 ) -> None:
@@ -106,10 +120,19 @@ def test_plan_approval_and_notes_survive_regeneration(
 def test_differential_plans_check_every_endpoint_and_use_channel_language(
     phase3_workspace: WorkspacePaths,
 ) -> None:
+    observations = load_yaml(phase3_workspace.observations)
+    mobile = copy.deepcopy(observations["observations"][0])
+    mobile["id"] = "OBS-000099"
+    mobile["source_fingerprint"] = "planner-mobile-channel-observation"
+    mobile["channel"] = "MOBILE"
+    observations["observations"].append(mobile)
+    write_yaml(phase3_workspace.observations, observations)
+
     document = load_yaml(phase3_workspace.endpoints)
     payment = document["endpoints"][0]
     payment["path"] = "/api/v1/payments/{paymentId}"
     payment["channels"] = ["WEB", "MOBILE"]
+    payment["sources"].append("OBS-000099")
     legacy = copy.deepcopy(payment)
     legacy["id"] = "EP-099"
     legacy["path"] = "/api/v2/payments/{paymentId}"

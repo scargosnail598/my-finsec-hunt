@@ -20,12 +20,14 @@ from finsec.modeling.models import (
     EndpointPrimaryClassification,
     EndpointStore,
     KnowledgeStatus,
+    Observation,
     ObservationStore,
 )
 from finsec.utils.yaml_store import load_yaml, write_yaml
 
 VERSION_PATTERN = re.compile(r"(?P<prefix>/(?:api/)?)v(?P<version>\d+)(?=/|$)", re.IGNORECASE)
 MUTABLE_PARAMETER_LOCATIONS = {"path", "query", "body", "header", "graphql_variable"}
+RUNTIME_OBSERVATION_SOURCES = {"HAR", "BURP_XML", "CAIDO_JSON"}
 
 
 @dataclass(frozen=True)
@@ -89,6 +91,18 @@ def _source(invariant: InvariantRecord) -> dict[str, list[str]]:
 
 def _resource_by_name(resources: ResourceStore) -> dict[str, ResourceRecord]:
     return {item.name: item for item in resources.resources if item.disposition == "ACTIVE"}
+
+
+def _runtime_observations(
+    endpoint: Endpoint, observations: dict[str, Observation]
+) -> list[Observation]:
+    """Return traffic observations, excluding documentation-only OpenAPI records."""
+
+    return [
+        observations[source]
+        for source in endpoint.sources
+        if source in observations and observations[source].source in RUNTIME_OBSERVATION_SOURCES
+    ]
 
 
 def _authentication_hypothesis(
@@ -506,6 +520,7 @@ def _value_hypotheses(
     endpoints: EndpointStore,
     invariants: InvariantStore,
     resources: ResourceStore,
+    observations: dict[str, Observation],
 ) -> list[dict[str, Any]]:
     endpoint_by_id = {item.id: item for item in endpoints.endpoints}
     invariants_by_endpoint: dict[str, list[InvariantRecord]] = defaultdict(list)
@@ -544,20 +559,30 @@ def _value_hypotheses(
                 }
             )
             mutation_candidate = endpoint is not None and endpoint.state_change
+            runtime_ids = (
+                {item.id for item in _runtime_observations(endpoint, observations)}
+                if endpoint is not None
+                else set()
+            )
+            runtime_boundary_evidence = {
+                source
+                for parameter in boundary_parameters
+                for source in parameter.evidence
+                if source in runtime_ids
+            }
             if (
                 endpoint is None
                 or endpoint.disposition != "ACTIVE"
                 or not mutation_candidate
                 or not boundary_fields
+                or not runtime_boundary_evidence
                 or endpoint.security_relevance
                 < target.analysis.hypothesis_gates.financial_minimum_score
             ):
                 continue
             related = invariants_by_endpoint.get(endpoint.id, [])
             invariant_ids = sorted(item.id for item in related)
-            observations = sorted(
-                {source for parameter in boundary_parameters for source in parameter.evidence}
-            )
+            observation_ids = sorted(runtime_boundary_evidence)
             financial = resource.name.lower() in FINANCIAL_RESOURCES
             impact = 5 if financial else 3
             likelihood = 2
@@ -577,10 +602,10 @@ def _value_hypotheses(
                     "source": {
                         "endpoints": [endpoint.id],
                         "invariants": invariant_ids,
-                        "observations": observations,
+                        "observations": observation_ids,
                     },
                     "invariant": invariant_ids,
-                    "observations": observations,
+                    "observations": observation_ids,
                     "mutation_dimensions": ["VALUE"],
                     "required_state": [
                         "A documented safe boundary and reversible researcher-owned "
@@ -636,12 +661,15 @@ def _value_hypotheses(
 
 
 def _version_hypotheses(
-    endpoints: EndpointStore, invariants: InvariantStore, resources: ResourceStore
+    endpoints: EndpointStore,
+    invariants: InvariantStore,
+    resources: ResourceStore,
+    observations: dict[str, Observation],
 ) -> list[dict[str, Any]]:
     resource_names = {item.name for item in resources.resources if item.disposition == "ACTIVE"}
     grouped: dict[tuple[str, str, str], list[Endpoint]] = defaultdict(list)
     for endpoint in endpoints.endpoints:
-        if endpoint.disposition != "ACTIVE":
+        if endpoint.disposition != "ACTIVE" or not _runtime_observations(endpoint, observations):
             continue
         signature = _version_signature(endpoint.path)
         if endpoint.resource.type in resource_names and signature is not None:
@@ -668,7 +696,7 @@ def _version_hypotheses(
                 for invariant in invariants_by_endpoint[endpoint_id]
             }
         )
-        observations = sorted({source for item in items for source in item.sources})
+        observation_ids = sorted({source for item in items for source in item.sources})
         scores = _score(4, 3, 3, 4)
         drafts.append(
             {
@@ -685,10 +713,10 @@ def _version_hypotheses(
                 "source": {
                     "endpoints": endpoint_ids,
                     "invariants": related,
-                    "observations": observations,
+                    "observations": observation_ids,
                 },
                 "invariant": related,
-                "observations": observations,
+                "observations": observation_ids,
                 "mutation_dimensions": ["VERSION"],
                 "required_state": [
                     "Equivalent researcher-owned objects exist across API versions."
@@ -740,7 +768,10 @@ def _version_hypotheses(
 
 
 def _channel_hypotheses(
-    endpoints: EndpointStore, invariants: InvariantStore, resources: ResourceStore
+    endpoints: EndpointStore,
+    invariants: InvariantStore,
+    resources: ResourceStore,
+    observations: dict[str, Observation],
 ) -> list[dict[str, Any]]:
     resource_names = {item.name for item in resources.resources if item.disposition == "ACTIVE"}
     invariants_by_endpoint: dict[str, list[InvariantRecord]] = defaultdict(list)
@@ -754,11 +785,12 @@ def _channel_hypotheses(
     for endpoint in endpoints.endpoints:
         if endpoint.disposition != "ACTIVE":
             continue
-        channels = sorted(channel for channel in endpoint.channels if channel != "UNKNOWN")
+        runtime = _runtime_observations(endpoint, observations)
+        channels = sorted({item.channel for item in runtime if item.channel != "UNKNOWN"})
         if endpoint.resource.type not in resource_names or len(channels) < 2:
             continue
         related = sorted(item.id for item in invariants_by_endpoint[endpoint.id])
-        observations = sorted(endpoint.sources)
+        observation_ids = sorted(item.id for item in runtime)
         scores = _score(4, 3, 3, 4)
         drafts.append(
             {
@@ -772,10 +804,10 @@ def _channel_hypotheses(
                 "source": {
                     "endpoints": [endpoint.id],
                     "invariants": related,
-                    "observations": observations,
+                    "observations": observation_ids,
                 },
                 "invariant": related,
-                "observations": observations,
+                "observations": observation_ids,
                 "mutation_dimensions": ["CHANNEL"],
                 "required_state": [
                     "Equivalent researcher-owned objects and credentials are available "
@@ -829,11 +861,13 @@ def _channel_hypotheses(
 
 def _drafts(
     target: TargetDocument,
+    observations: ObservationStore,
     endpoints: EndpointStore,
     resources: ResourceStore,
     invariants: InvariantStore,
 ) -> list[dict[str, Any]]:
     endpoint_by_id = {item.id: item for item in endpoints.endpoints}
+    observation_by_id = {item.id: item for item in observations.observations}
     resource_by_name = _resource_by_name(resources)
     researcher_accounts = sum(1 for account in target.accounts if account.ownership == "researcher")
     drafts: list[dict[str, Any]] = []
@@ -852,10 +886,20 @@ def _drafts(
             continue
         if endpoint.disposition != "ACTIVE":
             continue
+        runtime = _runtime_observations(endpoint, observation_by_id)
+        authenticated_runtime = any(item.authentication.present for item in runtime)
+        anonymous_runtime_success = any(
+            not item.authentication.present
+            and item.status_code is not None
+            and 200 <= item.status_code < 300
+            and bool(item.response_fields)
+            for item in runtime
+        )
         if invariant.category == "authentication":
             if (
                 endpoint.security_relevance >= 4
-                and endpoint.authentication.anonymous_success_observed
+                and authenticated_runtime
+                and anonymous_runtime_success
             ):
                 draft = _authentication_hypothesis(
                     invariant, endpoint, resource, researcher_accounts
@@ -876,7 +920,11 @@ def _drafts(
                 )
                 drafts.append(draft)
                 active_endpoint_ids.add(endpoint.id)
-            elif endpoint.security_relevance >= 4 and "code/consume" not in endpoint.path.lower():
+            elif (
+                endpoint.security_relevance >= 4
+                and authenticated_runtime
+                and "code/consume" not in endpoint.path.lower()
+            ):
                 authentication_research[resource.name].append((invariant, endpoint, resource))
         elif invariant.category == "authorization":
             parameter = invariant.key.rsplit(":", 1)[-1]
@@ -894,7 +942,7 @@ def _drafts(
                 and parameter_record.source == "request"
                 and parameter_record.client_controlled
                 and parameter_record.location in MUTABLE_PARAMETER_LOCATIONS
-                and endpoint.authentication.required
+                and authenticated_runtime
                 and researcher_accounts >= 2
                 and endpoint.security_relevance >= gate
                 and endpoint.classification.primary
@@ -931,11 +979,17 @@ def _drafts(
                 active_endpoint_ids.add(endpoint.id)
         elif invariant.category == "state_integrity":
             gate = target.analysis.hypothesis_gates.state_transition_minimum_score
-            if resource.states and endpoint.state_change and endpoint.security_relevance >= gate:
+            if (
+                runtime
+                and resource.states
+                and endpoint.state_change
+                and endpoint.security_relevance >= gate
+            ):
                 drafts.append(_state_research_task(invariant, endpoint, resource))
                 active_endpoint_ids.add(endpoint.id)
         elif (
             invariant.category == "single_execution"
+            and runtime
             and endpoint.action.type == "financial_mutation"
         ):
             draft = _replay_hypothesis(invariant, endpoint, resource, target.testing.production)
@@ -966,9 +1020,9 @@ def _drafts(
             )
         )
         active_endpoint_ids.update(item.id for item in grouped_endpoints)
-    drafts.extend(_value_hypotheses(target, endpoints, invariants, resources))
-    drafts.extend(_version_hypotheses(endpoints, invariants, resources))
-    drafts.extend(_channel_hypotheses(endpoints, invariants, resources))
+    drafts.extend(_value_hypotheses(target, endpoints, invariants, resources, observation_by_id))
+    drafts.extend(_version_hypotheses(endpoints, invariants, resources, observation_by_id))
+    drafts.extend(_channel_hypotheses(endpoints, invariants, resources, observation_by_id))
     active_endpoint_ids.update(
         endpoint_id
         for draft in drafts
@@ -1044,7 +1098,7 @@ def generate_hypotheses(workspace: WorkspacePaths) -> HypothesisResult:
             "invariants": invariants.model_dump(mode="json", exclude_none=True),
         }
     )
-    drafts = _drafts(target, endpoints, resources, invariants)
+    drafts = _drafts(target, observations, endpoints, resources, invariants)
     merge = merge_generated_records(
         workspace.hypotheses,
         "hypotheses",

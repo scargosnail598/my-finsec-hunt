@@ -227,6 +227,8 @@ def workflow_command(
         paths = resolve_workspace(workspace)
         target = TargetDocument.model_validate(load_yaml(paths.target))
         selected_manifest: Path | None = None
+        if no_ingest and (manifest is not None or capture_root is not None):
+            raise FinsecError("--no-ingest cannot be combined with --manifest or --capture-root.")
         if not no_ingest:
             if manifest is not None:
                 selected_manifest = manifest.expanduser().resolve()
@@ -243,6 +245,12 @@ def workflow_command(
                 candidate = base / slug / "workflow.yaml"
                 if candidate.is_file():
                     selected_manifest = candidate
+            if selected_manifest is None:
+                raise FinsecError(
+                    "No workflow manifest was found. Pass --manifest PATH, configure the default "
+                    "captures/<slug>/workflow.yaml, or use --no-ingest to analyze existing "
+                    "observations explicitly."
+                )
         result = run_offline_workflow(
             paths,
             manifest_path=selected_manifest,
@@ -252,10 +260,12 @@ def workflow_command(
         _abort(error)
 
     if selected_manifest is None:
-        console.print("[dim]No capture manifest was used; analyzed existing observations.[/dim]")
+        console.print("[dim]Ingestion was explicitly skipped with --no-ingest.[/dim]")
     if result.ingested:
         console.print("\n[bold]Passive ingestion[/bold]")
-        ingest_table = Table("File", "Actor", "Channel", "Imported", "Already present")
+        ingest_table = Table(
+            "File", "Actor", "Channel", "Imported", "Already present", "Labels refreshed"
+        )
         for item in result.ingested:
             ingest_table.add_row(
                 item.file,
@@ -263,6 +273,7 @@ def workflow_command(
                 item.channel,
                 str(item.imported),
                 str(item.skipped),
+                str(item.relabeled),
             )
         console.print(ingest_table)
 
@@ -325,6 +336,8 @@ def ingest_command(
         f"[green]Imported {result.imported}[/green] observations "
         f"({result.skipped} already present, {result.total} total)."
     )
+    if result.relabeled:
+        console.print(f"[yellow]Refreshed {result.relabeled} actor/channel assignments.[/yellow]")
     console.print(f"Redacted HAR: {result.redacted_har}")
     console.print("Run 'hunt inventory' to rebuild the endpoint inventory.")
 
@@ -353,6 +366,8 @@ def ingest_burp_command(
         f"[green]Imported {result.imported}[/green] Burp observations "
         f"({result.skipped} already present, {result.total} total)."
     )
+    if result.relabeled:
+        console.print(f"[yellow]Refreshed {result.relabeled} actor/channel assignments.[/yellow]")
     console.print(f"Redacted capture: {result.redacted_capture}")
     console.print("Run 'hunt inventory' to rebuild the endpoint inventory.")
 
@@ -381,6 +396,8 @@ def ingest_caido_command(
         f"[green]Imported {result.imported}[/green] Caido observations "
         f"({result.skipped} already present, {result.total} total)."
     )
+    if result.relabeled:
+        console.print(f"[yellow]Refreshed {result.relabeled} actor/channel assignments.[/yellow]")
     console.print(f"Redacted capture: {result.redacted_capture}")
     console.print("Run 'hunt inventory' to rebuild the endpoint inventory.")
 
@@ -409,6 +426,8 @@ def ingest_openapi_command(
         f"[green]Imported {result.imported}[/green] documented operations "
         f"({result.skipped} already present, {result.total} total observations)."
     )
+    if result.relabeled:
+        console.print(f"[yellow]Refreshed {result.relabeled} channel assignments.[/yellow]")
     console.print(f"Redacted document: {result.redacted_capture}")
     console.print("Runtime behavior remains unconfirmed; run 'hunt inventory' to normalize paths.")
 
@@ -634,10 +653,6 @@ def hypotheses_command(
     research_tasks: Annotated[
         bool,
         typer.Option("--research-tasks", help="Show research tasks instead of hypotheses."),
-    ] = False,
-    grouped: Annotated[
-        bool,
-        typer.Option("--grouped", help="Show semantic families (the default generation mode)."),
     ] = False,
     explain: Annotated[
         str | None,

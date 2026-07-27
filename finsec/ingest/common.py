@@ -54,6 +54,7 @@ class PassiveIngestResult:
 
     imported: int
     skipped: int
+    relabeled: int
     total: int
     redacted_capture: Path
 
@@ -69,11 +70,11 @@ def load_observation_store(path: Path) -> ObservationStore:
 
 def append_observations(
     workspace: WorkspacePaths, drafts: list[ObservationDraft]
-) -> tuple[int, int, int]:
-    """Append idempotent observations while retaining globally monotonic IDs."""
+) -> tuple[int, int, int, int]:
+    """Append observations and refresh corrected actor/channel assignments in place."""
 
     store = load_observation_store(workspace.observations)
-    known = {item.source_fingerprint for item in store.observations}
+    known = {item.source_fingerprint: item for item in store.observations}
     numbers = [
         int(match.group(1))
         for item in store.observations
@@ -82,8 +83,14 @@ def append_observations(
     next_number = max(numbers, default=0) + 1
     imported = 0
     skipped = 0
+    relabeled = 0
     for draft in drafts:
-        if draft.source_fingerprint in known:
+        existing = known.get(draft.source_fingerprint)
+        if existing is not None:
+            if existing.actor != draft.actor or existing.channel != draft.channel:
+                existing.actor = draft.actor
+                existing.channel = draft.channel
+                relabeled += 1
             skipped += 1
             continue
         observation = Observation(
@@ -91,11 +98,11 @@ def append_observations(
             **draft.__dict__,
         )
         store.observations.append(observation)
-        known.add(draft.source_fingerprint)
+        known[draft.source_fingerprint] = observation
         imported += 1
         next_number += 1
     write_yaml(workspace.observations, store.model_dump(mode="json", exclude_none=True))
-    return imported, skipped, len(store.observations)
+    return imported, skipped, relabeled, len(store.observations)
 
 
 def headers_from_any(value: Any) -> dict[str, str]:

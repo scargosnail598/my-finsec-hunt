@@ -22,7 +22,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: 6b24a1c68e13097b735871d2c1b4555716b7ec89f89c05fe5e09f46b2e0410ec
-    source_fingerprint: a2cc0fe7f867853a86b62216c08655bea6be35b4af5644d9565daeb47f462479
+    source_fingerprint: 6534778d0370b95af8984234a6e35b8b1fc29f83e2b922b05c6344fa48651211
 - id: INV-002
   key: object-authorization:EP-084:v8Id
   category: authorization
@@ -45,4 +45,4 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: 37b64ccae87ac8bbaa6cbe2c1c0d81bd4cfb64ff1f4fd96d075b164247da6e2e
-    source_fingerprint: a2cc0fe7f867853a86b62216c08655bea6be35b4af5644d9565daeb47f462479
+    source_fingerprint: 6534778d0370b95af8984234a6e35b8b1fc29f83e2b922b05c6344fa48651211

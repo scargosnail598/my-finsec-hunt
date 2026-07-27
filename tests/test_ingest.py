@@ -3,7 +3,10 @@
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 from finsec.config.workspace import create_workspace
+from finsec.errors import HarFormatError
 from finsec.ingest.har import ingest_har
 from finsec.modeling.models import KnowledgeStatus, ObservationStore
 from finsec.utils.redaction import REDACTED, redact_data
@@ -23,6 +26,7 @@ def test_har_import_redacts_secrets_and_is_idempotent(
     assert first.skipped == 0
     assert second.imported == 0
     assert second.skipped == 5
+    assert second.relabeled == 0
     assert second.total == 5
 
     redacted_text = first.redacted_har.read_text(encoding="utf-8")
@@ -49,6 +53,38 @@ def test_har_import_redacts_secrets_and_is_idempotent(
     assert store.observations[0].query_parameters["access_token"] == [REDACTED]
     assert set(store.observations[4].request_fields) == {"email", "otp", "password"}
     assert "LOGIN_TOKEN_SECRET" not in workspace.observations.read_text(encoding="utf-8")
+
+
+def test_reingest_refreshes_actor_and_channel_without_changing_observation_ids(
+    tmp_path: Path, sample_har: tuple[Path, dict[str, Any]]
+) -> None:
+    har_path, _ = sample_har
+    workspace = create_workspace("demo", tmp_path / "workspaces")
+    first = ingest_har(har_path, workspace, actor="ACCOUNT_A", channel="WEB")
+
+    corrected = ingest_har(har_path, workspace, actor="ACCOUNT_B", channel="MOBILE")
+
+    assert corrected.imported == 0
+    assert corrected.skipped == 5
+    assert corrected.relabeled == 5
+    store = ObservationStore.model_validate(load_yaml(workspace.observations))
+    assert [item.id for item in store.observations] == [
+        f"OBS-{number:06d}" for number in range(1, 6)
+    ]
+    assert {item.actor for item in store.observations} == {"ACCOUNT_B"}
+    assert {item.channel for item in store.observations} == {"MOBILE"}
+    assert first.total == corrected.total == 5
+
+
+def test_har_import_enforces_file_size_limit(
+    tmp_path: Path, sample_har: tuple[Path, dict[str, Any]], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    har_path, _ = sample_har
+    workspace = create_workspace("demo", tmp_path / "workspaces")
+    monkeypatch.setattr("finsec.ingest.har.MAX_HAR_BYTES", 1)
+
+    with pytest.raises(HarFormatError, match="limited"):
+        ingest_har(har_path, workspace)
 
 
 def test_source_har_is_not_copied_unredacted(
