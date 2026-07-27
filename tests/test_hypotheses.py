@@ -46,7 +46,7 @@ def test_hypotheses_are_specific_traceable_and_transparently_prioritized(
     assert "Account A" in payment.hypothesis
     assert "Account B" in payment.hypothesis
     assert "test for idor" not in payment.hypothesis.lower()
-    assert payment.generation_rule == {"id": "AUTH_OBJECT_ACCESS", "version": "2"}
+    assert payment.generation_rule == {"id": "AUTH_OBJECT_ACCESS", "version": "3"}
     assert payment.eligibility_evidence
     assert payment.missing_evidence
     assert sum(item.kind == "SECURITY_HYPOTHESIS" for item in store.hypotheses) == 1

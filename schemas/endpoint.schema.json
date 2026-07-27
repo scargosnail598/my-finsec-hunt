@@ -16,6 +16,7 @@
     "resource": {"type": "object"},
     "action": {"type": "object"},
     "parameters": {"type": "array", "items": {"type": "object"}},
+    "object_access": {"type": "array", "items": {"type": "object"}},
     "state_change": {"type": "boolean"},
     "state_change_confidence": {"enum": ["OBSERVED", "INFERRED", "ASSUMED", "CONFIRMED", "REFUTED"]},
     "financial_impact": {"enum": ["none", "unknown"]},

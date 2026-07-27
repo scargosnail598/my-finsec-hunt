@@ -20,6 +20,7 @@ from finsec.modeling.models import (
     EndpointPrimaryClassification,
     EndpointStore,
     KnowledgeStatus,
+    ObjectAccessEvidence,
     Observation,
     ObservationStore,
 )
@@ -28,6 +29,7 @@ from finsec.utils.yaml_store import load_yaml, write_yaml
 VERSION_PATTERN = re.compile(r"(?P<prefix>/(?:api/)?)v(?P<version>\d+)(?=/|$)", re.IGNORECASE)
 MUTABLE_PARAMETER_LOCATIONS = {"path", "query", "body", "header", "graphql_variable"}
 RUNTIME_OBSERVATION_SOURCES = {"HAR", "BURP_XML", "CAIDO_JSON"}
+KNOWN_PUBLIC_RESOURCES = {"category", "challenge", "product", "staticasset"}
 
 
 @dataclass(frozen=True)
@@ -181,23 +183,63 @@ def _object_authorization_hypothesis(
     resource: ResourceRecord,
     parameter: str,
     researcher_accounts: int,
+    binding: ObjectAccessEvidence | None = None,
 ) -> dict[str, Any]:
     financial = resource.name.lower() in FINANCIAL_RESOURCES
     impact = 5 if endpoint.state_change and financial else 4
-    likelihood = 3 if endpoint.authentication.required else 2
+    likelihood = 3 if endpoint.authentication.required or binding is not None else 2
     confidence = _confidence_score(invariant.confidence)
+    if binding is not None:
+        confidence = max(confidence, 3)
     testability = 5 if researcher_accounts >= 2 else 2
     scores = _score(impact, likelihood, confidence, testability)
     action = "modification" if endpoint.state_change else "access"
+    unauthenticated_binding = binding is not None and not endpoint.authentication.required
+    title = (
+        f"Potential cross-account {resource.name} {action} through {parameter} on "
+        f"{endpoint.method} {endpoint.path}"
+    )
+    if unauthenticated_binding:
+        title = (
+            f"Potential unauthenticated cross-account {resource.name} {action} through "
+            f"{parameter} on {endpoint.method} {endpoint.path}"
+        )
+    attacker_capability = [
+        "Researcher Account B is separately authenticated.",
+        f"Can substitute Account A's {parameter} into Account B's request.",
+    ]
+    hypothesis = (
+        f"An authenticated Researcher Account B may be able to use Account A's {parameter} with "
+        f"{endpoint.method} {endpoint.path} to cross the object-ownership boundary."
+    )
+    reasoning = (
+        f"{endpoint.id} accepts the client-controlled identifier {parameter}, while ownership, "
+        "delegation, tenant, and role conditions remain unconfirmed."
+    )
+    if unauthenticated_binding and binding is not None:
+        owner_field = binding.owner_field_path.rsplit(".", 1)[-1]
+        attacker_capability = [
+            f"Can request {resource.name} objects without an observed request credential.",
+            f"Can substitute one researcher-controlled actor's {parameter} into another baseline.",
+        ]
+        hypothesis = (
+            f"An unauthenticated caller may be able to substitute another account's {parameter} "
+            f"with {endpoint.method} {endpoint.path} and cross the {resource.name} ownership "
+            "boundary."
+        )
+        reasoning = (
+            f"{binding.distinct_actors} researcher-controlled actors were passively observed "
+            f"retrieving distinct {resource.name} objects through {parameter}. Successful JSON "
+            f"responses matched the requested object IDs and contained "
+            f"{binding.distinct_owner_values} distinct {owner_field} values. No request "
+            "authentication credential was observed. Cross-substitution has not yet been tested."
+        )
     return {
         "key": (
             f"auth-object-access:{endpoint.method.lower()}:{endpoint.path}:"
             f"{resource.name.lower()}:{parameter.lower()}"
         ),
-        "title": (
-            f"Potential cross-account {resource.name} {action} through {parameter} on "
-            f"{endpoint.method} {endpoint.path}"
-        ),
+        "title": title,
         "category": "authorization",
         "component": f"{resource.name} / {endpoint.id}",
         "source": _source(invariant),
@@ -205,20 +247,12 @@ def _object_authorization_hypothesis(
         "observations": _observations(invariant),
         "mutation_dimensions": ["ACTOR", "OBJECT"],
         "required_state": [f"Researcher Account A owns a reachable {resource.name} object."],
-        "attacker_capability": [
-            "Researcher Account B is separately authenticated.",
-            f"Can substitute Account A's {parameter} into Account B's request.",
-        ],
-        "evidence_status": KnowledgeStatus.ASSUMED,
-        "hypothesis": (
-            f"An authenticated Researcher Account B may be able to use Account A's "
-            f"{parameter} with "
-            f"{endpoint.method} {endpoint.path} to cross the object-ownership boundary."
+        "attacker_capability": attacker_capability,
+        "evidence_status": (
+            KnowledgeStatus.INFERRED if binding is not None else KnowledgeStatus.ASSUMED
         ),
-        "reasoning": (
-            f"{endpoint.id} accepts the client-controlled identifier {parameter}, while "
-            "ownership, delegation, tenant, and role conditions remain unconfirmed."
-        ),
+        "hypothesis": hypothesis,
+        "reasoning": reasoning,
         "preconditions": [
             "Both accounts and the target object belong to the researcher.",
             f"Account A owns a non-sensitive test {resource.name} in a safe state.",
@@ -936,15 +970,24 @@ def _drafts(
                 ),
                 None,
             )
+            binding = next(
+                (
+                    item
+                    for item in endpoint.object_access
+                    if item.identifier == parameter and item.actor_object_binding_observed
+                ),
+                None,
+            )
             gate = target.analysis.hypothesis_gates.bola_minimum_score
             if (
                 parameter_record is not None
                 and parameter_record.source == "request"
                 and parameter_record.client_controlled
                 and parameter_record.location in MUTABLE_PARAMETER_LOCATIONS
-                and authenticated_runtime
+                and (authenticated_runtime or binding is not None)
                 and researcher_accounts >= 2
                 and endpoint.security_relevance >= gate
+                and resource.name.lower() not in KNOWN_PUBLIC_RESOURCES
                 and endpoint.classification.primary
                 in {
                     EndpointPrimaryClassification.FIRST_PARTY_API,
@@ -958,20 +1001,48 @@ def _drafts(
                     resource,
                     parameter,
                     researcher_accounts,
+                    binding,
                 )
+                eligibility_evidence = [
+                    "authenticated endpoint observed",
+                    f"client-controlled {parameter} found in {parameter_record.location}",
+                    "two researcher-controlled actors are configured",
+                    *endpoint.relevance_reasons,
+                ]
+                missing_evidence = [
+                    "ownership relationship is not confirmed",
+                    "Account B baseline is not yet captured",
+                ]
+                if binding is not None and not authenticated_runtime:
+                    owner_field = binding.owner_field_path.rsplit(".", 1)[-1]
+                    object_values = sorted({item.requested_value for item in binding.baselines})
+                    eligibility_evidence = [
+                        "first-party JSON API",
+                        f"client-controlled {parameter} path parameter",
+                        f"{binding.distinct_actors} researcher-controlled actors observed",
+                        (
+                            f"distinct {resource.name} IDs associated with actor baselines: "
+                            + ", ".join(object_values)
+                        ),
+                        "successful resource-specific JSON responses",
+                        "response object IDs match requested object IDs",
+                        (
+                            f"{binding.distinct_owner_values} distinct {owner_field} values "
+                            "observed across actor baselines"
+                        ),
+                        "no request authentication credential observed",
+                        *endpoint.relevance_reasons,
+                    ]
+                    missing_evidence = [
+                        "Account A requesting Account B's object has not been tested",
+                        "Account B requesting Account A's object has not been tested",
+                        "server-side authorization behavior is not yet confirmed",
+                    ]
                 draft.update(
                     {
-                        "eligibility_evidence": [
-                            "authenticated endpoint observed",
-                            f"client-controlled {parameter} found in {parameter_record.location}",
-                            "two researcher-controlled actors are configured",
-                            *endpoint.relevance_reasons,
-                        ],
-                        "missing_evidence": [
-                            "ownership relationship is not confirmed",
-                            "Account B baseline is not yet captured",
-                        ],
-                        "generation_rule": {"id": "AUTH_OBJECT_ACCESS", "version": "2"},
+                        "eligibility_evidence": eligibility_evidence,
+                        "missing_evidence": missing_evidence,
+                        "generation_rule": {"id": "AUTH_OBJECT_ACCESS", "version": "3"},
                         "priority_rationale": endpoint.relevance_reasons,
                     }
                 )

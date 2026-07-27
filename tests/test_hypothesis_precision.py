@@ -92,6 +92,43 @@ def _workspace(
     return workspace
 
 
+def _multi_actor_workspace(
+    tmp_path: Path,
+    actor_entries: list[tuple[str, dict[str, Any]]],
+) -> WorkspacePaths:
+    workspace = create_workspace("actor-baselines", tmp_path / "workspaces")
+    target = load_yaml(workspace.target)
+    target["scope"]["hosts"] = ["api.example.test"]
+    target["accounts"] = [
+        {"id": actor, "ownership": "researcher"}
+        for actor in sorted({actor for actor, _ in actor_entries})
+    ]
+    target["testing"]["production"] = False
+    write_yaml(workspace.target, target)
+
+    for index, (actor, entry) in enumerate(actor_entries, start=1):
+        capture = tmp_path / f"actor-{index}.har"
+        capture.write_text(
+            json.dumps(
+                {
+                    "log": {
+                        "version": "1.2",
+                        "creator": {"name": "actor-baseline-tests", "version": "1"},
+                        "entries": [entry],
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+        ingest_har(capture, workspace, actor=actor, channel="WEB")
+
+    build_inventory(workspace)
+    generate_model(workspace)
+    generate_invariants(workspace)
+    generate_hypotheses(workspace)
+    return workspace
+
+
 def _records(workspace: WorkspacePaths) -> HypothesisStore:
     return HypothesisStore.model_validate(load_yaml(workspace.hypotheses))
 
@@ -276,4 +313,267 @@ def test_valid_path_and_body_bola_hypotheses_remain_active(tmp_path: Path) -> No
     )
     assert any(
         item.category == "authorization" and "walletId" in item.hypothesis for item in active
+    )
+
+
+def test_unauthenticated_account_scoped_basket_baselines_promote_one_bola(
+    tmp_path: Path,
+) -> None:
+    workspace = _multi_actor_workspace(
+        tmp_path,
+        [
+            (
+                "ACCOUNT_A",
+                _entry(
+                    1,
+                    "GET",
+                    "/rest/basket/6",
+                    {
+                        "status": "success",
+                        "data": {
+                            "id": 6,
+                            "UserId": 10,
+                            "Products": [{"id": 1, "name": "Synthetic Product A"}],
+                        },
+                    },
+                    authenticated=False,
+                ),
+            ),
+            (
+                "ACCOUNT_B",
+                _entry(
+                    2,
+                    "GET",
+                    "/rest/basket/7",
+                    {
+                        "status": "success",
+                        "data": {
+                            "id": 7,
+                            "UserId": 11,
+                            "Products": [{"id": 2, "name": "Synthetic Product B"}],
+                        },
+                    },
+                    authenticated=False,
+                ),
+            ),
+        ],
+    )
+
+    endpoints = _endpoints(workspace).endpoints
+    assert len(endpoints) == 1
+    endpoint = endpoints[0]
+    assert endpoint.path == "/rest/basket/{basketId}"
+    assert endpoint.resource.type == "Basket"
+    assert endpoint.authentication.required is False
+    assert endpoint.security_relevance >= 6
+    parameter = next(item for item in endpoint.parameters if item.name == "basketId")
+    assert parameter.semantic_type == "object_identifier"
+    assert parameter.client_controlled is True
+
+    assert len(endpoint.object_access) == 1
+    binding = endpoint.object_access[0]
+    assert binding.identifier == "basketId"
+    assert binding.owner_field_path == "$.data.UserId"
+    assert binding.distinct_actors == 2
+    assert binding.distinct_objects == 2
+    assert binding.distinct_owner_values == 2
+    assert binding.actor_object_binding_observed is True
+    assert {item.actor for item in binding.baselines} == {"ACCOUNT_A", "ACCOUNT_B"}
+    assert {item.requested_value for item in binding.baselines} == {"6", "7"}
+    assert {item.response_object_path for item in binding.baselines} == {"$.data.id"}
+    assert len({item.owner_value_fingerprint for item in binding.baselines}) == 2
+
+    active = [
+        item
+        for item in _records(workspace).hypotheses
+        if item.category == "authorization" and item.disposition == "ACTIVE"
+    ]
+    assert len(active) == 1
+    hypothesis = active[0]
+    assert hypothesis.title == (
+        "Potential unauthenticated cross-account Basket access through basketId on "
+        "GET /rest/basket/{basketId}"
+    )
+    assert hypothesis.scores.total == 15
+    assert hypothesis.generation_rule == {"id": "AUTH_OBJECT_ACCESS", "version": "3"}
+    assert "Cross-substitution has not yet been tested" in hypothesis.reasoning
+    assert "no request authentication credential observed" in hypothesis.eligibility_evidence
+    assert any("Account A requesting Account B" in item for item in hypothesis.missing_evidence)
+    assert any("Account B requesting Account A" in item for item in hypothesis.missing_evidence)
+
+
+def test_public_product_baselines_do_not_promote_bola(tmp_path: Path) -> None:
+    workspace = _multi_actor_workspace(
+        tmp_path,
+        [
+            (
+                "ACCOUNT_A",
+                _entry(
+                    1,
+                    "GET",
+                    "/api/products/1",
+                    {
+                        "data": {
+                            "id": 1,
+                            "merchantId": 100,
+                            "name": "Synthetic Product A",
+                            "price": 10,
+                        }
+                    },
+                    authenticated=False,
+                ),
+            ),
+            (
+                "ACCOUNT_B",
+                _entry(
+                    2,
+                    "GET",
+                    "/api/products/2",
+                    {
+                        "data": {
+                            "id": 2,
+                            "merchantId": 200,
+                            "name": "Synthetic Product B",
+                            "price": 20,
+                        }
+                    },
+                    authenticated=False,
+                ),
+            ),
+        ],
+    )
+
+    endpoint = _endpoints(workspace).endpoints[0]
+    assert endpoint.resource.type == "Product"
+    assert endpoint.object_access[0].actor_object_binding_observed is True
+    assert not any(
+        item.category == "authorization" and item.disposition == "ACTIVE"
+        for item in _records(workspace).hypotheses
+    )
+
+
+def test_multiple_objects_per_actor_preserve_account_scoped_binding(tmp_path: Path) -> None:
+    workspace = _multi_actor_workspace(
+        tmp_path,
+        [
+            (
+                "ACCOUNT_A",
+                _entry(
+                    1,
+                    "GET",
+                    "/rest/basket/6",
+                    {"status": "success", "data": {"id": 6, "UserId": 10}},
+                    authenticated=False,
+                ),
+            ),
+            (
+                "ACCOUNT_A",
+                _entry(
+                    2,
+                    "GET",
+                    "/rest/basket/8",
+                    {"status": "success", "data": {"id": 8, "UserId": 10}},
+                    authenticated=False,
+                ),
+            ),
+            (
+                "ACCOUNT_B",
+                _entry(
+                    3,
+                    "GET",
+                    "/rest/basket/7",
+                    {"status": "success", "data": {"id": 7, "UserId": 11}},
+                    authenticated=False,
+                ),
+            ),
+            (
+                "ACCOUNT_B",
+                _entry(
+                    4,
+                    "GET",
+                    "/rest/basket/9",
+                    {"status": "success", "data": {"id": 9, "UserId": 11}},
+                    authenticated=False,
+                ),
+            ),
+        ],
+    )
+
+    endpoint = _endpoints(workspace).endpoints[0]
+    assert endpoint.object_access[0].actor_object_binding_observed is True
+    assert endpoint.object_access[0].distinct_objects == 4
+    assert (
+        sum(
+            item.category == "authorization" and item.disposition == "ACTIVE"
+            for item in _records(workspace).hypotheses
+        )
+        == 1
+    )
+
+
+def test_one_actor_basket_baseline_does_not_promote_cross_account_bola(tmp_path: Path) -> None:
+    workspace = _multi_actor_workspace(
+        tmp_path,
+        [
+            (
+                "ACCOUNT_A",
+                _entry(
+                    1,
+                    "GET",
+                    "/rest/basket/6",
+                    {"status": "success", "data": {"id": 6, "UserId": 10}},
+                    authenticated=False,
+                ),
+            ),
+            (
+                "ACCOUNT_A",
+                _entry(
+                    2,
+                    "GET",
+                    "/rest/basket/8",
+                    {"status": "success", "data": {"id": 8, "UserId": 10}},
+                    authenticated=False,
+                ),
+            ),
+        ],
+    )
+
+    assert not any(
+        item.category == "authorization" and item.disposition == "ACTIVE"
+        for item in _records(workspace).hypotheses
+    )
+
+
+def test_distinct_objects_without_owner_signal_do_not_promote_bola(tmp_path: Path) -> None:
+    workspace = _multi_actor_workspace(
+        tmp_path,
+        [
+            (
+                "ACCOUNT_A",
+                _entry(
+                    1,
+                    "GET",
+                    "/api/private-records/6",
+                    {"data": {"id": 6, "label": "Synthetic Record A"}},
+                    authenticated=False,
+                ),
+            ),
+            (
+                "ACCOUNT_B",
+                _entry(
+                    2,
+                    "GET",
+                    "/api/private-records/7",
+                    {"data": {"id": 7, "label": "Synthetic Record B"}},
+                    authenticated=False,
+                ),
+            ),
+        ],
+    )
+
+    endpoint = _endpoints(workspace).endpoints[0]
+    assert endpoint.object_access == []
+    assert not any(
+        item.category == "authorization" and item.disposition == "ACTIVE"
+        for item in _records(workspace).hypotheses
     )

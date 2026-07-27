@@ -1,5 +1,6 @@
 """Typer command-line interface for the deterministic research pipeline."""
 
+import os
 import re
 from pathlib import Path
 from typing import Annotated, Any, NoReturn, cast
@@ -11,9 +12,16 @@ from rich.panel import Panel
 from rich.table import Table
 
 from finsec.config.models import TargetDocument
-from finsec.config.workspace import create_workspace, resolve_workspace
+from finsec.config.workspace import (
+    create_workspace,
+    delete_workspace,
+    resolve_workspace,
+    resolve_workspace_deletion_target,
+)
 from finsec.errors import FinsecError
 from finsec.evidence.manager import add_evidence, ensure_evidence
+from finsec.execution.policy import approve_plan, prepare_execution
+from finsec.execution.runner import execute_prepared
 from finsec.hypotheses.domain import HypothesisRecord, HypothesisStore
 from finsec.hypotheses.generator import (
     find_hypothesis,
@@ -41,6 +49,11 @@ app = typer.Typer(
     help="Local-first, authorized fintech research workspace.",
     no_args_is_help=True,
 )
+workspace_app = typer.Typer(
+    help="Manage an explicitly selected workspace lifecycle.",
+    no_args_is_help=True,
+)
+app.add_typer(workspace_app, name="workspace")
 console = Console()
 
 WorkspaceOption = Annotated[
@@ -194,6 +207,60 @@ def setup_command(
         raise typer.Exit(code=130) from error
     except (FinsecError, OSError, ValidationError) as error:
         _abort(error)
+
+
+@workspace_app.command("delete")
+def workspace_delete_command(
+    workspace: Annotated[
+        Path,
+        typer.Option(
+            "--workspace",
+            "-w",
+            help="Exact workspace directory to permanently delete.",
+        ),
+    ],
+    confirm: Annotated[
+        str | None,
+        typer.Option(
+            "--confirm",
+            help="Exact workspace slug; bypasses the interactive confirmation prompt.",
+        ),
+    ] = None,
+) -> None:
+    """Permanently delete one validated workspace, but never its capture directory."""
+
+    try:
+        target = resolve_workspace_deletion_target(workspace)
+        console.print(
+            Panel.fit(
+                f"Workspace: {target.display_name}\n"
+                f"Slug: {target.slug}\n"
+                f"Path: {target.root}\n\n"
+                "This permanently deletes the workspace directory and all observations, "
+                "models, hypotheses, plans, evidence, validations, and reports inside it.\n"
+                "The separate capture directory is not deleted.",
+                title="Permanent Workspace Deletion",
+                border_style="red",
+            )
+        )
+        confirmation = confirm
+        if confirmation is None:
+            confirmation = typer.prompt(
+                f"Type the workspace slug '{target.slug}' to confirm deletion"
+            )
+        if confirmation != target.slug:
+            raise FinsecError(
+                f"Confirmation did not match workspace slug '{target.slug}'; nothing was deleted."
+            )
+        delete_workspace(target)
+    except (KeyboardInterrupt, typer.Abort) as error:
+        console.print("\nWorkspace deletion cancelled; nothing was deleted.")
+        raise typer.Exit(code=130) from error
+    except (FinsecError, OSError, ValidationError) as error:
+        _abort(error)
+
+    console.print(f"[bold green]Deleted workspace:[/bold green] {target.root}")
+    console.print("Deletion is permanent. Separate capture directories were left untouched.")
 
 
 @app.command("workflow")
@@ -801,8 +868,191 @@ def plan_command(
     console.print("\n[bold]Actions[/bold]")
     for index, action in enumerate(plan.actions, start=1):
         console.print(f"{index}. {action}")
+    if plan.execution.supported:
+        console.print(
+            f"\nBounded execution template: {plan.execution.pattern} "
+            f"({plan.execution.request_budget} requests)"
+        )
+        if plan.approval_status == "APPROVED" and plan.approval is None:
+            console.print(
+                "[yellow]The manually edited approval_status is incomplete. "
+                f"Run 'hunt approve {plan.hypothesis_id}' to bind approval to this plan.[/yellow]"
+            )
+        elif plan.approval is None:
+            console.print(
+                "Next: review the structured requests, then run "
+                f"'hunt approve {plan.hypothesis_id}'."
+            )
+    elif plan.execution.blockers:
+        console.print("\n[red]Automated bounded execution is unavailable:[/red]")
+        for blocker in plan.execution.blockers:
+            console.print(f"- {blocker}")
     if result.conflict:
         console.print("[yellow]A researcher-edited existing plan was preserved.[/yellow]")
+
+
+@app.command("approve")
+def approve_command(
+    hypothesis_id: Annotated[str, typer.Argument(help="Hypothesis ID such as HYP-001.")],
+    workspace: WorkspaceOption = None,
+    approved_by: Annotated[
+        str,
+        typer.Option("--approved-by", help="Non-secret researcher label recorded in the audit."),
+    ] = "researcher",
+    approval_token: Annotated[
+        str | None,
+        typer.Option(
+            "--approval-token",
+            help="Environment variable whose value authorizes local-lab non-interactive execution.",
+        ),
+    ] = None,
+) -> None:
+    """Bind explicit human approval to the current plan and target policy."""
+
+    expected = f"APPROVE {hypothesis_id.upper()}"
+    confirmation = typer.prompt(f"Type {expected} to record bounded-execution approval")
+    if confirmation != expected:
+        _abort(FinsecError("Approval refused: confirmation text did not match exactly."))
+    token_value: str | None = None
+    if approval_token is not None:
+        token_value = os.environ.get(approval_token)
+        if not token_value:
+            _abort(
+                FinsecError(f"Approval refused: environment variable {approval_token} is missing.")
+            )
+    try:
+        paths = resolve_workspace(workspace)
+        plan = approve_plan(
+            paths,
+            hypothesis_id,
+            approved_by=approved_by,
+            approval_token=token_value,
+        )
+    except FinsecError as error:
+        _abort(error)
+    console.print(f"[green]{plan.id} approved for bounded execution.[/green]")
+    console.print("Approval is bound to the current plan and target-policy checksums.")
+    console.print("No request was sent.")
+
+
+def _execution_summary(prepared: Any) -> None:
+    plan = prepared.plan
+    console.print(f"[bold]Hypothesis:[/bold] {prepared.hypothesis.id}")
+    console.print("[bold]Resolved host and scope match:[/bold] yes")
+    for request in plan.requests:
+        port = request.port or (443 if request.scheme == "https" else 80)
+        console.print(
+            f"- {request.id}: {request.method} {request.scheme}://{request.host}:{port}"
+            f"{request.path} as {request.actor}"
+        )
+        for mutation in request.mutations:
+            target = mutation.to_value if mutation.to_value is not None else "<removed>"
+            console.print(
+                f"  {mutation.dimension}: {mutation.parameter} {mutation.from_value} -> {target}"
+            )
+        for secret in request.runtime_secrets:
+            console.print(
+                f"  Runtime secret: {secret.header} from environment variable {secret.variable}"
+            )
+    console.print("Mutation dimensions: " + ", ".join(plan.execution.mutation_dimensions))
+    console.print(f"Requests: {len(plan.requests)} / budget {plan.execution.request_budget}")
+    console.print(f"Parallelism: {plan.execution.parallelism}")
+    console.print(
+        f"Timeouts: connect {plan.execution.connection_timeout_seconds:g}s, "
+        f"read {plan.execution.read_timeout_seconds:g}s"
+    )
+    console.print("Redirect policy: disabled")
+    console.print("TLS verification: enabled")
+    console.print(
+        "Active execution enabled: "
+        + ("yes" if prepared.target.testing.active_execution_enabled else "no")
+    )
+    console.print(
+        "Checksum-bound approval present: "
+        + ("yes" if prepared.plan.approval is not None else "no")
+    )
+    console.print("Stop conditions:")
+    for item in plan.execution.stop_conditions:
+        console.print(f"- {item}")
+    console.print(f"Expected evidence: evidence/{prepared.hypothesis.id}/executions/")
+
+
+@app.command("execute")
+def execute_command(
+    hypothesis_id: Annotated[str, typer.Argument(help="Hypothesis ID such as HYP-001.")],
+    workspace: WorkspaceOption = None,
+    dry_run: Annotated[
+        bool,
+        typer.Option("--dry-run", help="Validate and display the plan without sending HTTP."),
+    ] = False,
+    non_interactive: Annotated[
+        bool,
+        typer.Option(
+            "--non-interactive",
+            help="Local-lab CI mode; production targets are always rejected.",
+        ),
+    ] = False,
+    approval_token: Annotated[
+        str | None,
+        typer.Option(
+            "--approval-token",
+            help="Environment variable containing the approved local-lab execution token.",
+        ),
+    ] = None,
+) -> None:
+    """Execute one explicitly approved, scope-checked, read-only comparison plan."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        prepared = prepare_execution(
+            paths,
+            hypothesis_id,
+            dry_run=dry_run,
+            non_interactive=non_interactive,
+            approval_token_env=approval_token,
+        )
+    except FinsecError as error:
+        console.print("[bold red]Execution refused.[/bold red]")
+        console.print(f"Reason: {error}")
+        console.print("Requests sent: 0")
+        raise typer.Exit(code=1) from error
+    _execution_summary(prepared)
+    if dry_run:
+        console.print("\n[green]Execution dry run passed.[/green]")
+        console.print(f"Requests that would be sent: {len(prepared.plan.requests)}")
+        console.print(
+            "Mutation dimensions: " + ", ".join(prepared.plan.execution.mutation_dimensions)
+        )
+        console.print("Safety decision: READY_FOR_EXPLICIT_APPROVAL")
+        console.print("No request was sent.")
+        return
+    if non_interactive and approval_token is None:
+        console.print("[bold red]Execution refused.[/bold red]")
+        console.print("Reason: --approval-token is required with --non-interactive.")
+        console.print("Requests sent: 0")
+        raise typer.Exit(code=1)
+    if not non_interactive:
+        expected = f"EXECUTE {prepared.hypothesis.id}"
+        confirmation = typer.prompt(f"Type {expected} to continue")
+        if confirmation != expected:
+            console.print("[bold red]Execution refused.[/bold red]")
+            console.print("Reason: confirmation text did not match exactly.")
+            console.print("Requests sent: 0")
+            raise typer.Exit(code=1)
+    result = execute_prepared(prepared)
+    if result.status == "STOPPED":
+        console.print("\n[yellow]Execution stopped safely.[/yellow]")
+    elif result.status == "INCONCLUSIVE":
+        console.print("\n[yellow]Execution completed with an inconclusive result.[/yellow]")
+    else:
+        console.print("\n[green]Execution completed.[/green]")
+    console.print(f"Requests sent: {result.requests_sent}")
+    console.print(f"Execution status: {result.status}")
+    console.print(f"Outcome: {result.comparison.outcome}")
+    console.print(f"Evidence: {result.evidence_root}")
+    console.print(f"Audit: {result.audit_path}")
+    console.print("Final vulnerability status: NOT CONFIRMED")
+    console.print(f"Run `hunt validate {prepared.hypothesis.id}` after reviewing evidence.")
 
 
 @app.command("evidence")

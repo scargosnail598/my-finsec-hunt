@@ -15,8 +15,9 @@ from finsec.hypotheses.generator import find_hypothesis, update_hypothesis_statu
 from finsec.modeling.domain import ResourceStore
 from finsec.modeling.invariants import FINANCIAL_RESOURCES
 from finsec.modeling.merge import merge_generated_records, stable_fingerprint
-from finsec.modeling.models import Endpoint, EndpointStore
+from finsec.modeling.models import Endpoint, EndpointStore, ObservationStore
 from finsec.testing.domain import TestPlanRecord, TestPlanStore
+from finsec.testing.templates import build_execution_templates
 from finsec.utils.yaml_store import load_yaml, write_yaml
 
 
@@ -31,14 +32,15 @@ class PlanResult:
 
 def _load_inputs(
     workspace: WorkspacePaths, hypothesis_id: str
-) -> tuple[TargetDocument, EndpointStore, ResourceStore, HypothesisRecord]:
+) -> tuple[TargetDocument, ObservationStore, EndpointStore, ResourceStore, HypothesisRecord]:
     try:
         target = TargetDocument.model_validate(load_yaml(workspace.target))
+        observations = ObservationStore.model_validate(load_yaml(workspace.observations))
         endpoints = EndpointStore.model_validate(load_yaml(workspace.endpoints))
         resources = ResourceStore.model_validate(load_yaml(workspace.resources))
     except (OSError, ValidationError) as error:
         raise FinsecError(f"Cannot load test-plan inputs: {error}") from error
-    return target, endpoints, resources, find_hypothesis(workspace, hypothesis_id)
+    return target, observations, endpoints, resources, find_hypothesis(workspace, hypothesis_id)
 
 
 def _endpoints(hypothesis: HypothesisRecord, endpoints: EndpointStore) -> list[Endpoint]:
@@ -58,18 +60,25 @@ def _steps(
         setup = [
             f"{owner or 'Researcher Account A'} creates or selects the test object.",
             "Record object ownership and initial state.",
-            f"Authenticate separately as {actor or 'Researcher Account B'}.",
         ]
+        if endpoint is not None and endpoint.authentication.required:
+            setup.append(f"Authenticate separately as {actor or 'Researcher Account B'}.")
+        else:
+            setup.append(
+                f"Use the passive baseline labeled {actor or 'Researcher Account B'}; "
+                "no request credential was observed."
+            )
         actions = [
             f"Copy the successful {operation} request for Account B's own object when available.",
             "Replace only the object identifier with Account A's researcher-owned identifier.",
             "Submit exactly one modified request.",
-            "Retrieve the object again as Account A to verify state and ownership.",
         ]
         assertions = [
             "The modified request is rejected without exposing Account A data.",
-            "Account A's object state remains unchanged.",
         ]
+        if endpoint is not None and endpoint.state_change:
+            actions.append("Retrieve the object again as Account A to verify state and ownership.")
+            assertions.append("Account A's object state remains unchanged.")
     elif hypothesis.category == "authentication":
         setup = [
             f"Authenticate as {actor or 'the researcher-controlled account'}.",
@@ -130,7 +139,9 @@ def _steps(
 
 
 def _draft(
+    workspace: WorkspacePaths,
     target: TargetDocument,
+    observations: ObservationStore,
     endpoints: EndpointStore,
     resources: ResourceStore,
     hypothesis: HypothesisRecord,
@@ -142,6 +153,15 @@ def _draft(
     )
     owner = researcher_accounts[0] if researcher_accounts else None
     actor = researcher_accounts[1] if len(researcher_accounts) > 1 else owner
+    execution_templates = build_execution_templates(
+        workspace,
+        target,
+        hypothesis,
+        source_endpoints,
+        observations,
+    )
+    owner = execution_templates.object_owner or owner
+    actor = execution_templates.actor or actor
     resource_name = (
         endpoint.resource.type if endpoint is not None else hypothesis.component.split(" / ", 1)[0]
     )
@@ -154,7 +174,7 @@ def _draft(
         for item in source_endpoints
     )
     concurrency = False
-    request_budget = 2
+    request_budget = execution_templates.execution.request_budget or 2
     requires_two_accounts = hypothesis.category == "authorization"
     blockers: list[str] = []
     endpoint_hosts = {host for item in source_endpoints for host in item.hosts}
@@ -225,6 +245,10 @@ def _draft(
             "Restore or cancel only researcher-owned reversible test state when permitted.",
             "Store only redacted evidence and keep credentials outside the workspace.",
         ],
+        "requests": [
+            item.model_dump(mode="json", exclude_none=True) for item in execution_templates.requests
+        ],
+        "execution": execution_templates.execution.model_dump(mode="json"),
         "human_approval_required": True,
         "execution_default": "DO_NOT_EXECUTE",
         "approval_status": "NOT_REQUESTED",
@@ -235,16 +259,17 @@ def _draft(
 def generate_plan(workspace: WorkspacePaths, hypothesis_id: str) -> PlanResult:
     """Generate a policy-checked plan and never execute it."""
 
-    target, endpoints, resources, hypothesis = _load_inputs(workspace, hypothesis_id)
+    target, observations, endpoints, resources, hypothesis = _load_inputs(workspace, hypothesis_id)
     if hypothesis.kind != "SECURITY_HYPOTHESIS" or hypothesis.disposition != "ACTIVE":
         raise FinsecError(
             f"{hypothesis.id} is a research or suppressed candidate, not an active security "
             "hypothesis. Collect the missing evidence and regenerate first."
         )
-    draft = _draft(target, endpoints, resources, hypothesis)
+    draft = _draft(workspace, target, observations, endpoints, resources, hypothesis)
     fingerprint = stable_fingerprint(
         {
             "target": target.model_dump(mode="json"),
+            "observations": observations.model_dump(mode="json", exclude_none=True),
             "endpoints": endpoints.model_dump(mode="json", exclude_none=True),
             "resources": resources.model_dump(mode="json", exclude_none=True),
             "hypothesis": hypothesis.model_dump(mode="json", exclude_none=True),
@@ -257,7 +282,7 @@ def generate_plan(workspace: WorkspacePaths, hypothesis_id: str) -> PlanResult:
         "phase3-test-planner",
         fingerprint,
         [draft],
-        preserved_fields=("approval_status", "notes"),
+        preserved_fields=("approval_status", "approval", "notes"),
     )
     try:
         store = TestPlanStore.model_validate(merge.document)

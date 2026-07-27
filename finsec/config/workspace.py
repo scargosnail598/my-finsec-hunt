@@ -1,13 +1,16 @@
 """Creation and discovery of independent target workspaces."""
 
 import re
+import shutil
 from dataclasses import dataclass
 from pathlib import Path
+
+from pydantic import ValidationError
 
 from finsec.config.models import TargetDocument, TargetIdentity
 from finsec.errors import WorkspaceError
 from finsec.modeling.models import EndpointStore, ObservationStore
-from finsec.utils.yaml_store import write_yaml
+from finsec.utils.yaml_store import load_yaml, write_yaml
 
 TARGET_NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]{0,62}[a-z0-9]$|^[a-z0-9]$")
 
@@ -62,6 +65,11 @@ class WorkspacePaths:
     def test_plans(self) -> Path:
         return self.root / "tests" / "plans" / "plans.yaml"
 
+    def executions_for(self, hypothesis_id: str) -> Path:
+        """Return the immutable execution-audit directory for one hypothesis."""
+
+        return self.root / "tests" / "executions" / hypothesis_id.upper()
+
     @property
     def validations(self) -> Path:
         return self.root / "findings" / "validations.yaml"
@@ -76,6 +84,15 @@ class WorkspacePaths:
         return self.root / "evidence" / hypothesis_id.upper()
 
 
+@dataclass(frozen=True)
+class WorkspaceDeletionTarget:
+    """Validated workspace identity approved for an explicit deletion prompt."""
+
+    root: Path
+    slug: str
+    display_name: str
+
+
 WORKSPACE_DIRECTORIES = (
     "scope",
     "observations/raw",
@@ -87,6 +104,7 @@ WORKSPACE_DIRECTORIES = (
     "model",
     "hypotheses/archive",
     "tests/plans",
+    "tests/executions",
     "tests/manual",
     "tests/automated",
     "evidence",
@@ -182,3 +200,72 @@ def resolve_workspace(explicit: Path | None = None, start: Path | None = None) -
     if len(matches) > 1:
         raise WorkspaceError("Multiple workspaces found; pass --workspace PATH.")
     raise WorkspaceError("No workspace found; run 'hunt init NAME' or pass --workspace PATH.")
+
+
+def resolve_workspace_deletion_target(
+    explicit: Path,
+    *,
+    current_directory: Path | None = None,
+) -> WorkspaceDeletionTarget:
+    """Validate an explicit workspace path against destructive-operation guardrails."""
+
+    selected = explicit.expanduser().absolute()
+    if any(candidate.is_symlink() for candidate in (selected, *selected.parents)):
+        raise WorkspaceError("Refusing to delete a workspace selected through a symbolic link.")
+
+    root = selected.resolve()
+    current = (current_directory or Path.cwd()).resolve()
+    filesystem_root = Path(root.anchor)
+    protected = {filesystem_root, Path.home().resolve()}
+    if root in protected or root.parent == filesystem_root:
+        raise WorkspaceError(f"Refusing to delete a broad protected path: {root}")
+    if root == current or root in current.parents:
+        raise WorkspaceError(
+            "Refusing to delete the current directory or one of its parents. "
+            "Change to a directory outside the workspace and retry."
+        )
+    if (root / ".git").exists():
+        raise WorkspaceError("Refusing to delete a directory that contains a .git repository.")
+    if not root.is_dir() or not (root / "target.yaml").is_file():
+        raise WorkspaceError(f"Not a FinSec Hunt workspace: {root}")
+
+    required_directories = ("scope", "observations", "api", "model", "hypotheses")
+    missing = [name for name in required_directories if not (root / name).is_dir()]
+    if missing:
+        raise WorkspaceError(
+            "Refusing to delete an incomplete workspace; missing expected directories: "
+            + ", ".join(missing)
+        )
+
+    try:
+        target = TargetDocument.model_validate(load_yaml(root / "target.yaml"))
+        slug = validate_target_name(target.target.slug or root.name)
+    except (OSError, ValidationError, WorkspaceError) as error:
+        raise WorkspaceError(f"Cannot validate workspace identity at {root}: {error}") from error
+
+    return WorkspaceDeletionTarget(
+        root=root,
+        slug=slug,
+        display_name=target.target.name,
+    )
+
+
+def delete_workspace(target: WorkspaceDeletionTarget) -> None:
+    """Permanently remove one previously validated workspace directory."""
+
+    if (
+        target.root.is_symlink()
+        or not target.root.is_dir()
+        or not (target.root / "target.yaml").is_file()
+    ):
+        raise WorkspaceError(f"Workspace changed before deletion: {target.root}")
+    if (target.root / ".git").exists():
+        raise WorkspaceError("Workspace became a .git repository before deletion; refusing.")
+    try:
+        current_target = TargetDocument.model_validate(load_yaml(target.root / "target.yaml"))
+        current_slug = validate_target_name(current_target.target.slug or target.root.name)
+    except (OSError, ValidationError, WorkspaceError) as error:
+        raise WorkspaceError(f"Workspace identity changed before deletion: {error}") from error
+    if current_slug != target.slug:
+        raise WorkspaceError("Workspace slug changed before deletion; refusing.")
+    shutil.rmtree(target.root)

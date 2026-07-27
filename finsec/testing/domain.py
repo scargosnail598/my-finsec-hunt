@@ -1,5 +1,6 @@
 """Typed safe test-plan and policy-decision models."""
 
+from datetime import datetime
 from typing import Literal
 
 from pydantic import Field
@@ -26,6 +27,95 @@ class PlanAccounts(EditableModel):
     actor: str | None = None
 
 
+ExecutionPattern = Literal[
+    "OBJECT_SUBSTITUTION",
+    "AUTHENTICATION_COMPARISON",
+    "VERSION_COMPARISON",
+    "CHANNEL_COMPARISON",
+    "UNSUPPORTED",
+]
+PlanMutationDimension = Literal["OBJECT", "AUTHENTICATION", "VERSION", "CHANNEL"]
+
+
+class RuntimeSecretReference(EditableModel):
+    """Reference one runtime-only secret without persisting its value."""
+
+    header: Literal["Authorization", "Cookie"]
+    source: Literal["environment"] = "environment"
+    variable: str
+
+
+class RequestExpectation(EditableModel):
+    """Passive identity evidence required before a bounded comparison proceeds."""
+
+    object_path: str | None = None
+    object_value: str | None = None
+    owner_path: str | None = None
+    owner_fingerprint: str | None = None
+
+
+class RequestMutation(EditableModel):
+    """One explicitly bounded difference from a reviewed baseline request."""
+
+    dimension: PlanMutationDimension
+    location: Literal["path", "header", "route", "channel"]
+    parameter: str
+    from_value: str
+    to_value: str | None = None
+    source_actor: str | None = None
+    target_actor: str | None = None
+
+
+class StructuredRequest(EditableModel):
+    """A complete redacted request template generated from passive observations."""
+
+    id: str
+    role: Literal["BASELINE", "MUTATED", "COMPARISON"]
+    clone_of: str | None = None
+    method: Literal["GET", "HEAD"]
+    scheme: Literal["http", "https"]
+    host: str
+    port: int | None = Field(default=None, ge=1, le=65535)
+    path: str
+    query_parameters: dict[str, list[str]] = Field(default_factory=dict)
+    headers: dict[str, str] = Field(default_factory=dict)
+    runtime_secrets: list[RuntimeSecretReference] = Field(default_factory=list)
+    remove_headers: list[Literal["Authorization", "Cookie"]] = Field(default_factory=list)
+    body: None = None
+    actor: str
+    channel: str = "UNKNOWN"
+    mutations: list[RequestMutation] = Field(default_factory=list)
+    expected: RequestExpectation = Field(default_factory=RequestExpectation)
+
+
+class PlanExecutionConfig(EditableModel):
+    """Generated bounded-execution policy; unsupported plans remain manual."""
+
+    supported: bool = False
+    pattern: ExecutionPattern = "UNSUPPORTED"
+    blockers: list[str] = Field(default_factory=list)
+    request_budget: int = Field(default=0, ge=0, le=10)
+    parallelism: int = Field(default=1, ge=1, le=1)
+    mutation_dimensions: list[PlanMutationDimension] = Field(default_factory=list)
+    follow_redirects: Literal[False] = False
+    tls_verification: Literal[True] = True
+    connection_timeout_seconds: float = Field(default=5.0, gt=0, le=30)
+    read_timeout_seconds: float = Field(default=10.0, gt=0, le=60)
+    maximum_response_bytes: int = Field(default=2 * 1024 * 1024, ge=1024, le=10 * 1024 * 1024)
+    stop_conditions: list[str] = Field(default_factory=list)
+
+
+class PlanApproval(EditableModel):
+    """Human approval bound to one exact plan and target-policy snapshot."""
+
+    enabled: Literal[True] = True
+    approved_by: str
+    approved_at: datetime
+    plan_checksum: str
+    target_policy_checksum: str
+    approval_token_sha256: str | None = None
+
+
 class TestPlanRecord(EditableModel):
     """A non-executing controlled experiment for one hypothesis."""
 
@@ -43,9 +133,12 @@ class TestPlanRecord(EditableModel):
     evidence_to_capture: list[str]
     stop_conditions: list[str]
     cleanup: list[str]
+    requests: list[StructuredRequest] = Field(default_factory=list)
+    execution: PlanExecutionConfig = Field(default_factory=PlanExecutionConfig)
     human_approval_required: bool = True
     execution_default: Literal["DO_NOT_EXECUTE"] = "DO_NOT_EXECUTE"
     approval_status: Literal["NOT_REQUESTED", "APPROVED", "REJECTED"] = "NOT_REQUESTED"
+    approval: PlanApproval | None = None
     status: Literal["BLOCKED", "READY_FOR_REVIEW"]
     notes: str | None = None
     generation: GenerationMetadata | None = None

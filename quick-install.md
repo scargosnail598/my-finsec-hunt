@@ -81,7 +81,10 @@ hunt setup
 
 The demo creates a unique temporary workspace and never overwrites an existing one. The setup
 wizard creates explicit scope, researcher-owned account labels, capture directories, and a
-`workflow.yaml` manifest without collecting credentials.
+`workflow.yaml` manifest without collecting credentials. The manifest normally starts with
+`captures: []`; after exporting a HAR, place it in `captures/<slug>/incoming/` and explicitly assign
+its actor and channel before running `hunt workflow`. See `how-to-use.md` for the complete first-run
+sequence.
 
 ## Troubleshooting
 
@@ -117,5 +120,7 @@ Pass the target explicitly:
 hunt status --workspace workspaces/example-fintech
 ```
 
-Installation does not enable active testing. FinSec Hunt contains no request executor, browser
+Installation does not enable active testing. The bounded request runner is disabled by default,
+requires an explicitly enabled target policy and checksum-bound human approval, and supports only
+sequential read-only comparisons. FinSec Hunt contains no browser
 automation, denial-of-service tooling, or credential attack functionality.

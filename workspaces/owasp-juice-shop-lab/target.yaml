@@ -1,0 +1,91 @@
+target:
+  name: OWASP Juice Shop Lab
+  slug: owasp-juice-shop-lab
+  type: web_api
+scope:
+  hosts:
+  - juice-shop.local
+accounts:
+- id: saeedmehmandoust
+  ownership: researcher
+  role: user
+  authenticated: true
+  attributes:
+    verification_level: unknown
+    channel: web
+- id: mrscargo
+  ownership: researcher
+  role: user
+  authenticated: true
+  attributes:
+    verification_level: unknown
+    channel: web
+testing:
+  production: false
+  synthetic: false
+  local_lab: true
+  human_approval_required: true
+  destructive_testing: false
+  maximum_parallel_requests: 1
+  active_execution_enabled: true
+  maximum_requests_per_plan: 2
+  read_only_only: true
+  maximum_response_bytes: 2097152
+  connection_timeout_seconds: 5.0
+  read_timeout_seconds: 10.0
+restrictions:
+  denial_of_service: false
+  brute_force: false
+  social_engineering: false
+  spam: false
+  destructive_actions: false
+  real_user_testing: false
+analysis:
+  include_hosts:
+  - juice-shop.local
+  exclude_hosts: []
+  suppress:
+    static_assets: true
+    telemetry: true
+    analytics: true
+    third_party: true
+  excluded_extensions:
+  - jpg
+  - jpeg
+  - png
+  - webp
+  - gif
+  - svg
+  - ico
+  - css
+  - js
+  - map
+  - woff
+  - woff2
+  - ttf
+  - eot
+  - mp4
+  - webm
+  excluded_path_patterns:
+  - /static/
+  - /assets/
+  - /images/
+  - /img/
+  - /fonts/
+  - /css/
+  - /js/
+  - /media/
+  - /gen_204
+  - /envelope/
+  - /client-exporter/
+  - /actionlog/
+  hypothesis_gates:
+    bola_minimum_score: 6
+    state_transition_minimum_score: 7
+    financial_minimum_score: 5
+  classification_overrides: {}
+focus:
+- authorization
+- authentication
+- business_logic
+- financial_workflows

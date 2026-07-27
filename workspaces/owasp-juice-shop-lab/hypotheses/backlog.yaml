@@ -1,0 +1,181 @@
+version: 1
+hypotheses:
+- id: HYP-002
+  key: auth-object-access:get:/rest/basket/{basketId}:basket:basketid
+  title: Potential unauthenticated cross-account Basket access through basketId on
+    GET /rest/basket/{basketId}
+  kind: SECURITY_HYPOTHESIS
+  disposition: ACTIVE
+  category: authorization
+  component: Basket / EP-012
+  source:
+    endpoints:
+    - EP-012
+    invariants:
+    - INV-002
+    observations:
+    - OBS-000025
+    - OBS-000055
+    - OBS-000058
+    - OBS-000059
+    - OBS-000087
+    - OBS-000117
+    - OBS-000120
+    - OBS-000121
+  invariant:
+  - INV-002
+  observations:
+  - OBS-000025
+  - OBS-000055
+  - OBS-000058
+  - OBS-000059
+  - OBS-000087
+  - OBS-000117
+  - OBS-000120
+  - OBS-000121
+  mutation_dimensions:
+  - ACTOR
+  - OBJECT
+  required_state:
+  - Researcher Account A owns a reachable Basket object.
+  attacker_capability:
+  - Can request Basket objects without an observed request credential.
+  - Can substitute one researcher-controlled actor's basketId into another baseline.
+  evidence_status: INFERRED
+  hypothesis: An unauthenticated caller may be able to substitute another account's
+    basketId with GET /rest/basket/{basketId} and cross the Basket ownership boundary.
+  reasoning: 2 researcher-controlled actors were passively observed retrieving distinct
+    Basket objects through basketId. Successful JSON responses matched the requested
+    object IDs and contained 2 distinct UserId values. No request authentication credential
+    was observed. Cross-substitution has not yet been tested.
+  preconditions:
+  - Both accounts and the target object belong to the researcher.
+  - Account A owns a non-sensitive test Basket in a safe state.
+  - Account B can reproduce the same operation against its own object when applicable.
+  expected_secure_behavior: The server rejects Account B's request and leaves Account
+    A's object and data unchanged.
+  possible_vulnerable_behavior: The server returns Account A's Basket data or applies
+    the requested operation to Account A's object.
+  potential_impact:
+    confidentiality: high
+    integrity: none
+    availability: none
+    financial: unknown
+  evidence_to_collect:
+  - Account A ownership evidence for the test object.
+  - Account B redacted request containing only the substituted identifier.
+  - Server response and Account A before/after state.
+  eligibility_evidence:
+  - first-party JSON API
+  - client-controlled basketId path parameter
+  - 2 researcher-controlled actors observed
+  - 'distinct Basket IDs associated with actor baselines: 6, 7'
+  - successful resource-specific JSON responses
+  - response object IDs match requested object IDs
+  - 2 distinct UserId values observed across actor baselines
+  - no request authentication credential observed
+  - first-party API endpoint
+  - client-controlled object identifier observed
+  - two controlled actors have distinct object baselines
+  - successful JSON response object IDs match requested IDs
+  - distinct owner/account values observed at $.data.UserId
+  - account-scoped object responses observed without request authentication
+  missing_evidence:
+  - Account A requesting Account B's object has not been tested
+  - Account B requesting Account A's object has not been tested
+  - server-side authorization behavior is not yet confirmed
+  generation_rule:
+    id: AUTH_OBJECT_ACCESS
+    version: '3'
+  priority_rationale:
+  - first-party API endpoint
+  - client-controlled object identifier observed
+  - two controlled actors have distinct object baselines
+  - successful JSON response object IDs match requested IDs
+  - distinct owner/account values observed at $.data.UserId
+  - account-scoped object responses observed without request authentication
+  scores:
+    impact: 4
+    likelihood: 3
+    confidence: 3
+    testability: 5
+    total: 15
+  priority: P1
+  status: NEEDS_EVIDENCE
+  safety_notes:
+  - Use only researcher-owned accounts and objects.
+  - Change exactly one identifier and submit one request.
+  - Stop immediately after minimum proof of boundary behavior.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: ba16899af30cc4fc8114f43433552e46cb8cb26500227054e5db534051c26e80
+    source_fingerprint: a61adc302a92dd2f7e60aeedb562614c83d0b291c20b31ffccebd9b4d93797c0
+- id: HYP-001
+  key: research:get:/api/Challenges/
+  title: Determine security semantics of GET /api/Challenges/
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Challenge / EP-002
+  source:
+    endpoints:
+    - EP-002
+    invariants: []
+    observations:
+    - OBS-000022
+    - OBS-000029
+    - OBS-000084
+    - OBS-000091
+  invariant: []
+  observations:
+  - OBS-000022
+  - OBS-000029
+  - OBS-000084
+  - OBS-000091
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine security semantics of GET /api/Challenges/
+  reasoning: The endpoint is security-relevant but lacks sufficient ownership, action,
+    or lifecycle evidence for a vulnerability hypothesis.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - Authenticated baseline request and response field structure.
+  - Researcher-confirmed resource ownership, action, and lifecycle semantics.
+  eligibility_evidence:
+  - first-party API endpoint
+  - authentication-sensitive path
+  - no authentication requirement observed
+  missing_evidence:
+  - The endpoint is security-relevant but lacks sufficient ownership, action, or lifecycle
+    evidence for a vulnerability hypothesis.
+  generation_rule:
+    id: RESEARCH_DISCOVERY
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 5b9dae14406f82faa19ced760a0f82a011eb015cd20f6a3fc04bad45ef745704
+    source_fingerprint: a61adc302a92dd2f7e60aeedb562614c83d0b291c20b31ffccebd9b4d93797c0

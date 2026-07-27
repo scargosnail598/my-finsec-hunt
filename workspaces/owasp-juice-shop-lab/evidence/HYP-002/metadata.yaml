@@ -1,0 +1,147 @@
+version: 1
+hypothesis_id: HYP-002
+test_id: TEST-001
+artifacts:
+- id: EVD-001
+  kind: request
+  path: executions/execution-v1/baseline-request.txt
+  source_name: baseline-request.txt
+  sha256: faed40e0332172fffac2f9a934dbd5906294e71bb1fc2eb2921e5e237ebee881
+  redaction: AUTOMATIC
+  description: Bounded execution baseline request.
+- id: EVD-002
+  kind: response
+  path: executions/execution-v1/baseline-response.json
+  source_name: baseline-response.json
+  sha256: fc6263047bcce3d14a353e489bf871b4264aa41fb47dad64e79f722cebb769c9
+  redaction: AUTOMATIC
+  description: Redacted bounded execution baseline response.
+- id: EVD-003
+  kind: other
+  path: executions/execution-v1/comparison.yaml
+  source_name: comparison.yaml
+  sha256: 97864a9c1051bcd1f0de0da8bc85693f853d73206f60782336bf59dfb17f4af3
+  redaction: AUTOMATIC
+  description: Conservative machine comparison requiring human validation.
+- id: EVD-004
+  kind: other
+  path: executions/execution-v1/execution-metadata.yaml
+  source_name: execution-metadata.yaml
+  sha256: d769e0e68d287747e4ac0436226d2100922f0ee5c3f237f05dde3b08d43c9aa4
+  redaction: AUTOMATIC
+  description: Bounded execution metadata without credentials.
+- id: EVD-005
+  kind: request
+  path: executions/execution-v2/baseline-request.txt
+  source_name: baseline-request.txt
+  sha256: faed40e0332172fffac2f9a934dbd5906294e71bb1fc2eb2921e5e237ebee881
+  redaction: AUTOMATIC
+  description: Bounded execution baseline request.
+- id: EVD-006
+  kind: response
+  path: executions/execution-v2/baseline-response.json
+  source_name: baseline-response.json
+  sha256: 59d0d909b0b696d8b8edeab382d517c36eb4eb84dcb31d00038f130c35d3365b
+  redaction: AUTOMATIC
+  description: Redacted bounded execution baseline response.
+- id: EVD-007
+  kind: other
+  path: executions/execution-v2/comparison.yaml
+  source_name: comparison.yaml
+  sha256: 97864a9c1051bcd1f0de0da8bc85693f853d73206f60782336bf59dfb17f4af3
+  redaction: AUTOMATIC
+  description: Conservative machine comparison requiring human validation.
+- id: EVD-008
+  kind: other
+  path: executions/execution-v2/execution-metadata.yaml
+  source_name: execution-metadata.yaml
+  sha256: d769e0e68d287747e4ac0436226d2100922f0ee5c3f237f05dde3b08d43c9aa4
+  redaction: AUTOMATIC
+  description: Bounded execution metadata without credentials.
+- id: EVD-009
+  kind: request
+  path: executions/execution-v3/baseline-request.txt
+  source_name: baseline-request.txt
+  sha256: faed40e0332172fffac2f9a934dbd5906294e71bb1fc2eb2921e5e237ebee881
+  redaction: AUTOMATIC
+  description: Bounded execution baseline request.
+- id: EVD-010
+  kind: response
+  path: executions/execution-v3/baseline-response.json
+  source_name: baseline-response.json
+  sha256: 1a46e9456b28bbe6d795d5e3b2cda248fb70d80e2bc7fea37ad7461031129a28
+  redaction: AUTOMATIC
+  description: Redacted bounded execution baseline response.
+- id: EVD-011
+  kind: other
+  path: executions/execution-v3/comparison.yaml
+  source_name: comparison.yaml
+  sha256: 97864a9c1051bcd1f0de0da8bc85693f853d73206f60782336bf59dfb17f4af3
+  redaction: AUTOMATIC
+  description: Conservative machine comparison requiring human validation.
+- id: EVD-012
+  kind: other
+  path: executions/execution-v3/execution-metadata.yaml
+  source_name: execution-metadata.yaml
+  sha256: d769e0e68d287747e4ac0436226d2100922f0ee5c3f237f05dde3b08d43c9aa4
+  redaction: AUTOMATIC
+  description: Bounded execution metadata without credentials.
+- id: EVD-013
+  kind: request
+  path: executions/execution-v4/baseline-request.txt
+  source_name: baseline-request.txt
+  sha256: faed40e0332172fffac2f9a934dbd5906294e71bb1fc2eb2921e5e237ebee881
+  redaction: AUTOMATIC
+  description: Bounded execution baseline request.
+- id: EVD-014
+  kind: response
+  path: executions/execution-v4/baseline-response.json
+  source_name: baseline-response.json
+  sha256: 5197176dda11242f9f5086a572be28ec541b2075805f85d0a417cfce7399f5b9
+  redaction: AUTOMATIC
+  description: Redacted bounded execution baseline response.
+- id: EVD-015
+  kind: other
+  path: executions/execution-v4/comparison.yaml
+  source_name: comparison.yaml
+  sha256: 97864a9c1051bcd1f0de0da8bc85693f853d73206f60782336bf59dfb17f4af3
+  redaction: AUTOMATIC
+  description: Conservative machine comparison requiring human validation.
+- id: EVD-016
+  kind: other
+  path: executions/execution-v4/execution-metadata.yaml
+  source_name: execution-metadata.yaml
+  sha256: d769e0e68d287747e4ac0436226d2100922f0ee5c3f237f05dde3b08d43c9aa4
+  redaction: AUTOMATIC
+  description: Bounded execution metadata without credentials.
+assessment:
+  scope_compliant: null
+  rules_compliant: null
+  researcher_controlled_accounts: null
+  ownership_or_boundary_verified: null
+  expected_secure_behavior_observed: null
+  unauthorized_capability_demonstrated: null
+  actual_behavior_verified: null
+  authoritative_result_verified: null
+  negative_control_performed: null
+  reproduced_clean_session: null
+  alternative_explanations_ruled_out: null
+  meaningful_impact_demonstrated: null
+  realistic_prerequisites: null
+  documented_or_intended_behavior: null
+  client_side_only: null
+  known_duplicate: null
+  redaction_reviewed: null
+narrative:
+  report_title: null
+  summary: null
+  root_cause: null
+  affected_boundary: null
+  actual_behavior: null
+  reproduction_steps: []
+  technical_impact: null
+  business_impact: null
+  realistic_attack_scenario: null
+  severity_rationale: null
+  remediation: null
+notes: null

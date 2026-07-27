@@ -1,10 +1,10 @@
 # FinSec Hunt
 
 FinSec Hunt is a local-first research workspace for authorized fintech Web, API, and mobile
-security analysis. It is not a scanner and contains no request executor. It turns researcher-
+security analysis. It is not a scanner or autonomous exploitation engine. It turns researcher-
 supplied passive artifacts into traceable observations, conservative models, reviewable
-hypotheses, non-executing test plans, indexed evidence, skeptical validation results, and
-versioned reports.
+hypotheses, human-approved bounded test plans, indexed evidence, skeptical validation results,
+and versioned reports.
 
 ```text
 HAR / Burp XML / Caido JSON / OpenAPI
@@ -12,8 +12,9 @@ HAR / Burp XML / Caido JSON / OpenAPI
   -> classified endpoint inventory
   -> actors, resources, operation maps, and invariants
   -> evidence-gated hypotheses or research tasks
-  -> human-reviewed plan (DO_NOT_EXECUTE)
-  -> manually collected redacted evidence
+  -> human-reviewed plan (DO_NOT_EXECUTE by default)
+  -> optional checksum-approved bounded read-only execution
+  -> manually or automatically collected redacted evidence
   -> skeptical completeness and integrity checks
   -> immutable report revision
 
@@ -30,12 +31,16 @@ mechanism and the rationale behind every stage.
 
 ## Safety Boundary
 
-FinSec Hunt:
+FinSec Hunt remains passive by default:
 
-- Reads local files only and never contacts a target.
-- Never replays requests, opens browsers, executes APKs, or runs active tests.
+- `workflow`, ingestion, inventory, modeling, hypothesis, planning, evidence, validation, and
+  reporting commands never contact a target.
+- Only `hunt execute` can send HTTP, and only for an explicitly approved structured plan.
+- Active execution is disabled in every new `target.yaml`.
+- The bounded runner cannot invent payloads, enumerate identifiers, fuzz, brute force, or follow
+  redirects automatically.
 - Requires explicit capture-to-actor assignments for automated ingestion.
-- Generates plans with `human_approval_required: true` and `DO_NOT_EXECUTE`.
+- Generates plans with `human_approval_required: true` and `DO_NOT_EXECUTE` as the default.
 - Treats OpenAPI, GraphQL, and mobile strings as documentation/static evidence, not runtime proof.
 - Preserves researcher edits and reports conflicts instead of overwriting them.
 
@@ -125,10 +130,34 @@ captures/example-fintech/         researcher-controlled input area
 Original captures stay outside the workspace. Generated redacted derivatives live under the
 workspace and sensitive paths are added to `.gitignore`.
 
-## Automated Offline Workflow
+## From Setup To Workflow: First-Time Guide
 
-Place sanitized HAR files in `captures/<slug>/incoming/` and edit
-`captures/<slug>/workflow.yaml`:
+`hunt setup` prepares the project; it does not automatically analyze HAR files. In a normal first
+run, `captures/<slug>/workflow.yaml` starts with an empty list:
+
+```yaml
+version: 1
+captures: []
+```
+
+This is intentional. The tool must not guess which account produced a capture or whether it came
+from the web, mobile app, or an API client. Those labels affect authorization and channel-parity
+analysis.
+
+Use this sequence:
+
+1. Run `hunt setup` to create the workspace and capture directories.
+2. Export a sanitized HAR and place it in `captures/<slug>/incoming/`.
+3. Add the HAR filename, actor, and channel to `captures/<slug>/workflow.yaml`.
+4. Run `hunt workflow --workspace workspaces/<slug>`.
+5. Review active hypotheses and research tasks; the workflow stops before active testing.
+
+Interactive setup can populate assignments only when HAR files are already in `incoming/` and you
+answer yes to `Search the incoming HAR directory now?`. It then asks you to confirm the actor and
+channel for every file. Non-interactive `hunt setup --yes` always leaves the manifest empty because
+it cannot safely ask those questions.
+
+For example, after placing two HAR files in `incoming/`, edit `workflow.yaml` to contain:
 
 ```yaml
 version: 1
@@ -205,9 +234,61 @@ P2 = total >= 10
 P3 = everything else
 ```
 
-Plans are static procedures. A researcher must review the plan and, only after independently
-confirming authorization, manually set `approval_status: APPROVED` in
-`tests/plans/plans.yaml`. Approval records review; it still does not execute anything.
+Plans remain static until the researcher separately enables bounded execution and records a
+checksum-bound approval. Editing `approval_status` alone is intentionally insufficient.
+
+## Bounded Active Execution
+
+FinSec Hunt supports only reviewed read-only object substitution, authentication-marker removal,
+and matched version/channel comparisons. It does not support mutations, payments, withdrawals,
+refunds, password changes, OTP consumption, enumeration, or arbitrary request scripts.
+
+First review the structured requests without sending HTTP:
+
+```bash
+hunt plan HYP-002 -w workspaces/example-fintech
+hunt execute HYP-002 -w workspaces/example-fintech --dry-run
+```
+
+For an explicitly authorized local lab, configure the target policy before approval:
+
+```yaml
+testing:
+  production: false
+  local_lab: true
+  active_execution_enabled: true
+  human_approval_required: true
+  maximum_parallel_requests: 1
+  maximum_requests_per_plan: 2
+  read_only_only: true
+```
+
+Then bind approval to the exact plan and target policy:
+
+```bash
+hunt approve HYP-002 -w workspaces/example-fintech --approved-by researcher
+```
+
+If execution reports that the plan has no complete approval record, do not edit
+`approval_status` manually. Plans are stored together in `tests/plans/plans.yaml`; review the
+structured requests and run `hunt approve` so the CLI writes the required reviewer, timestamp,
+plan checksum, and target-policy checksum. Reapprove after any approved plan or policy change.
+
+The command requires the exact phrase `APPROVE HYP-002`. Execution separately requires
+`EXECUTE HYP-002`:
+
+```bash
+hunt execute HYP-002 -w workspaces/example-fintech
+```
+
+Runtime Authorization or Cookie values come only from the environment variables named in the
+plan. They are never written to YAML, evidence, logs, or reports. Non-interactive execution is
+restricted to non-production local labs and requires a token whose hash was captured by
+`hunt approve --approval-token ENV_VARIABLE`.
+
+Execution writes redacted revisioned evidence under `evidence/HYP-xxx/executions/` and an
+append-only audit record under `tests/executions/HYP-xxx/`. An execution outcome never changes a
+hypothesis to `CONFIRMED`; review the evidence and run `hunt validate` separately.
 
 ## Evidence, Validation, And Reports
 
@@ -240,6 +321,30 @@ EXPECTED_BEHAVIOR
 Reports require a current `CONFIRMED`, report-ready validation and are written as immutable
 `reports/HYP-xxx-report-vN.md` revisions.
 
+## Delete A Workspace Safely
+
+Workspace deletion is permanent and must always name the exact workspace directory:
+
+```bash
+hunt workspace delete --workspace workspaces/example-fintech
+```
+
+The command displays the resolved name, slug, and path, then asks you to type the exact workspace
+slug. It deletes observations, models, hypotheses, plans, evidence, validations, and reports stored
+inside that workspace. It does not delete the separate `captures/example-fintech/` directory.
+
+For an intentional non-interactive deletion, supply the exact slug:
+
+```bash
+hunt workspace delete \
+  --workspace workspaces/example-fintech \
+  --confirm example-fintech
+```
+
+The command refuses symbolic-link paths, filesystem/home-level paths, the current directory or one
+of its parents, directories containing `.git`, and directories that do not validate as FinSec Hunt
+workspaces. Run it from outside the selected workspace.
+
 ## Repository Layout
 
 - `finsec/config/`: target models, workspace discovery, and wildcard scope matching.
@@ -248,7 +353,8 @@ Reports require a current `CONFIRMED`, report-ready validation and are written a
 - `finsec/recon/`: GraphQL schema and bounded static mobile discovery.
 - `finsec/modeling/`: actors, resources, operation maps, invariants, and edit-preserving merges.
 - `finsec/hypotheses/`: evidence gates, mutation-based candidates, and transparent scoring.
-- `finsec/testing/`: safety policy checks and non-executing plan generation.
+- `finsec/testing/`: safety policy checks and structured plan generation.
+- `finsec/execution/`: explicit approval, scope/DNS enforcement, bounded HTTP, and audit records.
 - `finsec/evidence/`: evidence scaffolds, redaction, indexing, and checksums.
 - `finsec/validation/`: skeptical completeness, integrity, scope, and control checks.
 - `finsec/reporting/`: packaged Jinja template and immutable report generation.
@@ -284,8 +390,9 @@ repository permissions.
 - Endpoint families may aggregate the same method/path across hosts; scope checks cover every host
   and mixed classifications resolve conservatively.
 - Evidence collection and truth assessment remain researcher responsibilities.
-- There is no live proxy integration, browser automation, concurrency engine, active request
-  execution, autonomous exploitation, or runtime LLM dependency.
+- Bounded execution supports only sequential read-only comparisons; there is no live proxy
+  integration, browser automation, concurrency engine, payload generation, autonomous
+  exploitation, or runtime LLM dependency.
 
 For detailed operational steps, see [how-to-use.md](how-to-use.md). For the isolated end-to-end
 test harness, see [synthetic-validation-how-to.md](synthetic-validation-how-to.md).

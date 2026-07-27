@@ -150,7 +150,11 @@ def test_differential_plans_check_every_endpoint_and_use_channel_language(
     version_plan = generate_plan(phase3_workspace, version.id).plan
     assert version_plan.status == "BLOCKED"
     assert "not fully covered" in " ".join(version_plan.risk.reasons)
+    assert version_plan.execution.pattern == "UNSUPPORTED"
+    assert version_plan.execution.blockers
 
     channel_plan = generate_plan(phase3_workspace, channel.id).plan
     assert any("observed channel" in item for item in channel_plan.actions)
     assert all("observed version" not in item for item in channel_plan.actions)
+    assert channel_plan.execution.pattern == "UNSUPPORTED"
+    assert channel_plan.execution.blockers

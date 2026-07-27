@@ -231,3 +231,53 @@ def add_evidence(
     validated = EvidenceMetadata.model_validate(metadata.model_dump(mode="json"))
     write_yaml(_metadata_path(result.root), validated.model_dump(mode="json"))
     return EvidenceResult(validated, result.root, artifact_id)
+
+
+def add_generated_evidence(
+    workspace: WorkspacePaths,
+    hypothesis_id: str,
+    files: list[tuple[str, EvidenceKind, str, str]],
+) -> EvidenceResult:
+    """Register already-structured runner output after applying text redaction again."""
+
+    result = ensure_evidence(workspace, hypothesis_id)
+    metadata = result.metadata
+    root = result.root.resolve()
+    prepared: list[tuple[Path, EvidenceKind, str, str]] = []
+    seen: set[Path] = set()
+    for relative, kind, content, description in files:
+        destination = (root / relative).resolve()
+        try:
+            destination.relative_to(root)
+        except ValueError as error:
+            raise FinsecError(
+                "Generated evidence path escapes the hypothesis directory."
+            ) from error
+        if destination in seen:
+            raise FinsecError(f"Duplicate generated evidence path: {destination}")
+        if destination.exists():
+            raise FinsecError(f"Generated evidence artifact already exists: {destination}")
+        seen.add(destination)
+        prepared.append((destination, kind, content, description))
+
+    last_id: str | None = None
+    for destination, kind, content, description in prepared:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_text(redact_text(content), encoding="utf-8", newline="\n")
+        artifact_id = _next_artifact_id(metadata)
+        digest = hashlib.sha256(destination.read_bytes()).hexdigest()
+        metadata.artifacts.append(
+            EvidenceArtifact(
+                id=artifact_id,
+                kind=kind,
+                path=destination.relative_to(root).as_posix(),
+                source_name=_safe_name(destination.name),
+                sha256=digest,
+                redaction="AUTOMATIC",
+                description=description,
+            )
+        )
+        last_id = artifact_id
+    validated = EvidenceMetadata.model_validate(metadata.model_dump(mode="json"))
+    write_yaml(_metadata_path(root), validated.model_dump(mode="json"))
+    return EvidenceResult(validated, root, last_id)

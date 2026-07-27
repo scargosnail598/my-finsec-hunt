@@ -29,7 +29,8 @@ Three constraints shape the architecture:
 | Modeling | Endpoints plus configured labels | Actors, resources, operation maps, trust-boundary views | Converts route structure into reviewable domain language while marking ownership and roles unconfirmed. |
 | Invariants | Endpoints and resources | Authentication, authorization, state, and single-execution properties | States what should hold without claiming the property is implemented. |
 | Hypotheses | Runtime evidence, invariants, resources, gates | Active hypotheses, research tasks, suppressed candidates | Promotes only specific, testable questions and routes missing evidence into research tasks. |
-| Planning | One active hypothesis plus target policy | `BLOCKED` or `READY_FOR_REVIEW` static plan | Applies scope, account, destructive, financial, and lifecycle safety checks before manual testing. |
+| Planning | One active hypothesis plus target policy | `BLOCKED` or `READY_FOR_REVIEW` structured plan | Applies scope, account, destructive, financial, lifecycle, and bounded-execution checks before approval. |
+| Bounded execution | One checksum-approved structured plan | Redacted comparison evidence plus immutable audit revision | Sends only the reviewed sequential read-only requests; it cannot invent payloads or confirm a vulnerability. |
 | Evidence | Researcher-supplied files | Redacted artifacts, checksums, assessment, narrative | Keeps proof separate from predictions and records integrity metadata. |
 | Validation | Plan, evidence, endpoints, target policy | Skeptical disposition and missing requirements | Tries to disprove or downgrade the claim before a report can exist. |
 | Reporting | Current confirmed validation | Immutable Markdown revision | Prevents stale or unvalidated narratives from becoming reports and preserves report history. |
@@ -109,9 +110,27 @@ A test plan is blocked when the system cannot justify the minimum safe experimen
 include unresolved source endpoints, incomplete scope, insufficient researcher-owned accounts,
 unconfirmed lifecycle states, destructive operations, and production financial effects.
 
-`READY_FOR_REVIEW` means static checks passed; it is not authorization. `APPROVED` records a human
-decision; it is not execution. `DO_NOT_EXECUTE` is immutable in the plan schema, and there is no
-runtime component capable of sending the requests.
+`READY_FOR_REVIEW` means static checks passed; it is not authorization. A manually edited
+`APPROVED` value is not sufficient for active execution. `hunt approve` binds the human decision to
+the exact generated plan and target-policy checksums, while `DO_NOT_EXECUTE` remains the default.
+
+Only `hunt execute` crosses the network boundary. It requires `active_execution_enabled: true`, a
+complete approval record, an active in-scope hypothesis, one supported mutation dimension, a
+bounded sequential request budget, current DNS/scope validation, and an exact final confirmation.
+Every other command remains passive. Execution writes redacted evidence and an append-only audit
+record, but skeptical validation remains a separate step and no execution outcome automatically
+confirms a vulnerability.
+
+## Workspace Deletion Boundary
+
+Workspace deletion is intentionally separate from setup and analysis. `hunt workspace delete`
+requires an explicit workspace path and exact slug confirmation. Before removal, it validates the
+target document, expected directory structure, path breadth, current working directory boundary,
+symbolic-link status, and absence of a nested `.git` repository.
+
+Only the selected workspace directory is removed. Capture directories remain separate and are not
+deleted automatically because they may contain original researcher-controlled artifacts requiring
+an independent retention decision.
 
 ## Validation Rationale And Limits
 

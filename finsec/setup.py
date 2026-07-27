@@ -342,9 +342,13 @@ def build_setup_config(
         testing=TestingConfig(
             production=production,
             synthetic=not production,
+            local_lab=not production,
             human_approval_required=True,
             destructive_testing=False,
+            active_execution_enabled=False,
             maximum_parallel_requests=1,
+            maximum_requests_per_plan=3,
+            read_only_only=True,
         ),
         restrictions=RestrictionsConfig(),
         analysis=selected_analysis,
@@ -419,6 +423,11 @@ def _capture_readme() -> str:
         "- Review files before ingestion\n\n"
         "Actor and channel assignments are security-relevant metadata. Correcting an assignment "
         "and rerunning keeps stable observation IDs while refreshing those labels.\n\n"
+        "`hunt setup` normally creates `workflow.yaml` with `captures: []`. This is not an error: "
+        "the tool cannot safely guess an actor or channel from a filename. Interactive setup can "
+        "populate it only when HAR files already exist in `incoming/` and you choose to search "
+        "that directory. Non-interactive `hunt setup --yes` leaves it empty for manual "
+        "assignment.\n\n"
         "## Automated Offline Workflow\n\n"
         "Assign every HAR to an explicit actor and channel in `workflow.yaml`, then run:\n\n"
         "```bash\n"
@@ -953,9 +962,11 @@ def _print_summary(
             ),
         ),
         ("Production", "yes" if config.target.testing.production else "no (synthetic)"),
+        ("Bounded execution", "disabled by default"),
         ("Human approval", "required"),
         ("Destructive testing", "disabled"),
         ("Maximum parallel requests", "1"),
+        ("Maximum requests per approved plan", "3"),
         ("Unsafe test categories", "all prohibited"),
     ]
     for label, value in rows:

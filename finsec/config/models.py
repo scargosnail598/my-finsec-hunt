@@ -63,9 +63,16 @@ class TestingConfig(StrictModel):
 
     production: bool = False
     synthetic: bool = False
+    local_lab: bool = False
     human_approval_required: bool = True
     destructive_testing: bool = False
+    active_execution_enabled: bool = False
     maximum_parallel_requests: int = Field(default=1, ge=1)
+    maximum_requests_per_plan: int = Field(default=3, ge=1, le=10)
+    read_only_only: bool = True
+    maximum_response_bytes: int = Field(default=2 * 1024 * 1024, ge=1024, le=10 * 1024 * 1024)
+    connection_timeout_seconds: float = Field(default=5.0, gt=0, le=30)
+    read_timeout_seconds: float = Field(default=10.0, gt=0, le=60)
 
 
 class RestrictionsConfig(StrictModel):

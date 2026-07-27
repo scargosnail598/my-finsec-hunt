@@ -1,0 +1,142 @@
+version: 1
+plans:
+- id: TEST-001
+  key: plan:HYP-002
+  hypothesis_id: HYP-002
+  purpose: Safely evaluate Potential unauthenticated cross-account Basket access through
+    basketId on GET /rest/basket/{basketId} without expanding beyond minimum proof.
+  risk:
+    destructive: false
+    financial: false
+    affects_external_user: false
+    concurrency: false
+    request_budget: 2
+    decision: REQUIRES_HUMAN_APPROVAL
+    reasons:
+    - Static policy checks pass; explicit human approval is still mandatory.
+  accounts:
+    object_owner: saeedmehmandoust
+    actor: mrscargo
+  preconditions:
+  - Both accounts and the target object belong to the researcher.
+  - Account A owns a non-sensitive test Basket in a safe state.
+  - Account B can reproduce the same operation against its own object when applicable.
+  setup:
+  - saeedmehmandoust creates or selects the test object.
+  - Record object ownership and initial state.
+  - Authenticate separately as mrscargo.
+  actions:
+  - Copy the successful GET /rest/basket/{basketId} request for Account B's own object
+    when available.
+  - Replace only the object identifier with Account A's researcher-owned identifier.
+  - Submit exactly one modified request.
+  - Retrieve the object again as Account A to verify state and ownership.
+  secure_assertions:
+  - The modified request is rejected without exposing Account A data.
+  - Account A's object state remains unchanged.
+  interesting_behavior:
+  - The server returns Account A's Basket data or applies the requested operation
+    to Account A's object.
+  - Unexpected status codes alone are not proof; verify data or authoritative state.
+  evidence_to_capture:
+  - Account A ownership evidence for the test object.
+  - Account B redacted request containing only the substituted identifier.
+  - Server response and Account A before/after state.
+  stop_conditions:
+  - Any unrelated user data becomes visible.
+  - Any financial movement exceeds the explicitly approved test value.
+  - The operation affects an external user or irreversible state.
+  - Rate limiting, instability, or an unexpected side effect appears.
+  - The minimum evidence needed to classify behavior has been collected.
+  cleanup:
+  - Restore or cancel only researcher-owned reversible test state when permitted.
+  - Store only redacted evidence and keep credentials outside the workspace.
+  requests:
+  - id: baseline
+    role: BASELINE
+    method: GET
+    scheme: http
+    host: juice-shop.local
+    port: 3000
+    path: /rest/basket/7
+    query_parameters: {}
+    headers:
+      Accept: application/json, text/plain, */*
+    runtime_secrets: []
+    remove_headers: []
+    actor: mrscargo
+    channel: WEB
+    mutations: []
+    expected:
+      object_path: $.data.id
+      object_value: '7'
+      owner_path: $.data.UserId
+      owner_fingerprint: 87d63e266f7a9461fb9ebf4f5233166f6bce7ad4524b130c8e86b553128f7155
+  - id: object-substitution
+    role: MUTATED
+    clone_of: baseline
+    method: GET
+    scheme: http
+    host: juice-shop.local
+    port: 3000
+    path: /rest/basket/6
+    query_parameters: {}
+    headers:
+      Accept: application/json, text/plain, */*
+    runtime_secrets: []
+    remove_headers: []
+    actor: mrscargo
+    channel: WEB
+    mutations:
+    - dimension: OBJECT
+      location: path
+      parameter: basketId
+      from_value: '7'
+      to_value: '6'
+      source_actor: mrscargo
+      target_actor: saeedmehmandoust
+    expected:
+      object_path: $.data.id
+      object_value: '6'
+      owner_path: $.data.UserId
+      owner_fingerprint: f1d3825973e71668ef20dedf3dfb0ec82477c4e79dedec911c0cfd24a26da163
+  execution:
+    supported: true
+    pattern: OBJECT_SUBSTITUTION
+    blockers: []
+    request_budget: 2
+    parallelism: 1
+    mutation_dimensions:
+    - OBJECT
+    follow_redirects: false
+    tls_verification: true
+    connection_timeout_seconds: 5.0
+    read_timeout_seconds: 10.0
+    maximum_response_bytes: 2097152
+    stop_conditions:
+    - baseline request fails
+    - unexpected HTTP 5xx
+    - response size limit is exceeded
+    - redirect destination is out of scope
+    - DNS resolves to a prohibited destination
+    - TLS validation fails
+    - baseline object identity does not match
+    - request budget would be exceeded
+    - more than one mutation dimension is present
+    - an unexpected state-changing response is detected
+    - the researcher interrupts execution
+  human_approval_required: true
+  execution_default: DO_NOT_EXECUTE
+  approval_status: APPROVED
+  approval:
+    enabled: true
+    approved_by: researcher
+    approved_at: '2026-07-27T12:59:29.438632Z'
+    plan_checksum: 10938f9ec621b51f73c84901fd8e2c22709f520d0f402602a5323a4e167f0666
+    target_policy_checksum: 75c9b40f8fd2b9ee5da482c80a1dd96b4f63b2baef51333d4eab245478e7cf73
+  status: READY_FOR_REVIEW
+  generation:
+    managed: true
+    generator: phase3-test-planner
+    generated_checksum: 7b7b92dec3517a9963998728b9b6ea18a92f5b12d91f89fc9e6d5a848eeec77c
+    source_fingerprint: 1720fdec137f4e4480d7a893e25211257e07b5613ba041ebd24a51935fc401d4

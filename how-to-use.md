@@ -1,7 +1,8 @@
 # How To Use FinSec Hunt
 
 This guide covers the intended workflow from authorized passive evidence to a report. FinSec Hunt
-never sends a request or executes a generated plan.
+is passive by default; only the explicit `hunt execute` command can send a bounded request after
+the target policy and exact generated plan have both been approved.
 
 ## 1. Install And Verify
 
@@ -53,6 +54,24 @@ hunt setup \
 
 `*.example.test` covers subdomains such as `api.example.test`; it does not cover the apex
 `example.test`. Record both if both are authorized.
+
+### Why `workflow.yaml` May Be Empty
+
+Setup creates `captures/<slug>/workflow.yaml`, but its normal initial content is:
+
+```yaml
+version: 1
+captures: []
+```
+
+That does not mean setup failed. At setup time, HAR files often do not exist yet, and FinSec Hunt
+cannot safely infer their actor or channel from a filename. Actor labels affect authorization
+analysis, while channel labels affect web/mobile/API comparison.
+
+Interactive setup offers `Search the incoming HAR directory now?` after creating the workspace. If
+HAR files are already present and you answer yes, the wizard asks for an actor and channel and then
+populates the manifest. The prompt defaults to no. With `hunt setup --yes`, discovery is skipped and
+the manifest remains empty; add assignments after copying the HAR files.
 
 The lower-level `hunt init NAME` command remains available for scripts and migrations, but it
 creates an intentionally incomplete target that must be edited before useful analysis.
@@ -115,6 +134,14 @@ Recommended practice:
 - Remove unrelated browsing and third-party noise before import.
 - Keep original captures outside the repository.
 - Review every file for credentials and personal data.
+
+For a normal first run:
+
+1. Copy each sanitized `.har` file into `captures/<slug>/incoming/`.
+2. Open `captures/<slug>/workflow.yaml`.
+3. Add one entry per HAR using a configured account label, `ANONYMOUS`, or `UNKNOWN`.
+4. Set the channel that actually produced the traffic.
+5. Save the file and continue with `hunt workflow` in the next section.
 
 Assign every imported HAR in `captures/<slug>/workflow.yaml`:
 
@@ -301,17 +328,89 @@ accounts, lifecycle evidence, or production financial-testing permission. Resolv
 and regenerate; do not simply edit `status`.
 
 For a `READY_FOR_REVIEW` plan, independently verify current program authorization and review every
-action, request budget, stop condition, and cleanup step. If approved, edit only the lifecycle field
-in `tests/plans/plans.yaml`:
+structured request, request budget, stop condition, and cleanup step. Editing only the lifecycle
+field is not sufficient for active execution:
 
 ```yaml
 approval_status: APPROVED
 notes: "Approved by the researcher for the stated accounts and minimum request budget."
 ```
 
-Approval is an audit annotation. FinSec Hunt still does not execute the plan.
+That legacy annotation remains valid for manual evidence workflows, but the bounded runner also
+requires a checksum-bound approval record.
 
-## 10. Add Redacted Evidence
+## 10. Dry Run, Approve, And Execute A Bounded Plan
+
+All new workspaces contain these default-deny settings:
+
+```yaml
+testing:
+  active_execution_enabled: false
+  human_approval_required: true
+  maximum_parallel_requests: 1
+  maximum_requests_per_plan: 3
+  read_only_only: true
+```
+
+Dry-run validates the structured requests, exact/wildcard scope, DNS destination, method, single
+mutation dimension, request budget, timeout, redirect policy, and expected evidence paths. It does
+not require credentials and sends no HTTP:
+
+```bash
+hunt execute HYP-002 -w workspaces/<slug> --dry-run
+```
+
+For a deliberately vulnerable local lab, set `production: false`, `local_lab: true`, and
+`active_execution_enabled: true`. Do not enable local-lab policy for a production target.
+
+Record approval only after reviewing the current plan:
+
+```bash
+hunt approve HYP-002 -w workspaces/<slug> --approved-by researcher
+```
+
+Type the exact phrase requested by the command. Approval stores the current plan checksum and
+target-policy checksum; changing scope, accounts, safety settings, or request templates invalidates
+it. A manually edited `approval_status: APPROVED` without the generated `approval:` record is
+refused.
+
+If you see `Execution refused: the plan does not have a complete approval record`, do not populate
+the fields by hand. The plan store is `workspaces/<slug>/tests/plans/plans.yaml`, not a standalone
+`plan.yml`. Review the dry-run and then run the `hunt approve` command above. It records
+`approved_by`, `approved_at`, `plan_checksum`, and `target_policy_checksum` as one complete,
+checksum-bound approval. Run approval again after an approved plan or target policy changes.
+
+Execute interactively:
+
+```bash
+hunt execute HYP-002 -w workspaces/<slug>
+```
+
+The final prompt requires `EXECUTE HYP-002`, not `y`. The runner sends the baseline first and stops
+before mutation if the baseline fails, redirects, exceeds the response limit, or does not match the
+expected controlled object.
+
+For local-lab CI only, place a random approval token in an environment variable when approving and
+provide the variable name again during execution:
+
+```bash
+export FINSEC_EXECUTION_APPROVAL='local-secret-value'
+hunt approve HYP-002 -w workspaces/<slug> \
+  --approved-by researcher --approval-token FINSEC_EXECUTION_APPROVAL
+hunt execute HYP-002 -w workspaces/<slug> \
+  --non-interactive --approval-token FINSEC_EXECUTION_APPROVAL
+```
+
+Credential-bearing plans name actor-specific environment variables such as
+`FINSEC_ACCOUNT_B_AUTH`; the secret values are never stored or printed. Execution evidence is
+written beneath `evidence/HYP-002/executions/execution-vN/`, and immutable transport audit records
+are written beneath `tests/executions/HYP-002/`.
+
+Execution outcomes such as `CROSS_OBJECT_RESPONSE_OBSERVED`, `NO_CROSS_OBJECT_ACCESS`, or
+`BASELINE_MISMATCH` are observations, not vulnerability verdicts. The hypothesis status is not
+automatically confirmed.
+
+## 11. Add Redacted Evidence
 
 Create the evidence scaffold:
 
@@ -339,7 +438,7 @@ Review `evidence/HYP-002/metadata.yaml` and `conclusion.md`. Complete the skepti
 report narrative with factual, non-secret text. State-changing endpoints require before/after JSON;
 version and channel comparisons require matched request/response pairs for both paths.
 
-## 11. Validate Skeptically
+## 12. Validate Skeptically
 
 ```bash
 hunt validate HYP-002 -w workspaces/<slug>
@@ -358,7 +457,7 @@ It returns `CONFIRMED`, `REFUTED`, `NEEDS_MORE_EVIDENCE`, `OUT_OF_SCOPE`, or
 `EXPECTED_BEHAVIOR`. The validator checks structure, consistency, and explicit researcher claims;
 it cannot independently authenticate the truth of an external system interaction.
 
-## 12. Generate A Versioned Report
+## 13. Generate A Versioned Report
 
 Complete every narrative field in `evidence/HYP-002/metadata.yaml`, then run:
 
@@ -375,7 +474,36 @@ reports/HYP-002-report-v1.md
 reports/HYP-002-report-v2.md
 ```
 
-## 13. Troubleshooting
+## 13. Delete A Workspace
+
+To permanently remove a workspace, run the command from outside that workspace and pass its exact
+path:
+
+```bash
+hunt workspace delete --workspace workspaces/<slug>
+```
+
+Before deleting anything, FinSec Hunt validates `target.yaml` and the expected workspace structure,
+shows the resolved path, and asks you to type the exact slug. A wrong value cancels the operation
+without deleting anything.
+
+For non-interactive use, confirmation must still match the exact slug:
+
+```bash
+hunt workspace delete \
+  --workspace workspaces/<slug> \
+  --confirm <slug>
+```
+
+Deletion removes everything inside `workspaces/<slug>/`, including observations, evidence, and
+reports. It is not recoverable through FinSec Hunt. The separate `captures/<slug>/` directory and
+its HAR files are deliberately preserved and must be reviewed or removed separately.
+
+The command refuses to operate on symbolic links, broad protected paths, the current directory or
+its parents, a directory containing `.git`, or a directory without the expected FinSec Hunt
+workspace markers.
+
+## 14. Troubleshooting
 
 `No workflow manifest was found`:
 
@@ -385,6 +513,11 @@ reports/HYP-002-report-v2.md
 `Multiple workspaces found`:
 
 - Pass `--workspace workspaces/<slug>` explicitly.
+
+`The plan does not have a complete approval record`:
+
+- Run `hunt execute HYP-xxx -w workspaces/<slug> --dry-run`, review the two bounded requests, then
+  run `hunt approve HYP-xxx -w workspaces/<slug>`. Editing `approval_status` alone is never enough.
 
 `Preserved researcher-edited records`:
 

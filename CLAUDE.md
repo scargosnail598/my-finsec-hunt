@@ -1,62 +1,77 @@
-# Claude Code Guidance
+# CLAUDE.md
 
-Follow `AGENTS.md` as the repository-wide source of truth. This file adds a concise operational map
-for Claude Code sessions.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Environment
+Follow `AGENTS.md` as the primary repository-wide source of truth.
 
-Python 3.12+ is required. Prefer the project environment:
+## Environment & Commands
 
+Python 3.12+ is required.
+
+### Setup & Activation
 ```bash
 ./install.sh --dev
 source .venv/bin/activate
 ```
 
-Run all checks with:
-
+### Verification & Testing
 ```bash
+# Run standard CI check suite (formatting, linting, type checks, pytest, cli check)
 ./scripts/check.sh
-```
 
-Run the deeper offline validation with:
-
-```bash
+# Run full check suite including synthetic validation workflow
 ./scripts/check.sh --synthetic
+
+# Run linting and formatting individually
+ruff format --check .
+ruff check .
+mypy finsec
+
+# Run tests
+pytest                                 # Run all tests
+pytest tests/test_ingest.py            # Run a single test file
+pytest tests/test_ingest.py -k test_har # Run a specific test function
 ```
 
-## Architecture
+### Executing CLI & Demos
+```bash
+hunt --help                             # CLI entry point
+python scripts/run_demo_workflow.py    # Non-destructive safe synthetic demo
+```
 
-The runtime is deterministic, local-first, and file-based:
+## Architecture & Knowledge Separation
 
+FinSec Hunt is a local-first, deterministic security research pipeline with a strict safety boundary: it reads local files only, never contacts live targets, and contains no request execution capability.
+
+### Pipeline Stages
 ```text
 config -> ingest -> normalization -> modeling -> invariants -> hypotheses
        -> non-executing plans -> evidence -> validation -> reporting
 ```
 
-GraphQL and mobile discovery are passive side inventories. They do not become runtime observations
-or active hypotheses without traffic evidence.
+Knowledge states are explicitly separated:
+- **Observations (Facts)**: Imported passive HAR/Burp XML/Caido JSON captures with automatic secret redaction.
+- **Endpoint Inventory (Inferences)**: Route normalization and classifications.
+- **Side Inventories**: GraphQL schemas (`finsec/recon/graphql.py`) and mobile artifacts (`finsec/recon/mobile.py`) remain passive static inventories — they are never auto-promoted to active hypotheses without runtime traffic evidence.
+- **Modeling**: Domain actors, resources, operation maps, invariants, and edit-preserving YAML state merges.
+- **Hypotheses & Tasks**: Evidence-gated hypothesis scoring (`total = impact + likelihood + confidence + testability`).
+- **Testing**: Non-executing plan generation requiring explicit human approval (`approval_status: APPROVED`).
+- **Evidence & Validation**: Redacted evidence management, checksum integrity, scope validation, and disposition assignment (`CONFIRMED`, `REFUTED`, etc.).
+- **Reporting**: Versioned immutable reports (`reports/HYP-xxx-report-vN.md`).
 
-Key modules:
+### Key Modules
+- `finsec/config/`: Target models, workspace management, and wildcard scope matching (`*.domain` subdomains vs apex host).
+- `finsec/ingest/`: Passive traffic importers (HAR, Burp, Caido, OpenAPI) and credential/token redaction (`finsec/utils/redaction.py`).
+- `finsec/normalization/`: Endpoint inventory classification and REST path parameter normalization.
+- `finsec/recon/`: Passive GraphQL and APK/mobile static string discovery.
+- `finsec/modeling/`: Domain artifacts, invariants, and edit-preserving merges.
+- `finsec/hypotheses/`: Traffic evidence gates, mutation candidates, and priority scoring.
+- `finsec/testing/`: Safety-gated non-executing test procedure generation.
+- `finsec/evidence/`, `finsec/validation/`, `finsec/reporting/`: Proof handling, validator checks, and Jinja report output.
+- `finsec/utils/yaml_store.py`: Atomic YAML persistence preserving manual researcher edits.
 
-- `finsec/config/`: target models, workspace paths, setup, and wildcard scope matching.
-- `finsec/ingest/`: bounded HAR/Burp/Caido/OpenAPI ingestion and redaction.
-- `finsec/normalization/`: classification, path normalization, and endpoint inventory.
-- `finsec/modeling/`: domain artifacts, invariants, checksums, and edit-preserving merges.
-- `finsec/hypotheses/`: runtime-evidence gates, mutation candidates, and scoring.
-- `finsec/testing/`: safety-gated procedures with no execution capability.
-- `finsec/evidence/`, `finsec/validation/`, `finsec/reporting/`: proof handling and reports.
-- `finsec/utils/yaml_store.py`: atomic YAML persistence.
+## Safety & Workspace Guardrails
 
-## Safety And Workspace Handling
-
-- Never delete, reset, or regenerate a real workspace as part of a demo or test.
-- Treat `workspaces/` and `captures/` as potentially sensitive user data.
-- Use `tmp_path` in tests and `/tmp` only through the guarded synthetic harness.
-- Do not add live requests, browser execution, credential handling, or weakened approval gates.
-- Preserve generated-record conflicts and researcher text outside managed Markdown blocks.
-
-The agent driver at `.claude/skills/run-finsec-hunt/driver.py` delegates to the non-destructive
-`scripts/run_demo_workflow.py`. It creates a new synthetic root and never removes an existing
-workspace.
-
-See `docs/workflow-rationale.md` before changing stage boundaries or evidence requirements.
+- **Workspace Preservation**: Never delete, reset, or overwrite real workspaces (`workspaces/` and `captures/`). Treat workspace data as potentially sensitive target artifacts.
+- **Testing Isolation**: Always use `tmp_path` in pytest or isolated `/tmp` subdirectories (via `scripts/run_demo_workflow.py`).
+- **No Live Execution**: Do not add live request execution, browser automation, credential handling, or request replay capabilities.

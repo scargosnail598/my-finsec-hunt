@@ -1,8 +1,11 @@
 """Build an evidence-linked endpoint inventory from factual observations."""
 
+import hashlib
+import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, cast
 
 from pydantic import ValidationError
 
@@ -10,6 +13,7 @@ from finsec.config.models import TargetDocument
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
 from finsec.modeling.models import (
+    ActorObjectBaseline,
     AuthenticationType,
     Confidence,
     Endpoint,
@@ -23,6 +27,7 @@ from finsec.modeling.models import (
     EndpointStore,
     KnowledgeStatus,
     NormalizationEvidence,
+    ObjectAccessEvidence,
     Observation,
     ObservationStore,
     ParameterSemanticType,
@@ -110,6 +115,15 @@ MONETARY_FIELDS = {
 }
 STATE_FIELDS = {"status", "state", "action", "operation", "type", "mode", "step", "stage"}
 AUTH_FIELDS = {"code", "otp", "challengeid", "sessionid", "verificationid", "nonce", "token"}
+OWNER_ASSOCIATION_FIELDS = {
+    "userid",
+    "ownerid",
+    "accountid",
+    "customerid",
+    "memberid",
+    "profileid",
+    "merchantid",
+}
 
 
 @dataclass(frozen=True)
@@ -364,6 +378,208 @@ def _response_parameters(observations: list[Observation]) -> list[EndpointParame
     return result
 
 
+def _path_parameter_value(template: str, observed: str, identifier: str) -> str | None:
+    template_segments = [segment for segment in template.split("/") if segment]
+    observed_segments = [segment for segment in observed.split("/") if segment]
+    if len(template_segments) != len(observed_segments):
+        return None
+    placeholder = f"{{{identifier}}}"
+    result: str | None = None
+    for expected, actual in zip(template_segments, observed_segments, strict=True):
+        if expected == placeholder:
+            result = actual
+        elif expected.startswith("{") and expected.endswith("}"):
+            continue
+        elif expected != actual:
+            return None
+    return result
+
+
+def _har_entry(
+    workspace: WorkspacePaths,
+    observation: Observation,
+    cache: dict[Path, list[Any] | None],
+) -> dict[str, Any] | None:
+    if observation.source != "HAR":
+        return None
+    reference, marker, index_text = observation.source_reference.partition("#entry-")
+    if not marker or not index_text.isdigit():
+        return None
+    source = (workspace.root / reference).resolve()
+    if not source.is_relative_to(workspace.root.resolve()) or not source.is_file():
+        return None
+    if source not in cache:
+        try:
+            document = json.loads(source.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            cache[source] = None
+        else:
+            log = document.get("log") if isinstance(document, dict) else None
+            entries = log.get("entries") if isinstance(log, dict) else None
+            cache[source] = entries if isinstance(entries, list) else None
+    entries = cache[source]
+    index = int(index_text)
+    if entries is None or index >= len(entries) or not isinstance(entries[index], dict):
+        return None
+    return cast(dict[str, Any], entries[index])
+
+
+def _response_json(
+    workspace: WorkspacePaths,
+    observation: Observation,
+    cache: dict[Path, list[Any] | None],
+) -> Any | None:
+    if (
+        observation.status_code is None
+        or not 200 <= observation.status_code < 300
+        or "json" not in (observation.content_type or "").lower()
+    ):
+        return None
+    entry = _har_entry(workspace, observation, cache)
+    response = entry.get("response") if isinstance(entry, dict) else None
+    content = response.get("content") if isinstance(response, dict) else None
+    if not isinstance(content, dict) or content.get("encoding") == "base64":
+        return None
+    text = content.get("text")
+    if not isinstance(text, str):
+        return None
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        return None
+
+
+def _scalar_paths(value: Any, prefix: str = "$") -> list[tuple[str, str]]:
+    result: list[tuple[str, str]] = []
+    if isinstance(value, dict):
+        for key, item in value.items():
+            result.extend(_scalar_paths(item, f"{prefix}.{key}"))
+    elif isinstance(value, list):
+        for item in value:
+            result.extend(_scalar_paths(item, f"{prefix}[*]"))
+    elif isinstance(value, str | int | float) and not isinstance(value, bool):
+        text = str(value)
+        if text and text != REDACTED:
+            result.append((prefix, text))
+    return result
+
+
+def _terminal_name(path: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", path.rsplit(".", 1)[-1].lower())
+
+
+def _owner_fingerprint(path: str, value: str) -> str:
+    return hashlib.sha256(f"{path}\0{value}".encode()).hexdigest()
+
+
+def _object_access_evidence(
+    workspace: WorkspacePaths,
+    path: str,
+    observations: list[Observation],
+    path_parameters: list[EndpointParameter],
+    target: TargetDocument,
+    cache: dict[Path, list[Any] | None],
+) -> list[ObjectAccessEvidence]:
+    controlled_actors = {
+        account.id for account in target.accounts if account.ownership == "researcher"
+    }
+    identifiers = [
+        parameter.name
+        for parameter in path_parameters
+        if parameter.location == "path" and parameter.semantic_type == "object_identifier"
+    ]
+    grouped: dict[
+        tuple[str, str],
+        dict[tuple[str, str, str, str], set[str]],
+    ] = {}
+    for observation in observations:
+        if observation.actor not in controlled_actors:
+            continue
+        response = _response_json(workspace, observation, cache)
+        if response is None:
+            continue
+        scalars = _scalar_paths(response)
+        for identifier in identifiers:
+            requested = _path_parameter_value(path, observation.path, identifier)
+            if requested is None:
+                continue
+            identifier_name = re.sub(r"[^a-z0-9]", "", identifier.lower())
+            object_matches = [
+                (field_path, value)
+                for field_path, value in scalars
+                if value == requested and _terminal_name(field_path) in {identifier_name, "id"}
+            ]
+            if not object_matches:
+                continue
+            object_path, _ = min(
+                object_matches,
+                key=lambda item: (item[0].count(".") + item[0].count("[*]"), item[0]),
+            )
+            object_parent = object_path.rsplit(".", 1)[0]
+            owner_matches = [
+                (field_path, value)
+                for field_path, value in scalars
+                if field_path.rsplit(".", 1)[0] == object_parent
+                and _terminal_name(field_path) in OWNER_ASSOCIATION_FIELDS
+            ]
+            for owner_path, owner_value in owner_matches:
+                fingerprint = _owner_fingerprint(owner_path, owner_value)
+                key = (observation.actor, requested, object_path, fingerprint)
+                grouped.setdefault((identifier, owner_path), {}).setdefault(key, set()).add(
+                    observation.id
+                )
+
+    evidence: list[ObjectAccessEvidence] = []
+    for (identifier, owner_path), records in sorted(grouped.items()):
+        baselines = [
+            ActorObjectBaseline(
+                actor=actor,
+                requested_value=requested,
+                response_object_path=object_path,
+                owner_value_fingerprint=fingerprint,
+                observations=sorted(observation_ids),
+            )
+            for (actor, requested, object_path, fingerprint), observation_ids in sorted(
+                records.items()
+            )
+        ]
+        actors = {item.actor for item in baselines}
+        objects = {item.requested_value for item in baselines}
+        owners = {item.owner_value_fingerprint for item in baselines}
+        actor_owners = {
+            actor: {item.owner_value_fingerprint for item in baselines if item.actor == actor}
+            for actor in actors
+        }
+        object_owners = {
+            object_id: {
+                item.owner_value_fingerprint
+                for item in baselines
+                if item.requested_value == object_id
+            }
+            for object_id in objects
+        }
+        binding_observed = (
+            len(actors) >= 2
+            and len(objects) >= 2
+            and len(owners) >= 2
+            and all(len(values) == 1 for values in actor_owners.values())
+            and all(len(values) == 1 for values in object_owners.values())
+            and len({next(iter(values)) for values in actor_owners.values()}) == len(actors)
+        )
+        evidence.append(
+            ObjectAccessEvidence(
+                identifier=identifier,
+                owner_field_path=owner_path,
+                baselines=baselines,
+                distinct_actors=len(actors),
+                distinct_objects=len(objects),
+                distinct_owner_values=len(owners),
+                actor_object_binding_observed=binding_observed,
+            )
+        )
+    return evidence
+
+
 def _action(path: str, method: str) -> tuple[EndpointAction, bool, list[str]]:
     segments = [segment.lower().replace("-", "_") for segment in path.split("/") if segment]
     tokens = [token for segment in segments for token in segment.split("_")]
@@ -474,6 +690,7 @@ def _security_relevance(
     authentication: EndpointAuthentication,
     parameters: list[EndpointParameter],
     action: EndpointAction,
+    object_access: list[ObjectAccessEvidence],
 ) -> tuple[int, list[str]]:
     score = 2 if classification.primary == EndpointPrimaryClassification.FIRST_PARTY_API else 0
     reasons: list[str] = []
@@ -494,6 +711,17 @@ def _security_relevance(
     if any(item.semantic_type == "object_identifier" for item in request_parameters):
         score += 2
         reasons.append("client-controlled object identifier observed")
+    binding = next(
+        (item for item in object_access if item.actor_object_binding_observed),
+        None,
+    )
+    if binding is not None:
+        score += 1
+        reasons.append("two controlled actors have distinct object baselines")
+        score += 1
+        reasons.append("successful JSON response object IDs match requested IDs")
+        score += 1
+        reasons.append(f"distinct owner/account values observed at {binding.owner_field_path}")
     if any(
         item.semantic_type in {"monetary_value", "authentication"} for item in request_parameters
     ):
@@ -512,7 +740,10 @@ def _security_relevance(
         penalty, reason = penalties[classification.primary]
         score += penalty
         reasons.append(reason)
-    if not authentication.required:
+    if not authentication.required and binding is not None:
+        score += 1
+        reasons.append("account-scoped object responses observed without request authentication")
+    elif not authentication.required:
         score -= 2
         reasons.append("no authentication requirement observed")
     if not request_parameters:
@@ -552,6 +783,7 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
     ]
     next_number = max(existing_numbers, default=0) + 1
     endpoints: list[Endpoint] = []
+    har_cache: dict[Path, list[Any] | None] = {}
 
     for method, path in sorted(groups):
         observations = groups[(method, path)]
@@ -588,8 +820,16 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
         response_parameters = _response_parameters(observations)
         parameters = path_parameters + query_parameters + body_parameters + response_parameters
         authentication = _authentication(observations)
+        object_access = _object_access_evidence(
+            workspace,
+            path,
+            observations,
+            path_parameters,
+            target,
+            har_cache,
+        )
         relevance, relevance_reasons = _security_relevance(
-            classification, authentication, parameters, action
+            classification, authentication, parameters, action, object_access
         )
         if documented_parameters:
             rules = sorted({*rules, "documented_template"})
@@ -608,6 +848,7 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
                 ),
                 action=action,
                 parameters=parameters,
+                object_access=object_access,
                 state_change=state_change,
                 state_change_reasons=state_change_reasons,
                 financial_impact=(

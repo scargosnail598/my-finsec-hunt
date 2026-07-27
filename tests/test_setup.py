@@ -122,9 +122,13 @@ def test_default_settings_are_safe() -> None:
 
     assert target.testing.production is True
     assert target.testing.synthetic is False
+    assert target.testing.local_lab is False
     assert target.testing.human_approval_required is True
     assert target.testing.destructive_testing is False
+    assert target.testing.active_execution_enabled is False
     assert target.testing.maximum_parallel_requests == 1
+    assert target.testing.maximum_requests_per_plan == 3
+    assert target.testing.read_only_only is True
     assert not any(target.restrictions.model_dump(mode="json").values())
     assert all(target.analysis.suppress.model_dump(mode="json").values())
 
@@ -220,7 +224,10 @@ def test_har_directories_are_created(tmp_path: Path) -> None:
     _run_noninteractive_setup(tmp_path)
     capture = tmp_path / "captures/divar"
     assert all((capture / name).is_dir() for name in ("incoming", "processed", "rejected"))
-    assert "Do not include credentials" in (capture / "README.md").read_text(encoding="utf-8")
+    readme = (capture / "README.md").read_text(encoding="utf-8")
+    assert "Do not include credentials" in readme
+    assert "normally creates `workflow.yaml` with `captures: []`" in readme
+    assert "Non-interactive `hunt setup --yes` leaves it empty" in readme
 
 
 def test_gitignore_is_updated_without_duplicates(tmp_path: Path) -> None:
@@ -287,6 +294,8 @@ def test_synthetic_setup_allows_localhost(tmp_path: Path) -> None:
     )
     assert target.scope.hosts == ["localhost"]
     assert target.testing.synthetic is True
+    assert target.testing.local_lab is True
+    assert target.testing.active_execution_enabled is False
 
 
 def test_advanced_config_builder_preserves_supported_gates() -> None:
