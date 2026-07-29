@@ -9,7 +9,7 @@ from finsec.config.workspace import create_workspace
 from finsec.errors import HarFormatError
 from finsec.ingest.har import ingest_har
 from finsec.modeling.models import KnowledgeStatus, ObservationStore
-from finsec.utils.redaction import REDACTED, redact_data
+from finsec.utils.redaction import REDACTED, redact_data, redact_text
 from finsec.utils.yaml_store import load_yaml
 
 
@@ -81,7 +81,7 @@ def test_har_import_enforces_file_size_limit(
 ) -> None:
     har_path, _ = sample_har
     workspace = create_workspace("demo", tmp_path / "workspaces")
-    monkeypatch.setattr("finsec.ingest.har.MAX_HAR_BYTES", 1)
+    monkeypatch.setattr("finsec.ingest.har_io.MAX_HAR_BYTES", 1)
 
     with pytest.raises(HarFormatError, match="limited"):
         ingest_har(har_path, workspace)
@@ -116,3 +116,12 @@ def test_numeric_authentication_codes_are_redacted_without_hiding_status_codes()
         "statusCode": 200,
         "result": "code_sent",
     }
+
+
+def test_malformed_url_like_text_does_not_abort_redaction() -> None:
+    value = "https://example.test[not-ipv6]/path?token=SYNTHETIC_SECRET"
+
+    redacted = redact_text(value)
+
+    assert "SYNTHETIC_SECRET" not in redacted
+    assert REDACTED in redacted

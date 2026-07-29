@@ -40,6 +40,35 @@ class BasketHandler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:  # noqa: N802 - stdlib handler API
         self.server.received_paths.append(self.path)
+        if self.server.mode == "baseline-auth-401" and self.path == "/rest/basket/7":
+            self.send_response(401)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(b'{"error":"invalid token"}')
+            return
+        if self.server.mode == "baseline-403" and self.path == "/rest/basket/7":
+            self.send_response(403)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(b'{"error":"forbidden"}')
+            return
+        if self.server.mode == "baseline-login" and self.path == "/rest/basket/7":
+            body = (
+                b'<html><form><input type="password"></form>Login '
+                b"Authorization: Bearer HTML_LOGIN_SECRET</html>"
+            )
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        if self.server.mode == "mutation-auth-401" and self.path == "/rest/basket/6":
+            self.send_response(401)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(b'{"error":"expired jwt"}')
+            return
         if self.server.mode == "redirect" and self.path == "/rest/basket/7":
             self.send_response(302)
             self.send_header("Location", "http://outside.example.test/private")
@@ -370,13 +399,14 @@ def test_channel_comparison_plan_uses_two_observed_read_only_channels(tmp_path: 
 def test_dry_run_sends_zero_requests_and_incomplete_approval_is_refused(tmp_path: Path) -> None:
     with basket_server() as server:
         workspace, hypothesis_id = _workspace(tmp_path, server.server_port)
+        _approved(workspace, hypothesis_id)
         prepared = prepare_execution(workspace, hypothesis_id, dry_run=True)
         assert len(prepared.plan.requests) == 2
         assert prepared.plan.execution.mutation_dimensions == ["OBJECT"]
         assert server.received_paths == []
 
         document = load_yaml(workspace.test_plans)
-        document["plans"][0]["approval_status"] = "APPROVED"
+        document["plans"][0]["approval"] = None
         write_yaml(workspace.test_plans, document)
         with pytest.raises(FinsecError, match="approval_status alone"):
             prepare_execution(workspace, hypothesis_id, dry_run=False)
@@ -506,6 +536,47 @@ def test_baseline_stop_conditions_prevent_the_mutated_request(
 
 
 @pytest.mark.parametrize(
+    ("mode", "expected_outcome"),
+    [
+        ("baseline-auth-401", "BASELINE_AUTH_FAILED"),
+        ("baseline-login", "BASELINE_AUTH_FAILED"),
+        ("baseline-403", "BASELINE_AUTHORIZATION_DENIED"),
+    ],
+)
+def test_authentication_and_authorization_baseline_failures_stay_distinct(
+    tmp_path: Path, mode: str, expected_outcome: str
+) -> None:
+    with basket_server(mode) as server:
+        workspace, hypothesis_id = _workspace(tmp_path, server.server_port)
+        _approved(workspace, hypothesis_id)
+
+        result = execute_prepared(prepare_execution(workspace, hypothesis_id, dry_run=False))
+
+        assert server.received_paths == ["/rest/basket/7"]
+        assert result.requests_sent == 1
+        assert result.comparison.outcome == expected_outcome
+        assert result.status == "STOPPED"
+        if mode == "baseline-login":
+            evidence = Path(result.evidence_root) / "executions/execution-v1/baseline-response.json"
+            text = evidence.read_text(encoding="utf-8")
+            assert "HTML_LOGIN_SECRET" not in text
+
+
+def test_authentication_failure_after_valid_baseline_blocks_result_interpretation(
+    tmp_path: Path,
+) -> None:
+    with basket_server("mutation-auth-401") as server:
+        workspace, hypothesis_id = _workspace(tmp_path, server.server_port)
+        _approved(workspace, hypothesis_id)
+
+        result = execute_prepared(prepare_execution(workspace, hypothesis_id, dry_run=False))
+
+        assert server.received_paths == ["/rest/basket/7", "/rest/basket/6"]
+        assert result.comparison.outcome == "TEST_BLOCKED_BY_AUTH"
+        assert result.status == "STOPPED"
+
+
+@pytest.mark.parametrize(
     "mutation",
     ["blocked", "out-of-scope", "multi-dimension", "hidden-auth-change", "post"],
 )
@@ -571,3 +642,28 @@ def test_cli_explains_checksum_bound_approval_requirement(tmp_path: Path) -> Non
         assert "approval_status alone is not sufficient" in result.output
         assert "Requests sent: 0" in result.output
         assert server.received_paths == []
+
+
+def test_unsupported_plan_reports_its_blocker_before_budget_validation(tmp_path: Path) -> None:
+    workspace, hypothesis_id = _workspace(tmp_path, 9)
+    document = load_yaml(workspace.test_plans)
+    plan = document["plans"][0]
+    plan["requests"] = []
+    plan["authentication"] = []
+    plan["execution"].update(
+        {
+            "supported": False,
+            "pattern": "UNSUPPORTED",
+            "blockers": ["Two controlled actor-object-owner baselines are required."],
+            "request_budget": 0,
+            "mutation_dimensions": [],
+        }
+    )
+    write_yaml(workspace.test_plans, document)
+
+    with pytest.raises(FinsecError, match="Two controlled actor-object-owner baselines"):
+        approve_plan(workspace, hypothesis_id, approved_by="pytest")
+
+    stored = load_yaml(workspace.test_plans)["plans"][0]
+    assert stored["approval_status"] == "NOT_REQUESTED"
+    assert "approval" not in stored

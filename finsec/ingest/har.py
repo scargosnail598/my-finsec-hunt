@@ -13,6 +13,7 @@ from pydantic import ValidationError
 
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import HarFormatError
+from finsec.ingest.har_io import load_har_json
 from finsec.modeling.models import (
     AuthenticationObservation,
     AuthenticationType,
@@ -33,9 +34,8 @@ class IngestResult:
     relabeled: int
     total: int
     redacted_har: Path
-
-
-MAX_HAR_BYTES = 50_000_000
+    authentication_status: str | None = None
+    credential_profile_ref: str | None = None
 
 
 def _headers(items: Any) -> dict[str, str]:
@@ -171,7 +171,7 @@ def _parse_entry(
         raise HarFormatError("Each HAR request must contain a URL.")
     parsed_url = urlsplit(url)
     if not parsed_url.hostname:
-        raise HarFormatError(f"HAR request URL has no host: {url}")
+        raise HarFormatError("HAR request URL has no host.")
 
     status = response.get("status")
     status_code = (
@@ -226,20 +226,13 @@ def ingest_har(
     workspace: WorkspacePaths,
     actor: str = "UNKNOWN",
     channel: ChannelType = "UNKNOWN",
+    *,
+    capture_auth: bool = False,
+    auth_candidate: int | None = None,
 ) -> IngestResult:
     """Import one HAR file without retaining its unredacted content."""
 
-    source_path = har_path.expanduser().resolve()
-    if not source_path.is_file():
-        raise HarFormatError(f"HAR file not found: {source_path}")
-    try:
-        size = source_path.stat().st_size
-        if size > MAX_HAR_BYTES:
-            raise HarFormatError(f"HAR import is limited to {MAX_HAR_BYTES} bytes per file.")
-        raw = source_path.read_bytes()
-        document = json.loads(raw.decode("utf-8-sig"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
-        raise HarFormatError(f"Cannot parse HAR file {source_path}: {error}") from error
+    source_path, raw, document = load_har_json(har_path)
 
     log = document.get("log") if isinstance(document, dict) else None
     entries = log.get("entries") if isinstance(log, dict) else None
@@ -286,4 +279,27 @@ def ingest_har(
         next_number += 1
 
     write_yaml(workspace.observations, store.model_dump(mode="json", exclude_none=True))
-    return IngestResult(imported, skipped, relabeled, len(store.observations), redacted_path)
+    authentication_status: str | None = None
+    credential_profile_ref: str | None = None
+    if capture_auth:
+        if actor == "UNKNOWN":
+            raise HarFormatError("--capture-auth requires an explicitly configured actor.")
+        from finsec.auth.service import capture_from_har
+
+        authentication, _ = capture_from_har(
+            workspace,
+            actor,
+            source_path,
+            candidate_number=auth_candidate,
+        )
+        authentication_status = authentication.status
+        credential_profile_ref = authentication.profile_ref
+    return IngestResult(
+        imported,
+        skipped,
+        relabeled,
+        len(store.observations),
+        redacted_path,
+        authentication_status,
+        credential_profile_ref,
+    )

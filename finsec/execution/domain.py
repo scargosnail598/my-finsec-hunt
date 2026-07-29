@@ -1,7 +1,7 @@
 """Typed execution, comparison, and append-only audit records."""
 
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import Field
 
@@ -25,7 +25,10 @@ ExecutionOutcome = Literal[
     "COMPARISON_OBSERVED",
     "INCONCLUSIVE",
     "BASELINE_FAILED",
+    "BASELINE_AUTH_FAILED",
+    "BASELINE_AUTHORIZATION_DENIED",
     "BASELINE_MISMATCH",
+    "TEST_BLOCKED_BY_AUTH",
     "OUT_OF_SCOPE_REDIRECT",
     "RESPONSE_SIZE_EXCEEDED",
     "STOPPED_BY_POLICY",
@@ -48,6 +51,7 @@ class ExecutionResponseSummary(EditableModel):
     resource_item_count: int | None = None
     redirect_location: str | None = None
     error_class: str | None = None
+    authentication_signal: str | None = None
 
 
 class ExecutionComparison(EditableModel):
@@ -88,3 +92,4 @@ class ExecutionAuditRecord(EditableModel):
     evidence: list[EvidenceHash] = Field(default_factory=list)
     tool_version: str
     notes: list[str] = Field(default_factory=list)
+    authentication_events: list[dict[str, Any]] = Field(default_factory=list)

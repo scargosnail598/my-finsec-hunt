@@ -10,6 +10,7 @@ def test_json_schemas_are_valid() -> None:
     root = Path(__file__).parents[1]
     schemas = sorted((root / "schemas").glob("*.schema.json"))
     assert {path.name for path in schemas} == {
+        "actor-authentication.schema.json",
         "endpoint.schema.json",
         "graphql-operation.schema.json",
         "hypothesis.schema.json",

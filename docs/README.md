@@ -109,8 +109,9 @@ python scripts/run_demo_workflow.py --root /tmp/my-finsec-demo --slug demo
 
 ## Create A Real Workspace
 
-The setup wizard validates scope hosts, account labels, safe defaults, capture paths, and analysis
-policy without asking for credentials or personal identifiers.
+The setup wizard validates the target URL, scope hosts, actor labels and roles, safe defaults,
+capture paths, analysis policy, and actor authentication readiness. Credential entry is optional
+and hidden; workspace metadata stores only secret references and redacted lifecycle information.
 
 ```bash
 hunt setup
@@ -126,6 +127,7 @@ hunt setup \
   --host '*.services.example.test' \
   --account ACCOUNT_A \
   --account ACCOUNT_B \
+  --anonymous-actor ANONYMOUS \
   --yes
 ```
 
@@ -138,7 +140,7 @@ The wizard creates:
 ```text
 workspaces/example-fintech/       structured research memory
 captures/example-fintech/         researcher-controlled input area
-  incoming/                       sanitized HAR inputs
+  incoming/                       authorized HAR inputs kept out of Git
   processed/                      optional researcher filing area
   rejected/                       optional researcher filing area
   workflow.yaml                   explicit file/actor/channel assignments
@@ -169,10 +171,11 @@ Use this sequence:
 4. Run `hunt workflow --workspace workspaces/<slug>`.
 5. Review active hypotheses and research tasks; the workflow stops before active testing.
 
-Interactive setup can populate assignments only when HAR files are already in `incoming/` and you
-answer yes to `Search the incoming HAR directory now?`. It then asks you to confirm the actor and
-channel for every file. Non-interactive `hunt setup --yes` always leaves the manifest empty because
-it cannot safely ask those questions.
+Interactive setup can configure each actor from a HAR, raw HTTP request, hidden secret prompt, or
+an explicit incomplete state. Resume incomplete actor authentication with
+`hunt setup -w workspaces/<slug>` without overwriting existing scope or credential references.
+Non-interactive `hunt setup --yes` creates authenticated actors in `MISSING` state until a capture
+is imported with `--capture-auth`.
 
 For example, after placing two HAR files in `incoming/`, edit `workflow.yaml` to contain:
 
@@ -226,6 +229,22 @@ hunt ingest-graphql schema.graphql -w workspaces/example-fintech \
 hunt scan-mobile authorized-app.apk -w workspaces/example-fintech
 ```
 
+Capture actor-owned replay authentication during HAR import:
+
+```bash
+hunt ingest account-a.har -w workspaces/example-fintech \
+  --actor ACCOUNT_A --channel WEB --capture-auth
+hunt actors -w workspaces/example-fintech
+hunt actor auth status ACCOUNT_A -w workspaces/example-fintech
+hunt actor auth check ACCOUNT_A -w workspaces/example-fintech
+```
+
+Use `hunt actor auth import ACCOUNT_A --request request.txt` for a raw request, or
+`hunt actor auth set ACCOUNT_A` for hidden interactive entry. Configure refresh only from an
+observed HAR with `hunt actor auth configure-refresh ACCOUNT_A --har refresh.har`; replace an
+expired credential with `hunt actor auth refresh ACCOUNT_A --har new.har` when no observed refresh
+flow exists.
+
 HAR, Burp, Caido, and OpenAPI records feed the endpoint inventory. Active hypotheses require
 runtime traffic evidence from HAR, Burp, or Caido; OpenAPI-only routes remain research leads.
 GraphQL and mobile results stay in separate inventories.
@@ -260,11 +279,10 @@ FinSec Hunt supports only reviewed read-only object substitution, authentication
 and matched version/channel comparisons. It does not support mutations, payments, withdrawals,
 refunds, password changes, OTP consumption, enumeration, or arbitrary request scripts.
 
-First review the structured requests without sending HTTP:
+First generate and review the structured requests:
 
 ```bash
 hunt plan HYP-002 -w workspaces/example-fintech
-hunt execute HYP-002 -w workspaces/example-fintech --dry-run
 ```
 
 For an explicitly authorized local lab, configure the target policy before approval:
@@ -286,6 +304,13 @@ Then bind approval to the exact plan and target policy:
 hunt approve HYP-002 -w workspaces/example-fintech --approved-by researcher
 ```
 
+Then run the no-network dry-run, which verifies both approval binding and actor authentication
+preflight:
+
+```bash
+hunt execute HYP-002 -w workspaces/example-fintech --dry-run
+```
+
 If execution reports that the plan has no complete approval record, do not edit
 `approval_status` manually. Plans are stored together in `tests/plans/plans.yaml`; review the
 structured requests and run `hunt approve` so the CLI writes the required reviewer, timestamp,
@@ -298,10 +323,12 @@ The command requires the exact phrase `APPROVE HYP-002`. Execution separately re
 hunt execute HYP-002 -w workspaces/example-fintech
 ```
 
-Runtime Authorization or Cookie values come only from the environment variables named in the
-plan. They are never written to YAML, evidence, logs, or reports. Non-interactive execution is
-restricted to non-production local labs and requires a token whose hash was captured by
-`hunt approve --approval-token ENV_VARIABLE`.
+Runtime Authorization, Cookie, API-key, CSRF, and custom authentication values come from the
+actor-bound local secret store referenced by the plan. They are never written to YAML, evidence,
+logs, reports, plan hashes, or approval records. Legacy environment-variable references remain
+readable after `hunt workspace migrate-auth`, but new plans do not require manual credential
+exports. Non-interactive execution is restricted to non-production local labs and still requires a
+separate approval token whose hash was captured by `hunt approve --approval-token ENV_VARIABLE`.
 
 Execution writes redacted revisioned evidence under `evidence/HYP-xxx/executions/` and an
 append-only audit record under `tests/executions/HYP-xxx/`. An execution outcome never changes a

@@ -9,6 +9,12 @@ from dataclasses import dataclass
 
 from pydantic import ValidationError
 
+from finsec.auth.service import (
+    AuthenticationPreflight,
+    actor_preflight,
+    refresh_actor_authentication,
+)
+from finsec.auth.store import SecretStore
 from finsec.config.models import TargetDocument
 from finsec.config.scope import host_is_covered
 from finsec.config.workspace import WorkspacePaths
@@ -27,6 +33,7 @@ FORBIDDEN_PLAN_LANGUAGE = re.compile(
     re.IGNORECASE,
 )
 ENVIRONMENT_VARIABLE = re.compile(r"^[A-Z_][A-Z0-9_]*$")
+HTTP_HEADER_NAME = re.compile(r"^[!#$%&'*+.^_`|~0-9A-Za-z-]+$")
 CLOUD_METADATA_ADDRESSES = {
     ipaddress.ip_address("169.254.169.254"),
     ipaddress.ip_address("100.100.100.200"),
@@ -47,6 +54,8 @@ class PreparedExecution:
     plan_checksum: str
     target_policy_checksum: str
     runtime_headers: dict[str, dict[str, str]]
+    authentication_preflight: tuple[AuthenticationPreflight, ...] = ()
+    authentication_events: tuple[dict[str, object], ...] = ()
 
 
 def plan_checksum(plan: TestPlanRecord) -> str:
@@ -64,11 +73,34 @@ def plan_checksum(plan: TestPlanRecord) -> str:
 def target_policy_checksum(target: TargetDocument) -> str:
     """Bind approval to the exact scope, accounts, restrictions, and execution policy."""
 
+    account_policy = []
+    for item in target.accounts:
+        authentication = item.authentication
+        account_policy.append(
+            {
+                "id": item.id,
+                "ownership": item.ownership,
+                "role": item.role,
+                "authenticated": item.authenticated,
+                "actor_type": item.actor_type,
+                "authentication": (
+                    {
+                        "auth_type": authentication.auth_type,
+                        "profile_ref": authentication.profile_ref,
+                        "context_fingerprint": authentication.context_fingerprint,
+                        "target_hosts": authentication.target_hosts,
+                    }
+                    if authentication is not None
+                    else None
+                ),
+                "attributes": item.attributes.model_dump(mode="json"),
+            }
+        )
     return stable_fingerprint(
         {
             "target": target.target.model_dump(mode="json"),
             "scope": target.scope.model_dump(mode="json"),
-            "accounts": [item.model_dump(mode="json") for item in target.accounts],
+            "accounts": account_policy,
             "testing": target.testing.model_dump(mode="json"),
             "restrictions": target.restrictions.model_dump(mode="json"),
         }
@@ -136,10 +168,25 @@ def _validate_request_secrets(request: StructuredRequest) -> None:
                 f"Execution refused: request {request.id} contains a secret-bearing URL value."
             )
     for secret in request.runtime_secrets:
-        if not ENVIRONMENT_VARIABLE.fullmatch(secret.variable):
+        if not HTTP_HEADER_NAME.fullmatch(secret.header) or secret.header.lower() in {
+            "host",
+            "content-length",
+            "connection",
+            "transfer-encoding",
+        }:
+            raise FinsecError("Execution refused: invalid runtime credential header name.")
+        if secret.actor is not None and secret.actor != request.actor:
+            raise FinsecError("Execution refused: runtime credential is bound to another actor.")
+        if secret.source == "environment" and (
+            secret.variable is None or not ENVIRONMENT_VARIABLE.fullmatch(secret.variable)
+        ):
             raise FinsecError(
                 f"Execution refused: invalid runtime secret variable {secret.variable!r}."
             )
+        if secret.source == "actor_store" and (
+            secret.reference is None or secret.actor != request.actor
+        ):
+            raise FinsecError("Execution refused: invalid actor credential reference.")
 
 
 def _path_matches_template(template: str, concrete: str) -> bool:
@@ -337,9 +384,28 @@ def _validate_authentication_comparison(
         raise FinsecError(
             "Execution refused: authentication requests do not match the source endpoint."
         )
-    if len(baseline.runtime_secrets) != 1:
-        raise FinsecError("Execution refused: exactly one authentication marker is required.")
-    secret = baseline.runtime_secrets[0]
+    if not baseline.runtime_secrets:
+        raise FinsecError("Execution refused: an authentication profile is required.")
+    secret_headers = sorted({item.header for item in baseline.runtime_secrets})
+    profile = next((item for item in plan.authentication if item.actor == baseline.actor), None)
+    expected_source = (
+        f"actor_profile:{profile.credential_profile_ref}"
+        if profile is not None
+        else "environment:" + ",".join(item.variable or "" for item in baseline.runtime_secrets)
+    )
+    legacy_secret = baseline.runtime_secrets[0] if len(baseline.runtime_secrets) == 1 else None
+    legacy_shape = (
+        legacy_secret is not None
+        and legacy_secret.source == "environment"
+        and mutation.parameter == legacy_secret.header
+        and mutation.from_value == f"environment:{legacy_secret.variable}"
+        and comparison.remove_headers == [legacy_secret.header]
+    )
+    actor_profile_shape = (
+        mutation.parameter == "credential_profile"
+        and mutation.from_value == expected_source
+        and comparison.remove_headers == secret_headers
+    )
     if (
         not _same_request_surface(
             baseline,
@@ -348,15 +414,13 @@ def _validate_authentication_comparison(
         )
         or baseline.remove_headers
         or comparison.runtime_secrets
-        or comparison.remove_headers != [secret.header]
-        or mutation.parameter != secret.header
-        or mutation.from_value != f"environment:{secret.variable}"
+        or not (actor_profile_shape or legacy_shape)
         or mutation.to_value is not None
         or mutation.source_actor != baseline.actor
         or mutation.target_actor != baseline.actor
     ):
         raise FinsecError(
-            "Execution refused: authentication comparison must remove exactly one marker."
+            "Execution refused: authentication comparison must remove one reviewed actor profile."
         )
 
 
@@ -446,6 +510,9 @@ def _validate_static_policy(
         raise FinsecError("Execution refused: human approval must remain mandatory.")
     if plan.execution_default != "DO_NOT_EXECUTE":
         raise FinsecError("Execution refused: invalid execution-default policy.")
+    if not plan.execution.supported or plan.execution.pattern == "UNSUPPORTED":
+        detail = "; ".join(plan.execution.blockers) or "plan is manual-only"
+        raise FinsecError(f"Execution refused: {detail}")
     if FORBIDDEN_PLAN_LANGUAGE.search(_plan_text(plan)):
         raise FinsecError(
             "Execution refused: plan contains enumeration, brute force, spraying, or fuzzing."
@@ -541,16 +608,24 @@ def _resolve_scope(
     return resolved
 
 
-def _runtime_headers(plan: TestPlanRecord) -> dict[str, dict[str, str]]:
+def _runtime_headers(workspace: WorkspacePaths, plan: TestPlanRecord) -> dict[str, dict[str, str]]:
     result: dict[str, dict[str, str]] = {}
     for request in plan.requests:
         headers: dict[str, str] = {}
         for secret in request.runtime_secrets:
-            value = os.environ.get(secret.variable)
-            if value is None or not value:
-                raise FinsecError(
-                    f"Execution refused: required runtime secret {secret.variable} is missing."
-                )
+            if secret.source == "actor_store":
+                if secret.reference is None or secret.actor != request.actor:
+                    raise FinsecError("Execution refused: actor credential binding is invalid.")
+                value = SecretStore(workspace).resolve(secret.reference, request.actor)
+            else:
+                environment_value = os.environ.get(secret.variable or "")
+                if environment_value is None or not environment_value:
+                    raise FinsecError(
+                        "Execution refused: required legacy environment credential is missing."
+                    )
+                value = environment_value
+            if any(character in value for character in ("\r", "\n", "\0")):
+                raise FinsecError("Execution refused: runtime credential contains unsafe bytes.")
             headers[secret.header] = value
         result[request.id] = headers
     return result
@@ -646,16 +721,66 @@ def prepare_execution(
     current_target_checksum = target_policy_checksum(target)
     resolved = _resolve_scope(target, plan.requests)
     runtime_headers: dict[str, dict[str, str]] = {}
-    if not dry_run:
-        _validate_approval(
-            target,
-            plan,
-            current_plan_checksum,
-            current_target_checksum,
-            non_interactive=non_interactive,
-            approval_token_env=approval_token_env,
+    authentication_preflight: list[AuthenticationPreflight] = []
+    authentication_events: list[dict[str, object]] = []
+    _validate_approval(
+        target,
+        plan,
+        current_plan_checksum,
+        current_target_checksum,
+        non_interactive=non_interactive and not dry_run,
+        approval_token_env=approval_token_env,
+    )
+    for binding in plan.authentication:
+        preflight = actor_preflight(
+            workspace,
+            binding.actor,
+            request_count=len(plan.requests),
+            for_execution=not dry_run,
+            expected_profile_ref=binding.credential_profile_ref,
+            expected_context_fingerprint=binding.context_fingerprint,
+            request_hosts={item.host for item in plan.requests if item.actor == binding.actor},
         )
-        runtime_headers = _runtime_headers(plan)
+        account = next(item for item in target.accounts if item.id == binding.actor)
+        refresh = account.authentication.refresh if account.authentication is not None else None
+        if (
+            not dry_run
+            and preflight.result == "BLOCKED_BY_AUTH"
+            and preflight.status in {"EXPIRED", "EXPIRING_SOON", "REFRESH_REQUIRED"}
+            and refresh is not None
+            and refresh.configured
+            and refresh.auto_refresh
+        ):
+            before_status = preflight.status
+            refresh_result = refresh_actor_authentication(workspace, binding.actor)
+            authentication_events.append(
+                {
+                    "actor": binding.actor,
+                    "auth_status_before": before_status,
+                    "refresh_attempted": True,
+                    "refresh_result": "SUCCESS",
+                    "auth_status_after": refresh_result.status,
+                    "identity_continuity": refresh_result.identity_continuity,
+                }
+            )
+            preflight = actor_preflight(
+                workspace,
+                binding.actor,
+                request_count=len(plan.requests),
+                for_execution=True,
+                expected_profile_ref=binding.credential_profile_ref,
+                expected_context_fingerprint=binding.context_fingerprint,
+                request_hosts={item.host for item in plan.requests if item.actor == binding.actor},
+            )
+        authentication_preflight.append(preflight)
+        if preflight.result == "BLOCKED_BY_AUTH":
+            detail = "; ".join(preflight.reasons) or f"status is {preflight.status}"
+            raise FinsecError(
+                f"Execution blocked before mutation: {binding.actor} authentication "
+                f"is {preflight.status}. {detail} Mutation requests sent: 0."
+            )
+    if not dry_run:
+        runtime_headers = _runtime_headers(workspace, plan)
     return PreparedExecution(
         workspace=workspace,
         target=target,
@@ -666,4 +791,53 @@ def prepare_execution(
         plan_checksum=current_plan_checksum,
         target_policy_checksum=current_target_checksum,
         runtime_headers=runtime_headers,
+        authentication_preflight=tuple(authentication_preflight),
+        authentication_events=tuple(authentication_events),
+    )
+
+
+def review_execution_authority(
+    workspace: WorkspacePaths,
+    hypothesis_id: str,
+    *,
+    non_interactive: bool = False,
+    approval_token_env: str | None = None,
+) -> PreparedExecution:
+    """Validate scope and approval before an interactive execution confirmation."""
+
+    target, hypothesis, plan, endpoints = _load_inputs(workspace, hypothesis_id)
+    _validate_static_policy(target, hypothesis, plan, endpoints)
+    current_plan_checksum = plan_checksum(plan)
+    current_target_checksum = target_policy_checksum(target)
+    resolved = _resolve_scope(target, plan.requests)
+    _validate_approval(
+        target,
+        plan,
+        current_plan_checksum,
+        current_target_checksum,
+        non_interactive=non_interactive,
+        approval_token_env=approval_token_env,
+    )
+    preflights = tuple(
+        actor_preflight(
+            workspace,
+            binding.actor,
+            request_count=len(plan.requests),
+            expected_profile_ref=binding.credential_profile_ref,
+            expected_context_fingerprint=binding.context_fingerprint,
+            request_hosts={item.host for item in plan.requests if item.actor == binding.actor},
+        )
+        for binding in plan.authentication
+    )
+    return PreparedExecution(
+        workspace=workspace,
+        target=target,
+        hypothesis=hypothesis,
+        plan=plan,
+        endpoints=endpoints,
+        resolved_addresses=resolved,
+        plan_checksum=current_plan_checksum,
+        target_policy_checksum=current_target_checksum,
+        runtime_headers={},
+        authentication_preflight=preflights,
     )

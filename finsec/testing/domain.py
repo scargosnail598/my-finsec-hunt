@@ -40,9 +40,20 @@ PlanMutationDimension = Literal["OBJECT", "AUTHENTICATION", "VERSION", "CHANNEL"
 class RuntimeSecretReference(EditableModel):
     """Reference one runtime-only secret without persisting its value."""
 
-    header: Literal["Authorization", "Cookie"]
-    source: Literal["environment"] = "environment"
-    variable: str
+    header: str
+    source: Literal["actor_store", "environment"] = "environment"
+    reference: str | None = None
+    variable: str | None = None
+    actor: str | None = None
+
+
+class PlanActorAuthentication(EditableModel):
+    """Non-secret binding between a reviewed plan and an actor credential profile."""
+
+    actor: str
+    credential_profile_ref: str
+    required_status: Literal["READY"] = "READY"
+    context_fingerprint: str | None = None
 
 
 class RequestExpectation(EditableModel):
@@ -80,7 +91,7 @@ class StructuredRequest(EditableModel):
     query_parameters: dict[str, list[str]] = Field(default_factory=dict)
     headers: dict[str, str] = Field(default_factory=dict)
     runtime_secrets: list[RuntimeSecretReference] = Field(default_factory=list)
-    remove_headers: list[Literal["Authorization", "Cookie"]] = Field(default_factory=list)
+    remove_headers: list[str] = Field(default_factory=list)
     body: None = None
     actor: str
     channel: str = "UNKNOWN"
@@ -134,6 +145,7 @@ class TestPlanRecord(EditableModel):
     stop_conditions: list[str]
     cleanup: list[str]
     requests: list[StructuredRequest] = Field(default_factory=list)
+    authentication: list[PlanActorAuthentication] = Field(default_factory=list)
     execution: PlanExecutionConfig = Field(default_factory=PlanExecutionConfig)
     human_approval_required: bool = True
     execution_default: Literal["DO_NOT_EXECUTE"] = "DO_NOT_EXECUTE"

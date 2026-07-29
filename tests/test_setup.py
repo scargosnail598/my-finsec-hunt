@@ -1,5 +1,6 @@
 """Interactive workspace setup wizard tests."""
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -81,6 +82,7 @@ def test_advanced_setup_applies_optional_settings(tmp_path: Path) -> None:
     answers = "\n".join(
         [
             "",  # production
+            "https://api.divar.ir/v1",  # target base URL
             "y",  # advanced
             "extra.divar.ir",
             "ads.example.com",
@@ -111,6 +113,7 @@ def test_advanced_setup_applies_optional_settings(tmp_path: Path) -> None:
         "extra.divar.ir",
     ]
     assert target.analysis.exclude_hosts == ["ads.example.com"]
+    assert target.target.base_url == "https://api.divar.ir/v1"
     assert "/custom/" in target.analysis.excluded_path_patterns
     assert "avif" in target.analysis.excluded_extensions
     assert target.focus == ["authorization", "authentication", "state_transitions"]
@@ -189,6 +192,78 @@ def test_existing_workspace_is_not_overwritten(tmp_path: Path) -> None:
     assert (workspace / "target.yaml").read_bytes() == original
 
 
+def test_setup_resume_continues_only_incomplete_actor_authentication(tmp_path: Path) -> None:
+    workspace = _run_noninteractive_setup(tmp_path)
+    original_scope = load_yaml(workspace / "target.yaml")["scope"]
+
+    resumed = RUNNER.invoke(
+        app,
+        [
+            "setup",
+            "--workspace",
+            str(workspace),
+            "--capture-root",
+            str(tmp_path / "captures"),
+        ],
+        input="5\n4\n4\n",
+    )
+
+    assert resumed.exit_code == 0, resumed.output
+    target = TargetDocument.model_validate(load_yaml(workspace / "target.yaml"))
+    assert target.scope.model_dump(mode="json") == original_scope
+    assert all(
+        actor.authentication is not None and actor.authentication.status == "MISSING"
+        for actor in target.accounts
+    )
+
+
+def test_setup_authentication_resolves_bare_har_name_from_capture_incoming(
+    tmp_path: Path,
+) -> None:
+    workspace = _run_noninteractive_setup(tmp_path)
+    token = "opaque-synthetic-setup-token"
+    har = tmp_path / "captures/divar/incoming/account-a.har"
+    har.write_text(
+        json.dumps(
+            {
+                "log": {
+                    "entries": [
+                        {
+                            "request": {
+                                "method": "GET",
+                                "url": "https://divar.ir/profile",
+                                "headers": [{"name": "Authorization", "value": f"Bearer {token}"}],
+                                "cookies": [],
+                            },
+                            "response": {"status": 200, "headers": [], "content": {}},
+                        }
+                    ]
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    resumed = RUNNER.invoke(
+        app,
+        [
+            "setup",
+            "--workspace",
+            str(workspace),
+            "--capture-root",
+            str(tmp_path / "captures"),
+        ],
+        input="5\n1\naccount-a.har\n\n4\n",
+    )
+
+    assert resumed.exit_code == 0, resumed.output
+    assert token not in resumed.output
+    target = TargetDocument.model_validate(load_yaml(workspace / "target.yaml"))
+    account_a = next(actor for actor in target.accounts if actor.id == "ACCOUNT_A")
+    assert account_a.authentication is not None
+    assert account_a.authentication.status == "READY"
+
+
 def test_add_missing_capture_directories_preserves_readme(tmp_path: Path) -> None:
     _run_noninteractive_setup(tmp_path)
     readme = tmp_path / "captures/divar/README.md"
@@ -225,7 +300,8 @@ def test_har_directories_are_created(tmp_path: Path) -> None:
     capture = tmp_path / "captures/divar"
     assert all((capture / name).is_dir() for name in ("incoming", "processed", "rejected"))
     readme = (capture / "README.md").read_text(encoding="utf-8")
-    assert "Do not include credentials" in readme
+    assert "credential-bearing originals outside the repository" in readme
+    assert "hunt ingest --capture-auth" in readme
     assert "normally creates `workflow.yaml` with `captures: []`" in readme
     assert "Non-interactive `hunt setup --yes` leaves it empty" in readme
 
@@ -296,6 +372,41 @@ def test_synthetic_setup_allows_localhost(tmp_path: Path) -> None:
     assert target.testing.synthetic is True
     assert target.testing.local_lab is True
     assert target.testing.active_execution_enabled is False
+
+
+def test_noninteractive_setup_supports_explicit_anonymous_and_privileged_actors(
+    tmp_path: Path,
+) -> None:
+    result = RUNNER.invoke(
+        app,
+        [
+            "setup",
+            "--name",
+            "Actor Types",
+            "--host",
+            "api.example.test",
+            "--account",
+            "ACCOUNT_A",
+            "--anonymous-actor",
+            "ANONYMOUS",
+            "--privileged-actor",
+            "ADMIN",
+            "--workspace-root",
+            str(tmp_path / "workspaces"),
+            "--capture-root",
+            str(tmp_path / "captures"),
+            "--yes",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    target = TargetDocument.model_validate(
+        load_yaml(tmp_path / "workspaces/actor-types/target.yaml")
+    )
+    by_id = {actor.id: actor for actor in target.accounts}
+    assert by_id["ANONYMOUS"].actor_type == "anonymous"
+    assert by_id["ANONYMOUS"].authentication is not None
+    assert by_id["ANONYMOUS"].authentication.status == "NONE"
+    assert by_id["ADMIN"].actor_type == "privileged_user"
 
 
 def test_advanced_config_builder_preserves_supported_gates() -> None:

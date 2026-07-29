@@ -20,6 +20,13 @@ from pydantic import ValidationError
 from rich.console import Console
 from rich.table import Table
 
+from finsec.auth.capture import detect_har_authentication
+from finsec.auth.service import (
+    capture_from_har,
+    capture_from_raw_request,
+    ensure_authentication_defaults,
+    set_manual_authentication,
+)
 from finsec.config.models import (
     AccountAttributes,
     AccountConfig,
@@ -32,6 +39,7 @@ from finsec.config.models import (
     TargetIdentity,
     TestingConfig,
 )
+from finsec.config.scope import host_is_covered
 from finsec.config.workspace import WorkspacePaths, create_workspace, validate_target_name
 from finsec.errors import FinsecError, WorkspaceError
 from finsec.ingest.har import ingest_har
@@ -58,7 +66,13 @@ FOCUS_AREAS = (
 )
 DEFAULT_FOCUS = list(FOCUS_AREAS[:4])
 DISCOVERY_CHANNELS = {"WEB", "MOBILE", "API", "UNKNOWN"}
-GITIGNORE_ENTRIES = ("captures/", "workspaces/*/observations/raw/", "*.har")
+GITIGNORE_ENTRIES = (
+    "captures/",
+    "workspaces/*/observations/raw/",
+    "workspaces/.finsec-secrets/",
+    ".finsec-secrets/",
+    "*.har",
+)
 
 
 @dataclass(frozen=True)
@@ -77,11 +91,19 @@ class AccountInput:
     def to_config(self) -> AccountConfig:
         """Convert wizard input into the validated target account model."""
 
+        actor_type = (
+            "anonymous"
+            if not self.authenticated
+            else "privileged_user"
+            if self.role.lower() in {"admin", "administrator", "privileged", "staff"}
+            else "authenticated_user"
+        )
         return AccountConfig(
             id=self.label,
             ownership="researcher",
             role=self.role,
             authenticated=self.authenticated,
+            actor_type=cast(Any, actor_type),
             attributes=AccountAttributes(
                 verification_level=self.verification_level,
                 channel=self.channel,
@@ -304,6 +326,7 @@ def build_setup_config(
     focus: list[str] | None = None,
     capture_relative: Path | None = None,
     target_type: str = "web_api",
+    base_url: str | None = None,
 ) -> SetupConfig:
     """Build and immediately validate the complete target document."""
 
@@ -335,8 +358,25 @@ def build_setup_config(
     unsupported = sorted(set(selected_focus) - set(FOCUS_AREAS))
     if unsupported:
         raise FinsecError(f"Unsupported analysis focus: {', '.join(unsupported)}")
+    selected_base_url = base_url or (f"{'https' if production else 'http'}://{safe_hosts[0]}")
+    parsed_base = urlsplit(selected_base_url)
+    if (
+        parsed_base.scheme not in {"http", "https"}
+        or parsed_base.hostname is None
+        or parsed_base.username is not None
+        or parsed_base.password is not None
+        or not host_is_covered(
+            normalize_host(parsed_base.hostname, allow_localhost=not production), safe_hosts
+        )
+    ):
+        raise FinsecError("Target base URL must use HTTP(S) and an explicitly scoped host.")
     document = TargetDocument(
-        target=TargetIdentity(name=display_name, slug=safe_slug, type=target_type),
+        target=TargetIdentity(
+            name=display_name,
+            slug=safe_slug,
+            type=target_type,
+            base_url=selected_base_url.rstrip("/"),
+        ),
         scope=ScopeConfig(hosts=safe_hosts),
         accounts=account_configs,
         testing=TestingConfig(
@@ -355,6 +395,7 @@ def build_setup_config(
         focus=selected_focus,
     )
     validated = TargetDocument.model_validate(document.model_dump(mode="json"))
+    ensure_authentication_defaults(validated)
     return SetupConfig(validated, capture_relative or Path(safe_slug))
 
 
@@ -417,9 +458,10 @@ def _capture_readme() -> str:
         "- One account per HAR\n"
         "- One workflow per HAR\n"
         "- Prefer Fetch/XHR traffic\n"
-        "- Export sanitized HAR\n"
+        "- Remove unrelated traffic and personal data\n"
         "- Do not commit HAR files\n"
-        "- Do not include credentials\n"
+        "- Keep credential-bearing originals outside the repository\n"
+        "- Use `hunt ingest --capture-auth` to move selected replay secrets into the local store\n"
         "- Review files before ingestion\n\n"
         "Actor and channel assignments are security-relevant metadata. Correcting an assignment "
         "and rerunning keeps stable observation IDs while refreshing those labels.\n\n"
@@ -952,6 +994,7 @@ def _print_summary(
         ("Workspace", str(workspace)),
         ("HAR input", str(capture / "incoming")),
         ("Scope hosts", ", ".join(config.target.scope.hosts)),
+        ("Target URL", config.target.target.base_url or "not configured"),
         (
             "Accounts",
             "; ".join(
@@ -1005,11 +1048,12 @@ def _existing_action(console: Console, workspace: Path, *, assume_yes: bool) -> 
     console.print("2. Show existing configuration")
     console.print("3. Add missing capture directories only")
     console.print("4. Update configuration interactively")
+    console.print("5. Resume actor authentication setup")
     while True:
         choice = _prompt_text("Choose an action", default="1")
-        if choice in {"1", "2", "3", "4"}:
+        if choice in {"1", "2", "3", "4", "5"}:
             return choice
-        console.print("[red]Error:[/red] Choose 1, 2, 3, or 4.")
+        console.print("[red]Error:[/red] Choose 1, 2, 3, 4, or 5.")
 
 
 def _discovery_channel(value: str) -> ChannelType:
@@ -1149,12 +1193,15 @@ def _print_completion(console: Console, result: SetupResult) -> None:
     )
     console.print(
         "\nNext steps:\n\n"
-        "1. Export a sanitized HAR.\n"
+        "1. Export an authorized actor HAR and keep the original out of Git.\n"
         f"2. Place it in {incoming}.\n"
-        "3. Run:\n"
+        "3. Capture actor authentication when needed:\n"
+        f"   hunt ingest <actor.har> --workspace {workspace} "
+        "--actor ACCOUNT_A --capture-auth\n"
+        "4. Run the offline workflow:\n"
         f"   hunt workflow --workspace {workspace} "
         f"--manifest {result.capture_root / 'workflow.yaml'}\n"
-        "4. Review:\n"
+        "5. Review:\n"
         f"   hunt hypotheses --research-tasks --workspace {workspace}"
     )
 
@@ -1170,6 +1217,9 @@ def run_setup_wizard(
     capture_root: Path,
     assume_yes: bool,
     synthetic: bool,
+    base_url: str | None = None,
+    anonymous_labels: set[str] | None = None,
+    privileged_labels: set[str] | None = None,
 ) -> SetupResult | None:
     """Collect setup input, preview it, and create only after confirmation."""
 
@@ -1226,6 +1276,12 @@ def run_setup_wizard(
             )
         except (OSError, ValidationError) as error:
             raise WorkspaceError(f"Cannot update invalid target.yaml: {error}") from error
+        if existing_action == "5":
+            capture = _safe_child(capture_root.expanduser().resolve(), Path(workspace_slug))
+            _write_capture_layout(capture)
+            resumed = SetupResult(WorkspacePaths(workspace_path), capture)
+            _configure_actor_authentication(console, resumed)
+            return resumed
 
     if assume_yes:
         production = not synthetic
@@ -1246,11 +1302,34 @@ def run_setup_wizard(
             current=existing_target.scope.hosts if existing_target else None,
         )
     )
+    selected_base_url = base_url or (
+        existing_target.target.base_url if existing_target is not None else None
+    )
+    if not assume_yes and base_url is None:
+        default_base_url = selected_base_url or (
+            f"{'https' if production else 'http'}://{scope_hosts[0]}"
+        )
+        selected_base_url = _prompt_text("Target base URL", default=default_base_url)
     accounts = _collect_accounts(
         console,
         labels=account_labels,
         current=existing_target.accounts if existing_target else None,
     )
+    anonymous = anonymous_labels or set()
+    privileged = privileged_labels or set()
+    overlap = anonymous & privileged
+    if overlap:
+        raise FinsecError(
+            "Actor labels cannot be both anonymous and privileged: " + ", ".join(sorted(overlap))
+        )
+    accounts = [
+        replace(account, authenticated=False, role="anonymous")
+        if account.label in anonymous
+        else replace(account, authenticated=True, role="admin")
+        if account.label in privileged
+        else account
+        for account in accounts
+    ]
 
     configure_advanced = (
         False if assume_yes else typer.confirm("Configure advanced settings?", default=False)
@@ -1289,7 +1368,18 @@ def run_setup_wizard(
         focus=focus,
         capture_relative=capture_relative,
         target_type=existing_target.target.type if existing_target else "web_api",
+        base_url=selected_base_url,
     )
+    if existing_target is not None:
+        existing_by_id = {item.id: item for item in existing_target.accounts}
+        for configured_actor in config.target.accounts:
+            previous_actor = existing_by_id.get(configured_actor.id)
+            if previous_actor is None:
+                continue
+            configured_actor.actor_type = previous_actor.actor_type or configured_actor.actor_type
+            configured_actor.authentication = (
+                previous_actor.authentication or configured_actor.authentication
+            )
     _print_summary(console, config, workspace_root, capture_root)
 
     if existing_action == "4":
@@ -1311,6 +1401,75 @@ def run_setup_wizard(
     if result is None:
         return None
     _print_completion(console, result)
-    if not assume_yes and typer.confirm("Search the incoming HAR directory now?", default=False):
-        _discover_hars(console, result)
+    if not assume_yes and typer.confirm("Configure actor authentication now?", default=False):
+        _configure_actor_authentication(console, result)
     return result
+
+
+def _setup_authentication_file(value: str, result: SetupResult) -> Path:
+    """Resolve bare filenames from the capture directory advertised by setup."""
+
+    path = Path(value).expanduser()
+    if path.is_absolute():
+        return path
+    direct = path.resolve()
+    if direct.is_file() or len(path.parts) != 1:
+        return direct
+    return (result.capture_root / "incoming" / path.name).resolve()
+
+
+def _configure_actor_authentication(console: Console, result: SetupResult) -> None:
+    """Collect one explicit authentication source for each setup actor."""
+
+    target = TargetDocument.model_validate(load_yaml(result.workspace.target))
+    for actor in target.accounts:
+        if actor.actor_type == "anonymous" or not actor.authenticated:
+            console.print(f"{actor.id}: anonymous authentication is explicitly NONE.")
+            continue
+        console.print(f"\n[bold]Authentication for {actor.id}[/bold]")
+        console.print("1. Extract from HAR")
+        console.print("2. Extract from raw HTTP request")
+        console.print("3. Enter credential securely")
+        console.print("4. Leave incomplete for now")
+        choice = _prompt_text("Authentication source", default="1")
+        if choice == "1":
+            path = _setup_authentication_file(_prompt_text("HAR file"), result)
+            candidates = detect_har_authentication(path)
+            if not candidates:
+                console.print(
+                    "No replay authentication candidate was detected. The HAR may have been "
+                    "exported with Authorization headers and cookies sanitized. Re-export an "
+                    "authenticated request with sensitive headers included, import a raw HTTP "
+                    "request, or use secure manual entry."
+                )
+                continue
+            for index, candidate in enumerate(candidates, start=1):
+                console.print(f"[{index}] {candidate.redacted_summary()}")
+            selected = _prompt_integer(
+                "Select replay authentication",
+                default=1,
+                minimum=1,
+                maximum=len(candidates),
+            )
+            authentication, _ = capture_from_har(
+                result.workspace, actor.id, path, candidate_number=selected
+            )
+        elif choice == "2":
+            path = _setup_authentication_file(_prompt_text("Raw request file"), result)
+            authentication = capture_from_raw_request(result.workspace, actor.id, path)
+        elif choice == "3":
+            auth_type = _prompt_text("Authentication type", default="bearer")
+            header = _prompt_text("Header name", default="Authorization")
+            value = str(typer.prompt("Credential", hide_input=True, confirmation_prompt=True))
+            authentication = set_manual_authentication(
+                result.workspace,
+                actor.id,
+                auth_type=auth_type,
+                header_name=header,
+                secret_value=value,
+            )
+        else:
+            console.print(f"{actor.id}: authentication remains MISSING.")
+            continue
+        console.print(f"Credential stored for {actor.id}.")
+        console.print(f"Authentication status: {authentication.status}")

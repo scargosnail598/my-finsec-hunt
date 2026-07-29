@@ -31,13 +31,14 @@ hunt setup
 
 The wizard asks for:
 
-- A display name and path-safe slug.
+- A display name, path-safe slug, and scoped target base URL.
 - Exact or leading-wildcard in-scope hosts.
-- Non-secret labels for researcher-owned accounts.
+- Actor labels, roles, and whether each actor is authenticated, privileged, or anonymous.
+- An optional HAR, raw request, or securely entered credential for each authenticated actor.
 - Optional analysis and capture-directory settings.
 
-It does not ask for usernames, email addresses, phone numbers, passwords, cookies, tokens, OTPs,
-or API keys.
+Secret entry uses a hidden prompt. Setup metadata stores only credential references and redacted
+lifecycle information; credentials are never written to `target.yaml`.
 
 Non-interactive example:
 
@@ -49,6 +50,8 @@ hunt setup \
   --host '*.example.test' \
   --account ACCOUNT_A \
   --account ACCOUNT_B \
+  --anonymous-actor ANONYMOUS \
+  --privileged-actor ADMIN \
   --yes
 ```
 
@@ -68,15 +71,92 @@ That does not mean setup failed. At setup time, HAR files often do not exist yet
 cannot safely infer their actor or channel from a filename. Actor labels affect authorization
 analysis, while channel labels affect web/mobile/API comparison.
 
-Interactive setup offers `Search the incoming HAR directory now?` after creating the workspace. If
-HAR files are already present and you answer yes, the wizard asks for an actor and channel and then
-populates the manifest. The prompt defaults to no. With `hunt setup --yes`, discovery is skipped and
-the manifest remains empty; add assignments after copying the HAR files.
+Interactive setup offers `Configure actor authentication now?` after creating the workspace. The
+prompt defaults to no so an interrupted setup remains safe and resumable. Resume only incomplete
+authentication sections with:
+
+```bash
+hunt setup -w workspaces/<slug>
+```
+
+Choose `Resume actor authentication setup`; existing scope, actor definitions, credential
+references, and refresh configuration are preserved.
 
 The lower-level `hunt init NAME` command remains available for scripts and migrations, but it
 creates an intentionally incomplete target that must be edited before useful analysis.
 
-## 3. Record Authoritative Rules
+## 3. Configure Actor Authentication
+
+Capture replay authentication while importing actor traffic:
+
+```bash
+hunt ingest account-a.har -w workspaces/<slug> \
+  --actor ACCOUNT_A --channel WEB --capture-auth
+```
+
+HAR imports accept files up to 256 MiB by default. For an unusually large local capture, set a
+bounded byte limit up to 512 MiB for that command, or split the HAR to reduce memory use:
+
+```bash
+FINSEC_MAX_HAR_BYTES=419430400 hunt ingest large-account-a.har \
+  -w workspaces/<slug> --actor ACCOUNT_A --capture-auth
+```
+
+If the HAR contains multiple distinct sessions, the CLI displays only redacted candidates and
+requires a selection. Other supported paths are:
+
+```bash
+hunt actor auth import ACCOUNT_A --request account-a-request.txt -w workspaces/<slug>
+hunt actor auth set ACCOUNT_A -w workspaces/<slug>
+hunt actor auth status ACCOUNT_A -w workspaces/<slug>
+hunt actor auth check ACCOUNT_A -w workspaces/<slug>
+hunt actors -w workspaces/<slug>
+```
+
+`auth check` is local by default. Add `--network` only when you explicitly want to send one
+previously observed, in-scope, read-only baseline request; active execution must already be enabled.
+
+Credentials are stored in a `0600` actor-bound secret file under
+`workspaces/.finsec-secrets/`, outside the selected workspace. The directory is Git-ignored and is
+not included in workspace evidence, reports, or exports. `target.yaml` stores only references,
+expiration metadata, observed baseline metadata, and a non-secret authentication-context
+fingerprint.
+
+Anonymous actors have `auth_type: none` and cannot receive a credential. JWT expiration is read
+locally without signature verification; unverified `sub`, role, and tenant claims are continuity
+hints only and require baseline confirmation where possible. Opaque tokens and session cookies with
+no expiration metadata remain unknown until a safe baseline validation succeeds.
+
+Configure automatic refresh only from an observed authorized flow:
+
+```bash
+hunt actor auth configure-refresh ACCOUNT_A \
+  --har account-a-refresh.har -w workspaces/<slug>
+hunt actor auth refresh ACCOUNT_A -w workspaces/<slug>
+```
+
+Replacement without a refresh flow uses a new capture:
+
+```bash
+hunt actor auth refresh ACCOUNT_A --har account-a-new.har -w workspaces/<slug>
+hunt actor auth refresh ACCOUNT_A --request account-a-new.txt -w workspaces/<slug>
+```
+
+The tool never invents refresh endpoints or submits passwords, MFA codes, CAPTCHA responses, or
+unknown login forms. A changed subject, role, tenant, or authentication method invalidates plan
+approval; a verified same-context token renewal preserves approval because secret values are not
+part of plan or policy hashes.
+
+Legacy workspaces can add explicit compatibility metadata without copying environment values:
+
+```bash
+hunt workspace migrate-auth -w workspaces/<slug>
+```
+
+Actor-specific environment variables remain a temporary debugging fallback for legacy plans only.
+New plans use actor credential-profile references.
+
+## 4. Record Authoritative Rules
 
 Review `workspaces/<slug>/target.yaml` and the files under `scope/`:
 
@@ -119,9 +199,11 @@ Hypothesis gates accept scores from 0 to 10.
 The `focus` list records researcher emphasis for review and reporting. It does not override the
 evidence and safety gates.
 
-## 4. Prepare Passive Captures
+## 5. Prepare Passive Captures
 
-Export sanitized HAR files obtained within program authorization. Place them in:
+Export authorized HAR files and keep the originals outside the repository. When using
+`--capture-auth`, the source may contain the selected actor session; FinSec Hunt stores the secret
+components outside the workspace and writes only a redacted HAR derivative. Place input files in:
 
 ```text
 captures/<slug>/incoming/
@@ -166,7 +248,7 @@ The manifest accepts filenames only, never directories, so each source resolves 
 manifest's `incoming/` directory. Actors must be configured account labels, `ANONYMOUS`, or
 `UNKNOWN`.
 
-## 5. Run The Offline Workflow
+## 6. Run The Offline Workflow
 
 With the default capture layout:
 
@@ -208,13 +290,15 @@ a different actor or channel, the existing observation IDs remain stable and the
 refreshed. If one capture fails after earlier captures succeeded, the successful passive imports
 remain in the workspace; fix the failed input and rerun.
 
-## 6. Import Other Passive Artifacts
+## 7. Import Other Passive Artifacts
 
 HAR:
 
 ```bash
 hunt ingest traffic.har -w workspaces/<slug> --actor ACCOUNT_A --channel WEB
 ```
+
+Add `--capture-auth` to securely bind the selected replay profile to `ACCOUNT_A`.
 
 Burp XML history:
 
@@ -259,7 +343,7 @@ hunt scan-mobile jadx-output -w workspaces/<slug>
 GraphQL and mobile discoveries remain separate from runtime observations. Mobile scanning is
 bounded string extraction and never executes or installs the application.
 
-## 7. Review Classification And Models
+## 8. Review Classification And Models
 
 ```bash
 hunt classify -w workspaces/<slug>
@@ -288,7 +372,7 @@ Generated YAML records contain checksums. Untouched records refresh with stable 
 generated records are preserved and reported as conflicts. Generated records no longer supported
 by evidence are retained with a suppressed disposition rather than deleted.
 
-## 8. Review Hypotheses And Research Tasks
+## 9. Review Hypotheses And Research Tasks
 
 ```bash
 hunt hypotheses -w workspaces/<slug>
@@ -308,7 +392,7 @@ ACTOR  OBJECT  STATE  TIME  VALUE  CHANNEL  VERSION
 Under-evidenced routes become research tasks instead of generic vulnerability claims. A high
 priority means the question is important and testable; it does not mean a vulnerability exists.
 
-## 9. Generate And Approve A Plan
+## 10. Generate And Approve A Plan
 
 ```bash
 hunt plan HYP-002 -w workspaces/<slug>
@@ -339,7 +423,7 @@ notes: "Approved by the researcher for the stated accounts and minimum request b
 That legacy annotation remains valid for manual evidence workflows, but the bounded runner also
 requires a checksum-bound approval record.
 
-## 10. Dry Run, Approve, And Execute A Bounded Plan
+## 11. Approve, Dry Run, And Execute A Bounded Plan
 
 All new workspaces contain these default-deny settings:
 
@@ -352,14 +436,6 @@ testing:
   read_only_only: true
 ```
 
-Dry-run validates the structured requests, exact/wildcard scope, DNS destination, method, single
-mutation dimension, request budget, timeout, redirect policy, and expected evidence paths. It does
-not require credentials and sends no HTTP:
-
-```bash
-hunt execute HYP-002 -w workspaces/<slug> --dry-run
-```
-
 For a deliberately vulnerable local lab, set `production: false`, `local_lab: true`, and
 `active_execution_enabled: true`. Do not enable local-lab policy for a production target.
 
@@ -369,6 +445,15 @@ Record approval only after reviewing the current plan:
 hunt approve HYP-002 -w workspaces/<slug> --approved-by researcher
 ```
 
+Dry-run validates the checksum-bound approval, actor credential references, local secret
+resolution, expiration margin, refresh availability, exact/wildcard scope, DNS destination,
+method, mutation dimension, request budget, timeout, redirect policy, and expected evidence paths.
+It sends no HTTP:
+
+```bash
+hunt execute HYP-002 -w workspaces/<slug> --dry-run
+```
+
 Type the exact phrase requested by the command. Approval stores the current plan checksum and
 target-policy checksum; changing scope, accounts, safety settings, or request templates invalidates
 it. A manually edited `approval_status: APPROVED` without the generated `approval:` record is
@@ -376,7 +461,7 @@ refused.
 
 If you see `Execution refused: the plan does not have a complete approval record`, do not populate
 the fields by hand. The plan store is `workspaces/<slug>/tests/plans/plans.yaml`, not a standalone
-`plan.yml`. Review the dry-run and then run the `hunt approve` command above. It records
+`plan.yml`. Review the generated plan and then run the `hunt approve` command above. It records
 `approved_by`, `approved_at`, `plan_checksum`, and `target_policy_checksum` as one complete,
 checksum-bound approval. Run approval again after an approved plan or target policy changes.
 
@@ -401,16 +486,19 @@ hunt execute HYP-002 -w workspaces/<slug> \
   --non-interactive --approval-token FINSEC_EXECUTION_APPROVAL
 ```
 
-Credential-bearing plans name actor-specific environment variables such as
-`FINSEC_ACCOUNT_B_AUTH`; the secret values are never stored or printed. Execution evidence is
-written beneath `evidence/HYP-002/executions/execution-vN/`, and immutable transport audit records
-are written beneath `tests/executions/HYP-002/`.
+Credential-bearing plans reference actor profiles such as `actor-account-b-default`. Dry-run
+resolves every referenced secret locally, checks actor binding and expiration, and sends zero
+requests. Real execution establishes the authenticated actor baseline first and stops before the
+mutation on `401`, session-expired signals, a login redirect, or a login page returned with HTTP
+200. A `403` remains distinct as an authorization denial. Execution evidence is written beneath
+`evidence/HYP-002/executions/execution-vN/`, and immutable transport audit records are written
+beneath `tests/executions/HYP-002/`.
 
 Execution outcomes such as `CROSS_OBJECT_RESPONSE_OBSERVED`, `NO_CROSS_OBJECT_ACCESS`, or
 `BASELINE_MISMATCH` are observations, not vulnerability verdicts. The hypothesis status is not
 automatically confirmed.
 
-## 11. Add Redacted Evidence
+## 12. Add Redacted Evidence
 
 Create the evidence scaffold:
 
@@ -438,7 +526,7 @@ Review `evidence/HYP-002/metadata.yaml` and `conclusion.md`. Complete the skepti
 report narrative with factual, non-secret text. State-changing endpoints require before/after JSON;
 version and channel comparisons require matched request/response pairs for both paths.
 
-## 12. Validate Skeptically
+## 13. Validate Skeptically
 
 ```bash
 hunt validate HYP-002 -w workspaces/<slug>
@@ -457,7 +545,7 @@ It returns `CONFIRMED`, `REFUTED`, `NEEDS_MORE_EVIDENCE`, `OUT_OF_SCOPE`, or
 `EXPECTED_BEHAVIOR`. The validator checks structure, consistency, and explicit researcher claims;
 it cannot independently authenticate the truth of an external system interaction.
 
-## 13. Generate A Versioned Report
+## 14. Generate A Versioned Report
 
 Complete every narrative field in `evidence/HYP-002/metadata.yaml`, then run:
 
@@ -474,7 +562,7 @@ reports/HYP-002-report-v1.md
 reports/HYP-002-report-v2.md
 ```
 
-## 13. Delete A Workspace
+## 15. Delete A Workspace
 
 To permanently remove a workspace, run the command from outside that workspace and pass its exact
 path:
@@ -503,7 +591,7 @@ The command refuses to operate on symbolic links, broad protected paths, the cur
 its parents, a directory containing `.git`, or a directory without the expected FinSec Hunt
 workspace markers.
 
-## 14. Troubleshooting
+## 16. Troubleshooting
 
 `No workflow manifest was found`:
 

@@ -858,7 +858,13 @@ class FinsecMcpService:
         actor: str | None = None
         if request is not None:
             actor = request.actor
-            references.extend((item.header, item.variable) for item in request.runtime_secrets)
+            references.extend(
+                (
+                    item.header,
+                    item.reference or item.variable or "unresolved-runtime-reference",
+                )
+                for item in request.runtime_secrets
+            )
             for header in ("Authorization", "Cookie"):
                 if header in request.headers:
                     references.append((header, f"persisted-header:{header}"))

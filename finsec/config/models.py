@@ -1,5 +1,6 @@
 """Strongly typed target configuration models."""
 
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -30,6 +31,7 @@ class TargetIdentity(StrictModel):
     name: str
     slug: str | None = None
     type: str = "fintech"
+    base_url: str | None = None
 
 
 class ScopeConfig(StrictModel):
@@ -48,6 +50,123 @@ class AccountAttributes(StrictModel):
     notes: str | None = None
 
 
+AuthenticationStatus = Literal[
+    "READY",
+    "EXPIRING_SOON",
+    "EXPIRED",
+    "INVALID",
+    "MISSING",
+    "AVAILABLE_NOT_VALIDATED",
+    "REFRESH_REQUIRED",
+    "REFRESH_FAILED",
+    "AUTH_CONTEXT_CHANGED",
+    "NONE",
+]
+ActorType = Literal[
+    "authenticated_user",
+    "privileged_user",
+    "anonymous",
+    "other",
+]
+
+
+class AuthenticationSourceConfig(StrictModel):
+    """Non-secret provenance for an actor credential profile."""
+
+    type: Literal["har", "raw_request", "manual", "legacy_environment", "none"]
+    file_reference: str | None = None
+    captured_at: datetime | None = None
+
+
+class AuthenticationExpirationConfig(StrictModel):
+    """Locally observable credential lifetime metadata."""
+
+    detectable: bool = False
+    expires_at: datetime | None = None
+    issued_at: datetime | None = None
+    not_before: datetime | None = None
+    last_checked_at: datetime | None = None
+    source: Literal["jwt", "cookie", "target", "unknown"] = "unknown"
+
+
+class AuthenticationIdentityConfig(StrictModel):
+    """Non-secret, untrusted identity hints used for continuity checks."""
+
+    subject: str | None = None
+    roles: list[str] = Field(default_factory=list)
+    tenant: str | None = None
+    baseline_identifier_fingerprint: str | None = None
+    baseline_confirmed: bool = False
+
+
+class AuthenticationComponentConfig(StrictModel):
+    """One replay component resolved from the secret store at execution time."""
+
+    name: str
+    location: Literal["header", "cookie", "body"] = "header"
+    credential_ref: str
+    purpose: Literal["access", "session", "api_key", "csrf", "refresh", "other"]
+    replay_required: bool = True
+    value_prefix: str = ""
+    cookie_domain: str | None = None
+    cookie_path: str | None = None
+    cookie_session_only: bool | None = None
+
+
+class AuthenticationBaselineConfig(StrictModel):
+    """Previously observed read-only request safe enough for actor validation."""
+
+    method: Literal["GET", "HEAD"]
+    scheme: Literal["http", "https"]
+    host: str
+    port: int | None = Field(default=None, ge=1, le=65535)
+    path: str
+    query_parameters: dict[str, list[str]] = Field(default_factory=dict)
+    safe_headers: dict[str, str] = Field(default_factory=dict)
+    expected_status: int | None = None
+    expected_content_type: str | None = None
+
+
+class AuthenticationRefreshConfig(StrictModel):
+    """Observed refresh-flow metadata; the secret request template is stored separately."""
+
+    configured: bool = False
+    flow_ref: str | None = None
+    request_template_ref: str | None = None
+    mode: Literal["observed_request"] | None = None
+    method: str | None = None
+    scheme: str | None = None
+    host: str | None = None
+    port: int | None = Field(default=None, ge=1, le=65535)
+    path: str | None = None
+    response_access_path: str | None = None
+    response_refresh_path: str | None = None
+    expected_status: int | None = None
+    expected_content_type: str | None = None
+    request_budget: int = Field(default=1, ge=1, le=1)
+    auto_refresh: bool = False
+
+
+class ActorAuthenticationConfig(StrictModel):
+    """Actor-owned authentication metadata containing references but never secret values."""
+
+    auth_type: str
+    profile_ref: str | None = None
+    components: list[AuthenticationComponentConfig] = Field(default_factory=list)
+    source: AuthenticationSourceConfig
+    expiration: AuthenticationExpirationConfig = Field(
+        default_factory=AuthenticationExpirationConfig
+    )
+    refresh: AuthenticationRefreshConfig = Field(default_factory=AuthenticationRefreshConfig)
+    baseline: AuthenticationBaselineConfig | None = None
+    identity: AuthenticationIdentityConfig = Field(default_factory=AuthenticationIdentityConfig)
+    status: AuthenticationStatus
+    context_fingerprint: str | None = None
+    target_hosts: list[str] = Field(default_factory=list)
+    last_validated_at: datetime | None = None
+    legacy_environment: dict[str, str] = Field(default_factory=dict)
+
+
 class AccountConfig(StrictModel):
     """A non-secret account label used in observations and tests."""
 
@@ -55,6 +174,8 @@ class AccountConfig(StrictModel):
     ownership: Literal["researcher", "external"] = "researcher"
     role: str = "user"
     authenticated: bool = True
+    actor_type: ActorType | None = None
+    authentication: ActorAuthenticationConfig | None = None
     attributes: AccountAttributes = Field(default_factory=AccountAttributes)
 
 
@@ -73,6 +194,8 @@ class TestingConfig(StrictModel):
     maximum_response_bytes: int = Field(default=2 * 1024 * 1024, ge=1024, le=10 * 1024 * 1024)
     connection_timeout_seconds: float = Field(default=5.0, gt=0, le=30)
     read_timeout_seconds: float = Field(default=10.0, gt=0, le=60)
+    authentication_expiring_soon_seconds: int = Field(default=300, ge=30, le=86400)
+    authentication_execution_margin_seconds: int = Field(default=120, ge=30, le=3600)
 
 
 class RestrictionsConfig(StrictModel):

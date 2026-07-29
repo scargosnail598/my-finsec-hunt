@@ -11,6 +11,19 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+from finsec.auth.capture import detect_har_authentication
+from finsec.auth.service import (
+    actor_preflight,
+    capture_from_har,
+    capture_from_raw_request,
+    clear_authentication,
+    configure_refresh_from_har,
+    migrate_legacy_authentication,
+    refresh_actor_authentication,
+    set_manual_authentication,
+    validate_actor_baseline,
+)
+from finsec.auth.store import SecretStore
 from finsec.config.models import TargetDocument
 from finsec.config.workspace import (
     create_workspace,
@@ -20,7 +33,7 @@ from finsec.config.workspace import (
 )
 from finsec.errors import FinsecError
 from finsec.evidence.manager import add_evidence, ensure_evidence
-from finsec.execution.policy import approve_plan, prepare_execution
+from finsec.execution.policy import approve_plan, prepare_execution, review_execution_authority
 from finsec.execution.runner import execute_prepared
 from finsec.hypotheses.domain import HypothesisRecord, HypothesisStore
 from finsec.hypotheses.generator import (
@@ -54,6 +67,10 @@ workspace_app = typer.Typer(
     no_args_is_help=True,
 )
 app.add_typer(workspace_app, name="workspace")
+actor_app = typer.Typer(help="Manage configured research actors.", no_args_is_help=True)
+actor_auth_app = typer.Typer(help="Manage actor-owned authentication.", no_args_is_help=True)
+actor_app.add_typer(actor_auth_app, name="auth")
+app.add_typer(actor_app, name="actor")
 console = Console()
 
 WorkspaceOption = Annotated[
@@ -171,6 +188,16 @@ def setup_command(
         list[str] | None,
         typer.Option("--account", help="Researcher-owned account label. Repeat as needed."),
     ] = None,
+    anonymous_actor: Annotated[
+        list[str] | None,
+        typer.Option("--anonymous-actor", help="Explicit anonymous actor label. Repeat as needed."),
+    ] = None,
+    privileged_actor: Annotated[
+        list[str] | None,
+        typer.Option(
+            "--privileged-actor", help="Explicit privileged actor label. Repeat as needed."
+        ),
+    ] = None,
     workspace_root: Annotated[
         Path,
         typer.Option("--workspace-root", help="Directory that contains target workspaces."),
@@ -187,20 +214,43 @@ def setup_command(
         bool,
         typer.Option("--synthetic", help="Create a synthetic/local workspace, not production."),
     ] = False,
+    target_url: Annotated[
+        str | None,
+        typer.Option("--target-url", help="Scoped HTTP(S) base URL for the target."),
+    ] = None,
+    workspace: Annotated[
+        Path | None,
+        typer.Option("--workspace", "-w", help="Existing workspace to resume safely."),
+    ] = None,
 ) -> None:
-    """Interactively create a validated workspace without collecting credentials."""
+    """Create a validated workspace and configure actor authentication readiness."""
 
     try:
+        if workspace is not None:
+            existing = resolve_workspace(workspace)
+            existing_target = TargetDocument.model_validate(load_yaml(existing.target))
+            workspace_root = existing.root.parent
+            name = name or existing_target.target.name
+            slug = slug or existing_target.target.slug or existing.root.name
+            host = host or existing_target.scope.hosts
+            account = account or [item.id for item in existing_target.accounts]
+            target_url = target_url or existing_target.target.base_url
+        actor_labels = list(
+            dict.fromkeys([*(account or []), *(anonymous_actor or []), *(privileged_actor or [])])
+        )
         run_setup_wizard(
             console,
             name=name,
             slug=slug,
             hosts=host,
-            account_labels=account,
+            account_labels=actor_labels or None,
             workspace_root=workspace_root,
             capture_root=capture_root,
             assume_yes=yes,
             synthetic=synthetic,
+            base_url=target_url,
+            anonymous_labels=set(anonymous_actor or []),
+            privileged_labels=set(privileged_actor or []),
         )
     except (KeyboardInterrupt, typer.Abort) as error:
         console.print("\nSetup cancelled; no partial workspace was created.")
@@ -261,6 +311,293 @@ def workspace_delete_command(
 
     console.print(f"[bold green]Deleted workspace:[/bold green] {target.root}")
     console.print("Deletion is permanent. Separate capture directories were left untouched.")
+
+
+@workspace_app.command("migrate-auth")
+def workspace_migrate_auth_command(workspace: WorkspaceOption = None) -> None:
+    """Add explicit actor authentication metadata to a legacy workspace."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        changed = migrate_legacy_authentication(paths)
+    except FinsecError as error:
+        _abort(error)
+    console.print(f"[green]Migrated {changed} actor authentication record(s).[/green]")
+    console.print(
+        "Environment variables remain a temporary legacy fallback; import credentials next."
+    )
+
+
+def _print_authentication_preflight(preflight: Any) -> None:
+    console.print(f"Actor: {preflight.actor_id}")
+    console.print(f"Authentication type: {preflight.auth_type}")
+    console.print("Credential available: " + ("yes" if preflight.credential_available else "no"))
+    console.print(f"Known expiration: {preflight.expires_at or 'unknown'}")
+    remaining = (
+        f"{preflight.remaining_seconds} seconds"
+        if preflight.remaining_seconds is not None
+        else "unknown"
+    )
+    console.print(f"Remaining lifetime: {remaining}")
+    console.print(f"Local status: {preflight.status}")
+    console.print(
+        "Target validation: " + ("recorded" if preflight.target_validated else "not validated")
+    )
+    console.print(
+        "Baseline actor match: "
+        + ("confirmed" if preflight.baseline_identity_confirmed else "not confirmed")
+    )
+    console.print(
+        "Observed refresh flow: " + ("available" if preflight.refresh_available else "none")
+    )
+    console.print(f"Result: {preflight.result}")
+    for reason in preflight.reasons:
+        console.print(f"- {reason}")
+
+
+@app.command("actors")
+def actors_command(workspace: WorkspaceOption = None) -> None:
+    """List configured actors and their redacted authentication readiness."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        target = TargetDocument.model_validate(load_yaml(paths.target))
+    except (FinsecError, OSError, ValidationError) as error:
+        _abort(error)
+    table = Table("ACTOR", "TYPE", "AUTH TYPE", "AUTH STATUS")
+    for actor in target.accounts:
+        authentication = actor.authentication
+        if authentication is None:
+            auth_type, status = "legacy/unconfigured", "MISSING"
+        else:
+            auth_type = authentication.auth_type
+            try:
+                status = actor_preflight(paths, actor.id).status
+            except FinsecError:
+                status = "INVALID"
+        actor_type = actor.actor_type or (
+            "authenticated_user" if actor.authenticated else "anonymous"
+        )
+        table.add_row(actor.id, actor_type, auth_type, "READY" if status == "NONE" else status)
+    console.print(table)
+
+
+@actor_auth_app.command("status")
+def actor_auth_status_command(
+    actor_id: Annotated[str, typer.Argument(help="Configured actor ID.")],
+    workspace: WorkspaceOption = None,
+) -> None:
+    """Show local availability, expiration, and validation metadata without network traffic."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        preflight = actor_preflight(paths, actor_id)
+    except FinsecError as error:
+        _abort(error)
+    _print_authentication_preflight(preflight)
+    store = SecretStore(paths)
+    console.print(f"Credential storage: {store.backend_name}")
+    permissions = store.permissions()
+    if permissions is not None:
+        console.print(f"Credential file permissions: {permissions:04o}")
+
+
+@actor_auth_app.command("check")
+def actor_auth_check_command(
+    actor_id: Annotated[str, typer.Argument(help="Configured actor ID.")],
+    workspace: WorkspaceOption = None,
+    network: Annotated[
+        bool,
+        typer.Option(
+            "--network",
+            help="Send one previously observed in-scope read-only baseline request.",
+        ),
+    ] = False,
+) -> None:
+    """Run local preflight and optionally one observed read-only target validation."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        if network:
+            if not typer.confirm(
+                f"Send one observed read-only authentication baseline for {actor_id}?",
+                default=False,
+            ):
+                raise FinsecError("Authentication network check was not approved.")
+            result = validate_actor_baseline(paths, actor_id)
+            preflight = result.preflight
+            console.print(f"Network requests sent: {result.request_count}")
+            console.print(f"Target response status: {result.status_code}")
+            console.print(
+                "Actor baseline matched: " + ("yes" if result.actor_baseline_matched else "no")
+            )
+        else:
+            preflight = actor_preflight(paths, actor_id, for_execution=True)
+    except FinsecError as error:
+        _abort(error)
+    console.print("[bold]Authentication preflight[/bold]")
+    _print_authentication_preflight(preflight)
+    if not network:
+        console.print("Network requests sent: 0")
+    if preflight.result == "BLOCKED_BY_AUTH":
+        raise typer.Exit(code=1)
+
+
+@actor_auth_app.command("import")
+def actor_auth_import_command(
+    actor_id: Annotated[str, typer.Argument(help="Configured actor ID.")],
+    request: Annotated[Path, typer.Option("--request", help="Raw authenticated HTTP request.")],
+    workspace: WorkspaceOption = None,
+) -> None:
+    """Import replay authentication from a raw HTTP request."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        authentication = capture_from_raw_request(paths, actor_id, request)
+    except FinsecError as error:
+        _abort(error)
+    console.print(f"[green]Credential stored for {actor_id}.[/green]")
+    console.print(f"Authentication status: {authentication.status}")
+
+
+@actor_auth_app.command("set")
+def actor_auth_set_command(
+    actor_id: Annotated[str, typer.Argument(help="Configured actor ID.")],
+    workspace: WorkspaceOption = None,
+    auth_type: Annotated[
+        str, typer.Option("--type", help="bearer, bearer_jwt, basic, api_key, or custom_header.")
+    ] = "bearer",
+    header: Annotated[str, typer.Option("--header", help="Replay header name.")] = "Authorization",
+) -> None:
+    """Enter a replacement credential without echoing it or placing it in shell history."""
+
+    value = str(typer.prompt("Credential", hide_input=True, confirmation_prompt=True))
+    try:
+        paths = resolve_workspace(workspace)
+        authentication = set_manual_authentication(
+            paths,
+            actor_id,
+            auth_type=auth_type,
+            header_name=header,
+            secret_value=value,
+        )
+    except FinsecError as error:
+        _abort(error)
+    finally:
+        value = ""
+    console.print(f"[green]Credential stored for {actor_id}.[/green]")
+    console.print(f"Authentication status: {authentication.status}")
+
+
+@actor_auth_app.command("refresh")
+def actor_auth_refresh_command(
+    actor_id: Annotated[str, typer.Argument(help="Configured actor ID.")],
+    workspace: WorkspaceOption = None,
+    har: Annotated[Path | None, typer.Option("--har", help="New authenticated HAR.")] = None,
+    request: Annotated[
+        Path | None, typer.Option("--request", help="New authenticated raw HTTP request.")
+    ] = None,
+    auth_candidate: Annotated[
+        int | None, typer.Option("--auth-candidate", help="1-based HAR candidate selection.")
+    ] = None,
+) -> None:
+    """Replace authentication from a capture or run one configured observed refresh."""
+
+    if har is not None and request is not None:
+        _abort(FinsecError("Choose exactly one of --har or --request."))
+    try:
+        paths = resolve_workspace(workspace)
+        if har is not None:
+            selected = auth_candidate
+            candidates = detect_har_authentication(har)
+            if not candidates:
+                raise FinsecError("No replay authentication candidate was detected in the HAR.")
+            if selected is None:
+                for index, candidate in enumerate(candidates, start=1):
+                    console.print(f"[{index}] {candidate.redacted_summary()}")
+                selected = (
+                    1
+                    if len(candidates) == 1
+                    else int(typer.prompt("Select replay authentication", type=int))
+                )
+            authentication, _ = capture_from_har(
+                paths,
+                actor_id,
+                har,
+                candidate_number=selected,
+                observed_renewal=False,
+            )
+            console.print(f"[green]Credential replaced for {actor_id}.[/green]")
+            console.print(f"Authentication status: {authentication.status}")
+        elif request is not None:
+            authentication = capture_from_raw_request(paths, actor_id, request)
+            console.print(f"[green]Credential replaced for {actor_id}.[/green]")
+            console.print(f"Authentication status: {authentication.status}")
+        else:
+            result = refresh_actor_authentication(paths, actor_id)
+            console.print("[green]Authentication refresh completed.[/green]")
+            console.print(f"Actor: {result.actor_id}")
+            console.print(f"Status: {result.status}")
+            console.print(f"Refresh requests sent: {result.request_count}")
+            console.print(f"Identity continuity: {result.identity_continuity}")
+    except FinsecError as error:
+        console.print("[bold red]Authentication refresh failed.[/bold red]")
+        console.print(f"Actor: {actor_id}")
+        console.print(f"Reason: {error}")
+        console.print("Mutation requests sent: 0")
+        raise typer.Exit(code=1) from error
+
+
+@actor_auth_app.command("configure-refresh")
+def actor_auth_configure_refresh_command(
+    actor_id: Annotated[str, typer.Argument(help="Configured actor ID.")],
+    har: Annotated[Path, typer.Option("--har", help="HAR containing an observed refresh request.")],
+    workspace: WorkspaceOption = None,
+    flow: Annotated[
+        int | None, typer.Option("--flow", help="1-based refresh-flow selection.")
+    ] = None,
+    auto_refresh: Annotated[
+        bool,
+        typer.Option(
+            "--auto-refresh", help="Allow bounded refresh during real execution preflight."
+        ),
+    ] = False,
+) -> None:
+    """Configure only a refresh request observed in authorized traffic."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        refresh = configure_refresh_from_har(
+            paths,
+            actor_id,
+            har,
+            entry_number=flow,
+            auto_refresh=auto_refresh,
+        )
+    except FinsecError as error:
+        _abort(error)
+    console.print(f"[green]Observed refresh flow configured for {actor_id}.[/green]")
+    console.print(f"Endpoint: {refresh.method} {refresh.scheme}://{refresh.host}{refresh.path}")
+    console.print("Refresh request budget: 1")
+
+
+@actor_auth_app.command("clear")
+def actor_auth_clear_command(
+    actor_id: Annotated[str, typer.Argument(help="Configured actor ID.")],
+    workspace: WorkspaceOption = None,
+    yes: Annotated[bool, typer.Option("--yes", "-y", help="Skip confirmation.")] = False,
+) -> None:
+    """Remove only one actor's authentication and invalidate affected approvals."""
+
+    if not yes and not typer.confirm(f"Clear authentication for {actor_id}?", default=False):
+        console.print("Authentication was not changed.")
+        return
+    try:
+        paths = resolve_workspace(workspace)
+        clear_authentication(paths, actor_id)
+    except FinsecError as error:
+        _abort(error)
+    console.print(f"[green]Authentication cleared for {actor_id}.[/green]")
 
 
 @app.command("workflow")
@@ -386,16 +723,43 @@ def ingest_command(
             help="Observed client channel: WEB, MOBILE, PARTNER_API, PUBLIC_API, or UNKNOWN.",
         ),
     ] = "UNKNOWN",
+    capture_auth: Annotated[
+        bool,
+        typer.Option(
+            "--capture-auth", help="Detect and securely store authentication for --actor."
+        ),
+    ] = False,
+    auth_candidate: Annotated[
+        int | None,
+        typer.Option("--auth-candidate", help="1-based replay profile selection for automation."),
+    ] = None,
 ) -> None:
     """Import HAR entries as redacted, factual observations."""
 
     try:
         paths = resolve_workspace(workspace)
+        selected_candidate = auth_candidate
+        if capture_auth and selected_candidate is None:
+            candidates = detect_har_authentication(har_file)
+            if not candidates:
+                raise FinsecError("No replay authentication candidate was detected in the HAR.")
+            console.print("[bold]Authentication candidates detected[/bold]")
+            for index, candidate in enumerate(candidates, start=1):
+                console.print(f"[{index}] {candidate.redacted_summary()}")
+                if candidate.expiration.expires_at is not None:
+                    console.print(f"    Expires at: {candidate.expiration.expires_at}")
+            selected_candidate = (
+                1
+                if len(candidates) == 1
+                else int(typer.prompt("Select replay authentication", type=int))
+            )
         result = ingest_har(
             har_file,
             paths,
             actor=actor,
             channel=_channel(channel),
+            capture_auth=capture_auth,
+            auth_candidate=selected_candidate,
         )
     except FinsecError as error:
         _abort(error)
@@ -406,6 +770,9 @@ def ingest_command(
     if result.relabeled:
         console.print(f"[yellow]Refreshed {result.relabeled} actor/channel assignments.[/yellow]")
     console.print(f"Redacted HAR: {result.redacted_har}")
+    if result.authentication_status is not None:
+        console.print(f"Credential storage: successful ({result.credential_profile_ref})")
+        console.print(f"Actor status: {result.authentication_status}")
     console.print("Run 'hunt inventory' to rebuild the endpoint inventory.")
 
 
@@ -951,9 +1318,16 @@ def _execution_summary(prepared: Any) -> None:
                 f"  {mutation.dimension}: {mutation.parameter} {mutation.from_value} -> {target}"
             )
         for secret in request.runtime_secrets:
-            console.print(
-                f"  Runtime secret: {secret.header} from environment variable {secret.variable}"
-            )
+            if secret.source == "actor_store":
+                console.print(
+                    f"  Runtime credential: {secret.header} from actor profile reference "
+                    f"{secret.reference}"
+                )
+            else:
+                console.print(
+                    f"  Legacy runtime credential: {secret.header} from environment variable "
+                    f"{secret.variable}"
+                )
     console.print("Mutation dimensions: " + ", ".join(plan.execution.mutation_dimensions))
     console.print(f"Requests: {len(plan.requests)} / budget {plan.execution.request_budget}")
     console.print(f"Parallelism: {plan.execution.parallelism}")
@@ -975,6 +1349,10 @@ def _execution_summary(prepared: Any) -> None:
     for item in plan.execution.stop_conditions:
         console.print(f"- {item}")
     console.print(f"Expected evidence: evidence/{prepared.hypothesis.id}/executions/")
+    if prepared.authentication_preflight:
+        console.print("\n[bold]Authentication preflight[/bold]")
+        for preflight in prepared.authentication_preflight:
+            _print_authentication_preflight(preflight)
 
 
 @app.command("execute")
@@ -1002,18 +1380,34 @@ def execute_command(
 ) -> None:
     """Execute one explicitly approved, scope-checked, read-only comparison plan."""
 
+    if non_interactive and approval_token is None and not dry_run:
+        console.print("[bold red]Execution refused.[/bold red]")
+        console.print("Reason: --approval-token is required with --non-interactive.")
+        console.print("Mutation requests sent: 0")
+        console.print("Requests sent: 0")
+        raise typer.Exit(code=1)
     try:
         paths = resolve_workspace(workspace)
-        prepared = prepare_execution(
-            paths,
-            hypothesis_id,
-            dry_run=dry_run,
-            non_interactive=non_interactive,
-            approval_token_env=approval_token,
+        prepared = (
+            prepare_execution(
+                paths,
+                hypothesis_id,
+                dry_run=True,
+                non_interactive=non_interactive,
+                approval_token_env=approval_token,
+            )
+            if dry_run
+            else review_execution_authority(
+                paths,
+                hypothesis_id,
+                non_interactive=non_interactive,
+                approval_token_env=approval_token,
+            )
         )
     except FinsecError as error:
         console.print("[bold red]Execution refused.[/bold red]")
         console.print(f"Reason: {error}")
+        console.print("Mutation requests sent: 0")
         console.print("Requests sent: 0")
         raise typer.Exit(code=1) from error
     _execution_summary(prepared)
@@ -1023,22 +1417,32 @@ def execute_command(
         console.print(
             "Mutation dimensions: " + ", ".join(prepared.plan.execution.mutation_dimensions)
         )
-        console.print("Safety decision: READY_FOR_EXPLICIT_APPROVAL")
+        console.print("Safety decision: READY_FOR_EXECUTION_REVIEW")
+        console.print("Mutation requests sent: 0")
         console.print("No request was sent.")
         return
-    if non_interactive and approval_token is None:
-        console.print("[bold red]Execution refused.[/bold red]")
-        console.print("Reason: --approval-token is required with --non-interactive.")
-        console.print("Requests sent: 0")
-        raise typer.Exit(code=1)
     if not non_interactive:
         expected = f"EXECUTE {prepared.hypothesis.id}"
         confirmation = typer.prompt(f"Type {expected} to continue")
         if confirmation != expected:
             console.print("[bold red]Execution refused.[/bold red]")
             console.print("Reason: confirmation text did not match exactly.")
+            console.print("Mutation requests sent: 0")
             console.print("Requests sent: 0")
             raise typer.Exit(code=1)
+    try:
+        prepared = prepare_execution(
+            paths,
+            hypothesis_id,
+            dry_run=False,
+            non_interactive=non_interactive,
+            approval_token_env=approval_token,
+        )
+    except FinsecError as error:
+        console.print("[bold red]Execution blocked before mutation.[/bold red]")
+        console.print(f"Reason: {error}")
+        console.print("Mutation requests sent: 0")
+        raise typer.Exit(code=1) from error
     result = execute_prepared(prepared)
     if result.status == "STOPPED":
         console.print("\n[yellow]Execution stopped safely.[/yellow]")

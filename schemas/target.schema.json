@@ -16,7 +16,8 @@
           "type": ["string", "null"],
           "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
         },
-        "type": {"type": "string"}
+        "type": {"type": "string"},
+        "base_url": {"type": ["string", "null"], "format": "uri"}
       }
     },
     "scope": {
@@ -36,6 +37,16 @@
           "ownership": {"enum": ["researcher", "external"]},
           "role": {"type": "string"},
           "authenticated": {"type": "boolean"},
+          "actor_type": {
+            "type": ["string", "null"],
+            "enum": ["authenticated_user", "privileged_user", "anonymous", "other", null]
+          },
+          "authentication": {
+            "oneOf": [
+              {"$ref": "actor-authentication.schema.json"},
+              {"type": "null"}
+            ]
+          },
           "attributes": {
             "type": "object",
             "additionalProperties": false,
@@ -78,6 +89,16 @@
           "type": "number",
           "exclusiveMinimum": 0,
           "maximum": 60
+        },
+        "authentication_expiring_soon_seconds": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 86400
+        },
+        "authentication_execution_margin_seconds": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 3600
         }
       }
     },

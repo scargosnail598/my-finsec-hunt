@@ -6,6 +6,7 @@ from typing import Any
 
 from pydantic import ValidationError
 
+from finsec.auth.service import actor_preflight
 from finsec.config.models import TargetDocument
 from finsec.config.scope import hosts_are_covered
 from finsec.config.workspace import WorkspacePaths
@@ -162,6 +163,7 @@ def _draft(
     )
     owner = execution_templates.object_owner or owner
     actor = execution_templates.actor or actor
+    plan_authentication: list[dict[str, Any]] = []
     resource_name = (
         endpoint.resource.type if endpoint is not None else hypothesis.component.split(" / ", 1)[0]
     )
@@ -203,6 +205,41 @@ def _draft(
     if financial and target.testing.production:
         blockers.append(
             "Financial-effect testing against production requires explicit policy approval."
+        )
+
+    request_actors = sorted({item.actor for item in execution_templates.requests})
+    for actor_id in request_actors:
+        configured = next((item for item in target.accounts if item.id == actor_id), None)
+        authentication = configured.authentication if configured is not None else None
+        if authentication is None:
+            continue
+        if authentication.auth_type == "none":
+            continue
+        preflight = actor_preflight(
+            workspace,
+            actor_id,
+            request_count=len(execution_templates.requests),
+            request_hosts={
+                item.host for item in execution_templates.requests if item.actor == actor_id
+            },
+        )
+        if preflight.result == "BLOCKED_BY_AUTH":
+            detail = "; ".join(preflight.reasons) or f"authentication status is {preflight.status}"
+            blockers.append(f"{actor_id} authentication is unusable: {detail}")
+        if authentication.profile_ref is not None:
+            plan_authentication.append(
+                {
+                    "actor": actor_id,
+                    "credential_profile_ref": authentication.profile_ref,
+                    "required_status": "READY",
+                    "context_fingerprint": authentication.context_fingerprint,
+                }
+            )
+
+    if blockers and execution_templates.execution.supported:
+        execution_templates.execution.supported = False
+        execution_templates.execution.blockers.extend(
+            item for item in blockers if item not in execution_templates.execution.blockers
         )
 
     affects_external = (
@@ -248,6 +285,7 @@ def _draft(
         "requests": [
             item.model_dump(mode="json", exclude_none=True) for item in execution_templates.requests
         ],
+        "authentication": plan_authentication,
         "execution": execution_templates.execution.model_dump(mode="json"),
         "human_approval_required": True,
         "execution_default": "DO_NOT_EXECUTE",

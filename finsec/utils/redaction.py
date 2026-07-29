@@ -3,7 +3,7 @@
 import json
 import re
 from typing import Any
-from urllib.parse import parse_qsl, quote, urlencode, urlsplit, urlunsplit
+from urllib.parse import SplitResult, parse_qsl, quote, urlencode, urlsplit, urlunsplit
 
 REDACTED = "[REDACTED]"
 
@@ -17,7 +17,7 @@ JWT_PATTERN = re.compile(r"\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b
 BEARER_PATTERN = re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+/=-]+")
 SENSITIVE_PAIR_PATTERN = re.compile(
     r"(?i)(authorization|cookie|set-cookie|password|passwd|secret|otp|csrf|xsrf|"
-    r"api[-_]?key|access[-_]?token|refresh[-_]?token|jwt)"
+    r"api[-_]?key|access[-_]?token|refresh[-_]?token|jwt|token)"
     r"(\s*[:=]\s*)([^\s,;}&]+)"
 )
 SENSITIVE_HEADER_LINE_PATTERN = re.compile(
@@ -43,6 +43,15 @@ def redact_named_value(name: str, value: str) -> str:
     return redact_text(value)
 
 
+def _safe_urlsplit(value: str) -> SplitResult | None:
+    """Treat malformed URL-like text as ordinary text instead of aborting redaction."""
+
+    try:
+        return urlsplit(value)
+    except ValueError:
+        return None
+
+
 def redact_text(value: str) -> str:
     """Redact high-confidence secrets embedded in a string."""
 
@@ -56,8 +65,8 @@ def redact_text(value: str) -> str:
             return json.dumps(redact_data(parsed), separators=(",", ":"))
 
     if "://" in value:
-        parsed_url = urlsplit(value)
-        if parsed_url.username or parsed_url.password:
+        parsed_url = _safe_urlsplit(value)
+        if parsed_url is not None and (parsed_url.username or parsed_url.password):
             host = parsed_url.hostname or ""
             if ":" in host and not host.startswith("["):
                 host = f"[{host}]"
@@ -75,15 +84,22 @@ def redact_text(value: str) -> str:
                     parsed_url.fragment,
                 )
             )
-            parsed_url = urlsplit(value)
-        query_pairs = parse_qsl(parsed_url.query, keep_blank_values=True)
-        if query_pairs and any(is_sensitive_name(name) for name, _ in query_pairs):
-            query = urlencode(
-                [(name, redact_named_value(name, item)) for name, item in query_pairs]
-            )
-            value = urlunsplit(
-                (parsed_url.scheme, parsed_url.netloc, parsed_url.path, query, parsed_url.fragment)
-            )
+            parsed_url = _safe_urlsplit(value)
+        if parsed_url is not None:
+            query_pairs = parse_qsl(parsed_url.query, keep_blank_values=True)
+            if query_pairs and any(is_sensitive_name(name) for name, _ in query_pairs):
+                query = urlencode(
+                    [(name, redact_named_value(name, item)) for name, item in query_pairs]
+                )
+                value = urlunsplit(
+                    (
+                        parsed_url.scheme,
+                        parsed_url.netloc,
+                        parsed_url.path,
+                        query,
+                        parsed_url.fragment,
+                    )
+                )
 
     if "://" not in value and "=" in value and "\n" not in value and "\r" not in value:
         pairs = parse_qsl(value, keep_blank_values=True)

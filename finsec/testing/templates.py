@@ -79,6 +79,7 @@ def _har_entry(workspace: WorkspacePaths, observation: Observation) -> dict[str,
 
 def _request_details(
     workspace: WorkspacePaths,
+    target: TargetDocument,
     observation: Observation,
 ) -> tuple[int | None, dict[str, str], list[RuntimeSecretReference]]:
     entry = _har_entry(workspace, observation)
@@ -94,21 +95,14 @@ def _request_details(
     headers: dict[str, str] = {}
     secrets: list[RuntimeSecretReference] = []
     raw_headers = request.get("headers")
+    observed_names: set[str] = set()
     if isinstance(raw_headers, list):
         for item in raw_headers:
             if not isinstance(item, dict) or not isinstance(item.get("name"), str):
                 continue
             name = str(item["name"])
             normalized = name.strip().lower()
-            if normalized in {"authorization", "cookie"}:
-                canonical = "Authorization" if normalized == "authorization" else "Cookie"
-                secrets.append(
-                    RuntimeSecretReference(
-                        header=cast(Any, canonical),
-                        variable=_environment_name(observation.actor, canonical),
-                    )
-                )
-                continue
+            observed_names.add(normalized)
             value = item.get("value")
             if (
                 normalized in SAFE_STORED_HEADERS
@@ -118,6 +112,49 @@ def _request_details(
             ):
                 canonical = "Accept" if normalized == "accept" else "Content-Type"
                 headers[canonical] = value
+    if isinstance(request.get("cookies"), list) and request["cookies"]:
+        observed_names.add("cookie")
+    account = next((item for item in target.accounts if item.id == observation.actor), None)
+    authentication = account.authentication if account is not None else None
+    if authentication is not None and authentication.profile_ref is not None:
+        if authentication.source.type == "legacy_environment":
+            for header, variable in authentication.legacy_environment.items():
+                if header.lower() in observed_names:
+                    secrets.append(
+                        RuntimeSecretReference(
+                            header=header,
+                            source="environment",
+                            variable=variable,
+                            actor=observation.actor,
+                        )
+                    )
+        else:
+            for component in authentication.components:
+                header = "Cookie" if component.location == "cookie" else component.name
+                if (
+                    component.replay_required
+                    and component.location in {"header", "cookie"}
+                    and header.lower() in observed_names
+                ):
+                    secrets.append(
+                        RuntimeSecretReference(
+                            header=header,
+                            source="actor_store",
+                            reference=component.credential_ref,
+                            actor=observation.actor,
+                        )
+                    )
+    else:
+        for normalized in sorted(observed_names & {"authorization", "cookie"}):
+            canonical = "Authorization" if normalized == "authorization" else "Cookie"
+            secrets.append(
+                RuntimeSecretReference(
+                    header=canonical,
+                    source="environment",
+                    variable=_environment_name(observation.actor, canonical),
+                    actor=observation.actor,
+                )
+            )
     return port, headers, sorted(secrets, key=lambda item: item.header)
 
 
@@ -127,6 +164,7 @@ def _observation_by_id(store: ObservationStore) -> dict[str, Observation]:
 
 def _template(
     workspace: WorkspacePaths,
+    target: TargetDocument,
     observation: Observation,
     *,
     request_id: str,
@@ -139,7 +177,7 @@ def _template(
         REDACTED in value for values in observation.query_parameters.values() for value in values
     ):
         return None
-    port, headers, secrets = _request_details(workspace, observation)
+    port, headers, secrets = _request_details(workspace, target, observation)
     return StructuredRequest(
         id=request_id,
         role=cast(Any, role),
@@ -239,6 +277,7 @@ def _object_substitution(
 
     baseline = _template(
         workspace,
+        target,
         source_observation,
         request_id="baseline",
         role="BASELINE",
@@ -315,26 +354,40 @@ def _authentication_comparison(
         return ExecutionTemplateResult([], _execution(target, "UNSUPPORTED", [], None, blockers))
     baseline = _template(
         workspace,
+        target,
         authenticated,
         request_id="authenticated-baseline",
         role="BASELINE",
     )
-    if baseline is None or len(baseline.runtime_secrets) != 1:
-        blockers.append("Exactly one runtime authentication marker is required.")
+    if baseline is None or not baseline.runtime_secrets:
+        blockers.append("At least one runtime authentication marker is required.")
         return ExecutionTemplateResult([], _execution(target, "UNSUPPORTED", [], None, blockers))
-    secret = baseline.runtime_secrets[0]
+    secrets = baseline.runtime_secrets
     comparison = baseline.model_copy(deep=True)
     comparison.id = "authentication-removed"
     comparison.role = "MUTATED"
     comparison.clone_of = baseline.id
     comparison.runtime_secrets = []
-    comparison.remove_headers = [secret.header]
+    comparison.remove_headers = sorted({secret.header for secret in secrets})
+    profile = next(
+        (
+            account.authentication.profile_ref
+            for account in target.accounts
+            if account.id == baseline.actor and account.authentication is not None
+        ),
+        None,
+    )
+    source_reference = (
+        f"actor_profile:{profile}"
+        if profile is not None
+        else "environment:" + ",".join(secret.variable or "" for secret in secrets)
+    )
     comparison.mutations = [
         RequestMutation(
             dimension="AUTHENTICATION",
             location="header",
-            parameter=secret.header,
-            from_value=f"environment:{secret.variable}",
+            parameter="credential_profile",
+            from_value=source_reference,
             to_value=None,
             source_actor=baseline.actor,
             target_actor=baseline.actor,
@@ -415,8 +468,8 @@ def _route_comparison(
     if first is None or second is None:
         blockers.append(f"Two matched read-only {dimension.lower()} baselines are required.")
         return ExecutionTemplateResult([], _execution(target, "UNSUPPORTED", [], None, blockers))
-    baseline = _template(workspace, first, request_id="baseline", role="BASELINE")
-    comparison = _template(workspace, second, request_id="comparison", role="COMPARISON")
+    baseline = _template(workspace, target, first, request_id="baseline", role="BASELINE")
+    comparison = _template(workspace, target, second, request_id="comparison", role="COMPARISON")
     if baseline is None or comparison is None or baseline.method != comparison.method:
         blockers.append("Matched structured read-only requests cannot be reconstructed.")
         return ExecutionTemplateResult([], _execution(target, "UNSUPPORTED", [], None, blockers))

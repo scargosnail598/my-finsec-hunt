@@ -2,76 +2,53 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Follow `AGENTS.md` as the primary repository-wide source of truth.
+## Development & Test Commands
 
-## Environment & Commands
+- **Environment Setup**:
+  - Python >= 3.12 required.
+  - Install dependencies in dev mode: `python -m pip install -e ".[dev]"` (or `./install.sh --dev`).
 
-Python 3.12+ is required.
+- **Full Verification**:
+  - Run all automated quality checks (formatting, linter, mypy, pytest, CLI check, shell syntax): `./scripts/check.sh`
+  - Run checks with synthetic validation suite: `./scripts/check.sh --synthetic`
 
-### Setup & Activation
-```bash
-./install.sh --dev
-source .venv/bin/activate
-```
+- **Linting & Formatting**:
+  - Format code: `.venv/bin/ruff format .`
+  - Check linter: `.venv/bin/ruff check .`
+  - Type checking: `.venv/bin/mypy finsec`
 
-### Verification & Testing
-```bash
-# Run standard CI check suite (formatting, linting, type checks, pytest, cli check)
-./scripts/check.sh
+- **Running Tests**:
+  - Run all tests: `.venv/bin/pytest`
+  - Run a specific test file: `.venv/bin/pytest tests/test_execution.py`
+  - Run a specific test by name: `.venv/bin/pytest tests/test_execution.py -k test_function_name`
 
-# Run full check suite including synthetic validation workflow
-./scripts/check.sh --synthetic
+- **Demo & Synthetic Workflows**:
+  - Run non-destructive demo workflow: `python scripts/run_demo_workflow.py`
+  - Run standalone synthetic validation harness: `./scripts/run_synthetic_validation.sh`
 
-# Run linting and formatting individually
-ruff format --check .
-ruff check .
-mypy finsec
+---
 
-# Run tests
-pytest                                 # Run all tests
-pytest tests/test_ingest.py            # Run a single test file
-pytest tests/test_ingest.py -k test_har # Run a specific test function
-```
+## High-Level Architecture & Domain Model
 
-### Executing CLI & Demos
-```bash
-hunt --help                             # CLI entry point
-python scripts/run_demo_workflow.py    # Non-destructive safe synthetic demo
-```
+FinSec Hunt is a local-first, passive-by-default research workspace for fintech Web, API, and mobile security analysis. It turns researcher-supplied traffic and static artifacts into traceable observations, conservative models, evidence-gated hypotheses, human-reviewed test plans, redacted evidence, and immutable reports.
 
-## Architecture & Knowledge Separation
+### Passive Workflow Pipeline
 
-FinSec Hunt is a local-first, deterministic security research pipeline with a strict safety boundary: it reads local files only, never contacts live targets, and contains no request execution capability.
+1. **Ingestion & Redaction** (`finsec/ingest/`): Imports HAR, Burp XML, Caido JSON, and OpenAPI artifacts. Automatically redacts credentials/secrets into factual observation data.
+2. **Normalization & Endpoint Inventory** (`finsec/normalization/`): Classifies endpoints deterministically, groups paths, and maintains the endpoint inventory.
+3. **Recon** (`finsec/recon/`): Extracts static findings from GraphQL schemas and mobile artifacts (APK/strings). GraphQL and mobile results remain static leads and are tracked in separate inventories.
+4. **Target Modeling** (`finsec/modeling/`): Maps actors, resources, operation channels, state invariants, and security boundaries. Edit-preserving merges ensure human edits in workspace YAML files are preserved across reruns.
+5. **Evidence-Gated Hypotheses** (`finsec/hypotheses/`): Generates candidate hypotheses (e.g., IDOR, privilege escalation, cross-actor access) scored by impact, likelihood, confidence, and testability (P1/P2/P3 queue).
+6. **Plan Generation** (`finsec/testing/`): Constructs structured test plans with `DO_NOT_EXECUTE` and `human_approval_required: true` as safe defaults.
+7. **Bounded Execution** (`finsec/execution/`, `finsec/auth/`): Active HTTP engine (disabled by default). Requires explicit target policy activation, actor secret resolution, cryptographic plan/policy checksum binding (`hunt approve`), and manual confirmation. Supports read-only object substitution and auth marker comparisons only—no mutation, payload fuzzing, or automated redirection.
+8. **Evidence & Validation** (`finsec/evidence/`, `finsec/validation/`): Scaffolds redacted evidence, validates integrity, scope, and control coverage before disposition (`CONFIRMED`, `REFUTED`, etc.).
+9. **Reporting & MCP** (`finsec/reporting/`, `finsec/mcp/`, `finsec/mcp_server.py`): Renders immutable markdown report revisions (`reports/HYP-xxx-report-vN.md`) and serves sanitized workspace data over stdio MCP (`hunt-mcp`).
 
-### Pipeline Stages
-```text
-config -> ingest -> normalization -> modeling -> invariants -> hypotheses
-       -> non-executing plans -> evidence -> validation -> reporting
-```
+---
 
-Knowledge states are explicitly separated:
-- **Observations (Facts)**: Imported passive HAR/Burp XML/Caido JSON captures with automatic secret redaction.
-- **Endpoint Inventory (Inferences)**: Route normalization and classifications.
-- **Side Inventories**: GraphQL schemas (`finsec/recon/graphql.py`) and mobile artifacts (`finsec/recon/mobile.py`) remain passive static inventories — they are never auto-promoted to active hypotheses without runtime traffic evidence.
-- **Modeling**: Domain actors, resources, operation maps, invariants, and edit-preserving YAML state merges.
-- **Hypotheses & Tasks**: Evidence-gated hypothesis scoring (`total = impact + likelihood + confidence + testability`).
-- **Testing**: Non-executing plan generation requiring explicit human approval (`approval_status: APPROVED`).
-- **Evidence & Validation**: Redacted evidence management, checksum integrity, scope validation, and disposition assignment (`CONFIRMED`, `REFUTED`, etc.).
-- **Reporting**: Versioned immutable reports (`reports/HYP-xxx-report-vN.md`).
+## Key Design Principles & Data Rules
 
-### Key Modules
-- `finsec/config/`: Target models, workspace management, and wildcard scope matching (`*.domain` subdomains vs apex host).
-- `finsec/ingest/`: Passive traffic importers (HAR, Burp, Caido, OpenAPI) and credential/token redaction (`finsec/utils/redaction.py`).
-- `finsec/normalization/`: Endpoint inventory classification and REST path parameter normalization.
-- `finsec/recon/`: Passive GraphQL and APK/mobile static string discovery.
-- `finsec/modeling/`: Domain artifacts, invariants, and edit-preserving merges.
-- `finsec/hypotheses/`: Traffic evidence gates, mutation candidates, and priority scoring.
-- `finsec/testing/`: Safety-gated non-executing test procedure generation.
-- `finsec/evidence/`, `finsec/validation/`, `finsec/reporting/`: Proof handling, validator checks, and Jinja report output.
-- `finsec/utils/yaml_store.py`: Atomic YAML persistence preserving manual researcher edits.
-
-## Safety & Workspace Guardrails
-
-- **Workspace Preservation**: Never delete, reset, or overwrite real workspaces (`workspaces/` and `captures/`). Treat workspace data as potentially sensitive target artifacts.
-- **Testing Isolation**: Always use `tmp_path` in pytest or isolated `/tmp` subdirectories (via `scripts/run_demo_workflow.py`).
-- **No Live Execution**: Do not add live request execution, browser automation, credential handling, or request replay capabilities.
+- **Separation of Knowledge States**: Raw observed traffic (fact) $\rightarrow$ normalized route (inference) $\rightarrow$ invariant (expected property) $\rightarrow$ hypothesis (question) $\rightarrow$ evidence (supplied artifact) $\rightarrow$ report finding (validated state).
+- **Passive Safety Default**: Offline pipeline (`hunt setup`, `hunt workflow`, `hunt hypotheses`, `hunt plan`) never connects to network targets.
+- **Data Isolation**: Workspace state lives in `workspaces/<slug>/` and is decoupled from raw source captures in `captures/<slug>/`. Confidential secrets are stored in actor-bound local secret stores, never exported to Git, YAML plans, evidence, or reports.
+- **Contract Enforcement**: Data contracts across target models, workflows, observations, and hypotheses are specified via JSON schemas in `schemas/`.

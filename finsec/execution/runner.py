@@ -14,6 +14,7 @@ from urllib.parse import urlencode, urljoin, urlsplit
 import yaml
 
 from finsec import __version__
+from finsec.auth.service import mark_authentication_status
 from finsec.config.scope import host_is_covered
 from finsec.errors import FinsecError
 from finsec.evidence.domain import EvidenceKind
@@ -194,6 +195,44 @@ def _content_type(response: HTTPResponseData) -> str | None:
     )
 
 
+def _authentication_signal(response: HTTPResponseData) -> str | None:
+    """Classify common authentication failures without treating every 403 as expiration."""
+
+    if response.status_code == 401:
+        return "HTTP_401"
+    if response.status_code == 419:
+        return "HTTP_419_SESSION_EXPIRED"
+    location = next(
+        (value for name, value in response.headers.items() if name.lower() == "location"), ""
+    )
+    if response.status_code in {301, 302, 303, 307, 308} and any(
+        marker in location.lower() for marker in ("/login", "/signin", "/auth")
+    ):
+        return "LOGIN_REDIRECT"
+    content_type = _content_type(response) or ""
+    text = response.body[:65536].decode("utf-8", errors="ignore").lower()
+    if (
+        "html" in content_type.lower()
+        and response.status_code == 200
+        and "<form" in text
+        and any(marker in text for marker in ("password", "sign in", "log in", "login"))
+    ):
+        return "LOGIN_PAGE_HTTP_200"
+    if response.status_code in {400, 401, 419} and any(
+        marker in text
+        for marker in (
+            "expired jwt",
+            "token expired",
+            "invalid token",
+            "invalid session",
+            "session expired",
+            "token revoked",
+        )
+    ):
+        return "TARGET_REJECTED_CREDENTIAL"
+    return None
+
+
 def _summary(
     request: StructuredRequest,
     response: HTTPResponseData,
@@ -221,6 +260,7 @@ def _summary(
             None,
         ),
         error_class="RESPONSE_SIZE_EXCEEDED" if response.oversized else None,
+        authentication_signal=_authentication_signal(response),
     )
 
 
@@ -264,6 +304,7 @@ def _compare(
     comparison: ExecutionResponseSummary,
 ) -> ExecutionComparison:
     pattern = prepared.plan.execution.pattern
+    outcome: ExecutionOutcome
     if comparison.status_code is not None and 500 <= comparison.status_code < 600:
         return ExecutionComparison(
             outcome="STOPPED_BY_POLICY",
@@ -273,9 +314,17 @@ def _compare(
         )
     if pattern == "OBJECT_SUBSTITUTION":
         expected = prepared.plan.requests[1].expected
-        if comparison.status_code in {401, 403, 404}:
-            outcome: ExecutionOutcome = "NO_CROSS_OBJECT_ACCESS"
-            reasons = ["The substituted object request was rejected or not exposed."]
+        if comparison.authentication_signal is not None:
+            outcome = "TEST_BLOCKED_BY_AUTH"
+            reasons = [
+                "Authentication failed during the comparison; the security hypothesis remains "
+                "unresolved."
+            ]
+        elif comparison.status_code in {403, 404}:
+            outcome = "NO_CROSS_OBJECT_ACCESS"
+            reasons = [
+                "The authenticated request was denied authorization or the object was hidden."
+            ]
         elif (
             comparison.status_code is not None
             and 200 <= comparison.status_code < 300
@@ -295,9 +344,9 @@ def _compare(
                 "The response did not match a conservative cross-object or rejection signal."
             ]
     elif pattern == "AUTHENTICATION_COMPARISON":
-        if comparison.status_code in {401, 403}:
+        if comparison.authentication_signal is not None or comparison.status_code == 403:
             outcome = "AUTHENTICATION_ENFORCED"
-            reasons = ["Removing the one authentication marker caused an authorization rejection."]
+            reasons = ["Removing the actor authentication profile caused an access rejection."]
         elif comparison.status_code is not None and 200 <= comparison.status_code < 300:
             outcome = "ANONYMOUS_RESPONSE_OBSERVED"
             reasons = [
@@ -354,7 +403,7 @@ def _response_evidence(
             text = response.body.decode("utf-8")
         except UnicodeDecodeError:
             text = "[BINARY RESPONSE NOT STORED]"
-        body = {"body": text}
+        body = redact_data({"body": text})
     artifact = {
         "status": response.status_code,
         "headers": redact_data(response.headers),
@@ -383,7 +432,10 @@ def _execution_status(outcome: ExecutionOutcome) -> ExecutionStatus:
         return "INCONCLUSIVE"
     if outcome in {
         "BASELINE_FAILED",
+        "BASELINE_AUTH_FAILED",
+        "BASELINE_AUTHORIZATION_DENIED",
         "BASELINE_MISMATCH",
+        "TEST_BLOCKED_BY_AUTH",
         "OUT_OF_SCOPE_REDIRECT",
         "RESPONSE_SIZE_EXCEEDED",
         "STOPPED_BY_POLICY",
@@ -433,6 +485,23 @@ def _write_outputs(
         sort_keys=False,
         allow_unicode=False,
     )
+    authentication_events = list(prepared.authentication_events)
+    if comparison.outcome in {"BASELINE_AUTH_FAILED", "TEST_BLOCKED_BY_AUTH"}:
+        authentication_events.append(
+            {
+                "actor": prepared.plan.requests[0].actor,
+                "authentication_failure": True,
+                "vulnerability_result_interpreted": False,
+            }
+        )
+    elif comparison.outcome == "BASELINE_AUTHORIZATION_DENIED":
+        authentication_events.append(
+            {
+                "actor": prepared.plan.requests[0].actor,
+                "authorization_denial": True,
+                "authentication_failure": False,
+            }
+        )
     metadata = {
         "hypothesis_id": prepared.hypothesis.id,
         "plan_id": prepared.plan.id,
@@ -441,6 +510,7 @@ def _write_outputs(
         "request_count": requests_sent,
         "outcome": comparison.outcome,
         "final_vulnerability_status": "NOT CONFIRMED",
+        "authentication_events": authentication_events,
     }
     generated.extend(
         [
@@ -489,6 +559,7 @@ def _write_outputs(
         evidence=hashes,
         tool_version=__version__,
         notes=notes,
+        authentication_events=authentication_events,
     )
     audit_root.mkdir(parents=True, exist_ok=True)
     if audit_path.exists():
@@ -522,11 +593,29 @@ def execute_prepared(prepared: PreparedExecution) -> ExecutionResult:
                 baseline=baseline_summary,
                 reasons=["The baseline response exceeded the configured size limit."],
             )
+        elif baseline_summary.authentication_signal is not None:
+            comparison = ExecutionComparison(
+                outcome="BASELINE_AUTH_FAILED",
+                baseline=baseline_summary,
+                reasons=[
+                    "The actor baseline showed an authentication failure; no vulnerability "
+                    "mutation was sent."
+                ],
+            )
         elif redirect is not None:
             comparison = ExecutionComparison(
                 outcome=redirect,
                 baseline=baseline_summary,
                 reasons=["Redirects are disabled; the destination was not followed."],
+            )
+        elif baseline_summary.status_code == 403:
+            comparison = ExecutionComparison(
+                outcome="BASELINE_AUTHORIZATION_DENIED",
+                baseline=baseline_summary,
+                reasons=[
+                    "The credential may be valid, but the observed actor baseline is now "
+                    "authorization-denied."
+                ],
             )
         elif baseline_summary.status_code is None or not 200 <= baseline_summary.status_code < 300:
             comparison = ExecutionComparison(
@@ -541,6 +630,12 @@ def execute_prepared(prepared: PreparedExecution) -> ExecutionResult:
                 reasons=["The baseline response did not match its passive object identity."],
             )
         else:
+            mark_authentication_status(
+                prepared.workspace,
+                baseline_request.actor,
+                "READY",
+                baseline_confirmed=True,
+            )
             comparison_request = prepared.plan.requests[1]
             comparison_response = _send_request(prepared, comparison_request, mark_sent)
             comparison_summary = _summary(comparison_request, comparison_response)
@@ -553,6 +648,8 @@ def execute_prepared(prepared: PreparedExecution) -> ExecutionResult:
                     comparison=comparison_summary,
                     reasons=["The comparison response exceeded the configured size limit."],
                 )
+            elif comparison_summary.authentication_signal is not None:
+                comparison = _compare(prepared, baseline_summary, comparison_summary)
             elif redirect is not None:
                 comparison = ExecutionComparison(
                     outcome=redirect,
@@ -569,13 +666,17 @@ def execute_prepared(prepared: PreparedExecution) -> ExecutionResult:
             reasons=["Execution was interrupted; no additional request was sent."],
         )
         notes.append("The researcher interrupted execution.")
-    except (OSError, ssl.SSLError, http.client.HTTPException) as error:
+    except (OSError, ValueError, ssl.SSLError, http.client.HTTPException) as error:
         comparison = ExecutionComparison(
             outcome="TRANSPORT_FAILED",
             baseline=responses[0][2] if responses else None,
             reasons=[f"Transport stopped safely: {type(error).__name__}."],
         )
         notes.append(type(error).__name__)
+    if comparison.outcome in {"BASELINE_AUTH_FAILED", "TEST_BLOCKED_BY_AUTH"}:
+        actor = prepared.plan.requests[0].actor if prepared.plan.requests else ""
+        if actor:
+            mark_authentication_status(prepared.workspace, actor, "INVALID")
     evidence_root, audit_path, status = _write_outputs(
         prepared,
         started_at,
