@@ -161,6 +161,22 @@
             "financial_minimum_score": {"type": "integer", "minimum": 0, "maximum": 10}
           }
         },
+        "ownership_inference": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "trusted_parent_parameters": {
+              "type": "array",
+              "items": {"type": "string"},
+              "uniqueItems": true
+            },
+            "public_shared_parameters": {
+              "type": "array",
+              "items": {"type": "string"},
+              "uniqueItems": true
+            }
+          }
+        },
         "classification_overrides": {
           "type": "object",
           "additionalProperties": {

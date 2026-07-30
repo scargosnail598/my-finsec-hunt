@@ -22,6 +22,7 @@ from finsec.auth.capture import (
     CapturedSecret,
     candidate_from_raw_request,
     decode_jwt_metadata,
+    detect_burp_authentication,
     detect_har_authentication,
 )
 from finsec.auth.store import SecretStore
@@ -82,6 +83,26 @@ class AuthenticationCheckResult:
     request_count: int
     status_code: int | None
     actor_baseline_matched: bool
+
+
+@dataclass(frozen=True)
+class AuthenticationCandidateAssessment:
+    """One redacted suitability decision for an authentication-bearing capture request."""
+
+    number: int
+    summary: str
+    eligible: bool
+    recommended: bool
+    reasons: tuple[str, ...]
+    expires_at: datetime | None
+
+
+@dataclass(frozen=True)
+class AuthenticationRecommendation:
+    """A deterministic, secret-free recommendation across one capture's auth candidates."""
+
+    recommended_number: int | None
+    assessments: tuple[AuthenticationCandidateAssessment, ...]
 
 
 def _load_target(workspace: WorkspacePaths) -> TargetDocument:
@@ -155,6 +176,224 @@ def _identity_continuity(
     comparable = any(before is not None and after is not None for before, after in fields)
     comparable = comparable or bool(previous.roles and replacement.roles)
     return "CONFIRMED" if comparable else "UNKNOWN"
+
+
+def _instant_rank(value: datetime | None) -> float:
+    return value.astimezone(UTC).timestamp() if value is not None else float("-inf")
+
+
+def _recommend_authentication_candidates(
+    workspace: WorkspacePaths,
+    actor_id: str,
+    candidates: list[AuthenticationCandidate],
+    source_name: str,
+    *,
+    checked_at: datetime | None = None,
+) -> AuthenticationRecommendation:
+    """Recommend the freshest in-scope request from one passive capture."""
+
+    target = _load_target(workspace)
+    actor = _account(target, actor_id)
+    actor_type = actor.actor_type or ("authenticated_user" if actor.authenticated else "anonymous")
+    if actor_type == "anonymous" or not actor.authenticated:
+        raise FinsecError(f"Anonymous actor {actor_id!r} cannot receive authentication.")
+
+    if not candidates:
+        raise FinsecError(f"No replay authentication candidate was detected in the {source_name}.")
+
+    now = checked_at or datetime.now(UTC)
+    current = actor.authentication
+    has_current = current is not None and current.auth_type not in {"none", "unconfigured"}
+    required_components = (
+        {item.name.lower().strip() for item in current.components if item.replay_required}
+        if has_current and current is not None
+        else set()
+    )
+    current_captured_at = (
+        current.source.captured_at if has_current and current is not None else None
+    )
+    current_expires_at = (
+        current.expiration.expires_at if has_current and current is not None else None
+    )
+
+    rows: list[
+        tuple[
+            AuthenticationCandidateAssessment,
+            tuple[int, int, int, int, int, float, float, int, int],
+        ]
+    ] = []
+    for number, candidate in enumerate(candidates, start=1):
+        reasons: list[str] = []
+        eligible = True
+        candidate_components = {item.name.lower().strip() for item in candidate.components}
+
+        if candidate.observed_host is None:
+            eligible = False
+            reasons.append("request host could not be determined")
+        elif not host_is_covered(candidate.observed_host, target.scope.hosts):
+            eligible = False
+            reasons.append("request host is outside target scope")
+        else:
+            reasons.append("request host is in scope")
+
+        expires_at = candidate.expiration.expires_at
+        not_before = candidate.expiration.not_before
+        if not_before is not None and not_before.astimezone(UTC) > now:
+            eligible = False
+            reasons.append("credential is not valid yet")
+        if expires_at is not None and expires_at.astimezone(UTC) <= now:
+            eligible = False
+            reasons.append("credential is expired")
+        elif expires_at is not None:
+            reasons.append(
+                f"credential is unexpired until {expires_at.astimezone(UTC).isoformat()}"
+            )
+        else:
+            reasons.append("credential expiration is not detectable")
+
+        continuity_rank = 1
+        same_auth_type = False
+        exact_components = False
+        if has_current and current is not None:
+            continuity = _identity_continuity(current.identity, candidate.identity)
+            if continuity == "CHANGED":
+                eligible = False
+                continuity_rank = 0
+                reasons.append("identity hints conflict with the configured actor")
+            elif continuity == "CONFIRMED":
+                continuity_rank = 3
+                reasons.append("identity hints match the configured actor")
+            else:
+                continuity_rank = 2
+                reasons.append("identity continuity is not available from token metadata")
+
+            missing_components = sorted(required_components - candidate_components)
+            if missing_components:
+                eligible = False
+                reasons.append(
+                    "request is missing current replay components: " + ", ".join(missing_components)
+                )
+            else:
+                reasons.append("request contains all current replay components")
+            exact_components = candidate_components == required_components
+            same_auth_type = candidate.auth_type == current.auth_type
+
+            newer_capture = (
+                candidate.captured_at is not None
+                and current_captured_at is not None
+                and candidate.captured_at.astimezone(UTC) > current_captured_at.astimezone(UTC)
+            )
+            later_expiration = (
+                expires_at is not None
+                and current_expires_at is not None
+                and expires_at.astimezone(UTC) > current_expires_at.astimezone(UTC)
+            )
+            freshness_known = (
+                candidate.captured_at is not None and current_captured_at is not None
+            ) or (expires_at is not None and current_expires_at is not None)
+            if newer_capture:
+                reasons.append("request is newer than the stored authentication capture")
+            if later_expiration:
+                reasons.append("credential expires later than the stored credential")
+            if freshness_known and not newer_capture and not later_expiration:
+                eligible = False
+                reasons.append("candidate is not newer than the stored authentication")
+
+        baseline_success = (
+            candidate.baseline is not None
+            and candidate.baseline.expected_status is not None
+            and 200 <= candidate.baseline.expected_status < 300
+        )
+        if baseline_success:
+            reasons.append("request has a successful read-only baseline")
+
+        primary_components = sum(
+            item.purpose not in {"csrf", "other"} for item in candidate.components
+        )
+        score = (
+            int(eligible),
+            continuity_rank,
+            int(exact_components),
+            int(same_auth_type),
+            int(baseline_success),
+            _instant_rank(expires_at),
+            _instant_rank(candidate.captured_at),
+            primary_components,
+            candidate.source_index,
+        )
+        rows.append(
+            (
+                AuthenticationCandidateAssessment(
+                    number=number,
+                    summary=candidate.redacted_summary(),
+                    eligible=eligible,
+                    recommended=False,
+                    reasons=tuple(reasons),
+                    expires_at=expires_at,
+                ),
+                score,
+            )
+        )
+
+    eligible_rows = [row for row in rows if row[0].eligible]
+    recommended_number = (
+        max(eligible_rows, key=lambda row: row[1])[0].number if eligible_rows else None
+    )
+    assessments = tuple(
+        AuthenticationCandidateAssessment(
+            number=assessment.number,
+            summary=assessment.summary,
+            eligible=assessment.eligible,
+            recommended=assessment.number == recommended_number,
+            reasons=(
+                (*assessment.reasons, "highest-ranked fresh authentication-bearing request")
+                if assessment.number == recommended_number
+                else assessment.reasons
+            ),
+            expires_at=assessment.expires_at,
+        )
+        for assessment, _score in rows
+    )
+    return AuthenticationRecommendation(
+        recommended_number=recommended_number,
+        assessments=assessments,
+    )
+
+
+def recommend_har_authentication(
+    workspace: WorkspacePaths,
+    actor_id: str,
+    har_path: Path,
+    *,
+    checked_at: datetime | None = None,
+) -> AuthenticationRecommendation:
+    """Recommend the freshest in-scope HAR request for one actor profile."""
+
+    return _recommend_authentication_candidates(
+        workspace,
+        actor_id,
+        detect_har_authentication(har_path),
+        "HAR",
+        checked_at=checked_at,
+    )
+
+
+def recommend_burp_authentication(
+    workspace: WorkspacePaths,
+    actor_id: str,
+    xml_path: Path,
+    *,
+    checked_at: datetime | None = None,
+) -> AuthenticationRecommendation:
+    """Recommend the freshest in-scope Burp request for one actor profile."""
+
+    return _recommend_authentication_candidates(
+        workspace,
+        actor_id,
+        detect_burp_authentication(xml_path),
+        "Burp XML",
+        checked_at=checked_at,
+    )
 
 
 def _invalidate_approvals(workspace: WorkspacePaths) -> None:
@@ -262,7 +501,7 @@ def store_candidate(
     actor_id: str,
     candidate: AuthenticationCandidate,
     *,
-    source_type: Literal["har", "raw_request", "manual"],
+    source_type: Literal["har", "burp_xml", "raw_request", "manual"],
     file_reference: str | None = None,
     observed_renewal: bool = False,
 ) -> ActorAuthenticationConfig:
@@ -365,6 +604,38 @@ def capture_from_har(
         candidates[selected - 1],
         source_type="har",
         file_reference=har_path.name,
+        observed_renewal=observed_renewal,
+    )
+    return authentication, candidates
+
+
+def capture_from_burp(
+    workspace: WorkspacePaths,
+    actor_id: str,
+    xml_path: Path,
+    *,
+    candidate_number: int | None = None,
+    observed_renewal: bool = False,
+) -> tuple[ActorAuthenticationConfig, list[AuthenticationCandidate]]:
+    """Store one reviewed authentication candidate from a Burp XML history export."""
+
+    candidates = detect_burp_authentication(xml_path)
+    if not candidates:
+        raise FinsecError("No replay authentication candidate was detected in the Burp XML.")
+    if candidate_number is None and len(candidates) != 1:
+        raise FinsecError(
+            f"Multiple authentication candidates were detected ({len(candidates)}); "
+            "select one explicitly."
+        )
+    selected = candidate_number or 1
+    if selected < 1 or selected > len(candidates):
+        raise FinsecError("Authentication candidate selection is out of range.")
+    authentication = store_candidate(
+        workspace,
+        actor_id,
+        candidates[selected - 1],
+        source_type="burp_xml",
+        file_reference=xml_path.name,
         observed_renewal=observed_renewal,
     )
     return authentication, candidates

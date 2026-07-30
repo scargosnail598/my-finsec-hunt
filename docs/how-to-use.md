@@ -34,7 +34,8 @@ The wizard asks for:
 - A display name, path-safe slug, and scoped target base URL.
 - Exact or leading-wildcard in-scope hosts.
 - Actor labels, roles, and whether each actor is authenticated, privileged, or anonymous.
-- An optional HAR, raw request, or securely entered credential for each authenticated actor.
+- Optional import of unassigned HAR files already present in the capture directory.
+- Optional standalone authentication from a HAR, raw request, or securely entered credential.
 - Optional analysis and capture-directory settings.
 
 Secret entry uses a hidden prompt. Setup metadata stores only credential references and redacted
@@ -71,16 +72,25 @@ That does not mean setup failed. At setup time, HAR files often do not exist yet
 cannot safely infer their actor or channel from a filename. Actor labels affect authorization
 analysis, while channel labels affect web/mobile/API comparison.
 
-Interactive setup offers `Configure actor authentication now?` after creating the workspace. The
-prompt defaults to no so an interrupted setup remains safe and resumable. Resume only incomplete
-authentication sections with:
+When unassigned HAR files already exist under `captures/<slug>/incoming/`, interactive setup offers
+to launch the same capture-import wizard used by `hunt ingest-wizard`. Every file still requires an
+explicit actor and channel, authentication updates remain optional, and offline analysis requires
+a separate confirmation. If the directory is empty, setup lets the user add reviewed HAR files and
+rescan without leaving the wizard, or explicitly continue without ingestion. After completing or
+skipping that step, setup reloads actor authentication status. It skips the authentication prompt
+when every authenticated actor is already `READY`; otherwise it offers configuration only for the
+remaining actors. Non-interactive `hunt setup --yes` skips both interactive steps and never imports
+captures because it cannot safely guess their provenance.
+
+Resume only incomplete authentication sections with:
 
 ```bash
 hunt setup -w workspaces/<slug>
 ```
 
-Choose `Resume actor authentication setup`; existing scope, actor definitions, credential
-references, and refresh configuration are preserved.
+Choose `Resume onboarding (ingestion, then actor authentication)`; setup checks for unassigned
+captures first and then offers authentication while preserving existing scope, actor definitions,
+credential references, and refresh configuration.
 
 The lower-level `hunt init NAME` command remains available for scripts and migrations, but it
 creates an intentionally incomplete target that must be edited before useful analysis.
@@ -92,6 +102,8 @@ Capture replay authentication while importing actor traffic:
 ```bash
 hunt ingest account-a.har -w workspaces/<slug> \
   --actor ACCOUNT_A --channel WEB --capture-auth
+hunt ingest-burp account-a.xml -w workspaces/<slug> \
+  --actor ACCOUNT_A --channel WEB --capture-auth
 ```
 
 HAR imports accept files up to 256 MiB by default. For an unusually large local capture, set a
@@ -102,8 +114,10 @@ FINSEC_MAX_HAR_BYTES=419430400 hunt ingest large-account-a.har \
   -w workspaces/<slug> --actor ACCOUNT_A --capture-auth
 ```
 
-If the HAR contains multiple distinct sessions, the CLI displays only redacted candidates and
-requires a selection. Other supported paths are:
+If the HAR or Burp XML contains multiple distinct sessions, the CLI displays only redacted candidates and
+recommends the freshest in-scope request that matches the actor's existing identity and replay
+components. The prompt defaults to that request but still allows an explicit reviewed selection.
+Other supported paths are:
 
 ```bash
 hunt actor auth import ACCOUNT_A --request account-a-request.txt -w workspaces/<slug>
@@ -138,9 +152,19 @@ hunt actor auth refresh ACCOUNT_A -w workspaces/<slug>
 Replacement without a refresh flow uses a new capture:
 
 ```bash
+hunt ingest account-a-new.har -w workspaces/<slug> \
+  --actor ACCOUNT_A --channel WEB --update-auth
 hunt actor auth refresh ACCOUNT_A --har account-a-new.har -w workspaces/<slug>
+hunt actor auth refresh ACCOUNT_A --burp account-a-new.xml -w workspaces/<slug>
 hunt actor auth refresh ACCOUNT_A --request account-a-new.txt -w workspaces/<slug>
 ```
+
+`--update-auth`, `actor auth refresh --har`, and `actor auth refresh --burp` automatically select
+the recommended fresh request.
+The recommendation prefers an unexpired, newer credential with matching actor identity hints,
+matching replay components, an in-scope host, and a successful read-only baseline. Token values are
+never displayed. If no candidate passes these checks, automatic replacement stops and requires an
+explicit reviewed `--auth-candidate N` selection.
 
 The tool never invents refresh endpoints or submits passwords, MFA codes, CAPTCHA responses, or
 unknown login forms. A changed subject, role, tenant, or authentication method invalidates plan
@@ -190,14 +214,22 @@ analysis:
     bola_minimum_score: 6
     state_transition_minimum_score: 7
     financial_minimum_score: 5
+  ownership_inference:
+    trusted_parent_parameters:
+      - accountId
+      - tenantId
+      - organizationId
+    public_shared_parameters:
+      - regionId
+      - zoneId
+      - productId
 ```
 
 Custom excluded path patterns are enforced as `SUPPRESSED_INSUFFICIENT_EVIDENCE`. Exact path
 classification overrides take precedence and must use a documented classification value.
-Hypothesis gates accept scores from 0 to 10.
-
-The `focus` list records researcher emphasis for review and reporting. It does not override the
-evidence and safety gates.
+Hypothesis gates accept scores from 0 to 10. Parent-scope ownership inference is fail-closed: only
+explicitly trusted parameters may use authenticated, successful, non-empty controlled baselines.
+The public/shared list takes precedence, and response-body ownership evidence remains stronger.
 
 ## 5. Prepare Passive Captures
 
@@ -224,6 +256,18 @@ For a normal first run:
 3. Add one entry per HAR using a configured account label, `ANONYMOUS`, or `UNKNOWN`.
 4. Set the channel that actually produced the traffic.
 5. Save the file and continue with `hunt workflow` in the next section.
+
+Alternatively, let the interactive importer discover files that are not yet assigned:
+
+```bash
+hunt ingest-wizard --workspace workspaces/<slug>
+```
+
+The wizard scans `captures/<slug>/incoming/`, asks for the actual actor and channel for every new
+HAR, recommends a redacted request containing the freshest usable authentication, optionally
+updates that actor's stored credential, imports the observations, and merges successful assignments
+into `workflow.yaml`. Add more HAR files later and run the same command again. Use
+`--include-assigned` only when deliberately relabeling or renewing from an existing manifest entry.
 
 Assign every imported HAR in `captures/<slug>/workflow.yaml`:
 
@@ -306,6 +350,11 @@ Burp XML history:
 hunt ingest-burp burp-history.xml -w workspaces/<slug> \
   --actor ACCOUNT_A --channel WEB
 ```
+
+Add `--capture-auth` to store a reviewed authentication candidate, or `--update-auth` to replace
+the actor's current credential with the recommended fresh candidate. Standard schema-only internal
+DTDs emitted by Burp are stripped before XML parsing; entity declarations and external DTDs are
+still rejected.
 
 Caido JSON:
 
@@ -407,13 +456,17 @@ approval_status: NOT_REQUESTED
 status: BLOCKED  # or READY_FOR_REVIEW
 ```
 
-`BLOCKED` means a safety prerequisite is missing, such as complete host scope, two controlled
-accounts, lifecycle evidence, or production financial-testing permission. Resolve the prerequisite
-and regenerate; do not simply edit `status`.
+`BLOCKED` means either a policy prerequisite is missing or no safe automated execution template can
+be built. Examples include incomplete host scope, insufficient controlled accounts, ambiguous
+ownership baselines, a public/shared scope identifier, lifecycle evidence, or production
+financial-testing permission. The hypothesis can remain a valid research candidate while automated
+execution is unavailable. Resolve the evidence or policy prerequisite and regenerate; do not edit
+`status`.
 
-For a `READY_FOR_REVIEW` plan, independently verify current program authorization and review every
-structured request, request budget, stop condition, and cleanup step. Editing only the lifecycle
-field is not sufficient for active execution:
+`READY_FOR_REVIEW` is emitted only when `execution.supported: true` and static policy checks pass.
+Independently verify current program authorization and review every structured request, request
+budget, stop condition, and cleanup step. Editing only the lifecycle field is not sufficient for
+active execution:
 
 ```yaml
 approval_status: APPROVED
@@ -444,6 +497,10 @@ Record approval only after reviewing the current plan:
 ```bash
 hunt approve HYP-002 -w workspaces/<slug> --approved-by researcher
 ```
+
+The command validates deterministic blockers before showing the typed confirmation prompt. A
+blocked or unsupported plan exits immediately with the ownership, template, scope, method, or
+policy reason and does not ask for `APPROVE HYP-xxx`.
 
 Dry-run validates the checksum-bound approval, actor credential references, local secret
 resolution, expiration margin, refresh availability, exact/wildcard scope, DNS destination,
@@ -494,9 +551,11 @@ mutation on `401`, session-expired signals, a login redirect, or a login page re
 `evidence/HYP-002/executions/execution-vN/`, and immutable transport audit records are written
 beneath `tests/executions/HYP-002/`.
 
-Execution outcomes such as `CROSS_OBJECT_RESPONSE_OBSERVED`, `NO_CROSS_OBJECT_ACCESS`, or
-`BASELINE_MISMATCH` are observations, not vulnerability verdicts. The hypothesis status is not
-automatically confirmed.
+Execution outcomes such as `CROSS_OBJECT_RESPONSE_OBSERVED`,
+`CROSS_SCOPE_RESPONSE_OBSERVED`, `NO_CROSS_OBJECT_ACCESS`, or `BASELINE_MISMATCH` are
+observations, not vulnerability verdicts. A cross-scope outcome records a non-empty response under
+another controlled parent scope without claiming response-body ownership. The hypothesis status is
+not automatically confirmed.
 
 ## 12. Add Redacted Evidence
 
@@ -584,12 +643,36 @@ hunt workspace delete \
 ```
 
 Deletion removes everything inside `workspaces/<slug>/`, including observations, evidence, and
-reports. It is not recoverable through FinSec Hunt. The separate `captures/<slug>/` directory and
-its HAR files are deliberately preserved and must be reviewed or removed separately.
+reports. It is not recoverable through FinSec Hunt. By default, the workspace-specific credential
+file and separate `captures/<slug>/` directory are preserved.
+
+To remove all project data managed through the standard layout, including credentials and
+captures, use:
+
+```bash
+hunt workspace delete \
+  --workspace workspaces/<slug> \
+  --purge
+```
+
+Type `PURGE <slug>` when prompted. For non-interactive deletion, pass
+`--confirm 'PURGE <slug>'`. If the capture directory is not the standard `captures/<slug>` path,
+identify it explicitly:
+
+```bash
+hunt workspace delete \
+  --workspace /path/to/workspaces/<slug> \
+  --purge \
+  --capture-directory /path/to/authorized-captures/<slug>
+```
+
+Purge validates the workspace, exact-slug capture directory, capture markers, symbolic-link
+boundaries, and credential-store ownership before deleting anything. Sibling project data remains
+untouched.
 
 The command refuses to operate on symbolic links, broad protected paths, the current directory or
 its parents, a directory containing `.git`, or a directory without the expected FinSec Hunt
-workspace markers.
+workspace or capture markers.
 
 ## 16. Troubleshooting
 
@@ -602,10 +685,16 @@ workspace markers.
 
 - Pass `--workspace workspaces/<slug>` explicitly.
 
+`Cannot infer the capture directory` during purge:
+
+- Pass the exact project capture path with `--capture-directory`. Its final directory name must
+  match the workspace slug and it must contain `incoming/` and `workflow.yaml`.
+
 `The plan does not have a complete approval record`:
 
-- Run `hunt execute HYP-xxx -w workspaces/<slug> --dry-run`, review the two bounded requests, then
-  run `hunt approve HYP-xxx -w workspaces/<slug>`. Editing `approval_status` alone is never enough.
+- Run `hunt plan HYP-xxx -w workspaces/<slug>`, review the bounded requests, then run
+  `hunt approve HYP-xxx -w workspaces/<slug>`. After approval, verify with `hunt execute HYP-xxx
+  -w workspaces/<slug> --dry-run`. Editing `approval_status` alone is never enough.
 
 `Preserved researcher-edited records`:
 
@@ -621,4 +710,4 @@ workspace markers.
 the Python module and verified by tests and CI.
 
 For the design reasoning behind these decisions, see
-[docs/workflow-rationale.md](docs/workflow-rationale.md).
+[workflow-rationale.md](workflow-rationale.md).

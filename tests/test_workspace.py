@@ -23,13 +23,18 @@ def test_create_workspace_builds_phase_one_contract(tmp_path: Path) -> None:
         workspace.root / "observations/raw",
         workspace.root / "observations/mobile",
         workspace.root / "model/actors.yaml",
-        workspace.root / "hypotheses/archive",
         workspace.root / "tests/plans",
         workspace.root / "evidence",
         workspace.root / "findings",
         workspace.root / "reports",
     ]
     assert all(path.exists() for path in required)
+    assert not (workspace.root / "api/parameters.yaml").exists()
+    assert not (workspace.root / "api/versions.md").exists()
+    assert not (workspace.root / "model/assets.yaml").exists()
+    assert not (workspace.root / "observations/screenshots").exists()
+    assert not (workspace.root / "tests/manual").exists()
+    assert not (workspace.root / "tests/automated").exists()
 
     target = TargetDocument.model_validate(load_yaml(workspace.target))
     assert target.target.name == "demo-fintech"

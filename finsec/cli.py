@@ -2,23 +2,28 @@
 
 import os
 import re
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Annotated, Any, NoReturn, cast
 
 import typer
 from pydantic import ValidationError
 from rich.console import Console
+from rich.markup import escape
 from rich.panel import Panel
 from rich.table import Table
 
-from finsec.auth.capture import detect_har_authentication
 from finsec.auth.service import (
+    AuthenticationRecommendation,
     actor_preflight,
+    capture_from_burp,
     capture_from_har,
     capture_from_raw_request,
     clear_authentication,
     configure_refresh_from_har,
     migrate_legacy_authentication,
+    recommend_burp_authentication,
+    recommend_har_authentication,
     refresh_actor_authentication,
     set_manual_authentication,
     validate_actor_baseline,
@@ -26,14 +31,23 @@ from finsec.auth.service import (
 from finsec.auth.store import SecretStore
 from finsec.config.models import TargetDocument
 from finsec.config.workspace import (
+    CaptureDeletionTarget,
+    WorkspacePaths,
     create_workspace,
+    delete_capture_directory,
     delete_workspace,
+    resolve_capture_deletion_target,
     resolve_workspace,
     resolve_workspace_deletion_target,
 )
 from finsec.errors import FinsecError
 from finsec.evidence.manager import add_evidence, ensure_evidence
-from finsec.execution.policy import approve_plan, prepare_execution, review_execution_authority
+from finsec.execution.policy import (
+    approve_plan,
+    prepare_execution,
+    review_execution_authority,
+    review_plan_approval,
+)
 from finsec.execution.runner import execute_prepared
 from finsec.hypotheses.domain import HypothesisRecord, HypothesisStore
 from finsec.hypotheses.generator import (
@@ -51,11 +65,16 @@ from finsec.normalization.inventory import build_inventory
 from finsec.recon.graphql import ingest_graphql
 from finsec.recon.mobile import scan_mobile
 from finsec.reporting.generator import generate_report
-from finsec.setup import run_setup_wizard
+from finsec.setup import SetupResult, run_setup_wizard
 from finsec.testing.planner import generate_plan
 from finsec.utils.yaml_store import load_yaml
 from finsec.validation.validator import validate_hypothesis
-from finsec.workflow import run_offline_workflow
+from finsec.workflow import (
+    WorkflowCapture,
+    load_workflow_manifest,
+    merge_workflow_assignments,
+    run_offline_workflow,
+)
 
 app = typer.Typer(
     name="hunt",
@@ -133,6 +152,10 @@ def _count_reports(path: Path) -> int:
     return len(list(path.glob("HYP-*-report-v*.md"))) if path.is_dir() else 0
 
 
+def _offline_workflow_hint(paths: WorkspacePaths) -> str:
+    return f"Run 'hunt workflow --no-ingest --workspace {paths.root}' to refresh offline analysis."
+
+
 def _hypothesis_table(hypotheses: list[HypothesisRecord]) -> Table:
     table = Table(show_lines=False)
     table.add_column("ID", style="cyan", no_wrap=True)
@@ -168,6 +191,7 @@ def init_command(
         _abort(error)
     console.print(f"[green]Created workspace:[/green] {workspace.root}")
     console.print("Review target.yaml and scope restrictions before any active research.")
+    console.print(f"For guided configuration, run 'hunt setup --workspace {workspace.root}'.")
 
 
 @app.command("setup")
@@ -223,7 +247,7 @@ def setup_command(
         typer.Option("--workspace", "-w", help="Existing workspace to resume safely."),
     ] = None,
 ) -> None:
-    """Create a validated workspace and configure actor authentication readiness."""
+    """Create a validated workspace and optionally import available captures."""
 
     try:
         if workspace is not None:
@@ -251,6 +275,7 @@ def setup_command(
             base_url=target_url,
             anonymous_labels=set(anonymous_actor or []),
             privileged_labels=set(privileged_actor or []),
+            ingest_captures=_offer_setup_capture_ingestion,
         )
     except (KeyboardInterrupt, typer.Abort) as error:
         console.print("\nSetup cancelled; no partial workspace was created.")
@@ -273,35 +298,83 @@ def workspace_delete_command(
         str | None,
         typer.Option(
             "--confirm",
-            help="Exact workspace slug; bypasses the interactive confirmation prompt.",
+            help=(
+                "Exact workspace slug, or 'PURGE <slug>' with --purge; bypasses the "
+                "interactive confirmation prompt."
+            ),
+        ),
+    ] = None,
+    purge: Annotated[
+        bool,
+        typer.Option(
+            "--purge",
+            "--all-related",
+            help=(
+                "Also permanently delete the workspace credential store and its capture directory."
+            ),
+        ),
+    ] = False,
+    capture_directory: Annotated[
+        Path | None,
+        typer.Option(
+            "--capture-directory",
+            help=(
+                "Explicit project capture directory for --purge; required when it cannot be "
+                "derived as captures/<slug>."
+            ),
         ),
     ] = None,
 ) -> None:
-    """Permanently delete one validated workspace, but never its capture directory."""
+    """Delete one workspace, with an opt-in complete purge of related project data."""
 
+    capture_target: CaptureDeletionTarget | None = None
+    secret_store: SecretStore | None = None
+    secret_targets: tuple[Path, ...] = ()
     try:
         target = resolve_workspace_deletion_target(workspace)
+        if capture_directory is not None and not purge:
+            raise FinsecError("--capture-directory requires --purge.")
+        if purge:
+            capture_target = resolve_capture_deletion_target(target, capture_directory)
+            secret_store = SecretStore(WorkspacePaths(target.root))
+            secret_targets = secret_store.deletion_targets()
+        related_lines = ""
+        if purge:
+            capture_text = str(capture_target.root) if capture_target is not None else "not present"
+            secret_text = str(secret_store.path) if secret_store is not None else "not present"
+            related_lines = (
+                f"\nCredential store: {secret_text}"
+                f"{' (not present)' if not secret_targets else ''}\n"
+                f"Capture directory: {capture_text}\n"
+            )
         console.print(
             Panel.fit(
                 f"Workspace: {target.display_name}\n"
                 f"Slug: {target.slug}\n"
-                f"Path: {target.root}\n\n"
+                f"Path: {target.root}\n"
+                f"{related_lines}\n"
                 "This permanently deletes the workspace directory and all observations, "
                 "models, hypotheses, plans, evidence, validations, and reports inside it.\n"
-                "The separate capture directory is not deleted.",
-                title="Permanent Workspace Deletion",
+                + (
+                    "Purge mode also deletes the project credential store and capture directory."
+                    if purge
+                    else "The separate credential store and capture directory are not deleted."
+                ),
+                title="Complete Project Purge" if purge else "Permanent Workspace Deletion",
                 border_style="red",
             )
         )
+        expected = f"PURGE {target.slug}" if purge else target.slug
         confirmation = confirm
         if confirmation is None:
-            confirmation = typer.prompt(
-                f"Type the workspace slug '{target.slug}' to confirm deletion"
-            )
-        if confirmation != target.slug:
-            raise FinsecError(
-                f"Confirmation did not match workspace slug '{target.slug}'; nothing was deleted."
-            )
+            confirmation = typer.prompt(f"Type '{expected}' to confirm deletion")
+        if confirmation != expected:
+            raise FinsecError(f"Confirmation did not match '{expected}'; nothing was deleted.")
+        removed_secrets: tuple[Path, ...] = ()
+        if secret_store is not None:
+            removed_secrets = secret_store.delete_store()
+        if capture_target is not None:
+            delete_capture_directory(capture_target)
         delete_workspace(target)
     except (KeyboardInterrupt, typer.Abort) as error:
         console.print("\nWorkspace deletion cancelled; nothing was deleted.")
@@ -309,8 +382,22 @@ def workspace_delete_command(
     except (FinsecError, OSError, ValidationError) as error:
         _abort(error)
 
-    console.print(f"[bold green]Deleted workspace:[/bold green] {target.root}")
-    console.print("Deletion is permanent. Separate capture directories were left untouched.")
+    if purge:
+        console.print(f"[bold green]Purged workspace:[/bold green] {target.root}")
+        console.print(
+            "Credential store: "
+            + (f"removed ({len(removed_secrets)} file(s))" if removed_secrets else "not present")
+        )
+        console.print(
+            "Capture directory: "
+            + (f"removed ({capture_target.root})" if capture_target is not None else "not present")
+        )
+        console.print("Complete project purge finished for the validated paths shown above.")
+    else:
+        console.print(f"[bold green]Deleted workspace:[/bold green] {target.root}")
+        console.print(
+            "Deletion is permanent. Separate credential and capture data were left untouched."
+        )
 
 
 @workspace_app.command("migrate-auth")
@@ -494,38 +581,70 @@ def actor_auth_refresh_command(
     actor_id: Annotated[str, typer.Argument(help="Configured actor ID.")],
     workspace: WorkspaceOption = None,
     har: Annotated[Path | None, typer.Option("--har", help="New authenticated HAR.")] = None,
+    burp: Annotated[
+        Path | None, typer.Option("--burp", help="New authenticated Burp XML history export.")
+    ] = None,
     request: Annotated[
         Path | None, typer.Option("--request", help="New authenticated raw HTTP request.")
     ] = None,
     auth_candidate: Annotated[
-        int | None, typer.Option("--auth-candidate", help="1-based HAR candidate selection.")
+        int | None,
+        typer.Option("--auth-candidate", help="1-based HAR or Burp candidate selection."),
     ] = None,
 ) -> None:
     """Replace authentication from a capture or run one configured observed refresh."""
 
-    if har is not None and request is not None:
-        _abort(FinsecError("Choose exactly one of --har or --request."))
+    if sum(item is not None for item in (har, burp, request)) > 1:
+        _abort(FinsecError("Choose exactly one of --har, --burp, or --request."))
+    if auth_candidate is not None and har is None and burp is None:
+        _abort(FinsecError("--auth-candidate requires --har or --burp."))
     try:
         paths = resolve_workspace(workspace)
         if har is not None:
             selected = auth_candidate
-            candidates = detect_har_authentication(har)
-            if not candidates:
-                raise FinsecError("No replay authentication candidate was detected in the HAR.")
+            recommendation = recommend_har_authentication(paths, actor_id, har)
+            console.print("[bold]Authentication candidates detected[/bold]")
+            _print_authentication_recommendation(recommendation)
             if selected is None:
-                for index, candidate in enumerate(candidates, start=1):
-                    console.print(f"[{index}] {candidate.redacted_summary()}")
-                selected = (
-                    1
-                    if len(candidates) == 1
-                    else int(typer.prompt("Select replay authentication", type=int))
+                selected = recommendation.recommended_number
+                if selected is None:
+                    raise FinsecError(
+                        "No safe fresh authentication request was recommended; use "
+                        "--auth-candidate N only after reviewing the redacted candidates."
+                    )
+                console.print(
+                    f"Automatically selected recommended authentication request {selected}."
                 )
             authentication, _ = capture_from_har(
                 paths,
                 actor_id,
                 har,
                 candidate_number=selected,
-                observed_renewal=False,
+                observed_renewal=True,
+            )
+            console.print(f"[green]Credential replaced for {actor_id}.[/green]")
+            console.print(f"Authentication status: {authentication.status}")
+        elif burp is not None:
+            selected = auth_candidate
+            recommendation = recommend_burp_authentication(paths, actor_id, burp)
+            console.print("[bold]Authentication candidates detected[/bold]")
+            _print_authentication_recommendation(recommendation)
+            if selected is None:
+                selected = recommendation.recommended_number
+                if selected is None:
+                    raise FinsecError(
+                        "No safe fresh authentication request was recommended; use "
+                        "--auth-candidate N only after reviewing the redacted candidates."
+                    )
+                console.print(
+                    f"Automatically selected recommended authentication request {selected}."
+                )
+            authentication, _ = capture_from_burp(
+                paths,
+                actor_id,
+                burp,
+                candidate_number=selected,
+                observed_renewal=True,
             )
             console.print(f"[green]Credential replaced for {actor_id}.[/green]")
             console.print(f"Authentication status: {authentication.status}")
@@ -708,6 +827,193 @@ def workflow_command(
     )
 
 
+@dataclass(frozen=True)
+class _InteractiveHarImport:
+    path: Path
+    actor: str
+    channel: ChannelType
+    auth_candidate: int | None = None
+    observed_renewal: bool = False
+
+
+@dataclass(frozen=True)
+class _IngestWizardContext:
+    target: TargetDocument
+    capture_root: Path
+    incoming: Path
+    manifest_path: Path
+    har_files: tuple[Path, ...]
+
+
+def _print_authentication_recommendation(
+    recommendation: AuthenticationRecommendation,
+) -> None:
+    table = Table("#", "Authentication-bearing request", "Assessment")
+    for assessment in recommendation.assessments:
+        if assessment.recommended:
+            state = "[green]RECOMMENDED[/green]"
+        elif assessment.eligible:
+            state = "eligible"
+        else:
+            state = "[red]not eligible[/red]"
+        table.add_row(str(assessment.number), escape(assessment.summary), state)
+    console.print(table)
+    if recommendation.recommended_number is None:
+        console.print(
+            "[yellow]No safe fresh authentication request can be recommended from this capture."
+            "[/yellow]"
+        )
+        return
+    selected = next(
+        item
+        for item in recommendation.assessments
+        if item.number == recommendation.recommended_number
+    )
+    console.print(
+        Panel(
+            "\n".join(
+                [
+                    escape(selected.summary),
+                    "",
+                    *[f"- {escape(reason)}" for reason in selected.reasons],
+                ]
+            ),
+            title=f"Recommended authentication request {selected.number}",
+        )
+    )
+
+
+def _default_capture_directory(paths: WorkspacePaths, target: TargetDocument) -> Path:
+    slug = target.target.slug or paths.root.name
+    if paths.root.parent.name == "workspaces":
+        return (paths.root.parent.parent / "captures" / slug).resolve()
+    return (Path("captures").resolve() / slug).resolve()
+
+
+def _resolve_ingest_wizard_context(
+    paths: WorkspacePaths,
+    capture_root: Path | None,
+    *,
+    include_assigned: bool,
+) -> _IngestWizardContext:
+    """Resolve available captures without inferring security-relevant provenance."""
+
+    target = TargetDocument.model_validate(load_yaml(paths.target))
+    selected_capture_root = (
+        capture_root.expanduser().resolve()
+        if capture_root is not None
+        else _default_capture_directory(paths, target)
+    )
+    incoming = selected_capture_root / "incoming"
+    manifest_path = selected_capture_root / "workflow.yaml"
+    if not incoming.is_dir():
+        raise FinsecError(f"HAR input directory not found: {incoming}")
+    manifest = load_workflow_manifest(manifest_path) if manifest_path.is_file() else None
+    assigned = {item.file for item in manifest.captures} if manifest is not None else set()
+    har_files = tuple(
+        sorted(
+            path
+            for path in incoming.iterdir()
+            if path.is_file()
+            and path.suffix.lower() == ".har"
+            and (include_assigned or path.name not in assigned)
+        )
+    )
+    return _IngestWizardContext(
+        target=target,
+        capture_root=selected_capture_root,
+        incoming=incoming,
+        manifest_path=manifest_path,
+        har_files=har_files,
+    )
+
+
+def _offer_setup_capture_ingestion(result: SetupResult) -> None:
+    """Present passive capture ingestion before actor authentication setup."""
+
+    console.print("\n[bold]Capture ingestion[/bold]")
+    while True:
+        context = _resolve_ingest_wizard_context(
+            result.workspace,
+            result.capture_root,
+            include_assigned=False,
+        )
+        if context.har_files:
+            break
+        console.print(f"No unassigned HAR files were found in {context.incoming}.")
+        console.print("1. Add authorized, reviewed HAR files and rescan")
+        console.print("2. Continue to actor authentication without ingesting")
+        choice = str(typer.prompt("Choose the next setup step", default="1")).strip()
+        if choice == "2":
+            return
+        if choice != "1":
+            console.print("[red]Choose 1 or 2.[/red]")
+            continue
+        console.print(f"Place the HAR files in: {context.incoming}")
+        while True:
+            ready = (
+                str(
+                    typer.prompt(
+                        "After adding files, type RESCAN; type SKIP to continue without ingestion",
+                        default="RESCAN",
+                    )
+                )
+                .strip()
+                .upper()
+            )
+            if ready == "RESCAN":
+                break
+            if ready == "SKIP":
+                return
+            console.print("[red]Type RESCAN or SKIP.[/red]")
+    count = len(context.har_files)
+    console.print(
+        f"[bold]Available capture{'s' if count != 1 else ''}:[/bold] "
+        f"{count} unassigned HAR file{'s' if count != 1 else ''}"
+    )
+    if not typer.confirm("Assign and import available captures now?", default=True):
+        return
+    _run_ingest_wizard(result.workspace, context)
+
+
+def _default_actor_channel(target: TargetDocument, actor_id: str) -> str:
+    actor = next((item for item in target.accounts if item.id == actor_id), None)
+    if actor is None:
+        return "UNKNOWN"
+    return {
+        "web": "WEB",
+        "mobile": "MOBILE",
+        "api": "PUBLIC_API",
+        "unknown": "UNKNOWN",
+    }[actor.attributes.channel]
+
+
+def _prompt_har_actor(target: TargetDocument) -> str | None:
+    configured = {item.id for item in target.accounts}
+    while True:
+        actor = str(typer.prompt("Actor label (or SKIP)", default="SKIP")).strip()
+        if actor.upper() == "SKIP":
+            return None
+        if actor in configured or actor in {"ANONYMOUS", "UNKNOWN"}:
+            return actor
+        console.print(f"[red]Actor {escape(actor)!r} is not configured in target.yaml.[/red]")
+
+
+def _prompt_har_channel(target: TargetDocument, actor_id: str) -> ChannelType:
+    while True:
+        try:
+            return _channel(
+                str(
+                    typer.prompt(
+                        "Channel",
+                        default=_default_actor_channel(target, actor_id),
+                    )
+                )
+            )
+        except FinsecError as error:
+            console.print(f"[red]{error}[/red]")
+
+
 @app.command("ingest")
 def ingest_command(
     har_file: Annotated[Path, typer.Argument(help="HAR file to import passively.")],
@@ -729,6 +1035,16 @@ def ingest_command(
             "--capture-auth", help="Detect and securely store authentication for --actor."
         ),
     ] = False,
+    update_auth: Annotated[
+        bool,
+        typer.Option(
+            "--update-auth",
+            help=(
+                "Recommend the freshest token-bearing request and update --actor authentication; "
+                "implies --capture-auth."
+            ),
+        ),
+    ] = False,
     auth_candidate: Annotated[
         int | None,
         typer.Option("--auth-candidate", help="1-based replay profile selection for automation."),
@@ -738,28 +1054,46 @@ def ingest_command(
 
     try:
         paths = resolve_workspace(workspace)
+        should_capture_auth = capture_auth or update_auth
+        if auth_candidate is not None and not should_capture_auth:
+            raise FinsecError("--auth-candidate requires --capture-auth or --update-auth.")
+        if should_capture_auth and actor == "UNKNOWN":
+            raise FinsecError("Authentication capture requires an explicitly configured actor.")
         selected_candidate = auth_candidate
-        if capture_auth and selected_candidate is None:
-            candidates = detect_har_authentication(har_file)
-            if not candidates:
-                raise FinsecError("No replay authentication candidate was detected in the HAR.")
+        recommendation: AuthenticationRecommendation | None = None
+        if should_capture_auth:
+            recommendation = recommend_har_authentication(paths, actor, har_file)
             console.print("[bold]Authentication candidates detected[/bold]")
-            for index, candidate in enumerate(candidates, start=1):
-                console.print(f"[{index}] {candidate.redacted_summary()}")
-                if candidate.expiration.expires_at is not None:
-                    console.print(f"    Expires at: {candidate.expiration.expires_at}")
-            selected_candidate = (
-                1
-                if len(candidates) == 1
-                else int(typer.prompt("Select replay authentication", type=int))
+            _print_authentication_recommendation(recommendation)
+        if update_auth and selected_candidate is None:
+            selected_candidate = recommendation.recommended_number if recommendation else None
+            if selected_candidate is None:
+                raise FinsecError(
+                    "No safe fresh authentication request was recommended; select a reviewed "
+                    "candidate explicitly with --capture-auth --auth-candidate N."
+                )
+            console.print(
+                f"Automatically selected recommended authentication request {selected_candidate}."
+            )
+        elif capture_auth and selected_candidate is None:
+            if recommendation is None:
+                raise FinsecError("Authentication recommendation is unavailable.")
+            default_candidate = recommendation.recommended_number or 1
+            selected_candidate = int(
+                typer.prompt(
+                    "Select replay authentication",
+                    type=int,
+                    default=default_candidate,
+                )
             )
         result = ingest_har(
             har_file,
             paths,
             actor=actor,
             channel=_channel(channel),
-            capture_auth=capture_auth,
+            capture_auth=should_capture_auth,
             auth_candidate=selected_candidate,
+            auth_observed_renewal=update_auth,
         )
     except FinsecError as error:
         _abort(error)
@@ -773,7 +1107,170 @@ def ingest_command(
     if result.authentication_status is not None:
         console.print(f"Credential storage: successful ({result.credential_profile_ref})")
         console.print(f"Actor status: {result.authentication_status}")
-    console.print("Run 'hunt inventory' to rebuild the endpoint inventory.")
+    console.print(_offline_workflow_hint(paths))
+
+
+def _run_ingest_wizard(paths: WorkspacePaths, context: _IngestWizardContext) -> None:
+    """Run the shared interactive import flow for one validated capture directory."""
+
+    target = context.target
+    console.print(f"[bold]HAR input directory:[/bold] {context.incoming}")
+    console.print("Configured actors: " + ", ".join(item.id for item in target.accounts))
+    console.print("Use ANONYMOUS or UNKNOWN only when that provenance is accurate.")
+    selections: list[_InteractiveHarImport] = []
+    accounts = {item.id: item for item in target.accounts}
+
+    for har_file in context.har_files:
+        console.print(f"\n[bold]Capture:[/bold] {escape(har_file.name)}")
+        actor = _prompt_har_actor(target)
+        if actor is None:
+            continue
+        channel = _prompt_har_channel(target, actor)
+        auth_candidate: int | None = None
+        observed_renewal = False
+        account = accounts.get(actor)
+        if account is not None and account.authenticated and account.actor_type != "anonymous":
+            try:
+                recommendation = recommend_har_authentication(paths, actor, har_file)
+            except FinsecError as error:
+                console.print(f"[yellow]Authentication unchanged:[/yellow] {error}")
+            else:
+                console.print("[bold]Authentication candidates detected[/bold]")
+                _print_authentication_recommendation(recommendation)
+                if recommendation.recommended_number is not None and typer.confirm(
+                    "Update this actor from the recommended authentication request?",
+                    default=True,
+                ):
+                    auth_candidate = recommendation.recommended_number
+                    authentication = account.authentication
+                    observed_renewal = (
+                        authentication is not None
+                        and authentication.auth_type not in {"none", "unconfigured"}
+                    )
+        selections.append(
+            _InteractiveHarImport(
+                path=har_file,
+                actor=actor,
+                channel=channel,
+                auth_candidate=auth_candidate,
+                observed_renewal=observed_renewal,
+            )
+        )
+
+    if not selections:
+        console.print("No HAR files were selected.")
+        return
+
+    summary = Table("File", "Actor", "Channel", "Authentication")
+    for selection in selections:
+        authentication_summary = (
+            f"recommended request {selection.auth_candidate}"
+            if selection.auth_candidate is not None
+            else "unchanged"
+        )
+        summary.add_row(
+            selection.path.name,
+            selection.actor,
+            selection.channel,
+            authentication_summary,
+        )
+    console.print(summary)
+    if not typer.confirm("Import these HAR files passively?", default=False):
+        console.print("No HAR files were imported.")
+        return
+
+    successful_assignments: list[WorkflowCapture] = []
+    imported_any = False
+    for selection in selections:
+        try:
+            result = ingest_har(
+                selection.path,
+                paths,
+                actor=selection.actor,
+                channel=selection.channel,
+            )
+        except (FinsecError, OSError, ValidationError) as error:
+            console.print(f"[red]{escape(selection.path.name)} failed:[/red] {error}")
+            continue
+        imported_any = True
+        successful_assignments.append(
+            WorkflowCapture(
+                file=selection.path.name,
+                actor=selection.actor,
+                channel=selection.channel,
+            )
+        )
+        console.print(
+            f"[green]{escape(selection.path.name)}:[/green] {result.imported} imported, "
+            f"{result.skipped} already present"
+        )
+        if selection.auth_candidate is not None:
+            try:
+                authentication, _ = capture_from_har(
+                    paths,
+                    selection.actor,
+                    selection.path,
+                    candidate_number=selection.auth_candidate,
+                    observed_renewal=selection.observed_renewal,
+                )
+            except FinsecError as error:
+                console.print(f"[red]Authentication update failed:[/red] {error}")
+            else:
+                console.print(
+                    "[green]Authentication updated[/green] from recommended request "
+                    f"{selection.auth_candidate}; actor status: {authentication.status}"
+                )
+
+    if successful_assignments:
+        merge_workflow_assignments(context.manifest_path, successful_assignments)
+        console.print(f"Workflow assignments updated: {context.manifest_path}")
+    if imported_any and typer.confirm("Run the offline analysis workflow now?", default=False):
+        run_offline_workflow(
+            paths,
+            manifest_path=context.manifest_path,
+            progress=lambda message: console.print(f"[cyan]Workflow:[/cyan] {message}"),
+        )
+        console.print("[bold green]Offline analysis workflow completed.[/bold green]")
+    elif imported_any:
+        console.print(
+            f"Run 'hunt workflow -w {paths.root} --manifest {context.manifest_path}' when ready."
+        )
+
+
+@app.command("ingest-wizard")
+def ingest_wizard_command(
+    workspace: WorkspaceOption = None,
+    capture_root: Annotated[
+        Path | None,
+        typer.Option(
+            "--capture-root",
+            help="Capture directory containing incoming/ and workflow.yaml.",
+        ),
+    ] = None,
+    include_assigned: Annotated[
+        bool,
+        typer.Option(
+            "--include-assigned",
+            help="Offer HAR files already present in workflow.yaml for relabeling or renewal.",
+        ),
+    ] = False,
+) -> None:
+    """Interactively import newly added HAR files and recommend fresh actor authentication."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        context = _resolve_ingest_wizard_context(
+            paths,
+            capture_root,
+            include_assigned=include_assigned,
+        )
+        if not context.har_files:
+            console.print("No unassigned HAR files were found.")
+            console.print(f"Add captures to {context.incoming} and run this command again.")
+            return
+        _run_ingest_wizard(paths, context)
+    except (FinsecError, OSError, ValidationError) as error:
+        _abort(error)
 
 
 @app.command("ingest-burp")
@@ -788,12 +1285,72 @@ def ingest_burp_command(
         str,
         typer.Option("--channel", help="Observed client channel for these exchanges."),
     ] = "UNKNOWN",
+    capture_auth: Annotated[
+        bool,
+        typer.Option(
+            "--capture-auth", help="Detect and securely store authentication for --actor."
+        ),
+    ] = False,
+    update_auth: Annotated[
+        bool,
+        typer.Option(
+            "--update-auth",
+            help=(
+                "Recommend the freshest authentication-bearing Burp item and update --actor; "
+                "implies --capture-auth."
+            ),
+        ),
+    ] = False,
+    auth_candidate: Annotated[
+        int | None,
+        typer.Option("--auth-candidate", help="1-based replay profile selection for automation."),
+    ] = None,
 ) -> None:
     """Import a Burp XML history export as redacted observations."""
 
     try:
         paths = resolve_workspace(workspace)
-        result = ingest_burp_xml(xml_file, paths, actor=actor, channel=_channel(channel))
+        should_capture_auth = capture_auth or update_auth
+        if auth_candidate is not None and not should_capture_auth:
+            raise FinsecError("--auth-candidate requires --capture-auth or --update-auth.")
+        if should_capture_auth and actor == "UNKNOWN":
+            raise FinsecError("Authentication capture requires an explicitly configured actor.")
+        selected_candidate = auth_candidate
+        recommendation: AuthenticationRecommendation | None = None
+        if should_capture_auth:
+            recommendation = recommend_burp_authentication(paths, actor, xml_file)
+            console.print("[bold]Authentication candidates detected[/bold]")
+            _print_authentication_recommendation(recommendation)
+        if update_auth and selected_candidate is None:
+            selected_candidate = recommendation.recommended_number if recommendation else None
+            if selected_candidate is None:
+                raise FinsecError(
+                    "No safe fresh authentication request was recommended; select a reviewed "
+                    "candidate explicitly with --capture-auth --auth-candidate N."
+                )
+            console.print(
+                f"Automatically selected recommended authentication request {selected_candidate}."
+            )
+        elif capture_auth and selected_candidate is None:
+            if recommendation is None:
+                raise FinsecError("Authentication recommendation is unavailable.")
+            default_candidate = recommendation.recommended_number or 1
+            selected_candidate = int(
+                typer.prompt(
+                    "Select replay authentication",
+                    type=int,
+                    default=default_candidate,
+                )
+            )
+        result = ingest_burp_xml(
+            xml_file,
+            paths,
+            actor=actor,
+            channel=_channel(channel),
+            capture_auth=should_capture_auth,
+            auth_candidate=selected_candidate,
+            auth_observed_renewal=update_auth,
+        )
     except FinsecError as error:
         _abort(error)
     console.print(
@@ -803,7 +1360,10 @@ def ingest_burp_command(
     if result.relabeled:
         console.print(f"[yellow]Refreshed {result.relabeled} actor/channel assignments.[/yellow]")
     console.print(f"Redacted capture: {result.redacted_capture}")
-    console.print("Run 'hunt inventory' to rebuild the endpoint inventory.")
+    if result.authentication_status is not None:
+        console.print(f"Credential storage: successful ({result.credential_profile_ref})")
+        console.print(f"Actor status: {result.authentication_status}")
+    console.print(_offline_workflow_hint(paths))
 
 
 @app.command("ingest-caido")
@@ -833,7 +1393,7 @@ def ingest_caido_command(
     if result.relabeled:
         console.print(f"[yellow]Refreshed {result.relabeled} actor/channel assignments.[/yellow]")
     console.print(f"Redacted capture: {result.redacted_capture}")
-    console.print("Run 'hunt inventory' to rebuild the endpoint inventory.")
+    console.print(_offline_workflow_hint(paths))
 
 
 @app.command("ingest-openapi")
@@ -863,7 +1423,8 @@ def ingest_openapi_command(
     if result.relabeled:
         console.print(f"[yellow]Refreshed {result.relabeled} channel assignments.[/yellow]")
     console.print(f"Redacted document: {result.redacted_capture}")
-    console.print("Runtime behavior remains unconfirmed; run 'hunt inventory' to normalize paths.")
+    console.print("Runtime behavior remains unconfirmed.")
+    console.print(_offline_workflow_hint(paths))
 
 
 @app.command("ingest-graphql")
@@ -1030,6 +1591,35 @@ def explain_endpoint_command(
             ]
         ),
     ]
+    observed_bindings = [
+        item for item in endpoint.object_access if item.actor_object_binding_observed
+    ]
+    if observed_bindings:
+        details.extend(["", "[bold]Ownership evidence[/bold]"])
+        for binding in observed_bindings:
+            label = (
+                "controlled parent-scope baseline"
+                if binding.source == "PATH_PARENT_SCOPE"
+                else "response-body object/owner binding"
+            )
+            details.extend(
+                [
+                    f"- Evidence: {label}",
+                    f"- Parameter: {binding.identifier}",
+                    f"- Controlled actors: {binding.distinct_actors}",
+                    (
+                        f"- Distinct scoped values: {binding.distinct_scope_values}"
+                        if binding.source == "PATH_PARENT_SCOPE"
+                        else f"- Distinct owner values: {binding.distinct_owner_values}"
+                    ),
+                    "- Execution template evidence: OBJECT_SUBSTITUTION",
+                ]
+            )
+    if endpoint.ownership_inference:
+        details.extend(["", "[bold]Parent-scope inference[/bold]"])
+        for decision in endpoint.ownership_inference:
+            details.append(f"- {decision.parameter}: {decision.status} ({decision.classification})")
+            details.extend(f"  - {reason}" for reason in decision.reasons)
     console.print(
         Panel("\n".join(details), title=f"{endpoint.id}: {endpoint.method} {endpoint.path}")
     )
@@ -1229,9 +1819,14 @@ def plan_command(
         f"{plan.execution_default}.[/{color}]"
     )
     console.print(f"Plan store: {result.path}")
-    console.print(f"Safety decision: {plan.risk.decision}")
-    for reason in plan.risk.reasons:
-        console.print(f"- {reason}")
+    console.print("Research status: active hypothesis; this plan does not confirm a finding.")
+    console.print(f"Policy decision: {plan.risk.decision}")
+    if plan.risk.decision == "BLOCKED":
+        console.print("[red]Policy blockers:[/red]")
+        for reason in plan.risk.reasons:
+            console.print(f"- {reason}")
+    else:
+        console.print("Policy checks passed; explicit human approval remains mandatory.")
     console.print("\n[bold]Actions[/bold]")
     for index, action in enumerate(plan.actions, start=1):
         console.print(f"{index}. {action}")
@@ -1276,19 +1871,23 @@ def approve_command(
 ) -> None:
     """Bind explicit human approval to the current plan and target policy."""
 
+    token_value: str | None = None
+    try:
+        paths = resolve_workspace(workspace)
+        if approval_token is not None:
+            token_value = os.environ.get(approval_token)
+            if not token_value:
+                raise FinsecError(
+                    f"Approval refused: environment variable {approval_token} is missing."
+                )
+        review_plan_approval(paths, hypothesis_id, approved_by=approved_by)
+    except FinsecError as error:
+        _abort(error)
     expected = f"APPROVE {hypothesis_id.upper()}"
     confirmation = typer.prompt(f"Type {expected} to record bounded-execution approval")
     if confirmation != expected:
         _abort(FinsecError("Approval refused: confirmation text did not match exactly."))
-    token_value: str | None = None
-    if approval_token is not None:
-        token_value = os.environ.get(approval_token)
-        if not token_value:
-            _abort(
-                FinsecError(f"Approval refused: environment variable {approval_token} is missing.")
-            )
     try:
-        paths = resolve_workspace(workspace)
         plan = approve_plan(
             paths,
             hypothesis_id,
@@ -1629,6 +2228,7 @@ def status_command(workspace: WorkspaceOption = None) -> None:
         table.add_row(label, str(count))
     console.print(table)
 
+    highest: list[HypothesisRecord] = []
     if hypotheses.hypotheses:
         console.print("\n[bold]Hypotheses[/bold]")
         status_table = Table(show_header=False, box=None, pad_edge=False)
@@ -1658,6 +2258,31 @@ def status_command(workspace: WorkspaceOption = None) -> None:
         )[:5]
         console.print("\n[bold]Highest priority[/bold]")
         console.print(_hypothesis_table(highest))
+
+    if not observations.observations:
+        console.print(
+            "\nNext: add authorized HAR files under the capture incoming directory and run "
+            f"'hunt ingest-wizard --workspace {paths.root}'."
+        )
+    elif not hypotheses.hypotheses:
+        console.print(f"\nNext: {_offline_workflow_hint(paths)}")
+    else:
+        active = [
+            item
+            for item in hypotheses.hypotheses
+            if item.kind == "SECURITY_HYPOTHESIS" and item.disposition == "ACTIVE"
+        ]
+        if active:
+            next_hypothesis = highest[0] if highest else active[0]
+            console.print(
+                f"\nNext: review '{next_hypothesis.id}' with "
+                f"'hunt show {next_hypothesis.id} --workspace {paths.root}'."
+            )
+        else:
+            console.print(
+                "\nNext: review missing evidence with "
+                f"'hunt hypotheses --research-tasks --workspace {paths.root}'."
+            )
 
 
 def main() -> Any:

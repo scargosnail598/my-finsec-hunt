@@ -72,7 +72,8 @@ py -3.12 -m venv .venv
 python -m pip install -e ".[dev]"
 ```
 
-See [quick-install.md](quick-install.md) for installer options and troubleshooting.
+Run `./install.sh --help` for custom interpreter, virtual-environment, offline, and development
+options.
 
 ## Local MCP Server
 
@@ -110,8 +111,15 @@ python scripts/run_demo_workflow.py --root /tmp/my-finsec-demo --slug demo
 ## Create A Real Workspace
 
 The setup wizard validates the target URL, scope hosts, actor labels and roles, safe defaults,
-capture paths, analysis policy, and actor authentication readiness. Credential entry is optional
-and hidden; workspace metadata stores only secret references and redacted lifecycle information.
+capture paths, analysis policy, and actor authentication readiness. If unassigned HAR files are
+already present in the capture directory, setup offers to assign and import them before offering
+authentication for any actors that remain incomplete. If ingestion makes every authenticated actor
+`READY`, the duplicate authentication prompt is skipped. Credential entry is optional and hidden;
+workspace metadata stores only secret references and redacted lifecycle information.
+
+When the capture directory is empty, interactive setup pauses at the ingestion stage and offers to
+rescan after reviewed HAR files are added. The user may explicitly continue without ingestion; only
+then does setup move to actor authentication.
 
 ```bash
 hunt setup
@@ -141,8 +149,6 @@ The wizard creates:
 workspaces/example-fintech/       structured research memory
 captures/example-fintech/         researcher-controlled input area
   incoming/                       authorized HAR inputs kept out of Git
-  processed/                      optional researcher filing area
-  rejected/                       optional researcher filing area
   workflow.yaml                   explicit file/actor/channel assignments
 ```
 
@@ -151,8 +157,9 @@ workspace and sensitive paths are added to `.gitignore`.
 
 ## From Setup To Workflow: First-Time Guide
 
-`hunt setup` prepares the project; it does not automatically analyze HAR files. In a normal first
-run, `captures/<slug>/workflow.yaml` starts with an empty list:
+`hunt setup` prepares the project and can hand off to passive capture ingestion, but it never
+guesses capture provenance or automatically analyzes HAR files. In a normal first run,
+`captures/<slug>/workflow.yaml` starts with an empty list:
 
 ```yaml
 version: 1
@@ -167,15 +174,21 @@ Use this sequence:
 
 1. Run `hunt setup` to create the workspace and capture directories.
 2. Export a sanitized HAR and place it in `captures/<slug>/incoming/`.
-3. Add the HAR filename, actor, and channel to `captures/<slug>/workflow.yaml`.
+3. Run `hunt ingest-wizard -w workspaces/<slug>` to assign and import new HARs, or edit
+   `captures/<slug>/workflow.yaml` directly.
 4. Run `hunt workflow --workspace workspaces/<slug>`.
 5. Review active hypotheses and research tasks; the workflow stops before active testing.
 
-Interactive setup can configure each actor from a HAR, raw HTTP request, hidden secret prompt, or
-an explicit incomplete state. Resume incomplete actor authentication with
+If sanitized HAR files are staged in `captures/<slug>/incoming/` before interactive setup finishes,
+setup offers to launch the ingest wizard immediately. The wizard still requires an explicit actor
+and channel for every selected file and can optionally update authentication from a reviewed
+request. If no HAR is present, setup can wait while the user adds files and then rescan the capture
+directory. After that ingestion step is completed or explicitly skipped, setup separately offers
+authentication from a HAR, raw HTTP request, hidden secret prompt, or an explicit incomplete state
+only for actors that are not already `READY`. Resume incomplete authentication with
 `hunt setup -w workspaces/<slug>` without overwriting existing scope or credential references.
-Non-interactive `hunt setup --yes` creates authenticated actors in `MISSING` state until a capture
-is imported with `--capture-auth`.
+Non-interactive `hunt setup --yes` skips both interactive steps, never imports captures, and creates
+authenticated actors in `MISSING` state until authentication is supplied explicitly.
 
 For example, after placing two HAR files in `incoming/`, edit `workflow.yaml` to contain:
 
@@ -229,11 +242,16 @@ hunt ingest-graphql schema.graphql -w workspaces/example-fintech \
 hunt scan-mobile authorized-app.apk -w workspaces/example-fintech
 ```
 
-Capture actor-owned replay authentication during HAR import:
+Capture actor-owned replay authentication during HAR or Burp import:
 
 ```bash
 hunt ingest account-a.har -w workspaces/example-fintech \
   --actor ACCOUNT_A --channel WEB --capture-auth
+hunt ingest account-a-new.har -w workspaces/example-fintech \
+  --actor ACCOUNT_A --channel WEB --update-auth
+hunt ingest-burp account-a.xml -w workspaces/example-fintech \
+  --actor ACCOUNT_A --channel WEB --capture-auth
+hunt ingest-wizard -w workspaces/example-fintech
 hunt actors -w workspaces/example-fintech
 hunt actor auth status ACCOUNT_A -w workspaces/example-fintech
 hunt actor auth check ACCOUNT_A -w workspaces/example-fintech
@@ -242,8 +260,11 @@ hunt actor auth check ACCOUNT_A -w workspaces/example-fintech
 Use `hunt actor auth import ACCOUNT_A --request request.txt` for a raw request, or
 `hunt actor auth set ACCOUNT_A` for hidden interactive entry. Configure refresh only from an
 observed HAR with `hunt actor auth configure-refresh ACCOUNT_A --har refresh.har`; replace an
-expired credential with `hunt actor auth refresh ACCOUNT_A --har new.har` when no observed refresh
-flow exists.
+expired credential with `hunt actor auth refresh ACCOUNT_A --har new.har` or
+`hunt actor auth refresh ACCOUNT_A --burp new.xml` when no observed refresh flow exists. HAR- and
+Burp-based replacement rank only redacted request metadata and automatically recommend the freshest
+in-scope candidate matching the actor's identity hints and replay components. Standard Burp internal
+DTDs are removed before parsing; entity declarations and external DTDs remain rejected.
 
 HAR, Burp, Caido, and OpenAPI records feed the endpoint inventory. Active hypotheses require
 runtime traffic evidence from HAR, Burp, or Caido; OpenAPI-only routes remain research leads.
@@ -303,6 +324,10 @@ Then bind approval to the exact plan and target policy:
 ```bash
 hunt approve HYP-002 -w workspaces/example-fintech --approved-by researcher
 ```
+
+Unsupported plans remain `BLOCKED` even when the hypothesis is still worth manual research.
+`hunt approve` checks template, ownership-baseline, method, scope, and policy blockers before it
+asks for the typed approval phrase.
 
 Then run the no-network dry-run, which verifies both approval binding and actor authentication
 preflight:
@@ -375,7 +400,8 @@ hunt workspace delete --workspace workspaces/example-fintech
 
 The command displays the resolved name, slug, and path, then asks you to type the exact workspace
 slug. It deletes observations, models, hypotheses, plans, evidence, validations, and reports stored
-inside that workspace. It does not delete the separate `captures/example-fintech/` directory.
+inside that workspace. By default it preserves the separate credential store and
+`captures/example-fintech/` directory.
 
 For an intentional non-interactive deletion, supply the exact slug:
 
@@ -388,6 +414,21 @@ hunt workspace delete \
 The command refuses symbolic-link paths, filesystem/home-level paths, the current directory or one
 of its parents, directories containing `.git`, and directories that do not validate as FinSec Hunt
 workspaces. Run it from outside the selected workspace.
+
+To completely remove the workspace, its workspace-specific credential file, and its capture
+directory, use the explicit purge mode:
+
+```bash
+hunt workspace delete \
+  --workspace workspaces/example-fintech \
+  --purge
+```
+
+Purge requires the stronger confirmation `PURGE example-fintech`. For non-interactive use, pass
+`--confirm 'PURGE example-fintech'`. The standard layout resolves
+`captures/example-fintech/` automatically. For a custom layout, also pass
+`--capture-directory /exact/path/to/example-fintech`. Purge validates every path before deleting
+anything and preserves sibling workspaces, credential files, and capture directories.
 
 ## Repository Layout
 
@@ -440,5 +481,6 @@ repository permissions.
   integration, browser automation, concurrency engine, payload generation, autonomous
   exploitation, or runtime LLM dependency.
 
-For detailed operational steps, see [how-to-use.md](how-to-use.md). For the isolated end-to-end
-test harness, see [synthetic-validation-how-to.md](synthetic-validation-how-to.md).
+For detailed operational steps, see [docs/how-to-use.md](docs/how-to-use.md). For the isolated
+end-to-end test harness, see
+[docs/synthetic-validation-how-to.md](docs/synthetic-validation-how-to.md).

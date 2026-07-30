@@ -1,1 +1,1 @@
-"""Passive Phase 5 GraphQL and mobile reconnaissance."""
+"""Passive GraphQL and mobile static reconnaissance."""

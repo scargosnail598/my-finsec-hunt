@@ -40,6 +40,10 @@ def _burp_export(path: Path) -> None:
     response_encoded = base64.b64encode(response.encode()).decode()
     path.write_text(
         '<?xml version="1.0"?>\n'
+        "<!DOCTYPE items [\n"
+        "<!ELEMENT items (item*)>\n"
+        "<!ELEMENT item ANY>\n"
+        "]>\n"
         "<items><item>"
         "<url>https://api.example.test/api/v1/payments/abc?access_token=QUERY_SECRET</url>"
         "<host>api.example.test</host><port>443</port><protocol>https</protocol>"
@@ -91,7 +95,20 @@ def test_burp_xml_rejects_entity_declarations(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    with pytest.raises(FinsecError, match="DTD or entity"):
+    with pytest.raises(FinsecError, match="entity declarations"):
+        ingest_burp_xml(source, workspace)
+
+
+def test_burp_xml_rejects_external_dtd(tmp_path: Path) -> None:
+    workspace = create_workspace("demo", tmp_path / "workspaces")
+    source = tmp_path / "unsafe-external.xml"
+    source.write_text(
+        "<?xml version='1.0'?><!DOCTYPE items SYSTEM 'https://example.test/burp.dtd'>"
+        "<items><item /></items>",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(FinsecError, match="external DTD"):
         ingest_burp_xml(source, workspace)
 
 

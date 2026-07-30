@@ -21,9 +21,11 @@ from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
 from finsec.hypotheses.domain import HypothesisRecord
 from finsec.hypotheses.generator import find_hypothesis
+from finsec.modeling.domain import ResourceStore
 from finsec.modeling.merge import stable_fingerprint
-from finsec.modeling.models import Endpoint, EndpointStore
+from finsec.modeling.models import Endpoint, EndpointStore, ObservationStore
 from finsec.testing.domain import PlanApproval, StructuredRequest, TestPlanRecord, TestPlanStore
+from finsec.testing.planner import plan_source_fingerprint
 from finsec.testing.templates import PUBLIC_READ_RESOURCES
 from finsec.utils.redaction import REDACTED, is_sensitive_name
 from finsec.utils.yaml_store import load_yaml, write_yaml
@@ -324,24 +326,65 @@ def _validate_object_binding(
     )
     if binding is None:
         raise FinsecError("Execution refused: passive actor-object-owner binding is missing.")
-    available = {
-        (item.actor, item.requested_value, item.owner_value_fingerprint)
-        for item in binding.baselines
-    }
-    source = (
-        mutation.source_actor,
-        mutation.from_value,
-        baseline.expected.owner_fingerprint or "",
-    )
-    target = (
-        mutation.target_actor,
-        mutation.to_value or "",
-        mutated.expected.owner_fingerprint or "",
-    )
-    if source not in available or target not in available:
-        raise FinsecError(
-            "Execution refused: mutation values are not controlled passive baselines."
+    if binding.source == "PATH_PARENT_SCOPE":
+        available = {
+            (item.actor, item.requested_value)
+            for item in binding.baselines
+            if item.scope_value_fingerprint is not None
+        }
+        source = (mutation.source_actor, mutation.from_value)
+        target = (mutation.target_actor, mutation.to_value or "")
+        scope_parameter = binding.scope_parameter or binding.identifier
+        if (
+            source not in available
+            or target not in available
+            or baseline.expected.ownership_source != "PATH_PARENT_SCOPE"
+            or mutated.expected.ownership_source != "PATH_PARENT_SCOPE"
+            or baseline.expected.scope_parameter != scope_parameter
+            or mutated.expected.scope_parameter != scope_parameter
+            or not baseline.expected.nonempty_json_required
+            or not mutated.expected.nonempty_json_required
+            or baseline.expected.object_value != mutation.from_value
+            or mutated.expected.object_value != mutation.to_value
+            or any(
+                value is not None
+                for value in (
+                    baseline.expected.object_path,
+                    baseline.expected.owner_path,
+                    baseline.expected.owner_fingerprint,
+                    mutated.expected.object_path,
+                    mutated.expected.owner_path,
+                    mutated.expected.owner_fingerprint,
+                )
+            )
+        ):
+            raise FinsecError(
+                "Execution refused: path-scope mutation is not bound to controlled baselines."
+            )
+    else:
+        available_response = {
+            (item.actor, item.requested_value, item.owner_value_fingerprint)
+            for item in binding.baselines
+        }
+        source_response = (
+            mutation.source_actor,
+            mutation.from_value,
+            baseline.expected.owner_fingerprint,
         )
+        target_response = (
+            mutation.target_actor,
+            mutation.to_value or "",
+            mutated.expected.owner_fingerprint,
+        )
+        if (
+            source_response not in available_response
+            or target_response not in available_response
+            or baseline.expected.ownership_source not in {None, "RESPONSE_BODY"}
+            or mutated.expected.ownership_source not in {None, "RESPONSE_BODY"}
+        ):
+            raise FinsecError(
+                "Execution refused: mutation values are not controlled passive baselines."
+            )
     template = endpoint.path.split("/")
     before = baseline.path.split("/")
     after = mutated.path.split("/")
@@ -504,15 +547,15 @@ def _validate_static_policy(
         raise FinsecError("Execution refused: hypothesis is not an active security hypothesis.")
     if hypothesis.status in {"REFUTED", "CONFIRMED"}:
         raise FinsecError(f"Execution refused: hypothesis status is {hypothesis.status}.")
+    if not plan.execution.supported or plan.execution.pattern == "UNSUPPORTED":
+        detail = "; ".join(plan.execution.blockers) or "plan is manual-only"
+        raise FinsecError(f"Execution refused: {detail}")
     if plan.status != "READY_FOR_REVIEW" or plan.risk.decision == "BLOCKED":
         raise FinsecError(f"Execution refused: plan status is {plan.status}.")
     if not plan.human_approval_required or not target.testing.human_approval_required:
         raise FinsecError("Execution refused: human approval must remain mandatory.")
     if plan.execution_default != "DO_NOT_EXECUTE":
         raise FinsecError("Execution refused: invalid execution-default policy.")
-    if not plan.execution.supported or plan.execution.pattern == "UNSUPPORTED":
-        detail = "; ".join(plan.execution.blockers) or "plan is manual-only"
-        raise FinsecError(f"Execution refused: {detail}")
     if FORBIDDEN_PLAN_LANGUAGE.search(_plan_text(plan)):
         raise FinsecError(
             "Execution refused: plan contains enumeration, brute force, spraying, or fuzzing."
@@ -675,15 +718,8 @@ def approve_plan(
 ) -> TestPlanRecord:
     """Record human approval bound to current plan and target policy; never send requests."""
 
-    target, hypothesis, plan, endpoints = _load_inputs(workspace, hypothesis_id)
-    _validate_static_policy(target, hypothesis, plan, endpoints)
-    if not target.testing.active_execution_enabled:
-        raise FinsecError(
-            "Approval refused: set active_execution_enabled: true before approving execution."
-        )
+    target, _, plan, _ = _validated_approval_inputs(workspace, hypothesis_id, approved_by)
     reviewer = approved_by.strip()
-    if not reviewer:
-        raise FinsecError("Approval refused: approved_by must be a non-empty researcher label.")
     from datetime import UTC, datetime
 
     plan.approval_status = "APPROVED"
@@ -705,6 +741,69 @@ def approve_plan(
     return plan
 
 
+def _validated_approval_inputs(
+    workspace: WorkspacePaths,
+    hypothesis_id: str,
+    approved_by: str,
+) -> tuple[TargetDocument, HypothesisRecord, TestPlanRecord, list[Endpoint]]:
+    target, hypothesis, plan, endpoints = _load_inputs(workspace, hypothesis_id)
+    try:
+        _validate_static_policy(target, hypothesis, plan, endpoints)
+    except FinsecError as error:
+        detail = str(error).removeprefix("Execution refused: ")
+        raise FinsecError(f"Approval refused: {detail}") from error
+    _validate_plan_current(workspace, target, hypothesis, plan, action="Approval")
+    if not target.testing.active_execution_enabled:
+        raise FinsecError("Approval refused: active_execution_enabled is false in target.yaml.")
+    if not approved_by.strip():
+        raise FinsecError("Approval refused: approved_by must be a non-empty researcher label.")
+    return target, hypothesis, plan, endpoints
+
+
+def _validate_plan_current(
+    workspace: WorkspacePaths,
+    target: TargetDocument,
+    hypothesis: HypothesisRecord,
+    plan: TestPlanRecord,
+    *,
+    action: str,
+) -> None:
+    if plan.generation is None or plan.generation.generator != "phase3-test-planner":
+        raise FinsecError(
+            f"{action} refused: the plan has no supported generation metadata; regenerate it."
+        )
+    if plan.generation.generated_checksum != plan_checksum(plan):
+        raise FinsecError(
+            f"{action} refused: the generated plan content was edited; regenerate it."
+        )
+    try:
+        observations = ObservationStore.model_validate(load_yaml(workspace.observations))
+        endpoint_store = EndpointStore.model_validate(load_yaml(workspace.endpoints))
+        resources = ResourceStore.model_validate(load_yaml(workspace.resources))
+    except (OSError, ValidationError) as error:
+        raise FinsecError(
+            f"{action} refused: cannot verify current plan inputs: {error}"
+        ) from error
+    current = plan_source_fingerprint(target, observations, endpoint_store, resources, hypothesis)
+    if plan.generation.source_fingerprint != current:
+        raise FinsecError(
+            f"{action} refused: plan inputs changed after generation; run 'hunt plan "
+            f"{hypothesis.id}' again."
+        )
+
+
+def review_plan_approval(
+    workspace: WorkspacePaths,
+    hypothesis_id: str,
+    *,
+    approved_by: str,
+) -> TestPlanRecord:
+    """Validate deterministic approval prerequisites without recording approval."""
+
+    _, _, plan, _ = _validated_approval_inputs(workspace, hypothesis_id, approved_by)
+    return plan
+
+
 def prepare_execution(
     workspace: WorkspacePaths,
     hypothesis_id: str,
@@ -716,6 +815,7 @@ def prepare_execution(
     """Validate every safety boundary before the runner is allowed to send HTTP."""
 
     target, hypothesis, plan, endpoints = _load_inputs(workspace, hypothesis_id)
+    _validate_plan_current(workspace, target, hypothesis, plan, action="Execution")
     _validate_static_policy(target, hypothesis, plan, endpoints)
     current_plan_checksum = plan_checksum(plan)
     current_target_checksum = target_policy_checksum(target)
@@ -806,6 +906,7 @@ def review_execution_authority(
     """Validate scope and approval before an interactive execution confirmation."""
 
     target, hypothesis, plan, endpoints = _load_inputs(workspace, hypothesis_id)
+    _validate_plan_current(workspace, target, hypothesis, plan, action="Execution")
     _validate_static_policy(target, hypothesis, plan, endpoints)
     current_plan_checksum = plan_checksum(plan)
     current_target_checksum = target_policy_checksum(target)

@@ -268,6 +268,8 @@ def _baseline_identity_matches(
     expectation: RequestExpectation,
     summary: ExecutionResponseSummary,
 ) -> bool:
+    if expectation.nonempty_json_required and not summary.json_paths:
+        return False
     if (
         expectation.object_path is not None
         and summary.returned_object_id != expectation.object_value
@@ -324,6 +326,17 @@ def _compare(
             outcome = "NO_CROSS_OBJECT_ACCESS"
             reasons = [
                 "The authenticated request was denied authorization or the object was hidden."
+            ]
+        elif (
+            expected.ownership_source == "PATH_PARENT_SCOPE"
+            and comparison.status_code is not None
+            and 200 <= comparison.status_code < 300
+            and bool(comparison.json_paths)
+        ):
+            outcome = "CROSS_SCOPE_RESPONSE_OBSERVED"
+            reasons = [
+                "The substituted request returned non-empty JSON under another controlled "
+                "parent scope; response-body ownership is not asserted."
             ]
         elif (
             comparison.status_code is not None

@@ -373,6 +373,8 @@ def test_unauthenticated_account_scoped_basket_baselines_promote_one_bola(
     assert len(endpoint.object_access) == 1
     binding = endpoint.object_access[0]
     assert binding.identifier == "basketId"
+    assert binding.source == "RESPONSE_BODY"
+    assert binding.confidence == "high"
     assert binding.owner_field_path == "$.data.UserId"
     assert binding.distinct_actors == 2
     assert binding.distinct_objects == 2

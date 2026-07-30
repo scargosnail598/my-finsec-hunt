@@ -6,6 +6,7 @@ import json
 import os
 import re
 from contextlib import suppress
+from pathlib import Path
 from typing import Any
 
 from finsec.config.workspace import WorkspacePaths
@@ -129,6 +130,35 @@ class SecretStore:
                 changed = True
         if changed:
             self._write(document)
+
+    def deletion_targets(self) -> tuple[Path, ...]:
+        """Validate and return files owned by this workspace's secret store."""
+
+        if self.root.is_symlink() or (self.root.exists() and not self.root.is_dir()):
+            raise FinsecError("Credential-store directory is not safe.")
+        if not self.root.exists():
+            return ()
+        if self.root.stat().st_mode & 0o077:
+            raise FinsecError("Credential-store directory permissions are too broad.")
+
+        candidates = [self.path, *sorted(self.root.glob(f".{self.path.name}.tmp-*"))]
+        existing: list[Path] = []
+        for candidate in candidates:
+            if candidate.is_symlink() or (candidate.exists() and not candidate.is_file()):
+                raise FinsecError("Credential store is not a safe regular file.")
+            if candidate.exists():
+                existing.append(candidate)
+        return tuple(existing)
+
+    def delete_store(self) -> tuple[Path, ...]:
+        """Delete only this workspace's credential file and abandoned temporary files."""
+
+        targets = self.deletion_targets()
+        for target in targets:
+            target.unlink()
+        if self.root.exists() and not any(self.root.iterdir()):
+            self.root.rmdir()
+        return targets
 
     def permissions(self) -> int | None:
         return self.path.stat().st_mode & 0o777 if self.path.is_file() else None

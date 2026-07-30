@@ -1,22 +1,24 @@
 """Interactive workspace setup wizard tests."""
 
+import base64
 import json
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 import pytest
 from typer.testing import CliRunner
 
+import finsec.cli as cli_module
+from finsec.auth.store import SecretStore
 from finsec.cli import app
 from finsec.config.models import AnalysisConfig, TargetDocument
+from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError, WorkspaceError
-from finsec.modeling.models import ObservationStore
 from finsec.setup import (
     AccountInput,
-    HarSelection,
+    SetupResult,
     build_setup_config,
-    create_setup_workspace,
-    ingest_har_selections,
     normalize_host,
     update_gitignore,
     validate_capture_relative,
@@ -66,6 +68,54 @@ def _basic_config(**overrides: Any) -> Any:
     return build_setup_config(**values)
 
 
+def _setup_jwt(subject: str) -> str:
+    def segment(value: dict[str, Any]) -> str:
+        raw = json.dumps(value, separators=(",", ":")).encode()
+        return base64.urlsafe_b64encode(raw).decode().rstrip("=")
+
+    now = datetime.now(UTC)
+    payload = {
+        "sub": subject,
+        "iat": int(now.timestamp()),
+        "exp": int((now + timedelta(hours=1)).timestamp()),
+    }
+    return f"{segment({'alg': 'none', 'typ': 'JWT'})}.{segment(payload)}.synthetic"
+
+
+def _write_setup_har(path: Path, token: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {
+                "log": {
+                    "version": "1.2",
+                    "creator": {"name": "pytest", "version": "1"},
+                    "entries": [
+                        {
+                            "startedDateTime": datetime.now(UTC).isoformat(),
+                            "request": {
+                                "method": "GET",
+                                "url": "https://divar.ir/profile",
+                                "headers": [{"name": "Authorization", "value": f"Bearer {token}"}],
+                                "cookies": [],
+                            },
+                            "response": {
+                                "status": 200,
+                                "headers": [{"name": "Content-Type", "value": "application/json"}],
+                                "content": {
+                                    "mimeType": "application/json",
+                                    "text": json.dumps({"id": "user-a"}),
+                                },
+                            },
+                        }
+                    ],
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
 def test_simple_setup_creates_valid_workspace(tmp_path: Path) -> None:
     workspace = _run_noninteractive_setup(tmp_path)
 
@@ -75,7 +125,146 @@ def test_simple_setup_creates_valid_workspace(tmp_path: Path) -> None:
     assert target.scope.hosts == ["divar.ir", "api.divar.ir"]
     assert [account.id for account in target.accounts] == ["ACCOUNT_A", "ACCOUNT_B"]
     assert all(account.ownership == "researcher" for account in target.accounts)
-    assert (workspace / "SETUP_SUMMARY.md").is_file()
+    assert not (workspace / "SETUP_SUMMARY.md").exists()
+
+
+def test_interactive_setup_configures_only_authentication_remaining_after_ingestion(
+    tmp_path: Path,
+) -> None:
+    token = _setup_jwt("user-a")
+    capture = tmp_path / "captures/divar/incoming/account-a.har"
+    _write_setup_har(capture, token)
+
+    result = RUNNER.invoke(
+        app,
+        _setup_args(tmp_path),
+        input="\n\n\n\n\nACCOUNT_A\n\n\ny\nn\ny\n4\n",
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "Assign and import available captures now?" in result.output
+    assert "Configure remaining actor authentication now?" in result.output
+    assert result.output.index("Assign and import available captures now?") < result.output.index(
+        "Configure remaining actor authentication now?"
+    )
+    assert "Authentication updated" in result.output
+    assert "Authentication for ACCOUNT_A" not in result.output
+    assert "Authentication for ACCOUNT_B" in result.output
+    assert token not in result.output
+    manifest = load_yaml(tmp_path / "captures/divar/workflow.yaml")
+    assert manifest["captures"] == [
+        {"file": "account-a.har", "actor": "ACCOUNT_A", "channel": "WEB", "enabled": True}
+    ]
+    workspace = WorkspacePaths(tmp_path / "workspaces/divar")
+    target = TargetDocument.model_validate(load_yaml(workspace.target))
+    account_a = next(actor for actor in target.accounts if actor.id == "ACCOUNT_A")
+    assert account_a.authentication is not None
+    assert account_a.authentication.status == "READY"
+    reference = account_a.authentication.components[0].credential_ref
+    assert SecretStore(workspace).resolve(reference, "ACCOUNT_A") == f"Bearer {token}"
+
+
+def test_setup_skips_second_authentication_prompt_when_ingestion_readies_all_actors(
+    tmp_path: Path,
+) -> None:
+    tokens = {
+        "ACCOUNT_A": _setup_jwt("user-a"),
+        "ACCOUNT_B": _setup_jwt("user-b"),
+    }
+    _write_setup_har(
+        tmp_path / "captures/divar/incoming/account-a.har",
+        tokens["ACCOUNT_A"],
+    )
+    _write_setup_har(
+        tmp_path / "captures/divar/incoming/account-b.har",
+        tokens["ACCOUNT_B"],
+    )
+
+    result = RUNNER.invoke(
+        app,
+        _setup_args(tmp_path),
+        input="\n\n\n\n\nACCOUNT_A\n\n\nACCOUNT_B\n\n\ny\nn\n",
+    )
+
+    assert result.exit_code == 0, result.output
+    assert result.output.count("Authentication updated") == 2
+    assert "Actor authentication is READY for all authenticated actors." in result.output
+    assert "Configure actor authentication now?" not in result.output
+    assert "Configure remaining actor authentication now?" not in result.output
+    workspace = WorkspacePaths(tmp_path / "workspaces/divar")
+    target = TargetDocument.model_validate(load_yaml(workspace.target))
+    for actor in target.accounts:
+        assert actor.authentication is not None
+        assert actor.authentication.status == "READY"
+        reference = actor.authentication.components[0].credential_ref
+        assert SecretStore(workspace).resolve(reference, actor.id) == f"Bearer {tokens[actor.id]}"
+
+
+def test_interactive_setup_checks_ingestion_before_authentication_when_no_capture_is_ready(
+    tmp_path: Path,
+) -> None:
+    result = RUNNER.invoke(app, _setup_args(tmp_path), input="\n\n\n\n2\nn\n")
+
+    assert result.exit_code == 0, result.output
+    assert "Capture ingestion" in result.output
+    assert "Add authorized, reviewed HAR files and rescan" in result.output
+    assert "Assign and import available captures now?" not in result.output
+    assert "Configure actor authentication now?" in result.output
+    assert result.output.index("Capture ingestion") < result.output.index(
+        "Configure actor authentication now?"
+    )
+
+
+def test_setup_capture_ingestion_can_add_files_and_rescan(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    workspace_root = _run_noninteractive_setup(tmp_path)
+    capture_root = tmp_path / "captures/divar"
+    setup_result = SetupResult(WorkspacePaths(workspace_root), capture_root)
+    prompt_count = 0
+
+    def prompt(message: str, **_: Any) -> str:
+        nonlocal prompt_count
+        prompt_count += 1
+        if message == "Choose the next setup step":
+            return "1"
+        if message.startswith("After adding files"):
+            _write_setup_har(
+                capture_root / "incoming/account-a.har",
+                _setup_jwt("user-a"),
+            )
+            return "RESCAN"
+        raise AssertionError(f"Unexpected prompt: {message}")
+
+    imported: list[str] = []
+    monkeypatch.setattr(cli_module.typer, "prompt", prompt)
+    monkeypatch.setattr(cli_module.typer, "confirm", lambda *args, **kwargs: True)
+    monkeypatch.setattr(
+        cli_module,
+        "_run_ingest_wizard",
+        lambda paths, context: imported.extend(path.name for path in context.har_files),
+    )
+
+    cli_module._offer_setup_capture_ingestion(setup_result)
+
+    assert prompt_count == 2
+    assert imported == ["account-a.har"]
+
+
+def test_noninteractive_setup_does_not_guess_provenance_for_preexisting_har(
+    tmp_path: Path,
+) -> None:
+    _write_setup_har(
+        tmp_path / "captures/divar/incoming/account-a.har",
+        _setup_jwt("user-a"),
+    )
+
+    result = RUNNER.invoke(app, [*_setup_args(tmp_path), "--yes"])
+
+    assert result.exit_code == 0, result.output
+    assert "Assign and import available captures now?" not in result.output
+    assert load_yaml(tmp_path / "captures/divar/workflow.yaml")["captures"] == []
 
 
 def test_advanced_setup_applies_optional_settings(tmp_path: Path) -> None:
@@ -93,14 +282,13 @@ def test_advanced_setup_applies_optional_settings(tmp_path: Path) -> None:
             "/custom/",
             "avif",
             "n",  # advanced account attributes
-            "",  # retain prohibited restrictions
-            "authorization, authentication, state_transitions",
             "",  # BOLA gate
             "",  # state gate
             "",  # financial gate
             "custom/divar",
             "",  # create
-            "n",  # HAR discovery
+            "2",  # continue without ingesting
+            "n",  # configure actor authentication
         ]
     )
     result = RUNNER.invoke(app, _setup_args(tmp_path), input=answers + "\n")
@@ -116,7 +304,6 @@ def test_advanced_setup_applies_optional_settings(tmp_path: Path) -> None:
     assert target.target.base_url == "https://api.divar.ir/v1"
     assert "/custom/" in target.analysis.excluded_path_patterns
     assert "avif" in target.analysis.excluded_extensions
-    assert target.focus == ["authorization", "authentication", "state_transitions"]
     assert (tmp_path / "captures/custom/divar/incoming").is_dir()
 
 
@@ -205,10 +392,13 @@ def test_setup_resume_continues_only_incomplete_actor_authentication(tmp_path: P
             "--capture-root",
             str(tmp_path / "captures"),
         ],
-        input="5\n4\n4\n",
+        input="5\n2\ny\n4\n4\n",
     )
 
     assert resumed.exit_code == 0, resumed.output
+    assert resumed.output.index("Capture ingestion") < resumed.output.index(
+        "Configure actor authentication now?"
+    )
     target = TargetDocument.model_validate(load_yaml(workspace / "target.yaml"))
     assert target.scope.model_dump(mode="json") == original_scope
     assert all(
@@ -253,7 +443,7 @@ def test_setup_authentication_resolves_bare_har_name_from_capture_incoming(
             "--capture-root",
             str(tmp_path / "captures"),
         ],
-        input="5\n1\naccount-a.har\n\n4\n",
+        input="5\nn\ny\n1\naccount-a.har\n\n4\n",
     )
 
     assert resumed.exit_code == 0, resumed.output
@@ -298,12 +488,13 @@ def test_target_yaml_validates(tmp_path: Path) -> None:
 def test_har_directories_are_created(tmp_path: Path) -> None:
     _run_noninteractive_setup(tmp_path)
     capture = tmp_path / "captures/divar"
-    assert all((capture / name).is_dir() for name in ("incoming", "processed", "rejected"))
+    assert (capture / "incoming").is_dir()
+    assert not (capture / "processed").exists()
+    assert not (capture / "rejected").exists()
     readme = (capture / "README.md").read_text(encoding="utf-8")
     assert "credential-bearing originals outside the repository" in readme
-    assert "hunt ingest --capture-auth" in readme
-    assert "normally creates `workflow.yaml` with `captures: []`" in readme
-    assert "Non-interactive `hunt setup --yes` leaves it empty" in readme
+    assert "hunt ingest-wizard" in readme
+    assert "starts with `captures: []`" in readme
 
 
 def test_gitignore_is_updated_without_duplicates(tmp_path: Path) -> None:
@@ -327,22 +518,6 @@ def test_cancel_leaves_no_partial_workspace(tmp_path: Path) -> None:
     assert "no partial workspace" in result.output
     assert not (tmp_path / "workspaces/divar").exists()
     assert not (tmp_path / "captures/divar").exists()
-
-
-def test_optional_ingestion_uses_actor_labels(
-    tmp_path: Path, sample_har: tuple[Path, dict[str, Any]]
-) -> None:
-    created = create_setup_workspace(
-        _basic_config(), tmp_path / "workspaces", tmp_path / "captures"
-    )
-    har_path, _ = sample_har
-
-    results = ingest_har_selections([HarSelection(har_path, "ACCOUNT_B", "WEB")], created.workspace)
-
-    assert results[0][1] == "success"
-    observations = ObservationStore.model_validate(load_yaml(created.workspace.observations))
-    assert {item.actor for item in observations.observations} == {"ACCOUNT_B"}
-    assert har_path.is_file()
 
 
 def test_synthetic_setup_allows_localhost(tmp_path: Path) -> None:

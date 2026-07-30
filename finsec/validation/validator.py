@@ -464,19 +464,3 @@ def validate_hypothesis(workspace: WorkspacePaths, hypothesis_id: str) -> Valida
         workspace.validations,
         f"validation:{hypothesis.id}" in merge.conflicts,
     )
-
-
-def find_validation(workspace: WorkspacePaths, hypothesis_id: str) -> ValidationRecord:
-    """Load the current validation result for one hypothesis."""
-
-    if not workspace.validations.is_file():
-        raise FinsecError("No validation results exist; run 'hunt validate HYP-xxx'.")
-    try:
-        store = ValidationStore.model_validate(load_yaml(workspace.validations))
-    except (OSError, ValidationError) as error:
-        raise FinsecError(f"Cannot load validation results: {error}") from error
-    wanted = hypothesis_id.upper()
-    for validation in store.validations:
-        if validation.hypothesis_id.upper() == wanted:
-            return validation
-    raise FinsecError(f"No validation result exists for {hypothesis_id}.")

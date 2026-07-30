@@ -59,6 +59,9 @@ class PlanActorAuthentication(EditableModel):
 class RequestExpectation(EditableModel):
     """Passive identity evidence required before a bounded comparison proceeds."""
 
+    ownership_source: Literal["RESPONSE_BODY", "PATH_PARENT_SCOPE"] | None = None
+    scope_parameter: str | None = None
+    nonempty_json_required: bool = False
     object_path: str | None = None
     object_value: str | None = None
     owner_path: str | None = None

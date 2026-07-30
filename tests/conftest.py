@@ -153,9 +153,61 @@ def phase3_workspace(tmp_path: Path, sample_har: tuple[Path, dict[str, Any]]) ->
 
 
 @pytest.fixture
-def phase4_workspace(phase3_workspace: WorkspacePaths) -> WorkspacePaths:
+def phase4_workspace(phase3_workspace: WorkspacePaths, tmp_path: Path) -> WorkspacePaths:
     """Build a Phase 3 hypothesis with an explicitly approved review-only plan."""
 
+    generate_hypotheses(phase3_workspace)
+    for index, (actor, payment_id, owner_id) in enumerate(
+        [
+            ("ACCOUNT_A", "PAY-A-1001", "OWNER-A-1001"),
+            ("ACCOUNT_B", "PAY-B-2002", "OWNER-B-2002"),
+        ],
+        start=1,
+    ):
+        capture = tmp_path / f"controlled-payment-{index}.har"
+        capture.write_text(
+            json.dumps(
+                {
+                    "log": {
+                        "version": "1.2",
+                        "creator": {"name": "phase4-tests", "version": "1"},
+                        "entries": [
+                            {
+                                "startedDateTime": f"2026-01-02T11:0{index}:00Z",
+                                "request": {
+                                    "method": "GET",
+                                    "url": (f"https://api.example.test/api/payments/{payment_id}"),
+                                    "headers": [
+                                        {
+                                            "name": "Authorization",
+                                            "value": "Bearer SYNTHETIC_PHASE4_TOKEN",
+                                        }
+                                    ],
+                                },
+                                "response": {
+                                    "status": 200,
+                                    "headers": [
+                                        {
+                                            "name": "Content-Type",
+                                            "value": "application/json",
+                                        }
+                                    ],
+                                    "content": {
+                                        "mimeType": "application/json",
+                                        "text": json.dumps({"id": payment_id, "ownerId": owner_id}),
+                                    },
+                                },
+                            }
+                        ],
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+        ingest_har(capture, phase3_workspace, actor=actor, channel="WEB")
+    build_inventory(phase3_workspace)
+    generate_model(phase3_workspace)
+    generate_invariants(phase3_workspace)
     generate_hypotheses(phase3_workspace)
     generate_plan(phase3_workspace, "HYP-002")
     plans = load_yaml(phase3_workspace.test_plans)

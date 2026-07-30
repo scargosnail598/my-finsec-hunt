@@ -1,4 +1,4 @@
-"""Deterministic, evidence-backed Phase 3 hypothesis generation."""
+"""Deterministic, evidence-backed hypothesis generation."""
 
 import re
 from collections import defaultdict
@@ -216,8 +216,30 @@ def _object_authorization_hypothesis(
         f"{endpoint.id} accepts the client-controlled identifier {parameter}, while ownership, "
         "delegation, tenant, and role conditions remain unconfirmed."
     )
-    if unauthenticated_binding and binding is not None:
-        owner_field = binding.owner_field_path.rsplit(".", 1)[-1]
+    required_state = [f"Researcher Account A owns a reachable {resource.name} object."]
+    if binding is not None and binding.source == "PATH_PARENT_SCOPE":
+        required_state = [f"Researcher Account A controls a reachable {parameter} parent scope."]
+        attacker_capability = [
+            "Researcher Account A is separately authenticated.",
+            (
+                f"Can replace Account A's {parameter} only with Account B's passively observed "
+                "researcher-controlled value."
+            ),
+        ]
+        hypothesis = (
+            f"An authenticated Researcher Account A may be able to use Account B's {parameter} "
+            f"with {endpoint.method} {endpoint.path} to cross the controlled parent-scope "
+            "authorization boundary."
+        )
+        reasoning = (
+            f"{binding.distinct_actors} researcher-controlled actors were passively observed "
+            f"using distinct authenticated {parameter} parent scopes with successful non-empty "
+            "JSON responses. The response did not supply ownership metadata, so ownership is "
+            "inferred only from the explicitly trusted path scope. Cross-substitution has not "
+            "yet been tested."
+        )
+    elif unauthenticated_binding and binding is not None:
+        owner_field = (binding.owner_field_path or "owner association").rsplit(".", 1)[-1]
         attacker_capability = [
             f"Can request {resource.name} objects without an observed request credential.",
             f"Can substitute one researcher-controlled actor's {parameter} into another baseline.",
@@ -246,7 +268,7 @@ def _object_authorization_hypothesis(
         "invariant": [invariant.id],
         "observations": _observations(invariant),
         "mutation_dimensions": ["ACTOR", "OBJECT"],
-        "required_state": [f"Researcher Account A owns a reachable {resource.name} object."],
+        "required_state": required_state,
         "attacker_capability": attacker_capability,
         "evidence_status": (
             KnowledgeStatus.INFERRED if binding is not None else KnowledgeStatus.ASSUMED
@@ -1011,28 +1033,49 @@ def _drafts(
                 ]
                 missing_evidence = [
                     "ownership relationship is not confirmed",
-                    "Account B baseline is not yet captured",
+                    "a second controlled actor baseline is not yet captured",
                 ]
-                if binding is not None and not authenticated_runtime:
-                    owner_field = binding.owner_field_path.rsplit(".", 1)[-1]
-                    object_values = sorted({item.requested_value for item in binding.baselines})
-                    eligibility_evidence = [
-                        "first-party JSON API",
-                        f"client-controlled {parameter} path parameter",
-                        f"{binding.distinct_actors} researcher-controlled actors observed",
-                        (
-                            f"distinct {resource.name} IDs associated with actor baselines: "
-                            + ", ".join(object_values)
-                        ),
-                        "successful resource-specific JSON responses",
-                        "response object IDs match requested object IDs",
-                        (
-                            f"{binding.distinct_owner_values} distinct {owner_field} values "
-                            "observed across actor baselines"
-                        ),
-                        "no request authentication credential observed",
-                        *endpoint.relevance_reasons,
+                if binding is not None:
+                    owner_field = (binding.owner_field_path or "owner association").rsplit(".", 1)[
+                        -1
                     ]
+                    if binding.source == "PATH_PARENT_SCOPE":
+                        eligibility_evidence = [
+                            "authenticated first-party JSON API",
+                            f"client-controlled {parameter} path parameter",
+                            (
+                                f"{binding.distinct_actors} researcher-controlled actors have "
+                                "successful authenticated baselines"
+                            ),
+                            (
+                                f"{binding.distinct_scope_values} distinct controlled parent "
+                                "scope values were observed"
+                            ),
+                            (
+                                f"{parameter} is explicitly allowlisted as an ownership scope "
+                                "parameter"
+                            ),
+                            "ownership provenance is PATH_PARENT_SCOPE",
+                            *endpoint.relevance_reasons,
+                        ]
+                    else:
+                        eligibility_evidence = [
+                            "first-party JSON API",
+                            f"client-controlled {parameter} path parameter",
+                            f"{binding.distinct_actors} researcher-controlled actors observed",
+                            "distinct controlled object IDs are linked to actor baselines",
+                            "successful resource-specific JSON responses",
+                            "response object IDs match requested object IDs",
+                            (
+                                f"{binding.distinct_owner_values} distinct {owner_field} values "
+                                "observed across actor baselines"
+                            ),
+                            "ownership provenance is RESPONSE_BODY",
+                            *endpoint.relevance_reasons,
+                        ]
+                    if not authenticated_runtime:
+                        eligibility_evidence.append("no request authentication credential observed")
+                    eligibility_evidence = [*dict.fromkeys(eligibility_evidence)]
                     missing_evidence = [
                         "Account A requesting Account B's object has not been tested",
                         "Account B requesting Account A's object has not been tested",
@@ -1042,7 +1085,14 @@ def _drafts(
                     {
                         "eligibility_evidence": eligibility_evidence,
                         "missing_evidence": missing_evidence,
-                        "generation_rule": {"id": "AUTH_OBJECT_ACCESS", "version": "3"},
+                        "generation_rule": {
+                            "id": "AUTH_OBJECT_ACCESS",
+                            "version": (
+                                "4"
+                                if binding is not None and binding.source == "PATH_PARENT_SCOPE"
+                                else "3"
+                            ),
+                        },
                         "priority_rationale": endpoint.relevance_reasons,
                     }
                 )

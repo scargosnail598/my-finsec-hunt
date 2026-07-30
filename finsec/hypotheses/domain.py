@@ -1,4 +1,4 @@
-"""Typed Phase 3 hypothesis, scoring, and mutation models."""
+"""Typed hypothesis, scoring, and mutation models."""
 
 from typing import Literal, Self
 

@@ -229,6 +229,7 @@ def ingest_har(
     *,
     capture_auth: bool = False,
     auth_candidate: int | None = None,
+    auth_observed_renewal: bool = False,
 ) -> IngestResult:
     """Import one HAR file without retaining its unredacted content."""
 
@@ -291,6 +292,7 @@ def ingest_har(
             actor,
             source_path,
             candidate_number=auth_candidate,
+            observed_renewal=auth_observed_renewal,
         )
         authentication_status = authentication.status
         credential_profile_ref = authentication.profile_ref

@@ -25,7 +25,9 @@ def test_plan_is_review_only_and_uses_researcher_controlled_accounts(
     plan = result.plan
 
     assert result.conflict is False
-    assert plan.status == "READY_FOR_REVIEW"
+    assert plan.status == "BLOCKED"
+    assert plan.execution.supported is False
+    assert plan.execution.pattern == "UNSUPPORTED"
     assert plan.execution_default == "DO_NOT_EXECUTE"
     assert plan.human_approval_required is True
     assert plan.approval_status == "NOT_REQUESTED"
@@ -57,7 +59,8 @@ def test_plan_accepts_explicit_wildcard_scope_coverage(
 
     plan = generate_plan(phase3_workspace, "HYP-002").plan
 
-    assert plan.status == "READY_FOR_REVIEW"
+    assert plan.status == "BLOCKED"
+    assert plan.execution.supported is False
     assert not any("not fully covered" in reason for reason in plan.risk.reasons)
 
 

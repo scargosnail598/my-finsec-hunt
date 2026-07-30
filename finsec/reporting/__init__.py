@@ -1,1 +1,1 @@
-"""Reserved for Phase 4 report generation."""
+"""Validated, versioned report generation."""

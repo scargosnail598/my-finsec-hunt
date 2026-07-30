@@ -18,15 +18,18 @@ from typer.testing import CliRunner
 from finsec.auth.capture import (
     candidate_from_raw_request,
     decode_jwt_metadata,
+    detect_burp_authentication,
     detect_har_authentication,
-    expiration_from_cookie_header,
 )
 from finsec.auth.service import (
     actor_preflight,
+    capture_from_burp,
     capture_from_har,
     configure_refresh_from_har,
     ensure_authentication_defaults,
     migrate_legacy_authentication,
+    recommend_burp_authentication,
+    recommend_har_authentication,
     refresh_actor_authentication,
     validate_actor_baseline,
 )
@@ -131,6 +134,38 @@ def _entry(
     }
 
 
+def _burp_xml(path: Path, tokens: list[str]) -> Path:
+    items: list[str] = []
+    for index, token in enumerate(tokens, start=1):
+        request = (
+            f"GET /profile/{index} HTTP/1.1\r\n"
+            "Host: api.example.test\r\n"
+            f"Authorization: Bearer {token}\r\n"
+            "Accept: application/json\r\n\r\n"
+        )
+        response = f'HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{{"id":{index}}}'
+        items.append(
+            "<item>"
+            f"<time>{datetime.now(UTC).isoformat()}</time>"
+            f"<url>https://api.example.test/profile/{index}</url>"
+            "<host>api.example.test</host><port>443</port><protocol>https</protocol>"
+            "<method>GET</method><status>200</status><mimetype>application/json</mimetype>"
+            f'<request base64="true">{base64.b64encode(request.encode()).decode()}</request>'
+            f'<response base64="true">{base64.b64encode(response.encode()).decode()}</response>'
+            "</item>"
+        )
+    path.write_text(
+        '<?xml version="1.0"?>\n'
+        "<!DOCTYPE items [\n"
+        "<!ELEMENT items (item*)>\n"
+        "<!ELEMENT item ANY>\n"
+        "]>\n"
+        f"<items>{''.join(items)}</items>",
+        encoding="utf-8",
+    )
+    return path
+
+
 def _configured_workspace(tmp_path: Path, *actors: str) -> WorkspacePaths:
     workspace = create_workspace("auth-demo", tmp_path / "workspaces")
     target = TargetDocument.model_validate(load_yaml(workspace.target))
@@ -177,17 +212,6 @@ def test_jwt_metadata_handles_expiration_absence_and_malformed_values() -> None:
     malformed, malformed_identity = decode_jwt_metadata("not-a-jwt")
     assert malformed.detectable is False
     assert malformed_identity.subject is None
-
-
-def test_cookie_expiration_supports_max_age_and_unknown_values() -> None:
-    now = datetime.now(UTC)
-    expiration = expiration_from_cookie_header("session=synthetic; Max-Age=60", now)
-    assert expiration.detectable is True
-    assert expiration.expires_at == now + timedelta(seconds=60)
-
-    unknown = expiration_from_cookie_header("session=synthetic", now)
-    assert unknown.detectable is False
-    assert unknown.expires_at is None
 
 
 def test_har_detection_groups_bearer_cookie_and_csrf_without_displaying_values(
@@ -268,6 +292,230 @@ def test_multiple_har_candidates_require_explicit_selection(tmp_path: Path) -> N
 
     authentication, _ = capture_from_har(workspace, "ACCOUNT_A", capture, candidate_number=1)
     assert authentication.identity.subject == "user-1"
+
+
+def test_burp_authentication_candidates_are_secret_free_and_storable(tmp_path: Path) -> None:
+    workspace = _configured_workspace(tmp_path, "ACCOUNT_A")
+    token = _jwt("burp-user")
+    capture = _burp_xml(tmp_path / "auth.xml", [token])
+
+    candidates = detect_burp_authentication(capture)
+    recommendation = recommend_burp_authentication(workspace, "ACCOUNT_A", capture)
+    authentication, _ = capture_from_burp(
+        workspace,
+        "ACCOUNT_A",
+        capture,
+        candidate_number=1,
+    )
+
+    assert len(candidates) == 1
+    assert "Burp item 1" in candidates[0].redacted_summary()
+    assert token not in candidates[0].redacted_summary()
+    assert recommendation.recommended_number == 1
+    assert token not in repr(recommendation)
+    assert authentication.source.type == "burp_xml"
+    assert authentication.source.file_reference == capture.name
+    reference = authentication.components[0].credential_ref
+    assert SecretStore(workspace).resolve(reference, "ACCOUNT_A") == f"Bearer {token}"
+
+
+def test_cli_ingest_burp_can_capture_authentication_without_echoing_secrets(
+    tmp_path: Path,
+) -> None:
+    workspace = _configured_workspace(tmp_path, "ACCOUNT_A")
+    token = _jwt("burp-cli-user")
+    capture = _burp_xml(tmp_path / "auth-cli.xml", [token])
+
+    result = RUNNER.invoke(
+        app,
+        [
+            "ingest-burp",
+            str(capture),
+            "--workspace",
+            str(workspace.root),
+            "--actor",
+            "ACCOUNT_A",
+            "--channel",
+            "WEB",
+            "--capture-auth",
+            "--auth-candidate",
+            "1",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "Credential storage: successful" in result.output
+    assert "Actor status: READY" in result.output
+    assert token not in result.output
+    target = TargetDocument.model_validate(load_yaml(workspace.target))
+    authentication = target.accounts[0].authentication
+    assert authentication is not None
+    assert authentication.source.type == "burp_xml"
+
+
+def test_cli_actor_auth_refresh_accepts_burp_xml(tmp_path: Path) -> None:
+    workspace = _configured_workspace(tmp_path, "ACCOUNT_A")
+    token = _jwt("burp-refresh-user")
+    capture = _burp_xml(tmp_path / "auth-refresh.xml", [token])
+
+    result = RUNNER.invoke(
+        app,
+        [
+            "actor",
+            "auth",
+            "refresh",
+            "ACCOUNT_A",
+            "--workspace",
+            str(workspace.root),
+            "--burp",
+            str(capture),
+            "--auth-candidate",
+            "1",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "Credential replaced for ACCOUNT_A" in result.output
+    assert token not in result.output
+
+
+def test_auth_recommendation_prefers_fresh_same_identity_request(tmp_path: Path) -> None:
+    workspace = _configured_workspace(tmp_path, "ACCOUNT_A")
+    old_token = _jwt("user-12", expires_in=60)
+    old_entry = _entry("https://api.example.test/profile", old_token)
+    old_entry["startedDateTime"] = "2026-01-02T10:00:00Z"
+    old_capture = _har(tmp_path / "old.har", [old_entry])
+    capture_from_har(workspace, "ACCOUNT_A", old_capture, candidate_number=1)
+
+    renewed_token = _jwt("user-12", expires_in=3600)
+    changed_token = _jwt("different-user", expires_in=7200)
+    old_request = _entry("https://api.example.test/profile", old_token)
+    old_request["startedDateTime"] = "2026-01-02T10:01:00Z"
+    renewed_request = _entry("https://api.example.test/rest/basket/7", renewed_token)
+    renewed_request["startedDateTime"] = "2026-01-02T10:02:00Z"
+    changed_request = _entry("https://api.example.test/admin", changed_token)
+    changed_request["startedDateTime"] = "2026-01-02T10:03:00Z"
+    replacement = _har(
+        tmp_path / "replacement.har",
+        [old_request, renewed_request, changed_request],
+    )
+
+    recommendation = recommend_har_authentication(workspace, "ACCOUNT_A", replacement)
+
+    assert recommendation.recommended_number == 2
+    assert recommendation.assessments[1].recommended is True
+    assert recommendation.assessments[2].eligible is False
+    assert any(
+        "identity hints conflict" in reason for reason in recommendation.assessments[2].reasons
+    )
+    rendered = repr(recommendation)
+    assert old_token not in rendered
+    assert renewed_token not in rendered
+    assert changed_token not in rendered
+
+
+def test_cli_update_auth_uses_recommended_request_without_echoing_tokens(
+    tmp_path: Path,
+) -> None:
+    workspace = _configured_workspace(tmp_path, "ACCOUNT_A")
+    old_token = _jwt("user-12", expires_in=60)
+    old_entry = _entry("https://api.example.test/profile", old_token)
+    old_entry["startedDateTime"] = "2026-01-02T10:00:00Z"
+    capture_from_har(
+        workspace,
+        "ACCOUNT_A",
+        _har(tmp_path / "old.har", [old_entry]),
+        candidate_number=1,
+    )
+    new_token = _jwt("user-12", expires_in=3600)
+    old_request = _entry("https://api.example.test/profile", old_token)
+    old_request["startedDateTime"] = "2026-01-02T10:01:00Z"
+    new_request = _entry("https://api.example.test/rest/basket/7", new_token)
+    new_request["startedDateTime"] = "2026-01-02T10:02:00Z"
+    replacement = _har(tmp_path / "replacement.har", [old_request, new_request])
+
+    result = RUNNER.invoke(
+        app,
+        [
+            "ingest",
+            str(replacement),
+            "--workspace",
+            str(workspace.root),
+            "--actor",
+            "ACCOUNT_A",
+            "--channel",
+            "WEB",
+            "--update-auth",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert "Recommended authentication request 2" in result.output
+    assert "Automatically selected recommended authentication request 2" in result.output
+    assert old_token not in result.output
+    assert new_token not in result.output
+    target = TargetDocument.model_validate(load_yaml(workspace.target))
+    authentication = target.accounts[0].authentication
+    assert authentication is not None
+    assert authentication.source.file_reference == replacement.name
+    reference = authentication.components[0].credential_ref
+    assert SecretStore(workspace).resolve(reference, "ACCOUNT_A") == f"Bearer {new_token}"
+
+
+def test_ingest_wizard_imports_multiple_new_hars_and_updates_authentication(
+    tmp_path: Path,
+) -> None:
+    workspace = _configured_workspace(tmp_path, "ACCOUNT_A", "ACCOUNT_B")
+    capture_root = tmp_path / "captures" / "auth-demo"
+    incoming = capture_root / "incoming"
+    incoming.mkdir(parents=True)
+
+    new_tokens: dict[str, str] = {}
+    for index, actor in enumerate(("ACCOUNT_A", "ACCOUNT_B"), start=1):
+        old_token = _jwt(f"user-{index}", expires_in=60)
+        old_entry = _entry("https://api.example.test/profile", old_token)
+        old_entry["startedDateTime"] = f"2026-01-02T10:0{index}:00Z"
+        capture_from_har(
+            workspace,
+            actor,
+            _har(tmp_path / f"old-{index}.har", [old_entry]),
+            candidate_number=1,
+        )
+        new_token = _jwt(f"user-{index}", expires_in=3600)
+        new_tokens[actor] = new_token
+        renewed = _entry("https://api.example.test/profile", new_token)
+        renewed["startedDateTime"] = f"2026-01-02T11:0{index}:00Z"
+        _har(incoming / f"new-{index}.har", [renewed])
+
+    result = RUNNER.invoke(
+        app,
+        [
+            "ingest-wizard",
+            "--workspace",
+            str(workspace.root),
+            "--capture-root",
+            str(capture_root),
+        ],
+        input="ACCOUNT_A\n\n\nACCOUNT_B\n\n\ny\nn\n",
+    )
+
+    assert result.exit_code == 0, result.output
+    assert result.output.count("Recommended authentication request 1") == 2
+    assert result.output.count("Authentication updated") == 2
+    assert all(token not in result.output for token in new_tokens.values())
+    manifest = load_yaml(capture_root / "workflow.yaml")
+    assert manifest["captures"] == [
+        {"file": "new-1.har", "actor": "ACCOUNT_A", "channel": "WEB", "enabled": True},
+        {"file": "new-2.har", "actor": "ACCOUNT_B", "channel": "WEB", "enabled": True},
+    ]
+    target = TargetDocument.model_validate(load_yaml(workspace.target))
+    for actor in target.accounts:
+        authentication = actor.authentication
+        assert authentication is not None
+        reference = authentication.components[0].credential_ref
+        assert SecretStore(workspace).resolve(reference, actor.id) == (
+            f"Bearer {new_tokens[actor.id]}"
+        )
 
 
 def test_secret_store_is_actor_bound_restricted_and_absent_from_workspace(

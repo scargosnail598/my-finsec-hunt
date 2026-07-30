@@ -5,10 +5,9 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
-import re
 from contextlib import suppress
 from dataclasses import dataclass, field
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Any, Literal, cast
@@ -22,6 +21,7 @@ from finsec.config.models import (
 from finsec.errors import FinsecError, HarFormatError
 from finsec.ingest.common import parse_raw_http
 from finsec.ingest.har_io import load_har_json
+from finsec.ingest.traffic import load_burp_xml
 from finsec.utils.redaction import is_sensitive_name
 
 API_KEY_HEADERS = {"x-api-key", "api-key", "apikey", "x-client-secret"}
@@ -55,10 +55,11 @@ class AuthenticationCandidate:
     captured_at: datetime | None
     source_index: int
     observed_host: str | None = None
+    source_label: str = "HAR entry"
 
     def redacted_summary(self) -> str:
         names = ", ".join(item.name for item in self.components)
-        details = [f"HAR entry {self.source_index + 1}"]
+        details = [f"{self.source_label} {self.source_index + 1}"]
         if self.baseline is not None:
             details.insert(
                 0,
@@ -361,6 +362,76 @@ def detect_har_authentication(har_path: Path) -> list[AuthenticationCandidate]:
     return candidates
 
 
+def _burp_timestamp(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    with suppress(ValueError):
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        return (parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=UTC)).astimezone(UTC)
+    with suppress(TypeError, ValueError):
+        parsed = parsedate_to_datetime(value)
+        return (parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=UTC)).astimezone(UTC)
+    return None
+
+
+def detect_burp_authentication(xml_path: Path) -> list[AuthenticationCandidate]:
+    """Return distinct replay contexts from a validated Burp XML history export."""
+
+    document = load_burp_xml(xml_path)
+    candidates: list[AuthenticationCandidate] = []
+    seen: set[str] = set()
+    for exchange in document.exchanges:
+        _request_line, request_headers, _request_body = parse_raw_http(exchange.request_text)
+        _response_line, response_headers, _response_body = parse_raw_http(exchange.response_text)
+        request = {
+            "method": exchange.method,
+            "url": exchange.url,
+            "headers": [{"name": name, "value": value} for name, value in request_headers.items()],
+        }
+        response = {
+            "status": exchange.status,
+            "headers": [{"name": name, "value": value} for name, value in response_headers.items()],
+        }
+        components = _request_components(request)
+        if not components:
+            continue
+        signature = hashlib.sha256(
+            "\0".join(f"{item.name.lower()}\0{item.value}" for item in components).encode()
+        ).hexdigest()
+        if signature in seen:
+            continue
+        seen.add(signature)
+        captured_at = _burp_timestamp(exchange.timestamp)
+        expiration = _cookie_expiration(None, captured_at)
+        identity = AuthenticationIdentityConfig()
+        authorization = next(
+            (item.value for item in components if item.name.lower() == "authorization"), None
+        )
+        if authorization and authorization.lower().startswith("bearer "):
+            jwt_expiration, identity = decode_jwt_metadata(
+                authorization.split(None, 1)[1], checked_at=datetime.now(UTC)
+            )
+            if jwt_expiration.detectable:
+                expiration = jwt_expiration
+        parsed_url = urlsplit(exchange.url)
+        candidates.append(
+            AuthenticationCandidate(
+                auth_type=_auth_type(components),
+                components=tuple(components),
+                expiration=expiration,
+                identity=identity,
+                baseline=_baseline(request, response),
+                captured_at=captured_at,
+                source_index=exchange.index,
+                observed_host=(
+                    parsed_url.hostname.lower() if parsed_url.hostname is not None else None
+                ),
+                source_label="Burp item",
+            )
+        )
+    return candidates
+
+
 def candidate_from_raw_request(path: Path) -> AuthenticationCandidate:
     """Extract one replay profile from a raw HTTP request file."""
 
@@ -424,33 +495,3 @@ def candidate_from_raw_request(path: Path) -> AuthenticationCandidate:
         source_index=0,
         observed_host=parsed.hostname.lower() if parsed.hostname is not None else None,
     )
-
-
-def expiration_from_cookie_header(
-    value: str, captured_at: datetime | None = None
-) -> AuthenticationExpirationConfig:
-    """Parse Expires or Max-Age attributes when a Set-Cookie style value is supplied."""
-
-    now = captured_at or datetime.now(UTC)
-    max_age = re.search(r"(?:^|;)\s*max-age=(\d+)", value, flags=re.IGNORECASE)
-    if max_age:
-        return AuthenticationExpirationConfig(
-            detectable=True,
-            expires_at=now + timedelta(seconds=int(max_age.group(1))),
-            last_checked_at=now,
-            source="cookie",
-        )
-    expires = re.search(r"(?:^|;)\s*expires=([^;]+)", value, flags=re.IGNORECASE)
-    if expires:
-        try:
-            parsed = parsedate_to_datetime(expires.group(1)).astimezone(UTC)
-        except (TypeError, ValueError):
-            pass
-        else:
-            return AuthenticationExpirationConfig(
-                detectable=True,
-                expires_at=parsed,
-                last_checked_at=now,
-                source="cookie",
-            )
-    return AuthenticationExpirationConfig(last_checked_at=now, source="unknown")

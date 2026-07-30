@@ -23,7 +23,7 @@ def test_json_schemas_are_valid() -> None:
         assert json.loads(schema.read_text(encoding="utf-8"))["$schema"]
 
 
-def test_phase_one_has_no_llm_runtime_dependency() -> None:
+def test_project_has_no_llm_runtime_dependency() -> None:
     root = Path(__file__).parents[1]
     pyproject = (root / "pyproject.toml").read_text(encoding="utf-8").lower()
     assert "openai" not in pyproject

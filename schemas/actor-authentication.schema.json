@@ -32,7 +32,9 @@
       "additionalProperties": false,
       "required": ["type"],
       "properties": {
-        "type": {"enum": ["har", "raw_request", "manual", "legacy_environment", "none"]},
+        "type": {
+          "enum": ["har", "burp_xml", "raw_request", "manual", "legacy_environment", "none"]
+        },
         "file_reference": {"type": ["string", "null"]},
         "captured_at": {"type": ["string", "null"], "format": "date-time"}
       }

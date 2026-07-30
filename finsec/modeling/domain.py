@@ -1,4 +1,4 @@
-"""Researcher-editable Phase 2 domain and invariant models."""
+"""Researcher-editable domain and invariant models."""
 
 from typing import Literal
 

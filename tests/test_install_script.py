@@ -46,7 +46,6 @@ def test_automation_scripts_are_safe_and_start_successfully(tmp_path: Path) -> N
     root = Path(__file__).parents[1]
     check_script = root / "scripts/check.sh"
     demo_script = root / "scripts/run_demo_workflow.py"
-    driver = root / ".claude/skills/run-finsec-hunt/driver.py"
 
     assert os.access(check_script, os.X_OK)
     assert os.access(demo_script, os.X_OK)
@@ -66,7 +65,6 @@ def test_automation_scripts_are_safe_and_start_successfully(tmp_path: Path) -> N
     )
     assert help_result.returncode == 0, help_result.stderr
     assert "never deleted or overwritten" in help_result.stdout
-    assert "rmtree" not in driver.read_text(encoding="utf-8")
 
     run = subprocess.run(
         [sys.executable, str(demo_script), "--root", str(tmp_path / "demo-output")],

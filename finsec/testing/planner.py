@@ -1,4 +1,4 @@
-"""Safety-gated Phase 3 test planning; this module never executes requests."""
+"""Safety-gated test planning; this module never executes requests."""
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -29,6 +29,40 @@ class PlanResult:
     plan: TestPlanRecord
     path: Path
     conflict: bool
+
+
+def plan_source_fingerprint(
+    target: TargetDocument,
+    observations: ObservationStore,
+    endpoints: EndpointStore,
+    resources: ResourceStore,
+    hypothesis: HypothesisRecord,
+) -> str:
+    """Fingerprint deterministic plan inputs while excluding hypothesis lifecycle annotations."""
+
+    target_payload = target.model_dump(mode="json")
+    for account in target_payload.get("accounts", []):
+        authentication = account.get("authentication")
+        if not isinstance(authentication, dict):
+            continue
+        authentication.pop("expiration", None)
+        authentication.pop("status", None)
+        authentication.pop("last_validated_at", None)
+        source = authentication.get("source")
+        if isinstance(source, dict):
+            authentication["source"] = {"type": source.get("type")}
+    hypothesis_payload = hypothesis.model_dump(mode="json", exclude_none=True)
+    for field in ("status", "notes", "generation"):
+        hypothesis_payload.pop(field, None)
+    return stable_fingerprint(
+        {
+            "target": target_payload,
+            "observations": observations.model_dump(mode="json", exclude_none=True),
+            "endpoints": endpoints.model_dump(mode="json", exclude_none=True),
+            "resources": resources.model_dump(mode="json", exclude_none=True),
+            "hypothesis": hypothesis_payload,
+        }
+    )
 
 
 def _load_inputs(
@@ -246,6 +280,11 @@ def _draft(
         requires_two_accounts and len(researcher_accounts) < 2
     ) or not researcher_accounts
     decision = "BLOCKED" if blockers else "REQUIRES_HUMAN_APPROVAL"
+    plan_status = (
+        "READY_FOR_REVIEW"
+        if not blockers and execution_templates.execution.supported
+        else "BLOCKED"
+    )
     setup, actions, assertions = _steps(hypothesis, endpoint, owner, actor)
     return {
         "key": f"plan:{hypothesis.id}",
@@ -290,7 +329,7 @@ def _draft(
         "human_approval_required": True,
         "execution_default": "DO_NOT_EXECUTE",
         "approval_status": "NOT_REQUESTED",
-        "status": "BLOCKED" if blockers else "READY_FOR_REVIEW",
+        "status": plan_status,
     }
 
 
@@ -304,15 +343,7 @@ def generate_plan(workspace: WorkspacePaths, hypothesis_id: str) -> PlanResult:
             "hypothesis. Collect the missing evidence and regenerate first."
         )
     draft = _draft(workspace, target, observations, endpoints, resources, hypothesis)
-    fingerprint = stable_fingerprint(
-        {
-            "target": target.model_dump(mode="json"),
-            "observations": observations.model_dump(mode="json", exclude_none=True),
-            "endpoints": endpoints.model_dump(mode="json", exclude_none=True),
-            "resources": resources.model_dump(mode="json", exclude_none=True),
-            "hypothesis": hypothesis.model_dump(mode="json", exclude_none=True),
-        }
-    )
+    fingerprint = plan_source_fingerprint(target, observations, endpoints, resources, hypothesis)
     merge = merge_generated_records(
         workspace.test_plans,
         "plans",

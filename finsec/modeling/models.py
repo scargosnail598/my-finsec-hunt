@@ -1,4 +1,4 @@
-"""Pydantic models for Phase 1 facts and normalized endpoint knowledge."""
+"""Pydantic models for factual observations and normalized endpoint knowledge."""
 
 from datetime import datetime
 from enum import StrEnum
@@ -22,6 +22,8 @@ ParameterSource = Literal[
     "derived_resource_schema",
     "related_endpoint_schema",
 ]
+OwnershipEvidenceSource = Literal["RESPONSE_BODY", "PATH_PARENT_SCOPE"]
+OwnershipInferenceStatus = Literal["APPLIED", "REJECTED", "NOT_NEEDED"]
 EndpointActionType = Literal["read", "mutation", "financial_mutation", "authentication", "unknown"]
 EndpointDisposition = Literal[
     "ACTIVE",
@@ -179,8 +181,9 @@ class ActorObjectBaseline(StrictModel):
 
     actor: str
     requested_value: str
-    response_object_path: str
-    owner_value_fingerprint: str
+    response_object_path: str | None = None
+    owner_value_fingerprint: str | None = None
+    scope_value_fingerprint: str | None = None
     observations: list[str] = Field(default_factory=list)
 
 
@@ -188,12 +191,32 @@ class ObjectAccessEvidence(StrictModel):
     """Cross-actor object and owner signals for one client-controlled identifier."""
 
     identifier: str
-    owner_field_path: str
+    source: OwnershipEvidenceSource = "RESPONSE_BODY"
+    confidence: Confidence = Confidence.HIGH
+    owner_field_path: str | None = None
+    scope_parameter: str | None = None
     baselines: list[ActorObjectBaseline] = Field(default_factory=list)
     distinct_actors: int = Field(default=0, ge=0)
     distinct_objects: int = Field(default=0, ge=0)
     distinct_owner_values: int = Field(default=0, ge=0)
+    distinct_scope_values: int = Field(default=0, ge=0)
     actor_object_binding_observed: bool = False
+
+
+class OwnershipInference(StrictModel):
+    """Explain one path-scope fallback decision without retaining concrete identifiers."""
+
+    parameter: str
+    classification: Literal[
+        "TRUSTED_PARENT_SCOPE",
+        "PUBLIC_SHARED_SCOPE",
+        "UNCLASSIFIED",
+    ]
+    status: OwnershipInferenceStatus
+    controlled_actors: int = Field(default=0, ge=0)
+    distinct_scope_values: int = Field(default=0, ge=0)
+    observations: list[str] = Field(default_factory=list)
+    reasons: list[str] = Field(default_factory=list)
 
 
 class Endpoint(StrictModel):
@@ -210,6 +233,7 @@ class Endpoint(StrictModel):
     action: EndpointAction = Field(default_factory=EndpointAction)
     parameters: list[EndpointParameter] = Field(default_factory=list)
     object_access: list[ObjectAccessEvidence] = Field(default_factory=list)
+    ownership_inference: list[OwnershipInference] = Field(default_factory=list)
     state_change: bool
     state_change_confidence: KnowledgeStatus = KnowledgeStatus.INFERRED
     state_change_reasons: list[str] = Field(default_factory=list)

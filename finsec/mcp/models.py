@@ -176,12 +176,28 @@ class ObjectAccessContext(McpModel):
     """Aggregate object-boundary evidence without concrete identifiers."""
 
     identifier: str
-    owner_field_path: str
+    source: str
+    confidence: str
+    owner_field_path: str | None
+    scope_parameter: str | None
     distinct_actors: int
     distinct_objects: int
     distinct_owner_values: int
+    distinct_scope_values: int
     actor_object_binding_observed: bool
     observations: list[str]
+
+
+class OwnershipInferenceContext(McpModel):
+    """Sanitized reason for applying or rejecting parent-scope ownership inference."""
+
+    parameter: str
+    classification: str
+    status: str
+    controlled_actors: int
+    distinct_scope_values: int
+    observations: list[str]
+    reasons: list[str]
 
 
 class EndpointContext(McpModel):
@@ -201,6 +217,7 @@ class EndpointContext(McpModel):
     authentication_type: str
     parameters: list[EndpointParameterContext]
     object_access: list[ObjectAccessContext]
+    ownership_inference: list[OwnershipInferenceContext]
     sources: list[str]
     disposition: str
 

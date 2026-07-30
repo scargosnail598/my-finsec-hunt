@@ -9,7 +9,13 @@ from urllib.parse import urlsplit
 from finsec.config.models import TargetDocument
 from finsec.config.workspace import WorkspacePaths
 from finsec.hypotheses.domain import HypothesisRecord
-from finsec.modeling.models import Endpoint, Observation, ObservationStore
+from finsec.modeling.models import (
+    ActorObjectBaseline,
+    Endpoint,
+    ObjectAccessEvidence,
+    Observation,
+    ObservationStore,
+)
 from finsec.testing.domain import (
     PlanExecutionConfig,
     RequestExpectation,
@@ -229,6 +235,46 @@ def _replace_path_value(path: str, old: str, new: str) -> str | None:
     return "/".join(segments)
 
 
+def _baseline_expectation(
+    binding: ObjectAccessEvidence,
+    baseline: ActorObjectBaseline,
+) -> RequestExpectation:
+    if binding.source == "PATH_PARENT_SCOPE":
+        return RequestExpectation(
+            ownership_source="PATH_PARENT_SCOPE",
+            scope_parameter=binding.scope_parameter or binding.identifier,
+            nonempty_json_required=True,
+            object_value=baseline.requested_value,
+        )
+    return RequestExpectation(
+        ownership_source="RESPONSE_BODY",
+        object_path=baseline.response_object_path,
+        object_value=baseline.requested_value,
+        owner_path=binding.owner_field_path,
+        owner_fingerprint=baseline.owner_value_fingerprint,
+    )
+
+
+def _distinct_controlled_baselines(
+    binding: ObjectAccessEvidence,
+    source: ActorObjectBaseline,
+    target: ActorObjectBaseline,
+) -> bool:
+    if source.actor == target.actor or source.requested_value == target.requested_value:
+        return False
+    if binding.source == "PATH_PARENT_SCOPE":
+        return (
+            source.scope_value_fingerprint is not None
+            and target.scope_value_fingerprint is not None
+            and source.scope_value_fingerprint != target.scope_value_fingerprint
+        )
+    return (
+        source.owner_value_fingerprint is not None
+        and target.owner_value_fingerprint is not None
+        and source.owner_value_fingerprint != target.owner_value_fingerprint
+    )
+
+
 def _object_substitution(
     workspace: WorkspacePaths,
     target: TargetDocument,
@@ -246,23 +292,43 @@ def _object_substitution(
     )
     if binding is None:
         blockers.append("Two controlled actor-object-owner baselines are required for execution.")
+        blockers.extend(
+            reason
+            for decision in endpoint.ownership_inference
+            for reason in decision.reasons
+            if reason not in blockers
+        )
         return ExecutionTemplateResult([], _execution(target, "UNSUPPORTED", [], None, blockers))
 
-    baselines = sorted(
-        binding.baselines, key=lambda item: (_value_key(item.requested_value), item.actor)
-    )
-    target_baseline = baselines[0]
-    source_baseline = next(
-        (
-            item
-            for item in reversed(baselines)
-            if item.actor != target_baseline.actor
-            and item.requested_value != target_baseline.requested_value
-            and item.owner_value_fingerprint != target_baseline.owner_value_fingerprint
-        ),
-        None,
-    )
-    if source_baseline is None:
+    source_baseline: ActorObjectBaseline | None
+    target_baseline: ActorObjectBaseline | None
+    if binding.source == "PATH_PARENT_SCOPE":
+        baselines = sorted(
+            binding.baselines, key=lambda item: (item.actor, _value_key(item.requested_value))
+        )
+        source_baseline = baselines[0]
+        target_baseline = next(
+            (
+                item
+                for item in baselines[1:]
+                if _distinct_controlled_baselines(binding, source_baseline, item)
+            ),
+            None,
+        )
+    else:
+        baselines = sorted(
+            binding.baselines, key=lambda item: (_value_key(item.requested_value), item.actor)
+        )
+        target_baseline = baselines[0]
+        source_baseline = next(
+            (
+                item
+                for item in reversed(baselines)
+                if _distinct_controlled_baselines(binding, item, target_baseline)
+            ),
+            None,
+        )
+    if source_baseline is None or target_baseline is None:
         blockers.append("No distinct controlled source and target baselines are available.")
         return ExecutionTemplateResult([], _execution(target, "UNSUPPORTED", [], None, blockers))
 
@@ -281,12 +347,7 @@ def _object_substitution(
         source_observation,
         request_id="baseline",
         role="BASELINE",
-        expected=RequestExpectation(
-            object_path=source_baseline.response_object_path,
-            object_value=source_baseline.requested_value,
-            owner_path=binding.owner_field_path,
-            owner_fingerprint=source_baseline.owner_value_fingerprint,
-        ),
+        expected=_baseline_expectation(binding, source_baseline),
     )
     mutated_path = _replace_path_value(
         source_observation.path,
@@ -302,12 +363,7 @@ def _object_substitution(
     mutated.role = "MUTATED"
     mutated.clone_of = baseline.id
     mutated.path = mutated_path
-    mutated.expected = RequestExpectation(
-        object_path=target_baseline.response_object_path,
-        object_value=target_baseline.requested_value,
-        owner_path=binding.owner_field_path,
-        owner_fingerprint=target_baseline.owner_value_fingerprint,
-    )
+    mutated.expected = _baseline_expectation(binding, target_baseline)
     mutated.mutations = [
         RequestMutation(
             dimension="OBJECT",

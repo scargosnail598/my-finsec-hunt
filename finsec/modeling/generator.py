@@ -1,4 +1,4 @@
-"""Deterministic Phase 2 actor, resource, authorization, and workflow modeling."""
+"""Deterministic actor, resource, authorization, and workflow modeling."""
 
 from collections import defaultdict
 from dataclasses import dataclass
@@ -83,7 +83,7 @@ def _load_inputs(
         observations = ObservationStore.model_validate(load_yaml(workspace.observations))
         endpoints = EndpointStore.model_validate(load_yaml(workspace.endpoints))
     except (OSError, ValidationError) as error:
-        raise FinsecError(f"Cannot load Phase 2 inputs: {error}") from error
+        raise FinsecError(f"Cannot load modeling inputs: {error}") from error
     if not endpoints.endpoints:
         raise FinsecError("Endpoint inventory is empty; run 'hunt inventory' first.")
     return target, observations, endpoints
@@ -471,7 +471,7 @@ def _validate_and_write_resource_store(path: Path, merge: MergeResult) -> Resour
 
 
 def generate_model(workspace: WorkspacePaths) -> ModelResult:
-    """Generate Phase 2 models without overwriting researcher-edited YAML records."""
+    """Generate models without overwriting researcher-edited YAML records."""
 
     target, observations, endpoints = _load_inputs(workspace)
     fingerprint = stable_fingerprint(

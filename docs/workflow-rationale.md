@@ -29,11 +29,20 @@ Three constraints shape the architecture:
 | Modeling | Endpoints plus configured labels | Actors, resources, operation maps, trust-boundary views | Converts route structure into reviewable domain language while marking ownership and roles unconfirmed. |
 | Invariants | Endpoints and resources | Authentication, authorization, state, and single-execution properties | States what should hold without claiming the property is implemented. |
 | Hypotheses | Runtime evidence, invariants, resources, gates | Active hypotheses, research tasks, suppressed candidates | Promotes only specific, testable questions and routes missing evidence into research tasks. |
-| Planning | One active hypothesis plus target policy | `BLOCKED` or `READY_FOR_REVIEW` structured plan | Applies scope, account, destructive, financial, lifecycle, and bounded-execution checks before approval. |
+| Planning | One active hypothesis plus target policy | `BLOCKED` or `READY_FOR_REVIEW` structured plan | Separates research validity from template availability and applies scope, ownership-baseline, destructive, financial, lifecycle, and bounded-execution checks before approval. |
 | Bounded execution | One checksum-approved structured plan | Redacted comparison evidence plus immutable audit revision | Sends only the reviewed sequential read-only requests; it cannot invent payloads or confirm a vulnerability. |
 | Evidence | Researcher-supplied files | Redacted artifacts, checksums, assessment, narrative | Keeps proof separate from predictions and records integrity metadata. |
 | Validation | Plan, evidence, endpoints, target policy | Skeptical disposition and missing requirements | Tries to disprove or downgrade the claim before a report can exist. |
 | Reporting | Current confirmed validation | Immutable Markdown revision | Prevents stale or unvalidated narratives from becoming reports and preserves report history. |
+
+Interactive setup may hand off directly to the ingestion wizard when unassigned HAR files are
+already available. This is a user-interface shortcut, not a collapsed stage boundary: ingestion
+still requires an explicit actor and channel for every file, writes redacted observations, and
+offers downstream analysis as a separate reviewed choice. An empty capture directory produces an
+explicit add-and-rescan or skip decision instead of silently advancing. Setup then offers actor
+authentication as the next independent step only for actors that remain incomplete. When ingestion
+makes every authenticated actor `READY`, setup reports that state and suppresses the redundant
+prompt. Non-interactive setup skips both prompts and does not import captures.
 
 ## Why Documentation And Runtime Evidence Are Separate
 
@@ -106,13 +115,16 @@ This treats the workspace as shared human/tool memory rather than disposable out
 
 ## Safety Gate Rationale
 
-A test plan is blocked when the system cannot justify the minimum safe experiment. Typical blockers
-include unresolved source endpoints, incomplete scope, insufficient researcher-owned accounts,
-unconfirmed lifecycle states, destructive operations, and production financial effects.
+A test plan is blocked when the system cannot justify the minimum safe automated experiment.
+Typical blockers include unresolved source endpoints, incomplete scope, insufficient or ambiguous
+researcher-owned baselines, public/shared scope parameters, unconfirmed lifecycle states,
+destructive operations, and production financial effects. The underlying hypothesis may remain an
+active manual research candidate.
 
-`READY_FOR_REVIEW` means static checks passed; it is not authorization. A manually edited
-`APPROVED` value is not sufficient for active execution. `hunt approve` binds the human decision to
-the exact generated plan and target-policy checksums, while `DO_NOT_EXECUTE` remains the default.
+`READY_FOR_REVIEW` means static checks passed and a supported bounded-execution template exists; it
+is not authorization. A manually edited `APPROVED` value is not sufficient for active execution.
+`hunt approve` checks deterministic blockers before prompting, then binds the human decision to the
+exact generated plan and target-policy checksums, while `DO_NOT_EXECUTE` remains the default.
 
 Only `hunt execute` crosses the network boundary. It requires `active_execution_enabled: true`, a
 complete approval record, an active in-scope hypothesis, one supported mutation dimension, a
@@ -128,9 +140,15 @@ requires an explicit workspace path and exact slug confirmation. Before removal,
 target document, expected directory structure, path breadth, current working directory boundary,
 symbolic-link status, and absence of a nested `.git` repository.
 
-Only the selected workspace directory is removed. Capture directories remain separate and are not
-deleted automatically because they may contain original researcher-controlled artifacts requiring
-an independent retention decision.
+Normal deletion removes only the selected workspace directory. Credential and capture directories
+remain separate because they may contain sensitive or original researcher-controlled artifacts
+requiring an independent retention decision.
+
+The explicit `--purge` mode is the complete-retirement boundary. It requires `PURGE <slug>`,
+validates the workspace-specific credential file and exact-slug capture directory before changing
+state, rejects symbolic links and unrecognized capture layouts, and removes only those validated
+project paths. Custom capture layouts require an explicit `--capture-directory` because the
+workspace does not persist arbitrary external capture roots.
 
 ## Validation Rationale And Limits
 

@@ -93,20 +93,24 @@ class WorkspaceDeletionTarget:
     display_name: str
 
 
+@dataclass(frozen=True)
+class CaptureDeletionTarget:
+    """Validated project-specific capture directory approved for deletion."""
+
+    root: Path
+    slug: str
+
+
 WORKSPACE_DIRECTORIES = (
     "scope",
     "observations/raw",
     "observations/normalized",
     "observations/har",
-    "observations/screenshots",
     "observations/mobile",
     "api",
     "model",
-    "hypotheses/archive",
     "tests/plans",
     "tests/executions",
-    "tests/manual",
-    "tests/automated",
     "evidence",
     "findings",
     "reports",
@@ -121,21 +125,12 @@ TEXT_SCAFFOLDS = {
     "scope/restrictions.md": (
         "# Testing Restrictions\n\nRecord rate, account, transaction, and technique restrictions.\n"
     ),
-    "api/versions.md": "# API Versions\n\nRecord observed API versions and their evidence.\n",
-    "model/architecture.md": (
-        "# Architecture\n\nPhase 2 artifact. Preserve fact and inference labels.\n"
-    ),
-    "model/authorization.md": "# Authorization Model\n\nPhase 2 artifact.\n",
-    "model/workflows.md": "# Workflows\n\nPhase 2 artifact.\n",
-    "model/state-machines.md": "# State Machines\n\nPhase 2 artifact.\n",
 }
 
 
 EMPTY_YAML_SCAFFOLDS = {
-    "api/parameters.yaml": {"version": 1, "parameters": []},
     "api/graphql.yaml": {"version": 1, "operations": []},
     "model/actors.yaml": {"version": 1, "actors": []},
-    "model/assets.yaml": {"version": 1, "assets": []},
     "model/resources.yaml": {"version": 1, "resources": []},
     "model/invariants.yaml": {"version": 1, "invariants": []},
     "hypotheses/backlog.yaml": {"version": 1, "hypotheses": []},
@@ -199,7 +194,7 @@ def resolve_workspace(explicit: Path | None = None, start: Path | None = None) -
         return WorkspacePaths(matches[0].parent)
     if len(matches) > 1:
         raise WorkspaceError("Multiple workspaces found; pass --workspace PATH.")
-    raise WorkspaceError("No workspace found; run 'hunt init NAME' or pass --workspace PATH.")
+    raise WorkspaceError("No workspace found; run 'hunt setup' or pass --workspace PATH.")
 
 
 def resolve_workspace_deletion_target(
@@ -250,6 +245,61 @@ def resolve_workspace_deletion_target(
     )
 
 
+def resolve_capture_deletion_target(
+    workspace: WorkspaceDeletionTarget,
+    explicit: Path | None = None,
+    *,
+    current_directory: Path | None = None,
+) -> CaptureDeletionTarget | None:
+    """Resolve one project capture directory without broadening the deletion boundary."""
+
+    inferred = explicit is None
+    if explicit is None:
+        if workspace.root.parent.name != "workspaces":
+            raise WorkspaceError(
+                "Cannot infer the capture directory for this workspace layout; pass "
+                "--capture-directory PATH when using --purge."
+            )
+        selected = workspace.root.parent.parent / "captures" / workspace.slug
+    else:
+        selected = explicit.expanduser().absolute()
+
+    if any(candidate.is_symlink() for candidate in (selected, *selected.parents)):
+        raise WorkspaceError(
+            "Refusing to delete a capture directory selected through a symbolic link."
+        )
+
+    root = selected.resolve()
+    if not root.exists():
+        if inferred:
+            return None
+        raise WorkspaceError(f"Capture directory does not exist: {root}")
+    if not root.is_dir():
+        raise WorkspaceError(f"Capture path is not a directory: {root}")
+    if root.name != workspace.slug:
+        raise WorkspaceError(
+            f"Capture directory name must exactly match workspace slug '{workspace.slug}'."
+        )
+
+    current = (current_directory or Path.cwd()).resolve()
+    filesystem_root = Path(root.anchor)
+    protected = {filesystem_root, Path.home().resolve()}
+    if root in protected or root.parent == filesystem_root:
+        raise WorkspaceError(f"Refusing to delete a broad protected capture path: {root}")
+    if root == current or root in current.parents:
+        raise WorkspaceError(
+            "Refusing to delete the current directory or one of its parents as a capture path."
+        )
+    if (root / ".git").exists():
+        raise WorkspaceError("Refusing to delete a capture directory containing a .git repository.")
+    if not (root / "incoming").is_dir() or not (root / "workflow.yaml").is_file():
+        raise WorkspaceError(
+            "Refusing to delete an unrecognized capture directory; expected incoming/ and "
+            "workflow.yaml markers."
+        )
+    return CaptureDeletionTarget(root=root, slug=workspace.slug)
+
+
 def delete_workspace(target: WorkspaceDeletionTarget) -> None:
     """Permanently remove one previously validated workspace directory."""
 
@@ -268,4 +318,18 @@ def delete_workspace(target: WorkspaceDeletionTarget) -> None:
         raise WorkspaceError(f"Workspace identity changed before deletion: {error}") from error
     if current_slug != target.slug:
         raise WorkspaceError("Workspace slug changed before deletion; refusing.")
+    shutil.rmtree(target.root)
+
+
+def delete_capture_directory(target: CaptureDeletionTarget) -> None:
+    """Permanently remove one previously validated project capture directory."""
+
+    if target.root.is_symlink() or not target.root.is_dir() or target.root.name != target.slug:
+        raise WorkspaceError(f"Capture directory changed before deletion: {target.root}")
+    if (target.root / ".git").exists():
+        raise WorkspaceError(
+            "Capture directory became a .git repository before deletion; refusing."
+        )
+    if not (target.root / "incoming").is_dir() or not (target.root / "workflow.yaml").is_file():
+        raise WorkspaceError("Capture directory markers changed before deletion; refusing.")
     shutil.rmtree(target.root)

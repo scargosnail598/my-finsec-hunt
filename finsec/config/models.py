@@ -18,6 +18,24 @@ ClassificationOverride = Literal[
     "UNKNOWN",
 ]
 
+DEFAULT_TRUSTED_OWNERSHIP_SCOPE_PARAMETERS = [
+    "accountId",
+    "tenantId",
+    "organizationId",
+    "orgId",
+    "workspaceId",
+    "customerId",
+]
+DEFAULT_PUBLIC_SHARED_SCOPE_PARAMETERS = [
+    "regionId",
+    "zoneId",
+    "productId",
+    "planId",
+    "categoryId",
+    "countryId",
+    "languageId",
+]
+
 
 class StrictModel(BaseModel):
     """Reject unknown fields so workspace configuration stays explicit."""
@@ -73,7 +91,7 @@ ActorType = Literal[
 class AuthenticationSourceConfig(StrictModel):
     """Non-secret provenance for an actor credential profile."""
 
-    type: Literal["har", "raw_request", "manual", "legacy_environment", "none"]
+    type: Literal["har", "burp_xml", "raw_request", "manual", "legacy_environment", "none"]
     file_reference: str | None = None
     captured_at: datetime | None = None
 
@@ -226,6 +244,17 @@ class HypothesisGateConfig(StrictModel):
     financial_minimum_score: int = Field(default=5, ge=0, le=10)
 
 
+class OwnershipInferenceConfig(StrictModel):
+    """Explicit path-parameter semantics used by fail-closed ownership inference."""
+
+    trusted_parent_parameters: list[str] = Field(
+        default_factory=lambda: list(DEFAULT_TRUSTED_OWNERSHIP_SCOPE_PARAMETERS)
+    )
+    public_shared_parameters: list[str] = Field(
+        default_factory=lambda: list(DEFAULT_PUBLIC_SHARED_SCOPE_PARAMETERS)
+    )
+
+
 class AnalysisConfig(StrictModel):
     """Researcher-editable deterministic classification and gating policy."""
 
@@ -269,6 +298,7 @@ class AnalysisConfig(StrictModel):
         ]
     )
     hypothesis_gates: HypothesisGateConfig = Field(default_factory=HypothesisGateConfig)
+    ownership_inference: OwnershipInferenceConfig = Field(default_factory=OwnershipInferenceConfig)
     classification_overrides: dict[str, ClassificationOverride] = Field(default_factory=dict)
 
 

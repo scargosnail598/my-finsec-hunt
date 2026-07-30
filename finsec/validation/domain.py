@@ -1,4 +1,4 @@
-"""Typed skeptical-validation results for Phase 4."""
+"""Typed skeptical-validation results."""
 
 from typing import Literal
 

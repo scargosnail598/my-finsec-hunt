@@ -1,1 +1,1 @@
-"""Reserved for Phase 4 evidence management."""
+"""Redacted evidence scaffolding, indexing, and integrity metadata."""

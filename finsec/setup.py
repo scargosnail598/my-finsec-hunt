@@ -8,6 +8,7 @@ import os
 import re
 import shutil
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, replace
 from datetime import date, datetime
 from pathlib import Path
@@ -42,15 +43,8 @@ from finsec.config.models import (
 from finsec.config.scope import host_is_covered
 from finsec.config.workspace import WorkspacePaths, create_workspace, validate_target_name
 from finsec.errors import FinsecError, WorkspaceError
-from finsec.ingest.har import ingest_har
-from finsec.modeling.models import ChannelType
 from finsec.utils.yaml_store import load_yaml, write_yaml
-from finsec.workflow import (
-    WorkflowCapture,
-    ensure_workflow_manifest,
-    merge_workflow_assignments,
-    run_offline_workflow,
-)
+from finsec.workflow import ensure_workflow_manifest
 
 ACCOUNT_LABEL_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,63}$")
 HOST_LABEL_PATTERN = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$")
@@ -65,7 +59,6 @@ FOCUS_AREAS = (
     "channel_differences",
 )
 DEFAULT_FOCUS = list(FOCUS_AREAS[:4])
-DISCOVERY_CHANNELS = {"WEB", "MOBILE", "API", "UNKNOWN"}
 GITIGNORE_ENTRIES = (
     "captures/",
     "workspaces/*/observations/raw/",
@@ -137,15 +130,6 @@ class SetupResult:
 
     workspace: WorkspacePaths
     capture_root: Path
-
-
-@dataclass(frozen=True)
-class HarSelection:
-    """One explicitly confirmed passive HAR assignment."""
-
-    path: Path
-    actor: str
-    channel: ChannelType
 
 
 def slugify_project_name(name: str) -> str:
@@ -448,7 +432,7 @@ def _scope_documents(config: SetupConfig) -> dict[str, str]:
 def _capture_readme() -> str:
     return (
         "# HAR Capture Directory\n\n"
-        "Place new HAR files in `incoming/`.\n\n"
+        "Place authorized HAR files in `incoming/`; originals stay outside the workspace.\n\n"
         "Recommended structure:\n\n"
         "- `01-account-a-login.har`\n"
         "- `02-account-a-profile.har`\n"
@@ -461,64 +445,22 @@ def _capture_readme() -> str:
         "- Remove unrelated traffic and personal data\n"
         "- Do not commit HAR files\n"
         "- Keep credential-bearing originals outside the repository\n"
-        "- Use `hunt ingest --capture-auth` to move selected replay secrets into the local store\n"
         "- Review files before ingestion\n\n"
         "Actor and channel assignments are security-relevant metadata. Correcting an assignment "
         "and rerunning keeps stable observation IDs while refreshing those labels.\n\n"
-        "`hunt setup` normally creates `workflow.yaml` with `captures: []`. This is not an error: "
-        "the tool cannot safely guess an actor or channel from a filename. Interactive setup can "
-        "populate it only when HAR files already exist in `incoming/` and you choose to search "
-        "that directory. Non-interactive `hunt setup --yes` leaves it empty for manual "
-        "assignment.\n\n"
-        "## Automated Offline Workflow\n\n"
-        "Assign every HAR to an explicit actor and channel in `workflow.yaml`, then run:\n\n"
+        "`workflow.yaml` starts with `captures: []` because the tool cannot safely infer an actor "
+        "or channel from a filename. Assign and import new files with:\n\n"
         "```bash\n"
-        "hunt workflow --workspace workspaces/<slug> "
-        "--manifest captures/<slug>/workflow.yaml\n"
+        "hunt ingest-wizard --workspace workspaces/<slug>\n"
         "```\n\n"
-        "The workflow performs passive ingestion, inventory/classification, modeling, "
-        "invariant extraction, hypothesis generation, and status reporting. It never sends "
-        "requests or bypasses human approval. Use `--no-ingest` only when intentionally analyzing "
-        "observations that were imported previously.\n"
-    )
-
-
-def _setup_summary(config: SetupConfig, workspace: Path, capture: Path) -> str:
-    accounts = ", ".join(account.id for account in config.target.accounts)
-    hosts = ", ".join(config.target.scope.hosts)
-    suppress = config.target.analysis.suppress
-    return (
-        "# Workspace Setup Summary\n\n"
-        f"Creation date: {datetime.now().astimezone().isoformat(timespec='seconds')}\n\n"
-        f"Project name: {config.target.target.name}\n\n"
-        f"Workspace slug: {config.slug}\n\n"
-        f"Scope hosts: {hosts}\n\n"
-        f"Account labels: {accounts}\n\n"
-        f"Workspace path: {workspace}\n\n"
-        f"HAR input directory: {capture / 'incoming'}\n\n"
-        "## Safety Settings\n\n"
-        f"- Production: {'yes' if config.target.testing.production else 'no'}\n"
-        "- Human approval: required\n"
-        "- Destructive testing: disabled\n"
-        "- Maximum parallel requests: 1\n"
-        "- Unrelated-user testing: prohibited\n\n"
-        "## Analysis Settings\n\n"
-        f"- Static asset suppression: {'enabled' if suppress.static_assets else 'disabled'}\n"
-        f"- Telemetry suppression: {'enabled' if suppress.telemetry else 'disabled'}\n"
-        f"- Analytics suppression: {'enabled' if suppress.analytics else 'disabled'}\n"
-        f"- Third-party suppression: {'enabled' if suppress.third_party else 'disabled'}\n"
-        f"- Focus: {', '.join(config.target.focus)}\n\n"
-        "## Recommended Next Commands\n\n"
-        f"- Edit `{capture / 'workflow.yaml'}` with explicit HAR assignments.\n"
-        f"- `hunt workflow --workspace {workspace} --manifest {capture / 'workflow.yaml'}`\n"
-        f"- `hunt ingest FILE --workspace {workspace} --actor ACCOUNT_A --channel WEB`\n"
+        "The wizard can update actor authentication from a reviewed HAR candidate and offers to "
+        "run the passive offline workflow. It never sends target requests.\n"
     )
 
 
 def _write_capture_layout(root: Path) -> None:
     root.mkdir(parents=True, exist_ok=True)
-    for directory in ("incoming", "processed", "rejected"):
-        (root / directory).mkdir(parents=True, exist_ok=True)
+    (root / "incoming").mkdir(parents=True, exist_ok=True)
     readme = root / "README.md"
     if not readme.exists():
         readme.write_text(_capture_readme(), encoding="utf-8", newline="\n")
@@ -586,12 +528,6 @@ def create_setup_workspace(
         TargetDocument.model_validate(load_yaml(staged.target))
         for relative, content in _scope_documents(config).items():
             (staged.root / relative).write_text(content, encoding="utf-8", newline="\n")
-        (staged.root / "SETUP_SUMMARY.md").write_text(
-            _setup_summary(config, final_workspace, final_capture),
-            encoding="utf-8",
-            newline="\n",
-        )
-
         if capture_was_staged:
             _write_capture_layout(capture_stage)
 
@@ -673,9 +609,6 @@ def update_existing_workspace(
     capture = _safe_child(capture_root.expanduser().resolve(), config.capture_relative)
     _write_capture_layout(capture)
     update_gitignore(_project_root(workspace.root.parent, capture_root) / ".gitignore")
-    (workspace.root / "SETUP_SUMMARY.md").write_text(
-        _setup_summary(config, workspace.root, capture), encoding="utf-8", newline="\n"
-    )
     return SetupResult(workspace, capture)
 
 
@@ -931,22 +864,10 @@ def _collect_advanced(
             )
 
     console.print(
-        "\nAll safety restrictions remain prohibited: denial of service, brute force, "
+        "\nSafety restrictions remain prohibited: denial of service, brute force, "
         "social engineering, spam, destructive actions, and unrelated-user testing."
     )
-    if not typer.confirm("Keep all safety restrictions prohibited?", default=True):
-        raise FinsecError("The setup wizard does not enable unsafe testing categories.")
-
-    focus_default = ", ".join(current.focus if current else DEFAULT_FOCUS)
-    selected_focus = _comma_values(
-        _prompt_text(
-            "Analysis focus (comma-separated: " + ", ".join(FOCUS_AREAS) + ")",
-            default=focus_default,
-        )
-    )
-    unsupported = sorted(set(selected_focus) - set(FOCUS_AREAS))
-    if unsupported:
-        raise FinsecError(f"Unsupported analysis focus: {', '.join(unsupported)}")
+    selected_focus = list(current.focus if current else DEFAULT_FOCUS)
 
     console.print("\n[bold]Current hypothesis gates[/bold]")
     gates = HypothesisGateConfig(
@@ -976,6 +897,7 @@ def _collect_advanced(
         excluded_extensions=list(dict.fromkeys([*base.excluded_extensions, *added_extensions])),
         excluded_path_patterns=list(dict.fromkeys([*base.excluded_path_patterns, *added_paths])),
         hypothesis_gates=gates,
+        ownership_inference=base.ownership_inference,
         classification_overrides=base.classification_overrides,
     )
     return analysis, selected_focus, enriched_accounts, capture_relative
@@ -1030,7 +952,6 @@ def _print_summary(
     console.print(
         "Excluded path patterns: " + ", ".join(config.target.analysis.excluded_path_patterns)
     )
-    console.print("Focus: " + ", ".join(config.target.focus))
     gates = config.target.analysis.hypothesis_gates
     console.print(
         "Hypothesis gates: "
@@ -1048,7 +969,7 @@ def _existing_action(console: Console, workspace: Path, *, assume_yes: bool) -> 
     console.print("2. Show existing configuration")
     console.print("3. Add missing capture directories only")
     console.print("4. Update configuration interactively")
-    console.print("5. Resume actor authentication setup")
+    console.print("5. Resume onboarding (ingestion, then actor authentication)")
     while True:
         choice = _prompt_text("Choose an action", default="1")
         if choice in {"1", "2", "3", "4", "5"}:
@@ -1056,127 +977,39 @@ def _existing_action(console: Console, workspace: Path, *, assume_yes: bool) -> 
         console.print("[red]Error:[/red] Choose 1, 2, 3, 4, or 5.")
 
 
-def _discovery_channel(value: str) -> ChannelType:
-    normalized = value.strip().upper()
-    if normalized not in DISCOVERY_CHANNELS:
-        raise FinsecError("Channel must be WEB, MOBILE, API, or UNKNOWN.")
-    return cast(ChannelType, "PUBLIC_API" if normalized == "API" else normalized)
+def _run_onboarding_steps(
+    console: Console,
+    result: SetupResult,
+    ingest_captures: Callable[[SetupResult], None] | None,
+) -> None:
+    """Run interactive onboarding stages in their required order."""
 
-
-def ingest_har_selections(
-    selections: list[HarSelection], workspace: WorkspacePaths
-) -> list[tuple[HarSelection, str, int]]:
-    """Use the existing HAR importer and retain every source file in place."""
-
-    results: list[tuple[HarSelection, str, int]] = []
-    for selection in selections:
-        try:
-            result = ingest_har(
-                selection.path,
-                workspace,
-                actor=selection.actor,
-                channel=selection.channel,
-            )
-        except (FinsecError, OSError, ValidationError) as error:
-            results.append((selection, f"failed: {error}", 0))
-        else:
-            results.append((selection, "success", result.imported))
-    return results
-
-
-def _run_offline_pipeline(console: Console, workspace: WorkspacePaths) -> None:
-    try:
-        result = run_offline_workflow(
-            workspace,
-            progress=lambda message: console.print(f"[cyan]Workflow:[/cyan] {message}"),
-        )
-    except (FinsecError, OSError, ValidationError) as error:
-        console.print(f"[red]Offline pipeline failed:[/red] {error}")
-        return
-    console.print("\n[bold green]Offline analysis completed.[/bold green]")
-    console.print(f"Observations: {result.observations}")
-    console.print(f"Endpoint families: {result.endpoints}")
-    console.print(f"Suppressed endpoints: {result.suppressed_endpoints}")
-    console.print(f"Resources: {result.resources}")
-    console.print(f"Invariants: {result.invariants}")
-    console.print(f"Active hypotheses: {result.active_hypotheses}")
-    console.print(f"Research tasks: {result.research_tasks}")
-
-
-def _discover_hars(console: Console, result: SetupResult) -> None:
-    incoming = result.capture_root / "incoming"
-    files = sorted(
-        path for path in incoming.iterdir() if path.is_file() and path.suffix.lower() == ".har"
-    )
-    if not files:
-        console.print(f"No HAR files found in {incoming}")
-        return
-    console.print("\n[bold]Found HAR files[/bold]")
-    for index, path in enumerate(files, start=1):
-        console.print(f"{index}. {path.name}", markup=False)
+    if ingest_captures is not None:
+        ingest_captures(result)
     target = TargetDocument.model_validate(load_yaml(result.workspace.target))
-    labels = {account.id for account in target.accounts}
-    selections: list[HarSelection] = []
-    for index, path in enumerate(files, start=1):
-        while True:
-            actor = _prompt_text(f"Actor for file {index} (or SKIP)", default="SKIP").strip()
-            if actor.upper() == "SKIP":
-                break
-            if actor not in labels:
-                console.print("[red]Error:[/red] Choose a configured account label or SKIP.")
-                continue
-            while True:
-                try:
-                    channel = _discovery_channel(
-                        _prompt_text(
-                            f"Channel for file {index} (WEB/MOBILE/API/UNKNOWN)", default="UNKNOWN"
-                        )
-                    )
-                except FinsecError as error:
-                    console.print(f"[red]Error:[/red] {error}")
-                    continue
-                selections.append(HarSelection(path, actor, channel))
-                break
-            break
-    if selections:
-        merge_workflow_assignments(
-            result.capture_root / "workflow.yaml",
-            [
-                WorkflowCapture(
-                    file=selection.path.name,
-                    actor=selection.actor,
-                    channel=selection.channel,
-                )
-                for selection in selections
-            ],
-        )
-        console.print(f"Saved assignments: {result.capture_root / 'workflow.yaml'}")
-    if not selections or not typer.confirm("Ingest selected HAR files now?", default=False):
+    authenticated = [
+        actor
+        for actor in target.accounts
+        if actor.authenticated and actor.actor_type != "anonymous"
+    ]
+    pending = [
+        actor
+        for actor in authenticated
+        if actor.authentication is None or actor.authentication.status != "READY"
+    ]
+    if not authenticated:
+        console.print("No actor authentication configuration is required.")
         return
-
-    table = Table("File", "Actor", "Channel", "Workspace")
-    for selection in selections:
-        table.add_row(
-            selection.path.name,
-            selection.actor,
-            selection.channel,
-            str(result.workspace.root),
-        )
-    console.print(table)
-    if not typer.confirm("Confirm passive ingestion?", default=False):
+    if not pending:
+        console.print("[green]Actor authentication is READY for all authenticated actors.[/green]")
         return
-    ingestion = ingest_har_selections(selections, result.workspace)
-    successes = 0
-    console.print("\n[bold]Ingestion summary[/bold]")
-    for selection, status, imported in ingestion:
-        if status == "success":
-            successes += 1
-            console.print(f"{selection.path.name}: success ({imported} imported)", markup=False)
-        else:
-            console.print(f"{selection.path.name}: {status}", markup=False)
-    console.print("Source HAR files were left in place.")
-    if successes and typer.confirm("Run the offline analysis pipeline now?", default=False):
-        _run_offline_pipeline(console, result.workspace)
+    prompt = (
+        "Configure remaining actor authentication now?"
+        if len(pending) < len(authenticated)
+        else "Configure actor authentication now?"
+    )
+    if typer.confirm(prompt, default=False):
+        _configure_actor_authentication(console, result, {actor.id for actor in pending})
 
 
 def _print_completion(console: Console, result: SetupResult) -> None:
@@ -1195,13 +1028,12 @@ def _print_completion(console: Console, result: SetupResult) -> None:
         "\nNext steps:\n\n"
         "1. Export an authorized actor HAR and keep the original out of Git.\n"
         f"2. Place it in {incoming}.\n"
-        "3. Capture actor authentication when needed:\n"
-        f"   hunt ingest <actor.har> --workspace {workspace} "
-        "--actor ACCOUNT_A --capture-auth\n"
-        "4. Run the offline workflow:\n"
-        f"   hunt workflow --workspace {workspace} "
-        f"--manifest {result.capture_root / 'workflow.yaml'}\n"
-        "5. Review:\n"
+        "3. Setup will offer to assign existing HARs or pause while you add and rescan.\n"
+        "4. To import files added later, run:\n"
+        f"   hunt ingest-wizard --workspace {workspace}\n"
+        "5. If the wizard did not run analysis, start the offline workflow:\n"
+        f"   hunt workflow --workspace {workspace}\n"
+        "6. Review:\n"
         f"   hunt hypotheses --research-tasks --workspace {workspace}"
     )
 
@@ -1220,6 +1052,7 @@ def run_setup_wizard(
     base_url: str | None = None,
     anonymous_labels: set[str] | None = None,
     privileged_labels: set[str] | None = None,
+    ingest_captures: Callable[[SetupResult], None] | None = None,
 ) -> SetupResult | None:
     """Collect setup input, preview it, and create only after confirmation."""
 
@@ -1280,7 +1113,7 @@ def run_setup_wizard(
             capture = _safe_child(capture_root.expanduser().resolve(), Path(workspace_slug))
             _write_capture_layout(capture)
             resumed = SetupResult(WorkspacePaths(workspace_path), capture)
-            _configure_actor_authentication(console, resumed)
+            _run_onboarding_steps(console, resumed, ingest_captures)
             return resumed
 
     if assume_yes:
@@ -1401,8 +1234,8 @@ def run_setup_wizard(
     if result is None:
         return None
     _print_completion(console, result)
-    if not assume_yes and typer.confirm("Configure actor authentication now?", default=False):
-        _configure_actor_authentication(console, result)
+    if not assume_yes:
+        _run_onboarding_steps(console, result, ingest_captures)
     return result
 
 
@@ -1418,11 +1251,17 @@ def _setup_authentication_file(value: str, result: SetupResult) -> Path:
     return (result.capture_root / "incoming" / path.name).resolve()
 
 
-def _configure_actor_authentication(console: Console, result: SetupResult) -> None:
+def _configure_actor_authentication(
+    console: Console,
+    result: SetupResult,
+    actor_ids: set[str] | None = None,
+) -> None:
     """Collect one explicit authentication source for each setup actor."""
 
     target = TargetDocument.model_validate(load_yaml(result.workspace.target))
     for actor in target.accounts:
+        if actor_ids is not None and actor.id not in actor_ids:
+            continue
         if actor.actor_type == "anonymous" or not actor.authenticated:
             console.print(f"{actor.id}: anonymous authentication is explicitly NONE.")
             continue

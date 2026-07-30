@@ -1,1 +1,1 @@
-"""Reserved for Phase 3 hypothesis generation."""
+"""Evidence-gated security hypotheses and research tasks."""

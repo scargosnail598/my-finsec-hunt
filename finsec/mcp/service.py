@@ -1,4 +1,4 @@
-"""Read-only application service backing the FinSec Hunt MCP transport."""
+"""Safety-bounded local application service backing the FinSec Hunt MCP transport."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from pydantic import BaseModel, ValidationError
 from finsec.config.models import TargetDocument
 from finsec.config.workspace import WorkspacePaths, create_workspace, resolve_workspace
 from finsec.errors import FinsecError
-from finsec.evidence.domain import EvidenceMetadata
+from finsec.evidence.domain import EvidenceAssessment, EvidenceMetadata, FindingNarrative
 from finsec.execution.domain import (
     ExecutionAuditRecord,
     ExecutionComparison,
@@ -47,6 +47,7 @@ from finsec.mcp.models import (
     InvariantContext,
     ObjectAccessContext,
     ObservationContext,
+    OwnershipInferenceContext,
     PassiveWorkflowSummary,
     TestedBranch,
     ValidationSummary,
@@ -458,19 +459,13 @@ class FinsecMcpService:
                 artifacts=[],
                 assessment=AssessmentProgress(
                     answered=0,
-                    total=len(
-                        EvidenceMetadata(hypothesis_id=normalized_id).assessment.model_fields
-                    ),
+                    total=len(EvidenceAssessment.model_fields),
                     true=0,
                     false=0,
-                    unknown=len(
-                        EvidenceMetadata(hypothesis_id=normalized_id).assessment.model_fields
-                    ),
+                    unknown=len(EvidenceAssessment.model_fields),
                 ),
                 narrative_fields_completed=[],
-                narrative_fields_missing=sorted(
-                    EvidenceMetadata(hypothesis_id=normalized_id).narrative.model_fields
-                ),
+                narrative_fields_missing=sorted(FindingNarrative.model_fields),
                 validation=self._validation_summary(validation),
             )
 
@@ -700,10 +695,22 @@ class FinsecMcpService:
             object_access=[
                 ObjectAccessContext(
                     identifier=self.sanitizer.identifier(item.identifier),
-                    owner_field_path=self._safe_text(item.owner_field_path, maximum=200),
+                    source=item.source,
+                    confidence=str(item.confidence),
+                    owner_field_path=(
+                        self._safe_text(item.owner_field_path, maximum=200)
+                        if item.owner_field_path is not None
+                        else None
+                    ),
+                    scope_parameter=(
+                        self.sanitizer.identifier(item.scope_parameter)
+                        if item.scope_parameter is not None
+                        else None
+                    ),
                     distinct_actors=item.distinct_actors,
                     distinct_objects=item.distinct_objects,
                     distinct_owner_values=item.distinct_owner_values,
+                    distinct_scope_values=item.distinct_scope_values,
                     actor_object_binding_observed=item.actor_object_binding_observed,
                     observations=sorted(
                         {
@@ -714,6 +721,18 @@ class FinsecMcpService:
                     ),
                 )
                 for item in sorted(endpoint.object_access, key=lambda item: item.identifier)
+            ],
+            ownership_inference=[
+                OwnershipInferenceContext(
+                    parameter=self.sanitizer.identifier(item.parameter),
+                    classification=item.classification,
+                    status=item.status,
+                    controlled_actors=item.controlled_actors,
+                    distinct_scope_values=item.distinct_scope_values,
+                    observations=sorted(item.observations),
+                    reasons=self._safe_text_list(item.reasons),
+                )
+                for item in sorted(endpoint.ownership_inference, key=lambda item: item.parameter)
             ],
             sources=sorted(endpoint.sources),
             disposition=endpoint.disposition,

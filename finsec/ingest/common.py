@@ -1,4 +1,4 @@
-"""Shared passive-ingestion helpers for Phase 5 import formats."""
+"""Shared helpers for passive external-format ingestion."""
 
 import hashlib
 import json
@@ -57,6 +57,8 @@ class PassiveIngestResult:
     relabeled: int
     total: int
     redacted_capture: Path
+    authentication_status: str | None = None
+    credential_profile_ref: str | None = None
 
 
 def load_observation_store(path: Path) -> ObservationStore:

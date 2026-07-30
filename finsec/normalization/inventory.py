@@ -30,6 +30,8 @@ from finsec.modeling.models import (
     ObjectAccessEvidence,
     Observation,
     ObservationStore,
+    OwnershipInference,
+    OwnershipInferenceStatus,
     ParameterSemanticType,
     ParameterType,
 )
@@ -37,6 +39,10 @@ from finsec.normalization.classification import (
     ClassificationContext,
     classify_observation,
     endpoint_disposition,
+)
+from finsec.normalization.ownership import (
+    classify_ownership_scope_parameter,
+    normalized_parameter_name,
 )
 from finsec.normalization.paths import NormalizedPath, normalize_paths
 from finsec.utils.redaction import REDACTED
@@ -123,6 +129,11 @@ OWNER_ASSOCIATION_FIELDS = {
     "memberid",
     "profileid",
     "merchantid",
+}
+OWNERSHIP_APPLICATION_CLASSIFICATIONS = {
+    EndpointPrimaryClassification.FIRST_PARTY_API,
+    EndpointPrimaryClassification.AUTHENTICATION,
+    EndpointPrimaryClassification.FINANCIAL,
 }
 
 
@@ -472,7 +483,29 @@ def _owner_fingerprint(path: str, value: str) -> str:
     return hashlib.sha256(f"{path}\0{value}".encode()).hexdigest()
 
 
-def _object_access_evidence(
+def _scope_fingerprint(parameter: str, value: str) -> str:
+    return hashlib.sha256(f"{normalized_parameter_name(parameter)}\0{value}".encode()).hexdigest()
+
+
+def _has_meaningful_json(value: Any) -> bool:
+    if isinstance(value, dict):
+        return any(_has_meaningful_json(item) for item in value.values())
+    if isinstance(value, list):
+        return any(_has_meaningful_json(item) for item in value)
+    if value is None or value == REDACTED:
+        return False
+    return not isinstance(value, str) or bool(value.strip())
+
+
+def _response_scope_conflict(response: Any, identifier: str, requested: str) -> bool:
+    expected = normalized_parameter_name(identifier)
+    return any(
+        normalized_parameter_name(_terminal_name(field_path)) == expected and value != requested
+        for field_path, value in _scalar_paths(response)
+    )
+
+
+def _response_object_access_evidence(
     workspace: WorkspacePaths,
     path: str,
     observations: list[Observation],
@@ -569,6 +602,8 @@ def _object_access_evidence(
         evidence.append(
             ObjectAccessEvidence(
                 identifier=identifier,
+                source="RESPONSE_BODY",
+                confidence=Confidence.HIGH,
                 owner_field_path=owner_path,
                 baselines=baselines,
                 distinct_actors=len(actors),
@@ -578,6 +613,249 @@ def _object_access_evidence(
             )
         )
     return evidence
+
+
+def _path_scope_evidence(
+    workspace: WorkspacePaths,
+    path: str,
+    observations: list[Observation],
+    path_parameters: list[EndpointParameter],
+    target: TargetDocument,
+    classification: EndpointClassification,
+    response_evidence: list[ObjectAccessEvidence],
+    cache: dict[Path, list[Any] | None],
+) -> tuple[list[ObjectAccessEvidence], list[OwnershipInference]]:
+    controlled_accounts = {
+        account.id: account for account in target.accounts if account.ownership == "researcher"
+    }
+    bindings: list[ObjectAccessEvidence] = []
+    decisions: list[OwnershipInference] = []
+    identifiers = [
+        parameter.name
+        for parameter in path_parameters
+        if parameter.location == "path" and parameter.semantic_type == "object_identifier"
+    ]
+    response_by_identifier: dict[str, list[ObjectAccessEvidence]] = {}
+    for item in response_evidence:
+        response_by_identifier.setdefault(item.identifier, []).append(item)
+
+    for identifier in sorted(set(identifiers)):
+        scope_classification = classify_ownership_scope_parameter(
+            identifier, target.analysis.ownership_inference
+        )
+        if scope_classification == "PUBLIC_SHARED_SCOPE":
+            decisions.append(
+                OwnershipInference(
+                    parameter=identifier,
+                    classification=scope_classification,
+                    status="REJECTED",
+                    reasons=[f"{identifier} is classified as a public/shared scope parameter."],
+                )
+            )
+            continue
+        if scope_classification == "UNCLASSIFIED":
+            decisions.append(
+                OwnershipInference(
+                    parameter=identifier,
+                    classification=scope_classification,
+                    status="REJECTED",
+                    reasons=[
+                        f"{identifier} is not allowlisted as a trusted ownership scope parameter."
+                    ],
+                )
+            )
+            continue
+        if classification.primary not in OWNERSHIP_APPLICATION_CLASSIFICATIONS:
+            decisions.append(
+                OwnershipInference(
+                    parameter=identifier,
+                    classification=scope_classification,
+                    status="REJECTED",
+                    reasons=["The endpoint is not classified as an application API request."],
+                )
+            )
+            continue
+
+        response_items = response_by_identifier.get(identifier, [])
+        if response_items:
+            status: OwnershipInferenceStatus = (
+                "NOT_NEEDED"
+                if any(item.actor_object_binding_observed for item in response_items)
+                else "REJECTED"
+            )
+            reason = (
+                "Response-derived ownership evidence takes precedence over the path fallback."
+                if status == "NOT_NEEDED"
+                else (
+                    "Response-derived ownership evidence is incomplete or ambiguous; "
+                    "the path fallback is disabled."
+                )
+            )
+            decisions.append(
+                OwnershipInference(
+                    parameter=identifier,
+                    classification=scope_classification,
+                    status=status,
+                    controlled_actors=max(item.distinct_actors for item in response_items),
+                    distinct_scope_values=max(item.distinct_objects for item in response_items),
+                    observations=sorted(
+                        {
+                            observation_id
+                            for item in response_items
+                            for baseline in item.baselines
+                            for observation_id in baseline.observations
+                        }
+                    ),
+                    reasons=[reason],
+                )
+            )
+            continue
+
+        candidates: dict[tuple[str, str], set[str]] = {}
+        conflicting_observations: set[str] = set()
+        known_actor_observations = 0
+        authenticated_observations = 0
+        successful_json_observations = 0
+        for observation in observations:
+            account = controlled_accounts.get(observation.actor)
+            if (
+                account is None
+                or account.actor_type == "anonymous"
+                or not account.authenticated
+                or observation.actor.upper() in {"UNKNOWN", "ANONYMOUS"}
+            ):
+                continue
+            known_actor_observations += 1
+            if (
+                observation.method == "OPTIONS"
+                or not observation.authentication.present
+                or observation.authentication.observed_type == "none"
+            ):
+                continue
+            authenticated_observations += 1
+            response = _response_json(workspace, observation, cache)
+            if response is None:
+                continue
+            requested = _path_parameter_value(path, observation.path, identifier)
+            if requested is None:
+                continue
+            if not _has_meaningful_json(response):
+                continue
+            successful_json_observations += 1
+            if _response_scope_conflict(response, identifier, requested):
+                conflicting_observations.add(observation.id)
+                continue
+            candidates.setdefault((observation.actor, requested), set()).add(observation.id)
+
+        actor_values: dict[str, set[str]] = {}
+        value_actors: dict[str, set[str]] = {}
+        for actor, value in candidates:
+            actor_values.setdefault(actor, set()).add(value)
+            value_actors.setdefault(value, set()).add(actor)
+        distinct_values = set(value_actors)
+        rejection_reasons: list[str] = []
+        if conflicting_observations:
+            rejection_reasons.append(
+                "Response-derived ownership metadata conflicts with the request parent scope."
+            )
+        if known_actor_observations == 0:
+            rejection_reasons.append("No known researcher-controlled actor baseline is available.")
+        elif authenticated_observations == 0:
+            rejection_reasons.append("Authenticated controlled baselines are missing.")
+        elif successful_json_observations == 0:
+            rejection_reasons.append(
+                "No successful non-empty JSON application baseline is available."
+            )
+        if len(actor_values) < 2:
+            rejection_reasons.append("Only one controlled actor baseline is available.")
+        if any(len(values) != 1 for values in actor_values.values()):
+            rejection_reasons.append(
+                "A controlled actor is associated with multiple parent-scope values."
+            )
+        if any(len(actors) != 1 for actors in value_actors.values()):
+            rejection_reasons.append(
+                "A parent-scope value is shared by multiple controlled actors."
+            )
+        if len(distinct_values) < 2:
+            rejection_reasons.append("Distinct controlled parent-scope values are required.")
+
+        observation_ids = sorted(
+            {observation_id for item in candidates.values() for observation_id in item}
+            | conflicting_observations
+        )
+        if rejection_reasons:
+            decisions.append(
+                OwnershipInference(
+                    parameter=identifier,
+                    classification=scope_classification,
+                    status="REJECTED",
+                    controlled_actors=len(actor_values),
+                    distinct_scope_values=len(distinct_values),
+                    observations=observation_ids,
+                    reasons=list(dict.fromkeys(rejection_reasons)),
+                )
+            )
+            continue
+
+        baselines = [
+            ActorObjectBaseline(
+                actor=actor,
+                requested_value=next(iter(values)),
+                scope_value_fingerprint=_scope_fingerprint(identifier, next(iter(values))),
+                observations=sorted(candidates[(actor, next(iter(values)))]),
+            )
+            for actor, values in sorted(actor_values.items())
+        ]
+        bindings.append(
+            ObjectAccessEvidence(
+                identifier=identifier,
+                source="PATH_PARENT_SCOPE",
+                confidence=Confidence.MEDIUM,
+                scope_parameter=identifier,
+                baselines=baselines,
+                distinct_actors=len(actor_values),
+                distinct_objects=len(distinct_values),
+                distinct_scope_values=len(distinct_values),
+                actor_object_binding_observed=True,
+            )
+        )
+        decisions.append(
+            OwnershipInference(
+                parameter=identifier,
+                classification=scope_classification,
+                status="APPLIED",
+                controlled_actors=len(actor_values),
+                distinct_scope_values=len(distinct_values),
+                observations=observation_ids,
+                reasons=["Distinct authenticated controlled parent-scope baselines were observed."],
+            )
+        )
+    return bindings, decisions
+
+
+def _object_access_evidence(
+    workspace: WorkspacePaths,
+    path: str,
+    observations: list[Observation],
+    path_parameters: list[EndpointParameter],
+    target: TargetDocument,
+    classification: EndpointClassification,
+    cache: dict[Path, list[Any] | None],
+) -> tuple[list[ObjectAccessEvidence], list[OwnershipInference]]:
+    response_evidence = _response_object_access_evidence(
+        workspace, path, observations, path_parameters, target, cache
+    )
+    path_evidence, decisions = _path_scope_evidence(
+        workspace,
+        path,
+        observations,
+        path_parameters,
+        target,
+        classification,
+        response_evidence,
+        cache,
+    )
+    return [*response_evidence, *path_evidence], decisions
 
 
 def _action(path: str, method: str) -> tuple[EndpointAction, bool, list[str]]:
@@ -717,11 +995,20 @@ def _security_relevance(
     )
     if binding is not None:
         score += 1
-        reasons.append("two controlled actors have distinct object baselines")
-        score += 1
-        reasons.append("successful JSON response object IDs match requested IDs")
-        score += 1
-        reasons.append(f"distinct owner/account values observed at {binding.owner_field_path}")
+        if binding.source == "PATH_PARENT_SCOPE":
+            reasons.append("two controlled actors have distinct trusted parent-scope baselines")
+            score += 1
+            reasons.append("authenticated successful non-empty JSON baselines were observed")
+            score += 1
+            reasons.append(
+                f"ownership scope is inferred from allowlisted path parameter {binding.identifier}"
+            )
+        else:
+            reasons.append("two controlled actors have distinct object baselines")
+            score += 1
+            reasons.append("successful JSON response object IDs match requested IDs")
+            score += 1
+            reasons.append(f"distinct owner/account values observed at {binding.owner_field_path}")
     if any(
         item.semantic_type in {"monetary_value", "authentication"} for item in request_parameters
     ):
@@ -820,12 +1107,13 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
         response_parameters = _response_parameters(observations)
         parameters = path_parameters + query_parameters + body_parameters + response_parameters
         authentication = _authentication(observations)
-        object_access = _object_access_evidence(
+        object_access, ownership_inference = _object_access_evidence(
             workspace,
             path,
             observations,
             path_parameters,
             target,
+            classification,
             har_cache,
         )
         relevance, relevance_reasons = _security_relevance(
@@ -849,6 +1137,7 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
                 action=action,
                 parameters=parameters,
                 object_access=object_access,
+                ownership_inference=ownership_inference,
                 state_change=state_change,
                 state_change_reasons=state_change_reasons,
                 financial_impact=(

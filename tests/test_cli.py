@@ -24,6 +24,7 @@ def test_full_cli_flow(tmp_path: Path, sample_har: tuple[Path, dict[str, Any]]) 
     )
     assert initialized.exit_code == 0, initialized.output
     assert "Created workspace" in initialized.output
+    assert "hunt setup --workspace" in initialized.output
 
     target = load_yaml(workspace / "target.yaml")
     target["scope"]["hosts"] = ["api.example.test"]
@@ -48,6 +49,7 @@ def test_full_cli_flow(tmp_path: Path, sample_har: tuple[Path, dict[str, Any]]) 
     )
     assert ingested.exit_code == 0, ingested.output
     assert "Imported 5" in ingested.output
+    assert "hunt workflow --no-ingest" in ingested.output
 
     inventoried = runner.invoke(app, ["inventory", "--workspace", str(workspace)])
     assert inventoried.exit_code == 0, inventoried.output
@@ -74,8 +76,9 @@ def test_full_cli_flow(tmp_path: Path, sample_har: tuple[Path, dict[str, Any]]) 
 
     planned = runner.invoke(app, ["plan", "HYP-002", "--workspace", str(workspace)])
     assert planned.exit_code == 0, planned.output
-    assert "READY_FOR_REVIEW" in planned.output
+    assert "BLOCKED" in planned.output
     assert "DO_NOT_EXECUTE" in planned.output
+    assert "Automated bounded execution is unavailable" in planned.output
 
     request = tmp_path / "request.txt"
     request.write_text(
@@ -160,12 +163,12 @@ def test_full_cli_flow(tmp_path: Path, sample_har: tuple[Path, dict[str, Any]]) 
 
     validated = runner.invoke(app, ["validate", "HYP-002", "--workspace", str(workspace)])
     assert validated.exit_code == 0, validated.output
-    assert "CONFIRMED" in validated.output
-    assert "Report ready: yes" in validated.output
+    assert "NEEDS_MORE_EVIDENCE" in validated.output
+    assert "review-ready, explicitly approved test plan is required" in validated.output
 
     reported = runner.invoke(app, ["report", "HYP-002", "--workspace", str(workspace)])
-    assert reported.exit_code == 0, reported.output
-    assert (workspace / "reports/HYP-002-report-v1.md").is_file()
+    assert reported.exit_code == 1, reported.output
+    assert not (workspace / "reports/HYP-002-report-v1.md").exists()
 
     status = runner.invoke(app, ["status", "--workspace", str(workspace)])
     assert status.exit_code == 0, status.output
@@ -180,6 +183,7 @@ def test_full_cli_flow(tmp_path: Path, sample_har: tuple[Path, dict[str, Any]]) 
     assert "Validations" in status.output
     assert "Reports" in status.output
     assert "TEST_PLANNED" in status.output
+    assert "hunt show HYP-002" in status.output
     assert "5" in status.output
     assert "4" in status.output
 

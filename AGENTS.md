@@ -4,7 +4,7 @@
 
 `finsec/` contains the Python 3.12 package, grouped by pipeline stage: ingestion, normalization, recon, modeling, hypotheses, testing, evidence, validation, and reporting. The Typer entry point is `finsec/cli.py`; shared configuration and utilities live in `finsec/config/` and `finsec/utils/`.
 
-Tests under `tests/` generally mirror feature areas (for example, `tests/test_ingest.py`). JSON contracts are in `schemas/`, Jinja templates in `templates/`, prompts in `prompts/`, and synthetic fixtures in `examples/`. `workspaces/` contains researcher-editable target data and may include sensitive artifacts; it is not application source.
+Tests under `tests/` generally mirror feature areas (for example, `tests/test_ingest.py`). JSON contracts are in `schemas/`, the packaged report template is in `finsec/reporting/templates/`, and synthetic fixtures are in `examples/`. `workspaces/` contains researcher-editable target data and may include sensitive artifacts; it is not application source.
 
 ## Build, Test, and Development Commands
 
