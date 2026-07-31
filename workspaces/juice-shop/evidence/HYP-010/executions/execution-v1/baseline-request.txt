@@ -1,6 +1,0 @@
-GET /rest/basket/7 HTTP/1.1
-Host: juice-shop.local:3000
-User-Agent: FinSec-Hunt-Authorized-Validation/0.5.0
-Accept: application/json, text/plain, */*
-Authorization: [REDACTED]
-Cookie: [REDACTED]

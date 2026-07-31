@@ -51,7 +51,43 @@ Concrete states require observed values or researcher input; field names alone a
 - Allowed transitions: `NOT CONFIRMED`
 - Forbidden transitions: generated only as `ASSUMED` hypotheses; test plans remain blocked until lifecycle states are confirmed
 
+## Resource: Complaint
+
+- Observed states: None
+- Allowed transitions: `NOT CONFIRMED`
+- Forbidden transitions: generated only as `ASSUMED` hypotheses; test plans remain blocked until lifecycle states are confirmed
+
+## Resource: ContinueCode
+
+- Observed states: None
+- Allowed transitions: `NOT CONFIRMED`
+- Forbidden transitions: generated only as `ASSUMED` hypotheses; test plans remain blocked until lifecycle states are confirmed
+
 ## Resource: Delivery
+
+- Observed states: None
+- Allowed transitions: `NOT CONFIRMED`
+- Forbidden transitions: generated only as `ASSUMED` hypotheses; test plans remain blocked until lifecycle states are confirmed
+
+## Resource: Feedback
+
+- Observed states: None
+- Allowed transitions: `NOT CONFIRMED`
+- Forbidden transitions: generated only as `ASSUMED` hypotheses; test plans remain blocked until lifecycle states are confirmed
+
+## Resource: File
+
+- Observed states: None
+- Allowed transitions: `NOT CONFIRMED`
+- Forbidden transitions: generated only as `ASSUMED` hypotheses; test plans remain blocked until lifecycle states are confirmed
+
+## Resource: FileUpload
+
+- Observed states: None
+- Allowed transitions: `NOT CONFIRMED`
+- Forbidden transitions: generated only as `ASSUMED` hypotheses; test plans remain blocked until lifecycle states are confirmed
+
+## Resource: Hint
 
 - Observed states: None
 - Allowed transitions: `NOT CONFIRMED`
@@ -87,25 +123,7 @@ Concrete states require observed values or researcher input; field names alone a
 - Allowed transitions: `NOT CONFIRMED`
 - Forbidden transitions: generated only as `ASSUMED` hypotheses; test plans remain blocked until lifecycle states are confirmed
 
-## Resource: Recycle
-
-- Observed states: None
-- Allowed transitions: `NOT CONFIRMED`
-- Forbidden transitions: generated only as `ASSUMED` hypotheses; test plans remain blocked until lifecycle states are confirmed
-
-## Resource: Review
-
-- Observed states: None
-- Allowed transitions: `NOT CONFIRMED`
-- Forbidden transitions: generated only as `ASSUMED` hypotheses; test plans remain blocked until lifecycle states are confirmed
-
 ## Resource: Saveloginip
-
-- Observed states: None
-- Allowed transitions: `NOT CONFIRMED`
-- Forbidden transitions: generated only as `ASSUMED` hypotheses; test plans remain blocked until lifecycle states are confirmed
-
-## Resource: Securityanswer
 
 - Observed states: None
 - Allowed transitions: `NOT CONFIRMED`
@@ -129,7 +147,7 @@ Concrete states require observed values or researcher input; field names alone a
 - Allowed transitions: `NOT CONFIRMED`
 - Forbidden transitions: generated only as `ASSUMED` hypotheses; test plans remain blocked until lifecycle states are confirmed
 
-## Resource: User
+## Resource: Url
 
 - Observed states: None
 - Allowed transitions: `NOT CONFIRMED`

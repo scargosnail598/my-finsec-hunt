@@ -11,144 +11,73 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-002
+  - endpoint: EP-003
     action: read
     method: GET
     path: /api/Addresss
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000070
-    - OBS-000200
-    - OBS-000206
-    - OBS-000384
-    - OBS-000428
-    - OBS-000434
-    - OBS-000590
-    - OBS-000592
-    - OBS-000622
-    - OBS-000626
-    - OBS-000842
-    - OBS-000892
-    - OBS-000932
-    - OBS-001026
-    - OBS-001292
-    - OBS-001361
+    - OBS-000096
+    - OBS-000098
+    - OBS-000139
+    - OBS-000336
+    - OBS-000422
+    - OBS-000424
     knowledge_status: INFERRED
-  - endpoint: EP-047
+  - endpoint: EP-044
     action: create_or_execute
     method: POST
     path: /api/Addresss/
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000591
+    - OBS-000097
+    - OBS-000423
     knowledge_status: INFERRED
-  - endpoint: EP-003
+  - endpoint: EP-004
     action: read
     method: GET
     path: /api/Addresss/{addresssId}
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000072
-    - OBS-000081
-    - OBS-000091
-    - OBS-000202
-    - OBS-000205
-    - OBS-000386
-    - OBS-000395
-    - OBS-000405
-    - OBS-000430
-    - OBS-000433
-    - OBS-000593
-    - OBS-000602
-    - OBS-000611
-    - OBS-000623
-    - OBS-000625
-    - OBS-000933
-    - OBS-001027
-    - OBS-001034
-    - OBS-001043
-    - OBS-001293
-    - OBS-001300
-    - OBS-001308
-    - OBS-001362
-    - OBS-001369
-    - OBS-001377
-    knowledge_status: INFERRED
-  - endpoint: EP-037
-    action: replace
-    method: PUT
-    path: /api/Addresss/{addresssId}
-    state_change: true
-    authentication_required: true
-    evidence:
-    - OBS-000204
-    - OBS-000432
-    - OBS-000624
+    - OBS-000099
+    - OBS-000108
+    - OBS-000117
+    - OBS-000425
+    - OBS-000434
+    - OBS-000443
     knowledge_status: INFERRED
   states: []
   sensitive_fields:
   - status
   evidence:
-  - EP-002
   - EP-003
-  - EP-037
-  - EP-047
-  - OBS-000070
-  - OBS-000072
-  - OBS-000081
-  - OBS-000091
-  - OBS-000200
-  - OBS-000202
-  - OBS-000204
-  - OBS-000205
-  - OBS-000206
-  - OBS-000384
-  - OBS-000386
-  - OBS-000395
-  - OBS-000405
-  - OBS-000428
-  - OBS-000430
-  - OBS-000432
-  - OBS-000433
+  - EP-004
+  - EP-044
+  - OBS-000096
+  - OBS-000097
+  - OBS-000098
+  - OBS-000099
+  - OBS-000108
+  - OBS-000117
+  - OBS-000139
+  - OBS-000336
+  - OBS-000422
+  - OBS-000423
+  - OBS-000424
+  - OBS-000425
   - OBS-000434
-  - OBS-000590
-  - OBS-000591
-  - OBS-000592
-  - OBS-000593
-  - OBS-000602
-  - OBS-000611
-  - OBS-000622
-  - OBS-000623
-  - OBS-000624
-  - OBS-000625
-  - OBS-000626
-  - OBS-000842
-  - OBS-000892
-  - OBS-000932
-  - OBS-000933
-  - OBS-001026
-  - OBS-001027
-  - OBS-001034
-  - OBS-001043
-  - OBS-001292
-  - OBS-001293
-  - OBS-001300
-  - OBS-001308
-  - OBS-001361
-  - OBS-001362
-  - OBS-001369
-  - OBS-001377
+  - OBS-000443
   confidence: medium
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: c3be4964fc3340a4c0d4c52760dbeac5064465a1b03ce558a3dfa673104dc4f7
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
+    generated_checksum: 8e4e7a0999fd4473c5ca23892a34c67505ade3f83decbf72b178aa52346587e1
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
 - id: RES-002
   key: resource:applicationconfiguration
   name: ApplicationConfiguration
@@ -159,214 +88,104 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-018
+  - endpoint: EP-025
     action: read
     method: GET
     path: /rest/admin/application-configuration
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000021
-    - OBS-000025
-    - OBS-000027
-    - OBS-000028
-    - OBS-000037
-    - OBS-000077
-    - OBS-000090
-    - OBS-000166
-    - OBS-000172
-    - OBS-000175
-    - OBS-000176
-    - OBS-000243
-    - OBS-000249
-    - OBS-000252
-    - OBS-000253
-    - OBS-000317
-    - OBS-000321
-    - OBS-000323
-    - OBS-000324
-    - OBS-000348
+    - OBS-000002
+    - OBS-000003
+    - OBS-000004
+    - OBS-000032
+    - OBS-000036
+    - OBS-000038
+    - OBS-000039
+    - OBS-000066
+    - OBS-000103
+    - OBS-000116
+    - OBS-000135
+    - OBS-000207
+    - OBS-000213
+    - OBS-000216
+    - OBS-000217
+    - OBS-000242
+    - OBS-000280
+    - OBS-000286
+    - OBS-000289
+    - OBS-000290
+    - OBS-000360
+    - OBS-000364
+    - OBS-000366
+    - OBS-000367
     - OBS-000391
-    - OBS-000404
-    - OBS-000471
-    - OBS-000477
-    - OBS-000480
-    - OBS-000481
-    - OBS-000528
-    - OBS-000534
-    - OBS-000537
-    - OBS-000538
-    - OBS-000549
-    - OBS-000551
-    - OBS-000555
-    - OBS-000597
-    - OBS-000610
-    - OBS-000676
-    - OBS-000682
-    - OBS-000685
-    - OBS-000686
-    - OBS-000687
-    - OBS-000695
-    - OBS-000733
-    - OBS-000739
-    - OBS-000742
-    - OBS-000743
-    - OBS-000744
-    - OBS-000752
-    - OBS-000774
-    - OBS-000780
-    - OBS-000783
-    - OBS-000784
-    - OBS-000817
-    - OBS-000823
-    - OBS-000826
-    - OBS-000827
-    - OBS-000839
-    - OBS-000868
-    - OBS-000874
-    - OBS-000877
-    - OBS-000878
-    - OBS-000895
-    - OBS-000937
-    - OBS-000941
-    - OBS-000946
-    - OBS-000951
-    - OBS-000957
-    - OBS-000991
-    - OBS-000997
-    - OBS-001000
-    - OBS-001001
-    - OBS-001031
-    - OBS-001042
-    - OBS-001094
-    - OBS-001100
-    - OBS-001103
-    - OBS-001104
-    - OBS-001154
-    - OBS-001160
-    - OBS-001163
-    - OBS-001164
-    - OBS-001191
-    - OBS-001257
-    - OBS-001263
-    - OBS-001266
-    - OBS-001267
-    - OBS-001297
-    - OBS-001307
-    - OBS-001313
-    - OBS-001318
-    - OBS-001323
-    - OBS-001328
-    - OBS-001334
-    - OBS-001366
-    - OBS-001376
+    - OBS-000429
+    - OBS-000442
+    - OBS-000449
+    - OBS-000473
+    - OBS-000499
+    - OBS-000531
+    - OBS-000590
+    - OBS-000596
+    - OBS-000599
+    - OBS-000600
+    - OBS-000692
+    - OBS-000698
+    - OBS-000701
+    - OBS-000702
     knowledge_status: INFERRED
   states: []
   sensitive_fields: []
   evidence:
-  - EP-018
-  - OBS-000021
-  - OBS-000025
-  - OBS-000027
-  - OBS-000028
-  - OBS-000037
-  - OBS-000077
-  - OBS-000090
-  - OBS-000166
-  - OBS-000172
-  - OBS-000175
-  - OBS-000176
-  - OBS-000243
-  - OBS-000249
-  - OBS-000252
-  - OBS-000253
-  - OBS-000317
-  - OBS-000321
-  - OBS-000323
-  - OBS-000324
-  - OBS-000348
+  - EP-025
+  - OBS-000002
+  - OBS-000003
+  - OBS-000004
+  - OBS-000032
+  - OBS-000036
+  - OBS-000038
+  - OBS-000039
+  - OBS-000066
+  - OBS-000103
+  - OBS-000116
+  - OBS-000135
+  - OBS-000207
+  - OBS-000213
+  - OBS-000216
+  - OBS-000217
+  - OBS-000242
+  - OBS-000280
+  - OBS-000286
+  - OBS-000289
+  - OBS-000290
+  - OBS-000360
+  - OBS-000364
+  - OBS-000366
+  - OBS-000367
   - OBS-000391
-  - OBS-000404
-  - OBS-000471
-  - OBS-000477
-  - OBS-000480
-  - OBS-000481
-  - OBS-000528
-  - OBS-000534
-  - OBS-000537
-  - OBS-000538
-  - OBS-000549
-  - OBS-000551
-  - OBS-000555
-  - OBS-000597
-  - OBS-000610
-  - OBS-000676
-  - OBS-000682
-  - OBS-000685
-  - OBS-000686
-  - OBS-000687
-  - OBS-000695
-  - OBS-000733
-  - OBS-000739
-  - OBS-000742
-  - OBS-000743
-  - OBS-000744
-  - OBS-000752
-  - OBS-000774
-  - OBS-000780
-  - OBS-000783
-  - OBS-000784
-  - OBS-000817
-  - OBS-000823
-  - OBS-000826
-  - OBS-000827
-  - OBS-000839
-  - OBS-000868
-  - OBS-000874
-  - OBS-000877
-  - OBS-000878
-  - OBS-000895
-  - OBS-000937
-  - OBS-000941
-  - OBS-000946
-  - OBS-000951
-  - OBS-000957
-  - OBS-000991
-  - OBS-000997
-  - OBS-001000
-  - OBS-001001
-  - OBS-001031
-  - OBS-001042
-  - OBS-001094
-  - OBS-001100
-  - OBS-001103
-  - OBS-001104
-  - OBS-001154
-  - OBS-001160
-  - OBS-001163
-  - OBS-001164
-  - OBS-001191
-  - OBS-001257
-  - OBS-001263
-  - OBS-001266
-  - OBS-001267
-  - OBS-001297
-  - OBS-001307
-  - OBS-001313
-  - OBS-001318
-  - OBS-001323
-  - OBS-001328
-  - OBS-001334
-  - OBS-001366
-  - OBS-001376
+  - OBS-000429
+  - OBS-000442
+  - OBS-000449
+  - OBS-000473
+  - OBS-000499
+  - OBS-000531
+  - OBS-000590
+  - OBS-000596
+  - OBS-000599
+  - OBS-000600
+  - OBS-000692
+  - OBS-000698
+  - OBS-000701
+  - OBS-000702
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 9d1357d3e889a5922ce4751e376fec54c63f172de182ff9b0fb2bcc08965ba8d
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
+    generated_checksum: 61c9b8c7c7a25f80974543901051277ea5b262dd5e8a4e364486683d4a8c88f8
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
 - id: RES-003
   key: resource:applicationversion
   name: ApplicationVersion
@@ -377,86 +196,50 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-019
+  - endpoint: EP-026
     action: read
     method: GET
     path: /rest/admin/application-version
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000020
-    - OBS-000024
-    - OBS-000165
-    - OBS-000171
-    - OBS-000242
-    - OBS-000248
-    - OBS-000316
-    - OBS-000320
-    - OBS-000470
-    - OBS-000476
-    - OBS-000527
-    - OBS-000533
-    - OBS-000675
-    - OBS-000681
-    - OBS-000732
-    - OBS-000738
-    - OBS-000773
-    - OBS-000779
-    - OBS-000816
-    - OBS-000822
-    - OBS-000867
-    - OBS-000873
-    - OBS-000990
-    - OBS-000996
-    - OBS-001093
-    - OBS-001099
-    - OBS-001153
-    - OBS-001159
-    - OBS-001256
-    - OBS-001262
+    - OBS-000031
+    - OBS-000035
+    - OBS-000206
+    - OBS-000212
+    - OBS-000279
+    - OBS-000285
+    - OBS-000359
+    - OBS-000363
+    - OBS-000589
+    - OBS-000595
+    - OBS-000691
+    - OBS-000697
     knowledge_status: INFERRED
   states: []
   sensitive_fields: []
   evidence:
-  - EP-019
-  - OBS-000020
-  - OBS-000024
-  - OBS-000165
-  - OBS-000171
-  - OBS-000242
-  - OBS-000248
-  - OBS-000316
-  - OBS-000320
-  - OBS-000470
-  - OBS-000476
-  - OBS-000527
-  - OBS-000533
-  - OBS-000675
-  - OBS-000681
-  - OBS-000732
-  - OBS-000738
-  - OBS-000773
-  - OBS-000779
-  - OBS-000816
-  - OBS-000822
-  - OBS-000867
-  - OBS-000873
-  - OBS-000990
-  - OBS-000996
-  - OBS-001093
-  - OBS-001099
-  - OBS-001153
-  - OBS-001159
-  - OBS-001256
-  - OBS-001262
+  - EP-026
+  - OBS-000031
+  - OBS-000035
+  - OBS-000206
+  - OBS-000212
+  - OBS-000279
+  - OBS-000285
+  - OBS-000359
+  - OBS-000363
+  - OBS-000589
+  - OBS-000595
+  - OBS-000691
+  - OBS-000697
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 4a2d846800562341eb405439cf81f504e60e5c8b4190a7a266e9a0f149fb05fc
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
+    generated_checksum: 14fa6c1ffb846303757a696d61444d7a79d2b29c563e80af23c1a4bbf936fc91
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
 - id: RES-004
   key: resource:basket
   name: Basket
@@ -469,168 +252,102 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-020
+  - endpoint: EP-027
     action: read
     method: GET
     path: /rest/basket/{basketId}
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000042
-    - OBS-000063
-    - OBS-000066
-    - OBS-000067
-    - OBS-000082
-    - OBS-000087
-    - OBS-000109
-    - OBS-000128
-    - OBS-000170
-    - OBS-000247
-    - OBS-000356
-    - OBS-000377
-    - OBS-000380
-    - OBS-000381
-    - OBS-000396
-    - OBS-000401
-    - OBS-000422
-    - OBS-000475
-    - OBS-000490
-    - OBS-000532
-    - OBS-000559
-    - OBS-000579
-    - OBS-000582
-    - OBS-000583
-    - OBS-000587
-    - OBS-000588
-    - OBS-000604
-    - OBS-000608
-    - OBS-000680
-    - OBS-000737
-    - OBS-000745
-    - OBS-000778
-    - OBS-000785
-    - OBS-000821
-    - OBS-000835
-    - OBS-000872
-    - OBS-000886
-    - OBS-000922
-    - OBS-000925
-    - OBS-000926
-    - OBS-000995
-    - OBS-001024
-    - OBS-001036
-    - OBS-001040
-    - OBS-001098
-    - OBS-001158
-    - OBS-001195
-    - OBS-001215
-    - OBS-001218
-    - OBS-001261
-    - OBS-001290
-    - OBS-001302
-    - OBS-001305
-    - OBS-001309
-    - OBS-001355
-    - OBS-001358
-    - OBS-001359
-    - OBS-001370
-    - OBS-001374
-    - OBS-001380
+    - OBS-000070
+    - OBS-000090
+    - OBS-000093
+    - OBS-000094
+    - OBS-000110
+    - OBS-000114
+    - OBS-000118
+    - OBS-000211
+    - OBS-000284
+    - OBS-000313
+    - OBS-000316
+    - OBS-000317
+    - OBS-000320
+    - OBS-000321
+    - OBS-000329
+    - OBS-000395
+    - OBS-000415
+    - OBS-000418
+    - OBS-000419
+    - OBS-000436
+    - OBS-000440
+    - OBS-000444
+    - OBS-000477
+    - OBS-000504
+    - OBS-000520
+    - OBS-000523
+    - OBS-000524
+    - OBS-000527
+    - OBS-000528
+    - OBS-000594
+    - OBS-000696
     knowledge_status: INFERRED
-  - endpoint: EP-034
+  - endpoint: EP-052
     action: create_or_execute
     method: POST
     path: /rest/basket/{basketId}/checkout
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000086
-    - OBS-000400
-    - OBS-000607
-    - OBS-001039
-    - OBS-001304
-    - OBS-001373
+    - OBS-000113
+    - OBS-000439
     knowledge_status: INFERRED
   states: []
   sensitive_fields:
   - status
   evidence:
-  - EP-020
-  - EP-034
-  - OBS-000042
-  - OBS-000063
-  - OBS-000066
-  - OBS-000067
-  - OBS-000082
-  - OBS-000086
-  - OBS-000087
-  - OBS-000109
-  - OBS-000128
-  - OBS-000170
-  - OBS-000247
-  - OBS-000356
-  - OBS-000377
-  - OBS-000380
-  - OBS-000381
-  - OBS-000396
-  - OBS-000400
-  - OBS-000401
-  - OBS-000422
-  - OBS-000475
-  - OBS-000490
-  - OBS-000532
-  - OBS-000559
-  - OBS-000579
-  - OBS-000582
-  - OBS-000583
-  - OBS-000587
-  - OBS-000588
-  - OBS-000604
-  - OBS-000607
-  - OBS-000608
-  - OBS-000680
-  - OBS-000737
-  - OBS-000745
-  - OBS-000778
-  - OBS-000785
-  - OBS-000821
-  - OBS-000835
-  - OBS-000872
-  - OBS-000886
-  - OBS-000922
-  - OBS-000925
-  - OBS-000926
-  - OBS-000995
-  - OBS-001024
-  - OBS-001036
-  - OBS-001039
-  - OBS-001040
-  - OBS-001098
-  - OBS-001158
-  - OBS-001195
-  - OBS-001215
-  - OBS-001218
-  - OBS-001261
-  - OBS-001290
-  - OBS-001302
-  - OBS-001304
-  - OBS-001305
-  - OBS-001309
-  - OBS-001355
-  - OBS-001358
-  - OBS-001359
-  - OBS-001370
-  - OBS-001373
-  - OBS-001374
-  - OBS-001380
+  - EP-027
+  - EP-052
+  - OBS-000070
+  - OBS-000090
+  - OBS-000093
+  - OBS-000094
+  - OBS-000110
+  - OBS-000113
+  - OBS-000114
+  - OBS-000118
+  - OBS-000211
+  - OBS-000284
+  - OBS-000313
+  - OBS-000316
+  - OBS-000317
+  - OBS-000320
+  - OBS-000321
+  - OBS-000329
+  - OBS-000395
+  - OBS-000415
+  - OBS-000418
+  - OBS-000419
+  - OBS-000436
+  - OBS-000439
+  - OBS-000440
+  - OBS-000444
+  - OBS-000477
+  - OBS-000504
+  - OBS-000520
+  - OBS-000523
+  - OBS-000524
+  - OBS-000527
+  - OBS-000528
+  - OBS-000594
+  - OBS-000696
   confidence: medium
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 7e6d1d2ab2792e4b9cdc5054d4c1a7065a1089480214760e7a5915f1f1f467df
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
+    generated_checksum: 98e28a5b527d157c7b244cbbefe97fc7aa5dc3cc1f4f63309591c0bba7c56459
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
 - id: RES-005
   key: resource:basketitem
   name: Basketitem
@@ -642,68 +359,48 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-033
+  - endpoint: EP-045
     action: create_or_execute
     method: POST
     path: /api/BasketItems/
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000064
-    - OBS-000378
-    - OBS-000580
-    - OBS-000923
-    - OBS-001216
-    - OBS-001356
+    - OBS-000091
+    - OBS-000314
+    - OBS-000416
+    - OBS-000521
     knowledge_status: INFERRED
-  - endpoint: EP-038
-    action: read
-    method: GET
-    path: /api/BasketItems/{basketitemId}
-    state_change: false
-    authentication_required: true
-    evidence:
-    - OBS-000584
-    - OBS-000928
-    - OBS-000930
-    knowledge_status: INFERRED
-  - endpoint: EP-052
-    action: replace
-    method: PUT
+  - endpoint: EP-001
+    action: delete
+    method: DELETE
     path: /api/BasketItems/{basketitemId}
     state_change: true
     authentication_required: true
     evidence:
-    - OBS-000585
-    - OBS-000929
-    - OBS-000931
+    - OBS-000319
+    - OBS-000526
     knowledge_status: INFERRED
   states: []
-  sensitive_fields: []
+  sensitive_fields:
+  - status
   evidence:
-  - EP-033
-  - EP-038
-  - EP-052
-  - OBS-000064
-  - OBS-000378
-  - OBS-000580
-  - OBS-000584
-  - OBS-000585
-  - OBS-000923
-  - OBS-000928
-  - OBS-000929
-  - OBS-000930
-  - OBS-000931
-  - OBS-001216
-  - OBS-001356
+  - EP-001
+  - EP-045
+  - OBS-000091
+  - OBS-000314
+  - OBS-000319
+  - OBS-000416
+  - OBS-000521
+  - OBS-000526
   confidence: medium
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 51936b6162617902a00579caa58091e5b7ab5b782ed1d5cad9d47022e6f22713
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
+    generated_checksum: a8d49e4554f630b343c1e410175f381cacac25c22717793d28d27fdf8bcc68df
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
 - id: RES-006
   key: resource:card
   name: Card
@@ -715,91 +412,67 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-004
+  - endpoint: EP-005
     action: read
     method: GET
     path: /api/Cards
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000078
-    - OBS-000277
-    - OBS-000392
-    - OBS-000598
-    - OBS-000600
-    - OBS-000896
-    - OBS-000938
-    - OBS-000942
-    - OBS-000947
-    - OBS-000952
-    - OBS-001032
-    - OBS-001298
-    - OBS-001314
-    - OBS-001319
-    - OBS-001324
-    - OBS-001329
-    - OBS-001335
-    - OBS-001367
+    - OBS-000104
+    - OBS-000106
+    - OBS-000136
+    - OBS-000140
+    - OBS-000430
+    - OBS-000432
+    - OBS-000453
     knowledge_status: INFERRED
-  - endpoint: EP-048
+  - endpoint: EP-046
     action: create_or_execute
     method: POST
     path: /api/Cards/
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000599
+    - OBS-000105
+    - OBS-000431
     knowledge_status: INFERRED
-  - endpoint: EP-039
+  - endpoint: EP-006
     action: read
     method: GET
     path: /api/Cards/{cardId}
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000603
-    - OBS-001035
-    - OBS-001301
+    - OBS-000109
+    - OBS-000435
     knowledge_status: INFERRED
   states: []
   sensitive_fields:
   - cardNum
-  - data[].cardNum
-  - status
   evidence:
-  - EP-004
-  - EP-039
-  - EP-048
-  - OBS-000078
-  - OBS-000277
-  - OBS-000392
-  - OBS-000598
-  - OBS-000599
-  - OBS-000600
-  - OBS-000603
-  - OBS-000896
-  - OBS-000938
-  - OBS-000942
-  - OBS-000947
-  - OBS-000952
-  - OBS-001032
-  - OBS-001035
-  - OBS-001298
-  - OBS-001301
-  - OBS-001314
-  - OBS-001319
-  - OBS-001324
-  - OBS-001329
-  - OBS-001335
-  - OBS-001367
+  - EP-005
+  - EP-006
+  - EP-046
+  - OBS-000104
+  - OBS-000105
+  - OBS-000106
+  - OBS-000109
+  - OBS-000136
+  - OBS-000140
+  - OBS-000430
+  - OBS-000431
+  - OBS-000432
+  - OBS-000435
+  - OBS-000453
   confidence: medium
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 4ccf18537b2027ba35a205fce71d3766f9f4c555a9db17469ea087fd6561748c
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
+    generated_checksum: ac4ff9c0214ff81bd2dd90f9a094d4ca3cde6d1fef503c755abb2dfe727d3a3a
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
 - id: RES-007
   key: resource:challenge
   name: Challenge
@@ -810,89 +483,57 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-005
+  - endpoint: EP-007
     action: read
     method: GET
     path: /api/Challenges/
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000022
-    - OBS-000026
-    - OBS-000167
-    - OBS-000174
-    - OBS-000244
-    - OBS-000251
-    - OBS-000318
-    - OBS-000322
-    - OBS-000472
-    - OBS-000479
-    - OBS-000529
-    - OBS-000536
-    - OBS-000677
-    - OBS-000684
-    - OBS-000734
-    - OBS-000741
-    - OBS-000775
-    - OBS-000782
-    - OBS-000818
-    - OBS-000825
-    - OBS-000869
-    - OBS-000876
-    - OBS-000992
-    - OBS-000999
-    - OBS-001095
-    - OBS-001102
-    - OBS-001155
-    - OBS-001162
-    - OBS-001258
-    - OBS-001265
+    - OBS-000001
+    - OBS-000033
+    - OBS-000037
+    - OBS-000208
+    - OBS-000215
+    - OBS-000281
+    - OBS-000288
+    - OBS-000361
+    - OBS-000365
+    - OBS-000497
+    - OBS-000591
+    - OBS-000598
+    - OBS-000693
+    - OBS-000700
     knowledge_status: INFERRED
   states: []
   sensitive_fields:
   - data[].codingChallengeStatus
   - status
   evidence:
-  - EP-005
-  - OBS-000022
-  - OBS-000026
-  - OBS-000167
-  - OBS-000174
-  - OBS-000244
-  - OBS-000251
-  - OBS-000318
-  - OBS-000322
-  - OBS-000472
-  - OBS-000479
-  - OBS-000529
-  - OBS-000536
-  - OBS-000677
-  - OBS-000684
-  - OBS-000734
-  - OBS-000741
-  - OBS-000775
-  - OBS-000782
-  - OBS-000818
-  - OBS-000825
-  - OBS-000869
-  - OBS-000876
-  - OBS-000992
-  - OBS-000999
-  - OBS-001095
-  - OBS-001102
-  - OBS-001155
-  - OBS-001162
-  - OBS-001258
-  - OBS-001265
+  - EP-007
+  - OBS-000001
+  - OBS-000033
+  - OBS-000037
+  - OBS-000208
+  - OBS-000215
+  - OBS-000281
+  - OBS-000288
+  - OBS-000361
+  - OBS-000365
+  - OBS-000497
+  - OBS-000591
+  - OBS-000598
+  - OBS-000693
+  - OBS-000700
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: df2e26383e08d7bdec6ee487a8d3e9a8ca8bc632bd74d13a413a07b2c49ed2b1
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
-- id: RES-018
+    generated_checksum: 43530bbe3767e4198486b60908309a9477e13a3333e1e2b3391524d2fb2f944e
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
+- id: RES-008
   key: resource:changepassword
   name: ChangePassword
   identifiers: []
@@ -902,110 +543,290 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-046
+  - endpoint: EP-035
     action: change
     method: GET
     path: /rest/user/change-password
     state_change: true
     authentication_required: true
     evidence:
-    - OBS-000621
+    - OBS-000244
+    - OBS-000245
+    - OBS-000454
     knowledge_status: INFERRED
   states: []
-  sensitive_fields:
-  - user.totpSecret
+  sensitive_fields: []
   evidence:
-  - EP-046
-  - OBS-000621
+  - EP-035
+  - OBS-000244
+  - OBS-000245
+  - OBS-000454
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 3b90a79e2caba347eb8c0d2dbfaeec3e6991ed38ab3abaf83e2b25bb6e1d8669
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
-- id: RES-008
-  key: resource:delivery
-  name: Delivery
+    generated_checksum: a58629e081e09e42dbe61ca8dc3d05bac36a395939d05c68ddc225c3a0442c46
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
+- id: RES-009
+  key: resource:complaint
+  name: Complaint
   identifiers:
-  - deliveryId
+  - UserId
   owner:
     value: unknown
     knowledge_status: ASSUMED
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-006
+  - endpoint: EP-047
+    action: create_or_execute
+    method: POST
+    path: /api/Complaints/
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000334
+    - OBS-000539
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields:
+  - status
+  evidence:
+  - EP-047
+  - OBS-000334
+  - OBS-000539
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 5f7ea942f3d9654f0effd389a3c35e0e0e02aa0e757bd4e4305879bf03f39e34
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
+- id: RES-010
+  key: resource:continuecode
+  name: ContinueCode
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-028
+    action: read
+    method: GET
+    path: /rest/continue-code
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000451
+    - OBS-000503
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-028
+  - OBS-000451
+  - OBS-000503
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: dbf4910479f66319c33597abb93f0392ac8ad5601307e2f03e2ff48043d84846
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
+- id: RES-011
+  key: resource:delivery
+  name: Delivery
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-008
     action: read
     method: GET
     path: /api/Deliverys
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000073
-    - OBS-000387
-    - OBS-000594
-    - OBS-000934
-    - OBS-001028
-    - OBS-001294
-    - OBS-001363
+    - OBS-000100
+    - OBS-000426
     knowledge_status: INFERRED
-  - endpoint: EP-040
+  - endpoint: EP-009
     action: read
     method: GET
-    path: /api/Deliverys/{deliveryId}
+    path: /api/Deliverys/1
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000075
-    - OBS-000080
-    - OBS-000389
-    - OBS-000394
-    - OBS-000595
-    - OBS-000601
-    - OBS-000935
-    - OBS-001029
-    - OBS-001033
-    - OBS-001295
-    - OBS-001299
-    - OBS-001364
-    - OBS-001368
+    - OBS-000101
+    - OBS-000107
+    - OBS-000427
+    - OBS-000433
     knowledge_status: INFERRED
   states: []
   sensitive_fields: []
   evidence:
-  - EP-006
-  - EP-040
-  - OBS-000073
-  - OBS-000075
-  - OBS-000080
-  - OBS-000387
-  - OBS-000389
-  - OBS-000394
-  - OBS-000594
-  - OBS-000595
-  - OBS-000601
-  - OBS-000934
-  - OBS-000935
-  - OBS-001028
-  - OBS-001029
-  - OBS-001033
-  - OBS-001294
-  - OBS-001295
-  - OBS-001299
-  - OBS-001363
-  - OBS-001364
-  - OBS-001368
-  confidence: medium
+  - EP-008
+  - EP-009
+  - OBS-000100
+  - OBS-000101
+  - OBS-000107
+  - OBS-000426
+  - OBS-000427
+  - OBS-000433
+  confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 8dfd822a6120d39f34160d5f93630bab4aabd3163af58c073bf095f69934c1ad
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
-- id: RES-009
+    generated_checksum: 338821f44656dba9a40bd03dcd4ef2b7bc8279d59f2a26b95d75bc9141a56bde
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
+- id: RES-012
+  key: resource:feedback
+  name: Feedback
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-010
+    action: read
+    method: GET
+    path: /api/Feedbacks/
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000530
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-010
+  - OBS-000530
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 24029d681e23a8ea1fdecdc8246f4a94799489f7334616b10e0dcd199d26c269
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
+- id: RES-013
+  key: resource:file
+  name: File
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-050
+    action: create_or_execute
+    method: POST
+    path: /profile/image/file
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000170
+    - OBS-000637
+    - OBS-000653
+    - OBS-000670
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-050
+  - OBS-000170
+  - OBS-000637
+  - OBS-000653
+  - OBS-000670
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: a96a19fd8f7a0050c164ba19ce0abec42cb64c99181334dd9bc56cd00176beb1
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
+- id: RES-014
+  key: resource:fileupload
+  name: FileUpload
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-048
+    action: create_or_execute
+    method: POST
+    path: /file-upload
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000333
+    - OBS-000538
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-048
+  - OBS-000333
+  - OBS-000538
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 5d8f4055da90fba55d29c5b0aab4fc305224f6f8a5c9981a98813e5847cec4a9
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
+- id: RES-015
+  key: resource:hint
+  name: Hint
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-011
+    action: read
+    method: GET
+    path: /api/Hints/
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000498
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-011
+  - OBS-000498
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 20f8bcee2811d805b1b0da9a1a530a18bd779517d3ca24f56b5a6dab311845ed
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
+- id: RES-016
   key: resource:language
   name: Language
   identifiers: []
@@ -1015,57 +836,39 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-021
+  - endpoint: EP-029
     action: read
     method: GET
     path: /rest/languages
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000023
-    - OBS-000169
-    - OBS-000246
-    - OBS-000319
-    - OBS-000474
-    - OBS-000531
-    - OBS-000679
-    - OBS-000736
-    - OBS-000777
-    - OBS-000820
-    - OBS-000871
-    - OBS-000994
-    - OBS-001097
-    - OBS-001157
-    - OBS-001260
+    - OBS-000034
+    - OBS-000210
+    - OBS-000283
+    - OBS-000362
+    - OBS-000593
+    - OBS-000695
     knowledge_status: INFERRED
   states: []
   sensitive_fields: []
   evidence:
-  - EP-021
-  - OBS-000023
-  - OBS-000169
-  - OBS-000246
-  - OBS-000319
-  - OBS-000474
-  - OBS-000531
-  - OBS-000679
-  - OBS-000736
-  - OBS-000777
-  - OBS-000820
-  - OBS-000871
-  - OBS-000994
-  - OBS-001097
-  - OBS-001157
-  - OBS-001260
+  - EP-029
+  - OBS-000034
+  - OBS-000210
+  - OBS-000283
+  - OBS-000362
+  - OBS-000593
+  - OBS-000695
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 005d73a03c26460706d51a906f4d7083dbf74d9ce3a214c86cad970432816ff5
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
-- id: RES-010
+    generated_checksum: e628c0e32600eb7afb2413ebeff5aafb60244487a1607134c3adaccafca2b682
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
+- id: RES-017
   key: resource:orderhistory
   name: OrderHistory
   identifiers: []
@@ -1075,79 +878,39 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-022
+  - endpoint: EP-030
     action: history
     method: GET
     path: /rest/order-history
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000029
-    - OBS-000112
-    - OBS-000117
-    - OBS-000121
-    - OBS-000125
-    - OBS-000407
-    - OBS-000412
-    - OBS-000416
-    - OBS-000420
-    - OBS-000425
-    - OBS-000482
-    - OBS-000539
-    - OBS-000614
-    - OBS-000794
-    - OBS-000845
-    - OBS-000889
-    - OBS-000899
-    - OBS-001128
-    - OBS-001131
-    - OBS-001133
-    - OBS-001165
-    - OBS-001220
-    - OBS-001382
-    - OBS-001385
-    - OBS-001388
+    - OBS-000120
+    - OBS-000322
+    - OBS-000337
+    - OBS-000446
+    - OBS-000506
     knowledge_status: INFERRED
   states: []
   sensitive_fields:
   - data[].promotionalAmount
   - status
   evidence:
-  - EP-022
-  - OBS-000029
-  - OBS-000112
-  - OBS-000117
-  - OBS-000121
-  - OBS-000125
-  - OBS-000407
-  - OBS-000412
-  - OBS-000416
-  - OBS-000420
-  - OBS-000425
-  - OBS-000482
-  - OBS-000539
-  - OBS-000614
-  - OBS-000794
-  - OBS-000845
-  - OBS-000889
-  - OBS-000899
-  - OBS-001128
-  - OBS-001131
-  - OBS-001133
-  - OBS-001165
-  - OBS-001220
-  - OBS-001382
-  - OBS-001385
-  - OBS-001388
+  - EP-030
+  - OBS-000120
+  - OBS-000322
+  - OBS-000337
+  - OBS-000446
+  - OBS-000506
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: d98901b1212e8b7b21ed2f70b4e73de766328df9cb7fe5ce3fd1347436833c93
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
-- id: RES-011
+    generated_checksum: 3595beb6294335b7da2a71f1b9ad61c150c8cd52312decc3e63a627e4a1ee3a5
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
+- id: RES-018
   key: resource:product
   name: Product
   identifiers:
@@ -1158,85 +921,127 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-008
+  - endpoint: EP-012
     action: read
     method: GET
     path: /api/Products/{productId}
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000065
-    - OBS-000379
-    - OBS-000581
-    - OBS-000586
-    - OBS-000924
-    - OBS-001217
-    - OBS-001357
+    - OBS-000092
+    - OBS-000122
+    - OBS-000315
+    - OBS-000324
+    - OBS-000417
+    - OBS-000508
+    - OBS-000522
     knowledge_status: INFERRED
-  - endpoint: EP-023
+  - endpoint: EP-031
     action: search
     method: GET
     path: /rest/products/search
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000046
-    - OBS-000093
-    - OBS-000178
-    - OBS-000255
-    - OBS-000280
+    - OBS-000047
+    - OBS-000074
+    - OBS-000219
+    - OBS-000226
+    - OBS-000292
+    - OBS-000369
+    - OBS-000399
+    - OBS-000457
+    - OBS-000481
+    - OBS-000519
+    - OBS-000602
+    - OBS-000704
+    knowledge_status: INFERRED
+  - endpoint: EP-032
+    action: read
+    method: GET
+    path: /rest/products/{productId}/reviews
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000124
+    - OBS-000125
+    - OBS-000127
+    - OBS-000129
+    - OBS-000130
+    - OBS-000131
     - OBS-000326
-    - OBS-000360
-    - OBS-000563
-    - OBS-000689
-    - OBS-000902
-    - OBS-001003
-    - OBS-001045
-    - OBS-001106
-    - OBS-001175
-    - OBS-001199
-    - OBS-001269
-    - OBS-001339
+    - OBS-000327
+    - OBS-000328
+    - OBS-000510
+    - OBS-000511
+    - OBS-000513
+    - OBS-000515
+    - OBS-000516
+    - OBS-000517
+    knowledge_status: INFERRED
+  - endpoint: EP-055
+    action: replace
+    method: PUT
+    path: /rest/products/{productId}/reviews
+    state_change: true
+    authentication_required: true
+    evidence:
+    - OBS-000128
+    - OBS-000514
     knowledge_status: INFERRED
   states: []
   sensitive_fields:
   - status
   evidence:
-  - EP-008
-  - EP-023
-  - OBS-000046
-  - OBS-000065
-  - OBS-000093
-  - OBS-000178
-  - OBS-000255
-  - OBS-000280
+  - EP-012
+  - EP-031
+  - EP-032
+  - EP-055
+  - OBS-000047
+  - OBS-000074
+  - OBS-000092
+  - OBS-000122
+  - OBS-000124
+  - OBS-000125
+  - OBS-000127
+  - OBS-000128
+  - OBS-000129
+  - OBS-000130
+  - OBS-000131
+  - OBS-000219
+  - OBS-000226
+  - OBS-000292
+  - OBS-000315
+  - OBS-000324
   - OBS-000326
-  - OBS-000360
-  - OBS-000379
-  - OBS-000563
-  - OBS-000581
-  - OBS-000586
-  - OBS-000689
-  - OBS-000902
-  - OBS-000924
-  - OBS-001003
-  - OBS-001045
-  - OBS-001106
-  - OBS-001175
-  - OBS-001199
-  - OBS-001217
-  - OBS-001269
-  - OBS-001339
-  - OBS-001357
+  - OBS-000327
+  - OBS-000328
+  - OBS-000369
+  - OBS-000399
+  - OBS-000417
+  - OBS-000457
+  - OBS-000481
+  - OBS-000508
+  - OBS-000510
+  - OBS-000511
+  - OBS-000513
+  - OBS-000514
+  - OBS-000515
+  - OBS-000516
+  - OBS-000517
+  - OBS-000519
+  - OBS-000522
+  - OBS-000602
+  - OBS-000704
   confidence: medium
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 4e59ca24dc1a513c3a5bb95dd8e5ce1540112db802ce6efd7431c2fb45b93139
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
-- id: RES-012
+    generated_checksum: 6782c4ce1a53d5af61c5a04e54a1787d0cd77cf630eb17e4c6b9a6fd7f08c8f4
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
+- id: RES-019
   key: resource:profile
   name: Profile
   identifiers: []
@@ -1246,56 +1051,58 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-017
+  - endpoint: EP-024
     action: read
     method: GET
     path: /profile
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000131
-    - OBS-000208
-    - OBS-000436
-    - OBS-000493
-    - OBS-000627
-    - OBS-000642
-    - OBS-000958
-    - OBS-001061
-    - OBS-001223
+    - OBS-000141
+    - OBS-000156
+    - OBS-000173
+    - OBS-000246
+    - OBS-000541
+    - OBS-000556
+    - OBS-000623
+    - OBS-000639
+    - OBS-000656
     knowledge_status: INFERRED
-  - endpoint: EP-051
+  - endpoint: EP-049
     action: create_or_execute
     method: POST
     path: /profile
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000641
+    - OBS-000155
+    - OBS-000555
     knowledge_status: INFERRED
   states: []
   sensitive_fields: []
   evidence:
-  - EP-017
-  - EP-051
-  - OBS-000131
-  - OBS-000208
-  - OBS-000436
-  - OBS-000493
-  - OBS-000627
-  - OBS-000641
-  - OBS-000642
-  - OBS-000958
-  - OBS-001061
-  - OBS-001223
+  - EP-024
+  - EP-049
+  - OBS-000141
+  - OBS-000155
+  - OBS-000156
+  - OBS-000173
+  - OBS-000246
+  - OBS-000541
+  - OBS-000555
+  - OBS-000556
+  - OBS-000623
+  - OBS-000639
+  - OBS-000656
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 5349409ab63288cf885f8bc11c3aa7d80affefcf3e85b90eed1e34e69545487c
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
-- id: RES-013
+    generated_checksum: e3a9471a89ea0416683149ae23291c08fc5bd60848a84e46745d7126e6dab970
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
+- id: RES-020
   key: resource:quantity
   name: Quantity
   identifiers: []
@@ -1305,130 +1112,51 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-009
+  - endpoint: EP-013
     action: read
     method: GET
     path: /api/Quantitys/
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000045
-    - OBS-000092
-    - OBS-000177
-    - OBS-000254
-    - OBS-000279
-    - OBS-000325
-    - OBS-000359
-    - OBS-000562
-    - OBS-000688
-    - OBS-000901
-    - OBS-001002
-    - OBS-001044
-    - OBS-001105
-    - OBS-001174
-    - OBS-001198
-    - OBS-001268
-    - OBS-001338
+    - OBS-000046
+    - OBS-000073
+    - OBS-000218
+    - OBS-000225
+    - OBS-000291
+    - OBS-000368
+    - OBS-000398
+    - OBS-000456
+    - OBS-000480
+    - OBS-000518
+    - OBS-000601
+    - OBS-000703
     knowledge_status: INFERRED
   states: []
   sensitive_fields:
   - status
   evidence:
-  - EP-009
-  - OBS-000045
-  - OBS-000092
-  - OBS-000177
-  - OBS-000254
-  - OBS-000279
-  - OBS-000325
-  - OBS-000359
-  - OBS-000562
-  - OBS-000688
-  - OBS-000901
-  - OBS-001002
-  - OBS-001044
-  - OBS-001105
-  - OBS-001174
-  - OBS-001198
-  - OBS-001268
-  - OBS-001338
+  - EP-013
+  - OBS-000046
+  - OBS-000073
+  - OBS-000218
+  - OBS-000225
+  - OBS-000291
+  - OBS-000368
+  - OBS-000398
+  - OBS-000456
+  - OBS-000480
+  - OBS-000518
+  - OBS-000601
+  - OBS-000703
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 4af120da9a18ca04233ad1aa8ebaa52a7ff3f4eb7d13a37b6adc9f5fa6fe79ad
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
-- id: RES-019
-  key: resource:recycle
-  name: Recycle
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-041
-    action: read
-    method: GET
-    path: /api/Recycles/
-    state_change: false
-    authentication_required: true
-    evidence:
-    - OBS-000841
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields:
-  - status
-  evidence:
-  - EP-041
-  - OBS-000841
-  confidence: low
-  knowledge_status: INFERRED
-  disposition: ACTIVE
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 01102b8a111800681fb7320bfa14b504ff610d15f27ee8ae6b4ff4448e4ea1ad
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
-- id: RES-020
-  key: resource:review
-  name: Review
-  identifiers: []
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-044
-    action: read
-    method: GET
-    path: /rest/products/42/reviews
-    state_change: false
-    authentication_required: true
-    evidence:
-    - OBS-000919
-    - OBS-000920
-    - OBS-000921
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-044
-  - OBS-000919
-  - OBS-000920
-  - OBS-000921
-  confidence: low
-  knowledge_status: INFERRED
-  disposition: ACTIVE
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 4cbfb859f0ec8b73c3bb177bd9893fc4e81bb3408ab4d00e81714b3c431e30f3
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
+    generated_checksum: 70e192fe867415e9eca5397b1d9c02ba071b845b2c8ca94c02f8df3e5ee3d727
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
 - id: RES-021
   key: resource:saveloginip
   name: Saveloginip
@@ -1439,62 +1167,29 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-045
+  - endpoint: EP-033
     action: read
     method: GET
     path: /rest/saveLoginIp
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-001173
+    - OBS-000455
     knowledge_status: INFERRED
   states: []
   sensitive_fields: []
   evidence:
-  - EP-045
-  - OBS-001173
+  - EP-033
+  - OBS-000455
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 71ddad60ad11ef598e71241678f4bc82bc0251265a6dc193af552ed92d6166fc
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
+    generated_checksum: 6125d6ba228ae97b1b23d6700aecdec8ffe1c65936980626e22bf6aa0602764b
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
 - id: RES-022
-  key: resource:securityanswer
-  name: Securityanswer
-  identifiers:
-  - UserId
-  owner:
-    value: unknown
-    knowledge_status: ASSUMED
-    confidence: low
-    evidence: []
-  operations:
-  - endpoint: EP-049
-    action: create_or_execute
-    method: POST
-    path: /api/SecurityAnswers/
-    state_change: false
-    authentication_required: true
-    evidence:
-    - OBS-000554
-    knowledge_status: INFERRED
-  states: []
-  sensitive_fields: []
-  evidence:
-  - EP-049
-  - OBS-000554
-  confidence: low
-  knowledge_status: INFERRED
-  disposition: ACTIVE
-  generation:
-    managed: true
-    generator: phase2-modeler
-    generated_checksum: 37a4b21c994af6496a5bfca2140e724648efd23a346ce36b46405a04823ef988
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
-- id: RES-023
   key: resource:securityquestion
   name: Securityquestion
   identifiers: []
@@ -1504,29 +1199,31 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-042
+  - endpoint: EP-014
     action: read
     method: GET
     path: /api/SecurityQuestions/
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000552
+    - OBS-000011
+    - OBS-000040
     knowledge_status: INFERRED
   states: []
   sensitive_fields: []
   evidence:
-  - EP-042
-  - OBS-000552
+  - EP-014
+  - OBS-000011
+  - OBS-000040
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: fb6e4476036c716e03288a8a0463127a02a42f28cca8f946450093c78931d84f
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
-- id: RES-014
+    generated_checksum: 2717fadd38d56f7d1451ac7f1274414fc2983766344f98fb91c980be1872eeeb
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
+- id: RES-023
   key: resource:socket.io
   name: Socket.Io
   identifiers: []
@@ -1536,174 +1233,90 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-027
+  - endpoint: EP-038
     action: read
     method: GET
     path: /socket.io/
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000018
-    - OBS-000034
-    - OBS-000035
-    - OBS-000163
-    - OBS-000182
-    - OBS-000183
-    - OBS-000240
-    - OBS-000259
-    - OBS-000260
-    - OBS-000314
-    - OBS-000330
-    - OBS-000331
-    - OBS-000468
-    - OBS-000487
-    - OBS-000488
-    - OBS-000525
-    - OBS-000544
-    - OBS-000545
-    - OBS-000616
-    - OBS-000618
-    - OBS-000619
-    - OBS-000620
-    - OBS-000673
-    - OBS-000693
-    - OBS-000694
-    - OBS-000730
-    - OBS-000750
-    - OBS-000751
-    - OBS-000771
-    - OBS-000790
-    - OBS-000791
-    - OBS-000814
-    - OBS-000832
-    - OBS-000833
-    - OBS-000865
-    - OBS-000883
-    - OBS-000884
-    - OBS-000988
-    - OBS-001007
-    - OBS-001008
-    - OBS-001091
-    - OBS-001110
-    - OBS-001111
-    - OBS-001151
-    - OBS-001170
-    - OBS-001171
-    - OBS-001254
-    - OBS-001273
-    - OBS-001274
-    - OBS-001389
-    - OBS-001391
-    - OBS-001392
+    - OBS-000008
+    - OBS-000009
+    - OBS-000029
+    - OBS-000044
+    - OBS-000045
+    - OBS-000204
+    - OBS-000223
+    - OBS-000224
+    - OBS-000277
+    - OBS-000296
+    - OBS-000297
+    - OBS-000357
+    - OBS-000373
+    - OBS-000374
+    - OBS-000587
+    - OBS-000606
+    - OBS-000607
+    - OBS-000689
+    - OBS-000708
+    - OBS-000709
     knowledge_status: INFERRED
-  - endpoint: EP-036
+  - endpoint: EP-054
     action: create_or_execute
     method: POST
     path: /socket.io/
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000033
-    - OBS-000181
-    - OBS-000258
-    - OBS-000329
-    - OBS-000486
-    - OBS-000543
-    - OBS-000617
-    - OBS-000692
-    - OBS-000749
-    - OBS-000789
-    - OBS-000831
-    - OBS-000882
-    - OBS-001006
-    - OBS-001109
-    - OBS-001169
-    - OBS-001272
-    - OBS-001390
+    - OBS-000007
+    - OBS-000043
+    - OBS-000222
+    - OBS-000295
+    - OBS-000372
+    - OBS-000605
+    - OBS-000707
     knowledge_status: INFERRED
   states: []
   sensitive_fields: []
   evidence:
-  - EP-027
-  - EP-036
-  - OBS-000018
-  - OBS-000033
-  - OBS-000034
-  - OBS-000035
-  - OBS-000163
-  - OBS-000181
-  - OBS-000182
-  - OBS-000183
-  - OBS-000240
-  - OBS-000258
-  - OBS-000259
-  - OBS-000260
-  - OBS-000314
-  - OBS-000329
-  - OBS-000330
-  - OBS-000331
-  - OBS-000468
-  - OBS-000486
-  - OBS-000487
-  - OBS-000488
-  - OBS-000525
-  - OBS-000543
-  - OBS-000544
-  - OBS-000545
-  - OBS-000616
-  - OBS-000617
-  - OBS-000618
-  - OBS-000619
-  - OBS-000620
-  - OBS-000673
-  - OBS-000692
-  - OBS-000693
-  - OBS-000694
-  - OBS-000730
-  - OBS-000749
-  - OBS-000750
-  - OBS-000751
-  - OBS-000771
-  - OBS-000789
-  - OBS-000790
-  - OBS-000791
-  - OBS-000814
-  - OBS-000831
-  - OBS-000832
-  - OBS-000833
-  - OBS-000865
-  - OBS-000882
-  - OBS-000883
-  - OBS-000884
-  - OBS-000988
-  - OBS-001006
-  - OBS-001007
-  - OBS-001008
-  - OBS-001091
-  - OBS-001109
-  - OBS-001110
-  - OBS-001111
-  - OBS-001151
-  - OBS-001169
-  - OBS-001170
-  - OBS-001171
-  - OBS-001254
-  - OBS-001272
-  - OBS-001273
-  - OBS-001274
-  - OBS-001389
-  - OBS-001390
-  - OBS-001391
-  - OBS-001392
+  - EP-038
+  - EP-054
+  - OBS-000007
+  - OBS-000008
+  - OBS-000009
+  - OBS-000029
+  - OBS-000043
+  - OBS-000044
+  - OBS-000045
+  - OBS-000204
+  - OBS-000222
+  - OBS-000223
+  - OBS-000224
+  - OBS-000277
+  - OBS-000295
+  - OBS-000296
+  - OBS-000297
+  - OBS-000357
+  - OBS-000372
+  - OBS-000373
+  - OBS-000374
+  - OBS-000587
+  - OBS-000605
+  - OBS-000606
+  - OBS-000607
+  - OBS-000689
+  - OBS-000707
+  - OBS-000708
+  - OBS-000709
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 0cf682b3adabec22957316837cc09fd3559a922e44fd8858ca41a8ed1dfb864b
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
-- id: RES-015
+    generated_checksum: b1ad13f21ae99d8f3e740fe936c374bf47a528314b42303c7b05ed776d997037
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
+- id: RES-024
   key: resource:trackorder
   name: TrackOrder
   identifiers:
@@ -1714,110 +1327,73 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-024
+  - endpoint: EP-034
     action: read
     method: GET
     path: /rest/track-order/{trackOrderId}
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000088
     - OBS-000115
-    - OBS-000119
-    - OBS-000123
-    - OBS-000402
-    - OBS-000410
-    - OBS-000414
-    - OBS-000418
-    - OBS-000547
-    - OBS-000609
-    - OBS-000796
-    - OBS-000828
-    - OBS-000847
-    - OBS-000879
-    - OBS-000891
-    - OBS-001041
-    - OBS-001130
-    - OBS-001132
-    - OBS-001222
-    - OBS-001306
-    - OBS-001375
-    - OBS-001384
-    - OBS-001387
-    - OBS-001393
+    - OBS-000132
+    - OBS-000339
+    - OBS-000441
+    - OBS-000448
     knowledge_status: INFERRED
   states: []
   sensitive_fields:
   - data[].promotionalAmount
   - status
   evidence:
-  - EP-024
-  - OBS-000088
+  - EP-034
   - OBS-000115
-  - OBS-000119
-  - OBS-000123
-  - OBS-000402
-  - OBS-000410
-  - OBS-000414
-  - OBS-000418
-  - OBS-000547
-  - OBS-000609
-  - OBS-000796
-  - OBS-000828
-  - OBS-000847
-  - OBS-000879
-  - OBS-000891
-  - OBS-001041
-  - OBS-001130
-  - OBS-001132
-  - OBS-001222
-  - OBS-001306
-  - OBS-001375
-  - OBS-001384
-  - OBS-001387
-  - OBS-001393
+  - OBS-000132
+  - OBS-000339
+  - OBS-000441
+  - OBS-000448
   confidence: medium
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 17ff1b3dae7e58889cd984abdf88ec4f2d5ea42a556be6316791d288de14be3c
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
-- id: RES-024
-  key: resource:user
-  name: User
-  identifiers:
-  - id
+    generated_checksum: ab53f2d4c8d6f1a65faa78030bad3726a07aaf70b5fd4e4fe37e96a8e7b3e30b
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
+- id: RES-025
+  key: resource:url
+  name: Url
+  identifiers: []
   owner:
     value: unknown
     knowledge_status: ASSUMED
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-050
+  - endpoint: EP-051
     action: create_or_execute
     method: POST
-    path: /api/Users/
+    path: /profile/image/url
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000553
+    - OBS-000172
+    - OBS-000655
     knowledge_status: INFERRED
   states: []
   sensitive_fields: []
   evidence:
-  - EP-050
-  - OBS-000553
+  - EP-051
+  - OBS-000172
+  - OBS-000655
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: b5aa640cf379872695fe0dc9c011aa27219c266fd745280372a2fac458610d05
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
-- id: RES-016
+    generated_checksum: 006bc4794cc17fcaea7b3916569d65d16610a4e81be0c26873ea260c5673640d
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
+- id: RES-026
   key: resource:wallet
   name: Wallet
   identifiers:
@@ -1828,109 +1404,49 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-026
+  - endpoint: EP-037
     action: read
     method: GET
     path: /rest/wallet/balance
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000076
-    - OBS-000390
-    - OBS-000596
-    - OBS-000893
-    - OBS-000894
-    - OBS-000898
-    - OBS-000936
-    - OBS-000939
-    - OBS-000940
-    - OBS-000944
-    - OBS-000945
-    - OBS-000949
-    - OBS-000950
-    - OBS-000953
-    - OBS-001030
-    - OBS-001296
-    - OBS-001311
-    - OBS-001312
-    - OBS-001316
-    - OBS-001317
-    - OBS-001321
-    - OBS-001322
-    - OBS-001326
-    - OBS-001327
-    - OBS-001331
-    - OBS-001333
-    - OBS-001337
-    - OBS-001365
+    - OBS-000102
+    - OBS-000133
+    - OBS-000134
+    - OBS-000138
+    - OBS-000428
     knowledge_status: INFERRED
-  - endpoint: EP-053
+  - endpoint: EP-056
     action: replace
     method: PUT
     path: /rest/wallet/balance
     state_change: true
     authentication_required: true
     evidence:
-    - OBS-000897
-    - OBS-000943
-    - OBS-000948
-    - OBS-001315
-    - OBS-001320
-    - OBS-001325
-    - OBS-001330
-    - OBS-001336
+    - OBS-000137
     knowledge_status: INFERRED
   states: []
   sensitive_fields:
   - balance
   evidence:
-  - EP-026
-  - EP-053
-  - OBS-000076
-  - OBS-000390
-  - OBS-000596
-  - OBS-000893
-  - OBS-000894
-  - OBS-000897
-  - OBS-000898
-  - OBS-000936
-  - OBS-000939
-  - OBS-000940
-  - OBS-000943
-  - OBS-000944
-  - OBS-000945
-  - OBS-000948
-  - OBS-000949
-  - OBS-000950
-  - OBS-000953
-  - OBS-001030
-  - OBS-001296
-  - OBS-001311
-  - OBS-001312
-  - OBS-001315
-  - OBS-001316
-  - OBS-001317
-  - OBS-001320
-  - OBS-001321
-  - OBS-001322
-  - OBS-001325
-  - OBS-001326
-  - OBS-001327
-  - OBS-001330
-  - OBS-001331
-  - OBS-001333
-  - OBS-001336
-  - OBS-001337
-  - OBS-001365
+  - EP-037
+  - EP-056
+  - OBS-000102
+  - OBS-000133
+  - OBS-000134
+  - OBS-000137
+  - OBS-000138
+  - OBS-000428
   confidence: high
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 1c26282b8b59a21ef93e82e450b0dc90d664254235b000e1c7e9eff06cb2131a
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
-- id: RES-017
+    generated_checksum: 8512494450e2589145c410dbaa21b7f19db4ee1b1e157b7f608889a5f38a5650
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c
+- id: RES-027
   key: resource:whoami
   name: Whoami
   identifiers: []
@@ -1940,163 +1456,97 @@ resources:
     confidence: low
     evidence: []
   operations:
-  - endpoint: EP-025
+  - endpoint: EP-036
     action: read
     method: GET
     path: /rest/user/whoami
     state_change: false
     authentication_required: true
     evidence:
-    - OBS-000039
-    - OBS-000040
-    - OBS-000043
-    - OBS-000044
+    - OBS-000067
     - OBS-000068
-    - OBS-000083
-    - OBS-000110
-    - OBS-000129
-    - OBS-000168
-    - OBS-000173
-    - OBS-000245
-    - OBS-000250
-    - OBS-000350
-    - OBS-000351
-    - OBS-000353
-    - OBS-000354
-    - OBS-000357
-    - OBS-000358
-    - OBS-000382
+    - OBS-000071
+    - OBS-000072
+    - OBS-000095
+    - OBS-000111
+    - OBS-000119
+    - OBS-000123
+    - OBS-000209
+    - OBS-000214
+    - OBS-000282
+    - OBS-000287
+    - OBS-000318
+    - OBS-000325
+    - OBS-000330
+    - OBS-000332
+    - OBS-000335
+    - OBS-000392
+    - OBS-000393
+    - OBS-000396
     - OBS-000397
-    - OBS-000423
-    - OBS-000473
+    - OBS-000420
+    - OBS-000437
+    - OBS-000445
+    - OBS-000474
+    - OBS-000475
     - OBS-000478
-    - OBS-000491
-    - OBS-000530
-    - OBS-000535
-    - OBS-000556
-    - OBS-000557
-    - OBS-000560
-    - OBS-000561
-    - OBS-000589
-    - OBS-000605
-    - OBS-000678
-    - OBS-000683
-    - OBS-000712
-    - OBS-000735
-    - OBS-000740
-    - OBS-000746
-    - OBS-000776
-    - OBS-000781
-    - OBS-000786
-    - OBS-000819
-    - OBS-000824
-    - OBS-000836
-    - OBS-000840
-    - OBS-000870
-    - OBS-000875
-    - OBS-000887
-    - OBS-000918
-    - OBS-000927
-    - OBS-000993
-    - OBS-000998
-    - OBS-001025
-    - OBS-001037
-    - OBS-001096
-    - OBS-001101
-    - OBS-001156
-    - OBS-001161
-    - OBS-001192
-    - OBS-001193
-    - OBS-001196
-    - OBS-001197
-    - OBS-001259
-    - OBS-001264
-    - OBS-001291
-    - OBS-001303
-    - OBS-001310
-    - OBS-001360
-    - OBS-001371
-    - OBS-001381
+    - OBS-000479
+    - OBS-000505
+    - OBS-000509
+    - OBS-000525
+    - OBS-000537
+    - OBS-000540
+    - OBS-000592
+    - OBS-000597
+    - OBS-000694
+    - OBS-000699
     knowledge_status: INFERRED
   states: []
   sensitive_fields: []
   evidence:
-  - EP-025
-  - OBS-000039
-  - OBS-000040
-  - OBS-000043
-  - OBS-000044
+  - EP-036
+  - OBS-000067
   - OBS-000068
-  - OBS-000083
-  - OBS-000110
-  - OBS-000129
-  - OBS-000168
-  - OBS-000173
-  - OBS-000245
-  - OBS-000250
-  - OBS-000350
-  - OBS-000351
-  - OBS-000353
-  - OBS-000354
-  - OBS-000357
-  - OBS-000358
-  - OBS-000382
+  - OBS-000071
+  - OBS-000072
+  - OBS-000095
+  - OBS-000111
+  - OBS-000119
+  - OBS-000123
+  - OBS-000209
+  - OBS-000214
+  - OBS-000282
+  - OBS-000287
+  - OBS-000318
+  - OBS-000325
+  - OBS-000330
+  - OBS-000332
+  - OBS-000335
+  - OBS-000392
+  - OBS-000393
+  - OBS-000396
   - OBS-000397
-  - OBS-000423
-  - OBS-000473
+  - OBS-000420
+  - OBS-000437
+  - OBS-000445
+  - OBS-000474
+  - OBS-000475
   - OBS-000478
-  - OBS-000491
-  - OBS-000530
-  - OBS-000535
-  - OBS-000556
-  - OBS-000557
-  - OBS-000560
-  - OBS-000561
-  - OBS-000589
-  - OBS-000605
-  - OBS-000678
-  - OBS-000683
-  - OBS-000712
-  - OBS-000735
-  - OBS-000740
-  - OBS-000746
-  - OBS-000776
-  - OBS-000781
-  - OBS-000786
-  - OBS-000819
-  - OBS-000824
-  - OBS-000836
-  - OBS-000840
-  - OBS-000870
-  - OBS-000875
-  - OBS-000887
-  - OBS-000918
-  - OBS-000927
-  - OBS-000993
-  - OBS-000998
-  - OBS-001025
-  - OBS-001037
-  - OBS-001096
-  - OBS-001101
-  - OBS-001156
-  - OBS-001161
-  - OBS-001192
-  - OBS-001193
-  - OBS-001196
-  - OBS-001197
-  - OBS-001259
-  - OBS-001264
-  - OBS-001291
-  - OBS-001303
-  - OBS-001310
-  - OBS-001360
-  - OBS-001371
-  - OBS-001381
+  - OBS-000479
+  - OBS-000505
+  - OBS-000509
+  - OBS-000525
+  - OBS-000537
+  - OBS-000540
+  - OBS-000592
+  - OBS-000597
+  - OBS-000694
+  - OBS-000699
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 731f170a0c61d7a8d691cfa26a5d5137f0c02b6c4e8fce004c9e0856e4cb5efe
-    source_fingerprint: 4aa19e15eb4460356d06b379eb6d1eb0e33e1805aa470647dd6e31b35028af6e
+    generated_checksum: a3b29b960df94edf967831e64aac73c71119406e9873a7c6ca18ae6d1727a9ea
+    source_fingerprint: 951ac2b3915beb2686824638c779a80cf011274e1697af5eb66506f7dc95258c

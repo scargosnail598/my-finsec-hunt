@@ -1,4 +1,4 @@
-"""Local, read-only web interface for FinSec Hunt workspaces."""
+"""Local setup, passive-ingestion, and review interface for FinSec Hunt."""
 
 from finsec.web.app import create_app
 

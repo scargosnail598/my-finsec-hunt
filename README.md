@@ -77,19 +77,20 @@ options.
 
 ## Local Web UI
 
-FinSec Hunt includes a bundled, read-only research cockpit for browsing the selected workspace's
-pipeline state, normalized endpoints, inferred model, hypotheses, plans, evidence metadata,
-validations, reports, and scope documents:
+FinSec Hunt includes a bundled local research cockpit for creating default-deny workspaces,
+uploading reviewed HAR files into the external capture directory, assigning actor/channel
+provenance, running the passive workflow, and browsing the resulting research state:
 
 ```bash
-hunt web --workspace workspaces/example-fintech
+hunt web --workspace-root workspaces --capture-root captures
 ```
 
-Then open `http://127.0.0.1:8765`. Omit `--workspace` to select among direct children of the
-`workspaces/` directory, or pass `--workspace-root PATH`. The server binds only to a loopback
-address because it has no login screen. It never returns credential profile references, raw
-request values, evidence file contents, or secret material, and it exposes no approval or active
-execution action.
+Then open `http://127.0.0.1:8765`. Pass `--workspace workspaces/example-fintech` to start on one
+exact workspace. The server binds only to a loopback address because it has no login screen. Its
+write surface is limited to setup, passive ingestion, and an exact-confirmation Danger Zone for
+workspace deletion or complete project purge. It does not collect credentials, approve plans, or
+expose active execution. Browser responses omit credential profile references, raw request values,
+evidence file contents, and secret material.
 
 ## Local MCP Server
 

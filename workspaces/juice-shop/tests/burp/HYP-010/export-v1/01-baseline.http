@@ -1,7 +1,0 @@
-GET /rest/basket/7 HTTP/1.1
-Host: juice-shop.local:3000
-Accept: application/json, text/plain, */*
-Authorization: <FINSEC_RUNTIME_SECRET:MRSCARGO:AUTHORIZATION>
-Cookie: <FINSEC_RUNTIME_SECRET:MRSCARGO:COOKIE>
-Connection: close
-

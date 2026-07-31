@@ -1,8 +1,0 @@
-hypothesis_id: HYP-010
-plan_id: TEST-001
-plan_checksum: bdbdb69c2d868bde9a15bfaf04ab6360bf7395c53ea46e7031f7b0d486dce771
-target_policy_checksum: 2214dbcf0d7821ab8d98f3206f4477dc5d9145a144f8a4f8756b5111cda9f8c4
-request_count: 2
-outcome: CROSS_OBJECT_RESPONSE_OBSERVED
-final_vulnerability_status: NOT CONFIRMED
-authentication_events: []

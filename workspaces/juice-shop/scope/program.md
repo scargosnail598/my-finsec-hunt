@@ -9,7 +9,7 @@ Bug bounty platform:
 Not recorded.
 
 Last scope review:
-2026-07-30
+2026-07-31
 
 Notes:
 Add the official program rules before testing.

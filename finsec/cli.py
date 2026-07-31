@@ -2319,6 +2319,13 @@ def web_command(
             help="Directory containing target workspaces when --workspace is omitted.",
         ),
     ] = Path("workspaces"),
+    capture_root: Annotated[
+        Path | None,
+        typer.Option(
+            "--capture-root",
+            help="External directory containing <slug>/incoming HAR capture folders.",
+        ),
+    ] = None,
     host: Annotated[
         str,
         typer.Option("--host", help="Loopback address for the unauthenticated local UI."),
@@ -2328,17 +2335,18 @@ def web_command(
         typer.Option("--port", min=1, max=65535, help="Local TCP port for the Web UI."),
     ] = 8765,
 ) -> None:
-    """Serve the read-only local research cockpit without target network access."""
+    """Serve the local setup, passive-ingestion, and research cockpit."""
 
     try:
         selected = resolve_workspace(workspace).root if workspace is not None else None
         from finsec.web.server import run_server
 
         console.print(f"[green]FinSec Hunt Web UI:[/green] http://{host}:{port}")
-        console.print("The UI is read-only and cannot approve or execute test plans.")
+        console.print("The UI can set up workspaces and ingest passively; it cannot execute plans.")
         run_server(
             workspace_root=workspace_root,
             workspace=selected,
+            capture_root=capture_root,
             host=host,
             port=port,
         )

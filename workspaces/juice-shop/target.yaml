@@ -33,12 +33,12 @@ accounts:
       cookie_session_only: false
     source:
       type: har
-      file_reference: saeedmehmandoust-track3.har
-      captured_at: '2026-07-30T15:05:27.155000Z'
+      file_reference: saeedmehmandoust-files.har
+      captured_at: '2026-07-31T11:17:18.794000Z'
     expiration:
       detectable: true
-      expires_at: '2026-07-30T23:05:27Z'
-      last_checked_at: '2026-07-30T15:05:27.155000Z'
+      expires_at: '2026-07-31T19:17:18Z'
+      last_checked_at: '2026-07-31T11:17:18.794000Z'
       source: cookie
     refresh:
       configured: false
@@ -49,11 +49,11 @@ accounts:
       scheme: http
       host: juice-shop.local
       port: 3000
-      path: /rest/basket/6
+      path: /rest/basket/7
       query_parameters: {}
       safe_headers:
         Accept: application/json, text/plain, */*
-        Accept-Language: en-US,en;q=0.9
+        Accept-Language: en-US,en;q=0.9,fa-IR;q=0.8,fa;q=0.7
       expected_status: 200
       expected_content_type: application/json; charset=utf-8
     identity:
@@ -63,7 +63,7 @@ accounts:
     context_fingerprint: cc2965d1d12f9acd09cc00540b59b7a72285db203a6e8f3b6b0030c61a27607f
     target_hosts:
     - juice-shop.local
-    last_validated_at: '2026-07-30T15:05:27.155000Z'
+    last_validated_at: '2026-07-31T11:17:18.794000Z'
     legacy_environment: {}
   attributes:
     verification_level: unknown
@@ -94,12 +94,12 @@ accounts:
       cookie_session_only: false
     source:
       type: har
-      file_reference: scargo-track2.har
-      captured_at: '2026-07-30T13:54:01.350000Z'
+      file_reference: scargo-files.har
+      captured_at: '2026-07-31T10:40:40.053000Z'
     expiration:
       detectable: true
-      expires_at: '2027-07-30T09:36:09Z'
-      last_checked_at: '2026-07-30T13:54:01.350000Z'
+      expires_at: '2026-07-31T18:40:40Z'
+      last_checked_at: '2026-07-31T10:40:40.053000Z'
       source: cookie
     refresh:
       configured: false
@@ -110,7 +110,7 @@ accounts:
       scheme: http
       host: juice-shop.local
       port: 3000
-      path: /rest/saveLoginIp
+      path: /rest/basket/6
       query_parameters: {}
       safe_headers:
         Accept: application/json, text/plain, */*
@@ -124,7 +124,7 @@ accounts:
     context_fingerprint: 531566af0a6192b04341f4886f7e289a8756f75687edfc5920c4e1bdb0136874
     target_hosts:
     - juice-shop.local
-    last_validated_at: '2026-07-30T13:54:01.350000Z'
+    last_validated_at: '2026-07-31T10:40:40.053000Z'
     legacy_environment: {}
   attributes:
     verification_level: unknown

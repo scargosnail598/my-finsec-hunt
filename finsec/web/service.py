@@ -10,9 +10,11 @@ from typing import Any
 
 from pydantic import ValidationError
 
+from finsec.auth.service import AuthenticationPreflight, actor_preflight
+from finsec.auth.store import SecretStore
 from finsec.config.models import TargetDocument
 from finsec.config.workspace import WorkspacePaths
-from finsec.errors import WorkspaceError
+from finsec.errors import FinsecError, WorkspaceError
 from finsec.evidence.domain import EvidenceMetadata
 from finsec.hypotheses.domain import HypothesisRecord, HypothesisStore
 from finsec.modeling.domain import ActorStore, InvariantStore, ResourceStore
@@ -65,6 +67,11 @@ class SnapshotCache:
         self._entries[paths.root] = (signature, snapshot)
         return snapshot
 
+    def invalidate(self, paths: WorkspacePaths) -> None:
+        """Discard one removed or externally changed workspace snapshot."""
+
+        self._entries.pop(paths.root, None)
+
 
 class WorkspaceCatalog:
     """Resolve only direct, validated workspaces selected for the local server."""
@@ -74,6 +81,22 @@ class WorkspaceCatalog:
         self.selected_workspace = (
             selected_workspace.expanduser().resolve() if selected_workspace is not None else None
         )
+        self._registered: dict[str, Path] = {}
+
+    def register(self, root: Path) -> None:
+        """Add a workspace created during this server session to the exact catalog."""
+
+        resolved = root.expanduser().resolve()
+        if not (resolved / "target.yaml").is_file():
+            raise WorkspaceError(f"Not a FinSec Hunt workspace: {resolved}")
+        self._registered[resolved.name] = resolved
+
+    def unregister(self, key: str) -> None:
+        """Remove a deleted workspace from this server session's catalog."""
+
+        if self.selected_workspace is not None and self.selected_workspace.name == key:
+            self.selected_workspace = None
+        self._registered.pop(key, None)
 
     def list_workspaces(self) -> list[dict[str, Any]]:
         """Return target identities without exposing credential configuration."""
@@ -121,7 +144,7 @@ class WorkspaceCatalog:
             root = self.selected_workspace
             if not (root / "target.yaml").is_file():
                 raise WorkspaceError(f"Not a FinSec Hunt workspace: {root}")
-            return {root.name: root}
+            return {root.name: root, **self._registered}
 
         if not self.workspace_root.is_dir():
             return {}
@@ -131,6 +154,7 @@ class WorkspaceCatalog:
             if candidate.parent != self.workspace_root:
                 continue
             roots[candidate.name] = candidate
+        roots.update(self._registered)
         return roots
 
 
@@ -233,6 +257,70 @@ def workspace_overview(snapshot: WorkspaceSnapshot) -> dict[str, Any]:
             {"state": "Hypothesis", "description": "A prioritized research question."},
             {"state": "Finding", "description": "Only a confirmed, report-ready validation."},
         ],
+    }
+
+
+def authentication_payload(snapshot: WorkspaceSnapshot) -> dict[str, Any]:
+    """Return redacted actor-authentication preflights without network traffic."""
+
+    store = SecretStore(snapshot.paths)
+    permissions = store.permissions()
+    actors: list[dict[str, Any]] = []
+    for account in snapshot.target.accounts:
+        authentication = account.authentication
+        try:
+            preflight = actor_preflight(snapshot.paths, account.id, for_execution=True)
+            preflight_payload = _authentication_preflight_payload(preflight)
+        except FinsecError as error:
+            preflight_payload = {
+                "status": "INVALID",
+                "credential_available": False,
+                "expires_at": (
+                    authentication.expiration.expires_at.isoformat()
+                    if authentication is not None
+                    and authentication.expiration.expires_at is not None
+                    else None
+                ),
+                "remaining_seconds": None,
+                "refresh_available": (
+                    authentication.refresh.configured if authentication is not None else False
+                ),
+                "target_validated": False,
+                "baseline_identity_confirmed": False,
+                "result": "BLOCKED_BY_AUTH",
+                "reasons": [str(error)],
+            }
+        actors.append(
+            {
+                "id": account.id,
+                "role": account.role,
+                "actor_type": account.actor_type
+                or ("authenticated_user" if account.authenticated else "anonymous"),
+                "authenticated": account.authenticated,
+                "auth_type": authentication.auth_type if authentication is not None else None,
+                "source": authentication.source.type if authentication is not None else None,
+                "last_validated_at": (
+                    authentication.last_validated_at.isoformat()
+                    if authentication is not None and authentication.last_validated_at is not None
+                    else None
+                ),
+                "preflight": preflight_payload,
+            }
+        )
+    return {
+        "workspace": {
+            "key": snapshot.paths.root.name,
+            "name": snapshot.target.target.name,
+            "path": str(snapshot.paths.root),
+        },
+        "storage": {
+            "backend": store.backend_name,
+            "permissions": f"{permissions:04o}" if permissions is not None else None,
+        },
+        "checked_at": datetime.now(UTC).isoformat(),
+        "network_requests_sent": 0,
+        "browser_collects_credentials": False,
+        "actors": actors,
     }
 
 
@@ -444,6 +532,22 @@ def _sanitized_account(account: Any) -> dict[str, Any]:
             if authentication is not None
             else None
         ),
+    }
+
+
+def _authentication_preflight_payload(preflight: AuthenticationPreflight) -> dict[str, Any]:
+    return {
+        "status": preflight.status,
+        "credential_available": preflight.credential_available,
+        "expires_at": preflight.expires_at.isoformat()
+        if preflight.expires_at is not None
+        else None,
+        "remaining_seconds": preflight.remaining_seconds,
+        "refresh_available": preflight.refresh_available,
+        "target_validated": preflight.target_validated,
+        "baseline_identity_confirmed": preflight.baseline_identity_confirmed,
+        "result": preflight.result,
+        "reasons": list(preflight.reasons),
     }
 
 

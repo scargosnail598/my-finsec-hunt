@@ -9,6 +9,10 @@ const drawer = document.querySelector("#detail-drawer");
 const drawerContent = document.querySelector("#drawer-content");
 const drawerBackdrop = document.querySelector("#drawer-backdrop");
 const toast = document.querySelector("#toast");
+const themeMedia = window.matchMedia("(prefers-color-scheme: dark)");
+
+const THEME_STORAGE_KEY = "finsec-theme";
+const THEME_PREFERENCES = new Set(["system", "light", "dark"]);
 
 const state = {
   workspaces: [],
@@ -16,12 +20,17 @@ const state = {
   overview: null,
   cache: {},
   view: "overview",
+  lastIngestResult: null,
+  setupAccountIndex: 2,
   hypothesisFilters: { kind: "ALL", priority: "ALL", query: "" },
   endpointFilters: { classification: "ALL", disposition: "ALL", query: "" },
 };
 
 const VIEW_LABELS = {
+  setup: "WORKSPACE SETUP",
   overview: "OVERVIEW",
+  ingest: "PASSIVE INGESTION",
+  authentication: "ACTOR AUTHENTICATION",
   hypotheses: "HYPOTHESES",
   endpoints: "ENDPOINTS",
   model: "INFERRED MODEL",
@@ -37,7 +46,9 @@ async function boot() {
     const payload = await api("/api/workspaces");
     state.workspaces = payload.workspaces.filter((workspace) => workspace.valid);
     if (!state.workspaces.length) {
-      renderNoWorkspaces(payload.workspaces);
+      state.workspaceKey = null;
+      renderWorkspaceOptions();
+      await navigate("setup", false);
       return;
     }
     const remembered = window.localStorage.getItem("finsec-workspace");
@@ -53,6 +64,7 @@ async function boot() {
 }
 
 function bindGlobalEvents() {
+  bindThemeEvents();
   document.querySelectorAll("[data-view]").forEach((button) => {
     button.addEventListener("click", () => navigate(button.dataset.view));
   });
@@ -67,6 +79,50 @@ function bindGlobalEvents() {
   content.addEventListener("click", handleContentClick);
   content.addEventListener("input", handleContentInput);
   content.addEventListener("change", handleContentInput);
+  content.addEventListener("submit", handleContentSubmit);
+  drawerContent.addEventListener("click", handleContentClick);
+  drawerContent.addEventListener("input", handleContentInput);
+  drawerContent.addEventListener("change", handleContentInput);
+  drawerContent.addEventListener("submit", handleContentSubmit);
+}
+
+function bindThemeEvents() {
+  const preference = document.documentElement.dataset.themePreference || "system";
+  updateThemeControls(preference);
+  document.querySelectorAll("[data-theme-choice]").forEach((button) => {
+    button.addEventListener("click", () => setThemePreference(button.dataset.themeChoice));
+  });
+  themeMedia.addEventListener("change", () => {
+    if (document.documentElement.dataset.themePreference === "system") {
+      applyThemePreference("system");
+    }
+  });
+}
+
+function setThemePreference(preference) {
+  if (!THEME_PREFERENCES.has(preference)) return;
+  try {
+    if (preference === "system") window.localStorage.removeItem(THEME_STORAGE_KEY);
+    else window.localStorage.setItem(THEME_STORAGE_KEY, preference);
+  } catch {
+    // The selected theme still applies for this page when storage is unavailable.
+  }
+  applyThemePreference(preference);
+}
+
+function applyThemePreference(preference) {
+  const resolvedTheme = preference === "system" ? (themeMedia.matches ? "dark" : "light") : preference;
+  document.documentElement.dataset.theme = resolvedTheme;
+  document.documentElement.dataset.themePreference = preference;
+  updateThemeControls(preference);
+}
+
+function updateThemeControls(preference) {
+  document.querySelectorAll("[data-theme-choice]").forEach((button) => {
+    const isActive = button.dataset.themeChoice === preference;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
 }
 
 function readHash() {
@@ -94,7 +150,8 @@ async function refreshCurrentView() {
   button.classList.add("is-spinning");
   state.cache = {};
   try {
-    await loadOverview();
+    await refreshWorkspaceCatalog();
+    if (state.workspaceKey) await loadOverview();
     await navigate(state.view, false);
     showToast("Local workspace data refreshed.");
   } catch (error) {
@@ -106,6 +163,7 @@ async function refreshCurrentView() {
 
 async function navigate(view, updateHash = true) {
   if (!Object.hasOwn(VIEW_LABELS, view)) view = "overview";
+  if (!state.workspaceKey && view !== "setup") view = "setup";
   state.view = view;
   if (updateHash && window.location.hash !== `#${view}`) {
     window.location.hash = view;
@@ -117,8 +175,14 @@ async function navigate(view, updateHash = true) {
   viewLabel.textContent = VIEW_LABELS[view];
   setLoading(`Loading ${VIEW_LABELS[view].toLowerCase()}...`);
   try {
+    if (view === "setup") {
+      renderSetup();
+      return;
+    }
     if (!state.overview) await loadOverview();
     if (view === "overview") renderOverview(state.overview);
+    if (view === "ingest") renderIngest(await loadView("ingest"), state.lastIngestResult);
+    if (view === "authentication") renderAuthentication(await loadView("authentication"));
     if (view === "hypotheses") renderHypotheses(await loadView("hypotheses"));
     if (view === "endpoints") renderEndpoints(await loadView("endpoints"));
     if (view === "model") renderModel(await loadView("model"));
@@ -144,17 +208,32 @@ async function loadView(view) {
 }
 
 function workspaceApi(path) {
+  if (!state.workspaceKey) throw new Error("Select or create a workspace first.");
   return `/api/workspaces/${encodeURIComponent(state.workspaceKey)}/${path}`;
 }
 
-async function api(path) {
-  const response = await fetch(path, { headers: { Accept: "application/json" } });
+async function api(path, options = {}) {
+  const headers = { Accept: "application/json", ...(options.headers || {}) };
+  const response = await fetch(path, { ...options, headers });
   const payload = await response.json();
   if (!response.ok) throw new Error(payload.error || `Request failed with ${response.status}`);
   return payload;
 }
 
+function writeJson(path, payload) {
+  return api(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Finsec-UI": "1" },
+    body: JSON.stringify(payload),
+  });
+}
+
 function renderWorkspaceOptions() {
+  if (!state.workspaces.length) {
+    workspaceSelect.innerHTML = `<option value="">No workspace yet</option>`;
+    workspacePath.textContent = "Create a default-deny workspace in Setup";
+    return;
+  }
   workspaceSelect.innerHTML = state.workspaces
     .map(
       (workspace) =>
@@ -163,6 +242,527 @@ function renderWorkspaceOptions() {
         }>${escapeHtml(workspace.name)}</option>`,
     )
     .join("");
+}
+
+function renderSetup() {
+  const defaultName = state.workspaces.length ? "" : "My Fintech Target";
+  content.innerHTML = `
+    ${pageHeading(
+      "Default-deny onboarding",
+      "Set up a research workspace",
+      "Create the local workspace, external capture directory, explicit scope, and controlled actor labels. No credentials are collected here.",
+    )}
+    <form class="onboarding-form" id="setup-form">
+      <section class="setup-step">
+        <div class="step-index"><span>01</span><i></i></div>
+        <div class="step-copy">
+          <p class="eyebrow">Target identity</p>
+          <h2>Name the authorized research target</h2>
+          <p>The slug becomes the workspace and capture-directory name.</p>
+        </div>
+        <div class="form-grid">
+          <label class="field field-wide">
+            <span>Project display name</span>
+            <input id="setup-name" name="project_name" value="${escapeAttribute(
+              defaultName,
+            )}" maxlength="100" required autocomplete="off">
+          </label>
+          <label class="field">
+            <span>Workspace slug</span>
+            <input id="setup-slug" name="slug" value="${escapeAttribute(
+              slugify(defaultName),
+            )}" maxlength="64" pattern="[a-z0-9][a-z0-9-]{0,63}" required autocomplete="off">
+            <small>Lowercase letters, numbers, and hyphens.</small>
+          </label>
+          <label class="field">
+            <span>Base URL <em>optional</em></span>
+            <input name="base_url" type="url" placeholder="https://api.example.test" autocomplete="off">
+            <small>Must use one of the exact scoped hosts.</small>
+          </label>
+          <fieldset class="mode-picker field-wide">
+            <legend>Target environment</legend>
+            <label class="mode-option">
+              <input type="radio" name="environment" value="production" checked>
+              <span><strong>Production program</strong><small>Real authorized bug bounty scope; localhost is rejected.</small></span>
+            </label>
+            <label class="mode-option">
+              <input type="radio" name="environment" value="synthetic">
+              <span><strong>Synthetic / local lab</strong><small>Allows localhost while keeping active execution disabled.</small></span>
+            </label>
+          </fieldset>
+        </div>
+      </section>
+
+      <section class="setup-step">
+        <div class="step-index"><span>02</span><i></i></div>
+        <div class="step-copy">
+          <p class="eyebrow">Authorized scope</p>
+          <h2>Record exact host coverage</h2>
+          <p>One host pattern per line. A leading wildcard does not include the apex host.</p>
+        </div>
+        <div class="form-grid">
+          <label class="field field-wide">
+            <span>In-scope hosts</span>
+            <textarea name="hosts" rows="5" placeholder="example.test&#10;api.example.test&#10;*.services.example.test" required></textarea>
+          </label>
+          <div class="boundary-note field-wide">
+            <span class="boundary-icon">!</span>
+            <p><strong>Authority stays explicit.</strong> Setup creates placeholder scope and program documents. Review them against the official program rules before active testing.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="setup-step">
+        <div class="step-index"><span>03</span><i></i></div>
+        <div class="step-copy">
+          <p class="eyebrow">Controlled actors</p>
+          <h2>Label researcher-owned accounts</h2>
+          <p>Labels are non-secret provenance. Never enter emails, tokens, cookies, or credentials.</p>
+        </div>
+        <div class="account-builder field-wide">
+          <div class="account-list" id="setup-account-list">
+            ${setupAccountRow(0, "ACCOUNT_A")}
+            ${setupAccountRow(1, "ACCOUNT_B")}
+          </div>
+          <button class="secondary-button" type="button" data-add-account>+ Add controlled actor</button>
+        </div>
+      </section>
+
+      <section class="setup-review">
+        <div>
+          <p class="eyebrow">Safety policy</p>
+          <h2>Setup remains passive by default.</h2>
+          <ul class="policy-list">
+            <li>Active execution disabled</li>
+            <li>Human approval required</li>
+            <li>Destructive testing prohibited</li>
+            <li>Maximum parallel requests: one</li>
+          </ul>
+        </div>
+        <div class="submit-stack">
+          <label class="confirm-check">
+            <input id="setup-authority" type="checkbox" required>
+            <span>I confirm the hosts and actor labels belong to explicitly authorized research scope.</span>
+          </label>
+          <button class="primary-button" type="submit">Create workspace</button>
+          <p class="form-status" id="setup-status" role="status"></p>
+        </div>
+      </section>
+    </form>
+    ${renderWorkspaceDangerZone()}`;
+}
+
+function renderWorkspaceDangerZone() {
+  if (!state.workspaceKey) return "";
+  const workspace = state.workspaces.find((item) => item.key === state.workspaceKey);
+  if (!workspace) return "";
+  return `
+    <section class="workspace-danger-zone">
+      <div>
+        <p class="eyebrow">Danger zone</p>
+        <h2>Retire ${escapeHtml(workspace.name)}</h2>
+        <p>Deletion is permanent. Review the exact validated paths before removing this workspace or purging all related local project data.</p>
+      </div>
+      <div class="danger-zone-actions">
+        <button class="secondary-button" type="button" data-review-deletion="delete">Review workspace deletion</button>
+        <button class="danger-button" type="button" data-review-deletion="purge">Review complete purge</button>
+      </div>
+    </section>`;
+}
+
+function setupAccountRow(index, accountLabel = "") {
+  return `
+    <div class="account-row" data-account-row="${index}">
+      <label class="field">
+        <span>Actor label</span>
+        <input name="account_label" value="${escapeAttribute(
+          accountLabel,
+        )}" placeholder="ACCOUNT_A" maxlength="64" required autocomplete="off">
+      </label>
+      <label class="field">
+        <span>Role</span>
+        <input name="account_role" value="user" maxlength="100" required autocomplete="off">
+      </label>
+      <label class="field">
+        <span>Primary channel</span>
+        <select name="account_channel">
+          <option value="web">Web</option>
+          <option value="mobile">Mobile</option>
+          <option value="api">API</option>
+          <option value="unknown">Unknown</option>
+        </select>
+      </label>
+      <label class="toggle-field">
+        <input name="account_authenticated" type="checkbox" checked>
+        <span>Authenticated actor</span>
+      </label>
+      <button class="remove-button" type="button" data-remove-account aria-label="Remove actor">x</button>
+    </div>`;
+}
+
+function renderIngest(data, result = null) {
+  const available = data.capture.available;
+  content.innerHTML = `
+    ${pageHeading(
+      "Explicit capture provenance",
+      "Ingest wizard",
+      "Store reviewed HARs outside the workspace, assign every file to an exact actor and channel, then run the deterministic passive pipeline.",
+    )}
+    ${result ? renderIngestResult(result) : ""}
+    <section class="ingest-path panel">
+      <div>
+        <p class="eyebrow">External capture directory</p>
+        <h2>${escapeHtml(data.capture.incoming)}</h2>
+        <p>Original captures stay outside the workspace and are excluded from Git.</p>
+      </div>
+      <span class="pill ${available ? "active" : "missing"}">${available ? "Ready" : "Not initialized"}</span>
+    </section>
+    ${
+      available
+        ? renderCaptureUpload(data) + renderCaptureAssignments(data)
+        : `<section class="panel initialization-panel">
+            <p class="eyebrow">Capture layout missing</p>
+            <h2>Initialize the external input directory</h2>
+            <p>This creates <code>incoming/</code> and an empty <code>workflow.yaml</code>. It does not contact the target.</p>
+            <button class="primary-button" type="button" data-initialize-capture>Initialize capture directory</button>
+          </section>`
+    }`;
+}
+
+function renderCaptureUpload(data) {
+  return `
+    <section class="panel upload-panel">
+      <div class="panel-heading">
+        <div><h2>Add reviewed HAR files</h2><p>Maximum ${escapeHtml(
+          formatBytes(data.capture.maximum_upload_bytes),
+        )} per file; existing files are never overwritten.</p></div>
+      </div>
+      <label class="upload-zone" for="har-upload-input">
+        <input id="har-upload-input" type="file" accept=".har,application/json" multiple>
+        <span class="upload-glyph">HAR</span>
+        <strong>Choose sanitized captures</strong>
+        <small id="upload-selection">No files selected</small>
+      </label>
+      <div class="upload-actions">
+        <label class="confirm-check">
+          <input id="upload-reviewed" type="checkbox">
+          <span>I reviewed these files for authorization, unrelated personal data, and capture scope.</span>
+        </label>
+        <button class="secondary-button" type="button" data-upload-hars>Upload selected HARs</button>
+      </div>
+      <p class="form-status" id="upload-status" role="status"></p>
+    </section>`;
+}
+
+function renderCaptureAssignments(data) {
+  if (!data.files.length) {
+    return `<section class="panel no-captures"><p class="eyebrow">Waiting for captures</p><h2>No HAR files are available yet.</h2><p>Add reviewed files with the upload area or place them directly in <code>${escapeHtml(
+      data.capture.incoming,
+    )}</code>, then refresh.</p></section>`;
+  }
+  const hasSavedAssignments = data.files.some((file) => file.assigned);
+  return `
+    <form class="panel assignment-panel" id="ingest-form">
+      <div class="panel-heading">
+        <div><h2>Assign actor and channel</h2><p>Filenames never determine provenance. Every enabled file requires an explicit selection.</p></div>
+        <span class="pill">${formatNumber(data.files.length)} files</span>
+      </div>
+      ${
+        data.missing_manifest_files.length
+          ? `<div class="boundary-note"><span class="boundary-icon">!</span><p>Manifest entries reference missing files: ${escapeHtml(
+              data.missing_manifest_files.join(", "),
+            )}</p></div>`
+          : ""
+      }
+      <div class="assignment-list">
+        ${data.files.map((file) => captureAssignmentRow(file, data)).join("")}
+      </div>
+      <div class="ingest-controls">
+        <div>
+          <label class="confirm-check">
+            <input name="reviewed" type="checkbox" required>
+            <span>I confirm each enabled file is authorized, sanitized, and assigned to the correct actor and channel.</span>
+          </label>
+          <label class="confirm-check">
+            <input name="run_analysis" type="checkbox" checked>
+            <span>Run inventory, modeling, invariants, and hypothesis generation after ingestion.</span>
+          </label>
+        </div>
+        <div class="ingest-actions">
+          <button class="${hasSavedAssignments ? "secondary-button" : "primary-button"}" type="submit">Ingest selected captures</button>
+          ${
+            hasSavedAssignments
+              ? `<button class="primary-button" type="button" data-rerun-workflow>Run passive workflow again</button>`
+              : ""
+          }
+        </div>
+      </div>
+      <p class="form-status" id="ingest-status" role="status"></p>
+    </form>`;
+}
+
+function captureAssignmentRow(file, data) {
+  return `
+    <div class="capture-row" data-capture-file="${escapeAttribute(file.file)}">
+      <label class="capture-enabled">
+        <input name="capture_enabled" type="checkbox" ${file.enabled ? "checked" : ""}>
+        <span class="sr-only">Enable ${escapeHtml(file.file)}</span>
+      </label>
+      <div class="capture-file">
+        <span class="record-id">${escapeHtml(file.file)}</span>
+        <small>${escapeHtml(formatBytes(file.size))} / ${file.assigned ? "assigned" : "new"}</small>
+      </div>
+      <label class="field compact-field">
+        <span>Actor</span>
+        <select name="capture_actor">
+          <option value="">Choose actor</option>
+          ${data.actors
+            .map(
+              (actor) =>
+                `<option value="${escapeAttribute(actor.id)}" ${
+                  file.actor === actor.id ? "selected" : ""
+                }>${escapeHtml(actor.id)} / ${escapeHtml(actor.role)}</option>`,
+            )
+            .join("")}
+          ${data.special_actors
+            .map(
+              (actor) =>
+                `<option value="${escapeAttribute(actor)}" ${
+                  file.actor === actor ? "selected" : ""
+                }>${escapeHtml(actor)}</option>`,
+            )
+            .join("")}
+        </select>
+      </label>
+      <label class="field compact-field">
+        <span>Channel</span>
+        <select name="capture_channel">
+          <option value="">Choose channel</option>
+          ${data.channels
+            .map(
+              (channel) =>
+                `<option value="${escapeAttribute(channel)}" ${
+                  file.channel === channel ? "selected" : ""
+                }>${escapeHtml(label(channel))}</option>`,
+            )
+            .join("")}
+        </select>
+      </label>
+    </div>`;
+}
+
+function renderIngestResult(result) {
+  const imported = result.ingested.reduce((total, item) => total + item.imported, 0);
+  const relabeled = result.ingested.reduce((total, item) => total + item.relabeled, 0);
+  return `
+    <section class="operation-result">
+      <div><p class="eyebrow">Passive workflow complete</p><h2>${formatNumber(
+        imported,
+      )} observations imported</h2><p>${formatNumber(relabeled)} provenance labels refreshed; ${formatNumber(
+        result.network_requests_sent,
+      )} target requests sent.</p></div>
+      ${
+        result.analysis
+          ? `<div class="result-metrics"><span><strong>${formatNumber(
+              result.analysis.endpoints,
+            )}</strong> endpoints</span><span><strong>${formatNumber(
+              result.analysis.active_hypotheses,
+            )}</strong> hypotheses</span><span><strong>${formatNumber(
+              result.analysis.research_tasks,
+            )}</strong> research tasks</span></div>`
+          : `<span class="pill active">Ingestion only</span>`
+      }
+    </section>`;
+}
+
+function renderAuthentication(data) {
+  const ready = data.actors.filter((actor) =>
+    ["READY", "NONE"].includes(actor.preflight.status),
+  ).length;
+  const blocked = data.actors.filter(
+    (actor) => actor.preflight.result === "BLOCKED_BY_AUTH",
+  ).length;
+  const refreshable = data.actors.filter((actor) => actor.preflight.refresh_available).length;
+  content.innerHTML = `
+    ${pageHeading(
+      "Actor-bound readiness",
+      "Authentication control room",
+      "Inspect local credential availability, expiration, refresh capability, and identity continuity without returning secret material or contacting the target.",
+    )}
+    <section class="view-summary-grid">
+      ${summaryCard("Configured actors", data.actors.length)}
+      ${summaryCard("Locally ready", ready)}
+      ${summaryCard("Blocked", blocked)}
+      ${summaryCard("Refresh flows", refreshable)}
+    </section>
+    <section class="auth-safety-panel">
+      <div>
+        <p class="eyebrow">Zero-request preflight</p>
+        <h2>The browser checks readiness, never credentials.</h2>
+        <p>Secret values and credential references remain in the permission-restricted local store. Configuration and live validation stay in the secure CLI.</p>
+      </div>
+      <div class="auth-safety-facts">
+        <span><strong>${formatNumber(data.network_requests_sent)}</strong> target requests</span>
+        <span><strong>${escapeHtml(data.storage.permissions || "Not created")}</strong> store mode</span>
+        <span><strong>${formatDate(data.checked_at)}</strong> checked</span>
+      </div>
+    </section>
+    <section class="auth-grid">
+      ${
+        data.actors.length
+          ? data.actors.map((actor) => renderAuthenticationCard(actor, data)).join("")
+          : renderInlineEmpty("No controlled actors are configured in this workspace.")
+      }
+    </section>
+    <section class="panel auth-cli-boundary">
+      <div>
+        <p class="eyebrow">Secure handoff</p>
+        <h2>Credential-changing steps remain CLI-only</h2>
+        <p>The terminal uses hidden input or reviewed local files and keeps credential-bearing material out of browser state, history, and responses.</p>
+      </div>
+      ${authCommand(
+        "List every actor",
+        `hunt actors --workspace ${shellQuote(data.workspace.path)}`,
+      )}
+    </section>`;
+}
+
+function renderAuthenticationCard(actor, data) {
+  const preflight = actor.preflight;
+  const anonymous = actor.actor_type === "anonymous" || !actor.authenticated;
+  const statusClass = authenticationStatusClass(preflight.status);
+  const resultLabel =
+    preflight.result === "BLOCKED_BY_AUTH"
+      ? "Blocked by authentication"
+      : preflight.result === "READY_FOR_EXECUTION"
+        ? "Locally ready"
+        : "Ready for planning";
+  return `
+    <article class="panel auth-card">
+      <div class="auth-card-top">
+        <div>
+          <span class="record-id">${escapeHtml(actor.id)}</span>
+          <h2>${escapeHtml(actor.role)}</h2>
+          <p>${escapeHtml(label(actor.actor_type))}</p>
+        </div>
+        ${pill(preflight.status, statusClass)}
+      </div>
+      <div class="auth-result ${preflight.result === "BLOCKED_BY_AUTH" ? "is-blocked" : "is-ready"}">
+        <span>Local preflight</span>
+        <strong>${escapeHtml(resultLabel)}</strong>
+      </div>
+      <div class="auth-facts">
+        ${authFact("Credential available", preflight.credential_available ? "Yes" : "No")}
+        ${authFact("Authentication type", actor.auth_type ? label(actor.auth_type) : "Not configured")}
+        ${authFact("Expires", preflight.expires_at ? formatDate(preflight.expires_at) : "Unknown")}
+        ${authFact("Remaining lifetime", formatRemaining(preflight.remaining_seconds))}
+        ${authFact("Observed refresh", preflight.refresh_available ? "Configured" : "Not configured")}
+        ${authFact("Target validated", preflight.target_validated ? "Recorded" : "Not recorded")}
+        ${authFact(
+          "Last target validation",
+          actor.last_validated_at ? formatDate(actor.last_validated_at) : "Never",
+        )}
+        ${authFact(
+          "Baseline identity",
+          preflight.baseline_identity_confirmed ? "Confirmed" : "Not confirmed",
+        )}
+        ${authFact("Source", actor.source ? label(actor.source) : "Not configured")}
+      </div>
+      ${
+        preflight.reasons.length
+          ? `<div class="auth-reasons"><strong>Preflight blockers</strong>${renderSimpleList(
+              preflight.reasons,
+              "detail-list",
+            )}</div>`
+          : ""
+      }
+      <div class="auth-card-actions">
+        <button class="secondary-button" type="button" data-auth-check="${escapeAttribute(
+          actor.id,
+        )}">Check locally again</button>
+        <span>${formatNumber(data.network_requests_sent)} requests sent</span>
+      </div>
+      ${anonymous ? renderAnonymousAuthentication() : renderAuthenticationCommands(actor, data)}
+    </article>`;
+}
+
+function renderAnonymousAuthentication() {
+  return `<div class="auth-none"><strong>No credential required</strong><p>This actor is explicitly anonymous and is locally ready without a secret profile.</p></div>`;
+}
+
+function renderAuthenticationCommands(actor, data) {
+  const actorArg = shellQuote(actor.id);
+  const workspaceArg = shellQuote(data.workspace.path);
+  return `
+    <details class="auth-commands">
+      <summary>Secure CLI authentication steps</summary>
+      <div class="auth-command-list">
+        ${authCommand(
+          "Inspect status",
+          `hunt actor auth status ${actorArg} --workspace ${workspaceArg}`,
+        )}
+        ${authCommand(
+          "Set with hidden prompt",
+          `hunt actor auth set ${actorArg} --workspace ${workspaceArg}`,
+        )}
+        ${authCommand(
+          "Import reviewed request",
+          `hunt actor auth import ${actorArg} --request '/path/to/reviewed-request.txt' --workspace ${workspaceArg}`,
+        )}
+        ${authCommand(
+          "Refresh from HAR",
+          `hunt actor auth refresh ${actorArg} --har '/path/to/fresh-auth.har' --workspace ${workspaceArg}`,
+        )}
+        ${authCommand(
+          "Refresh from Burp",
+          `hunt actor auth refresh ${actorArg} --burp '/path/to/fresh-auth.xml' --workspace ${workspaceArg}`,
+        )}
+        ${authCommand(
+          "Refresh from request",
+          `hunt actor auth refresh ${actorArg} --request '/path/to/fresh-request.txt' --workspace ${workspaceArg}`,
+        )}
+        ${authCommand(
+          "Configure refresh flow",
+          `hunt actor auth configure-refresh ${actorArg} --har '/path/to/refresh-flow.har' --workspace ${workspaceArg}`,
+        )}
+        ${authCommand(
+          "Run configured refresh",
+          `hunt actor auth refresh ${actorArg} --workspace ${workspaceArg}`,
+          "Sends the bounded observed refresh request configured for this actor",
+        )}
+        ${authCommand(
+          "One-request target check",
+          `hunt actor auth check ${actorArg} --network --workspace ${workspaceArg}`,
+          "Sends one explicitly confirmed read-only baseline request",
+        )}
+        ${authCommand(
+          "Clear authentication",
+          `hunt actor auth clear ${actorArg} --workspace ${workspaceArg}`,
+          "Removes this actor's stored credentials and invalidates affected approvals",
+        )}
+      </div>
+    </details>`;
+}
+
+function authCommand(title, command, warning = "") {
+  return `
+    <div class="auth-command ${warning ? "is-warning" : ""}">
+      <div><strong>${escapeHtml(title)}</strong>${
+        warning ? `<span>${escapeHtml(warning)}</span>` : ""
+      }</div>
+      <code>${escapeHtml(command)}</code>
+      <button class="copy-button" type="button" data-copy="${escapeAttribute(command)}">Copy</button>
+    </div>`;
+}
+
+function authFact(title, value) {
+  return `<div class="auth-fact"><span>${escapeHtml(title)}</span><strong>${escapeHtml(value)}</strong></div>`;
+}
+
+function authenticationStatusClass(status) {
+  if (["READY", "NONE"].includes(status)) return "active";
+  if (["EXPIRING_SOON", "REFRESH_REQUIRED"].includes(status)) return "missing";
+  return "blocked";
 }
 
 function renderOverview(data) {
@@ -877,7 +1477,149 @@ async function openReport(filename) {
   }
 }
 
+async function openDeletionReview(mode) {
+  openDrawer(`<div class="loading-state"><p>Validating permanent deletion targets...</p></div>`);
+  try {
+    const preview = await api(workspaceApi(`deletion-preview?mode=${encodeURIComponent(mode)}`));
+    drawerContent.innerHTML = renderDeletionReview(preview);
+    updateDeletionSubmit();
+  } catch (error) {
+    drawerContent.innerHTML = `<div class="error-state"><p>${escapeHtml(error.message)}</p></div>`;
+  }
+}
+
+function renderDeletionReview(preview) {
+  const purge = preview.mode === "purge";
+  const credentialStore = preview.targets.credential_store;
+  const captures = preview.targets.capture_directory;
+  return `
+    <header class="drawer-header deletion-header">
+      <p class="eyebrow">Danger zone / ${purge ? "complete purge" : "workspace only"}</p>
+      <h2>${purge ? "Purge all project data" : "Delete this workspace"}</h2>
+      <p>${escapeHtml(preview.workspace.name)} / <span class="record-id">${escapeHtml(
+        preview.workspace.slug,
+      )}</span></p>
+    </header>
+    <div class="deletion-mode-picker" role="group" aria-label="Deletion mode">
+      <button class="${purge ? "" : "is-active"}" type="button" data-deletion-mode="delete">Workspace only</button>
+      <button class="${purge ? "is-active" : ""}" type="button" data-deletion-mode="purge">Complete purge</button>
+    </div>
+    <section class="drawer-section">
+      <h3>Permanent removal preview</h3>
+      <div class="deletion-targets">
+        ${deletionTargetRow("Workspace", preview.targets.workspace, "Will be removed")}
+        ${
+          purge
+            ? deletionTargetRow(
+                "Credential store",
+                credentialStore.path,
+                credentialStore.present
+                  ? `${formatNumber(credentialStore.files)} file(s) will be removed`
+                  : "Not present",
+              ) +
+              deletionTargetRow(
+                "Capture directory",
+                captures.path,
+                captures.present ? "Will be removed" : "Not present",
+              )
+            : deletionTargetRow(
+                "Related local data",
+                "Credential store and capture directory",
+                "Preserved",
+                true,
+              )
+        }
+      </div>
+    </section>
+    <section class="drawer-section">
+      <div class="deletion-warning">
+        <strong>No undo is available.</strong>
+        <p>${
+          purge
+            ? "This removes the workspace, observations, models, hypotheses, plans, evidence, reports, actor credentials, and original capture directory."
+            : "This removes the workspace, observations, models, hypotheses, plans, evidence, and reports. Credentials and captures remain outside it."
+        }</p>
+      </div>
+      <form id="workspace-delete-form" data-deletion-mode="${escapeAttribute(preview.mode)}">
+        <label class="field">
+          <span>Type <code>${escapeHtml(preview.expected_confirmation)}</code> to confirm</span>
+          <input
+            name="confirmation"
+            data-expected-confirmation="${escapeAttribute(preview.expected_confirmation)}"
+            autocomplete="off"
+            spellcheck="false"
+            required
+          >
+        </label>
+        <label class="confirm-check deletion-understanding">
+          <input name="understood" type="checkbox" required>
+          <span>I understand that these validated paths will be permanently removed.</span>
+        </label>
+        <button class="danger-button danger-submit" type="submit" disabled>
+          ${purge ? "Permanently purge project" : "Permanently delete workspace"}
+        </button>
+        <p class="form-status" id="deletion-status" role="status"></p>
+      </form>
+    </section>`;
+}
+
+function deletionTargetRow(title, path, disposition, preserved = false) {
+  return `
+    <div class="deletion-target ${preserved ? "is-preserved" : ""}">
+      <div><strong>${escapeHtml(title)}</strong><span>${escapeHtml(disposition)}</span></div>
+      <code>${escapeHtml(path)}</code>
+    </div>`;
+}
+
 function handleContentClick(event) {
+  const reviewDeletion = event.target.closest("[data-review-deletion]");
+  if (reviewDeletion) {
+    openDeletionReview(reviewDeletion.dataset.reviewDeletion);
+    return;
+  }
+  const deletionMode = event.target.closest("[data-deletion-mode]");
+  if (deletionMode && deletionMode.tagName === "BUTTON") {
+    openDeletionReview(deletionMode.dataset.deletionMode);
+    return;
+  }
+  const addAccount = event.target.closest("[data-add-account]");
+  if (addAccount) {
+    const list = document.querySelector("#setup-account-list");
+    list.insertAdjacentHTML("beforeend", setupAccountRow(state.setupAccountIndex));
+    state.setupAccountIndex += 1;
+    return;
+  }
+  const removeAccount = event.target.closest("[data-remove-account]");
+  if (removeAccount) {
+    const rows = document.querySelectorAll("[data-account-row]");
+    if (rows.length <= 1) {
+      showToast("Setup requires at least one controlled actor label.");
+      return;
+    }
+    removeAccount.closest("[data-account-row]").remove();
+    return;
+  }
+  const initialize = event.target.closest("[data-initialize-capture]");
+  if (initialize) {
+    initializeCapture();
+    return;
+  }
+  const upload = event.target.closest("[data-upload-hars]");
+  if (upload) {
+    uploadCaptures();
+    return;
+  }
+  const rerunWorkflow = event.target.closest("[data-rerun-workflow]");
+  if (rerunWorkflow) {
+    const form = document.querySelector("#ingest-form");
+    if (form?.reportValidity()) submitIngest(form, true);
+    return;
+  }
+  const authCheck = event.target.closest("[data-auth-check]");
+  if (authCheck) {
+    refreshAuthentication(authCheck);
+    return;
+  }
   const copy = event.target.closest("[data-copy]");
   if (copy) {
     navigator.clipboard
@@ -907,6 +1649,23 @@ function handleContentClick(event) {
 }
 
 function handleContentInput(event) {
+  if (event.target.closest("#workspace-delete-form")) updateDeletionSubmit();
+  if (event.target.id === "setup-name") {
+    const slugInput = document.querySelector("#setup-slug");
+    if (slugInput && slugInput.dataset.edited !== "true") {
+      slugInput.value = slugify(event.target.value);
+    }
+  }
+  if (event.target.id === "setup-slug") event.target.dataset.edited = "true";
+  if (event.target.id === "har-upload-input") {
+    const selection = document.querySelector("#upload-selection");
+    const files = [...event.target.files];
+    selection.textContent = files.length
+      ? `${files.length} file${files.length === 1 ? "" : "s"} / ${formatBytes(
+          files.reduce((total, file) => total + file.size, 0),
+        )}`
+      : "No files selected";
+  }
   if (event.target.id === "hypothesis-search") {
     state.hypothesisFilters.query = event.target.value;
     updateHypothesisResults();
@@ -931,6 +1690,270 @@ function handleContentInput(event) {
     state.endpointFilters.disposition = event.target.value;
     updateEndpointResults();
   }
+}
+
+function handleContentSubmit(event) {
+  if (event.target.id === "setup-form") {
+    event.preventDefault();
+    submitSetup(event.target);
+  }
+  if (event.target.id === "ingest-form") {
+    event.preventDefault();
+    submitIngest(event.target);
+  }
+  if (event.target.id === "workspace-delete-form") {
+    event.preventDefault();
+    submitWorkspaceDeletion(event.target);
+  }
+}
+
+function updateDeletionSubmit() {
+  const form = drawerContent.querySelector("#workspace-delete-form");
+  if (!form) return;
+  const confirmation = form.elements.confirmation;
+  const expected = confirmation.dataset.expectedConfirmation;
+  const enabled = confirmation.value === expected && form.elements.understood.checked;
+  form.querySelector('button[type="submit"]').disabled = !enabled;
+}
+
+async function submitSetup(form) {
+  const status = document.querySelector("#setup-status");
+  const submit = form.querySelector('button[type="submit"]');
+  const accounts = [...form.querySelectorAll("[data-account-row]")].map((row) => ({
+    label: row.querySelector('[name="account_label"]').value.trim(),
+    role: row.querySelector('[name="account_role"]').value.trim(),
+    authenticated: row.querySelector('[name="account_authenticated"]').checked,
+    verification_level: "unknown",
+    channel: row.querySelector('[name="account_channel"]').value,
+  }));
+  const hosts = form.elements.hosts.value
+    .split(/[\n,]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const payload = {
+    project_name: form.elements.project_name.value.trim(),
+    slug: form.elements.slug.value.trim(),
+    hosts,
+    accounts,
+    production: form.elements.environment.value === "production",
+    base_url: form.elements.base_url.value.trim() || null,
+  };
+  setButtonBusy(submit, true, "Creating workspace...");
+  status.textContent = "Validating scope and creating the local workspace...";
+  status.className = "form-status is-working";
+  try {
+    const result = await writeJson("/api/setup", payload);
+    await refreshWorkspaceCatalog(result.workspace.key);
+    state.cache = {};
+    state.overview = null;
+    state.lastIngestResult = null;
+    await loadOverview();
+    showToast(`Workspace ${result.workspace.name} created.`);
+    navigate("ingest");
+  } catch (error) {
+    status.textContent = error.message;
+    status.className = "form-status is-error";
+  } finally {
+    setButtonBusy(submit, false, "Create workspace");
+  }
+}
+
+async function refreshWorkspaceCatalog(selectedKey = state.workspaceKey) {
+  const payload = await api("/api/workspaces");
+  state.workspaces = payload.workspaces.filter((workspace) => workspace.valid);
+  const selected = state.workspaces.find((workspace) => workspace.key === selectedKey);
+  state.workspaceKey = selected?.key || state.workspaces[0]?.key || null;
+  if (state.workspaceKey) window.localStorage.setItem("finsec-workspace", state.workspaceKey);
+  else window.localStorage.removeItem("finsec-workspace");
+  renderWorkspaceOptions();
+}
+
+async function submitWorkspaceDeletion(form) {
+  const mode = form.dataset.deletionMode;
+  const confirmation = form.elements.confirmation.value;
+  const expected = form.elements.confirmation.dataset.expectedConfirmation;
+  const status = form.querySelector("#deletion-status");
+  const button = form.querySelector('button[type="submit"]');
+  if (confirmation !== expected || !form.elements.understood.checked) {
+    status.textContent = "The exact confirmation and permanence acknowledgement are required.";
+    status.className = "form-status is-error";
+    return;
+  }
+  const endpoint = workspaceApi("delete");
+  setButtonBusy(button, true, mode === "purge" ? "Purging permanently..." : "Deleting permanently...");
+  status.textContent = "Revalidating every path immediately before permanent removal...";
+  status.className = "form-status is-working";
+  try {
+    const result = await api(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Finsec-UI": "1",
+        "X-Finsec-Destructive": "workspace-delete",
+      },
+      body: JSON.stringify({ mode, confirmation, acknowledged: true }),
+    });
+    state.cache = {};
+    state.overview = null;
+    state.lastIngestResult = null;
+    closeDrawer();
+    await refreshWorkspaceCatalog(null);
+    if (state.workspaceKey) {
+      await loadOverview();
+      await navigate("overview");
+    } else {
+      await navigate("setup");
+    }
+    showToast(
+      result.mode === "purge"
+        ? `Project ${result.slug} permanently purged.`
+        : `Workspace ${result.slug} permanently deleted; related data was preserved.`,
+    );
+  } catch (error) {
+    status.textContent = error.message;
+    status.className = "form-status is-error";
+  } finally {
+    setButtonBusy(
+      button,
+      false,
+      mode === "purge" ? "Permanently purge project" : "Permanently delete workspace",
+    );
+    updateDeletionSubmit();
+  }
+}
+
+async function initializeCapture() {
+  setLoading("Initializing the external capture directory...");
+  try {
+    state.cache.ingest = await api(workspaceApi("ingest/initialize"), {
+      method: "POST",
+      headers: { "X-Finsec-UI": "1" },
+    });
+    renderIngest(state.cache.ingest);
+    showToast("Capture directory initialized.");
+  } catch (error) {
+    renderError(error);
+  }
+}
+
+async function refreshAuthentication(button) {
+  const actorId = button.dataset.authCheck;
+  setButtonBusy(button, true, "Checking locally...");
+  try {
+    state.cache.authentication = await api(workspaceApi("authentication"));
+    renderAuthentication(state.cache.authentication);
+    showToast(`Local authentication preflight refreshed for ${actorId}. Zero requests sent.`);
+  } catch (error) {
+    renderError(error);
+  } finally {
+    setButtonBusy(button, false, "Check locally again");
+  }
+}
+
+async function uploadCaptures() {
+  const input = document.querySelector("#har-upload-input");
+  const reviewed = document.querySelector("#upload-reviewed");
+  const status = document.querySelector("#upload-status");
+  const button = document.querySelector("[data-upload-hars]");
+  const files = [...input.files];
+  if (!files.length) {
+    status.textContent = "Choose at least one HAR file.";
+    status.className = "form-status is-error";
+    return;
+  }
+  if (!reviewed.checked) {
+    status.textContent = "Confirm the authorization and sanitization review first.";
+    status.className = "form-status is-error";
+    return;
+  }
+  setButtonBusy(button, true, "Uploading...");
+  status.className = "form-status is-working";
+  try {
+    for (let index = 0; index < files.length; index += 1) {
+      const file = files[index];
+      status.textContent = `Storing ${index + 1}/${files.length}: ${file.name}`;
+      await api(`${workspaceApi("ingest/upload")}?filename=${encodeURIComponent(file.name)}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/octet-stream",
+          "X-Finsec-UI": "1",
+          "X-Finsec-Reviewed": "true",
+        },
+        body: file,
+      });
+    }
+    state.cache.ingest = await api(workspaceApi("ingest"));
+    renderIngest(state.cache.ingest);
+    showToast(`${files.length} reviewed HAR file${files.length === 1 ? "" : "s"} stored.`);
+  } catch (error) {
+    status.textContent = error.message;
+    status.className = "form-status is-error";
+  } finally {
+    setButtonBusy(button, false, "Upload selected HARs");
+  }
+}
+
+async function submitIngest(form, forceWorkflow = false) {
+  const status = document.querySelector("#ingest-status");
+  const button = forceWorkflow
+    ? form.querySelector("[data-rerun-workflow]")
+    : form.querySelector('button[type="submit"]');
+  const assignments = [...form.querySelectorAll("[data-capture-file]")].map((row) => ({
+    file: row.dataset.captureFile,
+    actor: row.querySelector('[name="capture_actor"]').value || null,
+    channel: row.querySelector('[name="capture_channel"]').value || null,
+    enabled: row.querySelector('[name="capture_enabled"]').checked,
+  }));
+  const incomplete = assignments.find(
+    (item) => item.enabled && (!item.actor || !item.channel),
+  );
+  if (incomplete) {
+    status.textContent = `Choose an actor and channel for ${incomplete.file}.`;
+    status.className = "form-status is-error";
+    return;
+  }
+  const payload = {
+    assignments,
+    reviewed: form.elements.reviewed.checked,
+    run_analysis: forceWorkflow || form.elements.run_analysis.checked,
+  };
+  const idleLabel = forceWorkflow ? "Run passive workflow again" : "Ingest selected captures";
+  setButtonBusy(
+    button,
+    true,
+    payload.run_analysis ? "Running passive workflow..." : "Ingesting...",
+  );
+  status.textContent = forceWorkflow
+    ? "Rerunning ingestion and rebuilding the complete passive research pipeline from the reviewed manifest..."
+    : payload.run_analysis
+      ? "Importing reviewed captures and rebuilding deterministic research artifacts..."
+      : "Importing reviewed captures without downstream regeneration...";
+  status.className = "form-status is-working";
+  try {
+    const result = await writeJson(workspaceApi("ingest/run"), payload);
+    state.lastIngestResult = result;
+    state.cache = {};
+    state.overview = null;
+    await loadOverview();
+    state.cache.ingest = await api(workspaceApi("ingest"));
+    renderIngest(state.cache.ingest, result);
+    showToast(
+      forceWorkflow
+        ? "Passive workflow rerun completed. No target request was sent."
+        : "Passive ingestion completed. No target request was sent.",
+    );
+  } catch (error) {
+    status.textContent = error.message;
+    status.className = "form-status is-error";
+  } finally {
+    setButtonBusy(button, false, idleLabel);
+  }
+}
+
+function setButtonBusy(button, busy, labelText) {
+  if (!button) return;
+  button.disabled = busy;
+  button.textContent = labelText;
 }
 
 function openDrawer(html) {
@@ -1014,9 +2037,9 @@ function filterSelect(id, options, selected) {
     .join("")}</select>`;
 }
 
-function pill(value) {
+function pill(value, overrideClass = null) {
   const text = value || "Unknown";
-  let className = slug(text);
+  let className = overrideClass || slug(text);
   if (text.startsWith("SUPPRESSED")) className = "suppressed";
   return `<span class="pill ${escapeAttribute(className)}">${escapeHtml(label(text))}</span>`;
 }
@@ -1171,6 +2194,23 @@ function formatNumber(value) {
   return new Intl.NumberFormat().format(Number(value) || 0);
 }
 
+function formatBytes(value) {
+  const bytes = Number(value) || 0;
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KiB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MiB`;
+}
+
+function formatRemaining(value) {
+  if (value === null || value === undefined) return "Unknown";
+  const seconds = Number(value);
+  if (seconds <= 0) return "Expired";
+  if (seconds < 60) return `${Math.floor(seconds)} seconds`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours`;
+  return `${Math.floor(seconds / 86400)} days`;
+}
+
 function formatDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "recently";
@@ -1192,6 +2232,20 @@ function slug(value) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+}
+
+function slugify(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 64)
+    .replace(/-$/, "");
+}
+
+function shellQuote(value) {
+  return `'${String(value).replaceAll("'", `'"'"'`)}'`;
 }
 
 function escapeHtml(value) {
