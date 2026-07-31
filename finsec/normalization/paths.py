@@ -1,6 +1,7 @@
 """Conservative path normalization with explicit evidence and rules."""
 
 import re
+import uuid
 from dataclasses import dataclass
 
 from finsec.modeling.models import (
@@ -95,8 +96,11 @@ def _is_static_filename(segment: str) -> bool:
 def _strong_identifier(segment: str) -> tuple[ParameterType, str] | None:
     if is_version_segment(segment):
         return None
-    if UUID_PATTERN.fullmatch(segment):
+    try:
+        uuid.UUID(segment)
         return ("uuid", "uuid")
+    except (ValueError, TypeError, AttributeError):
+        pass
     if ULID_PATTERN.fullmatch(segment):
         return ("string", "ulid")
     if HEX_PATTERN.fullmatch(segment):
@@ -115,7 +119,11 @@ def _strong_identifier(segment: str) -> tuple[ParameterType, str] | None:
 def _is_numeric_candidate(segment: str, previous: str | None) -> bool:
     if not segment.isdigit():
         return False
-    if len(segment) == 4 and 1900 <= int(segment) <= 2100:
+    try:
+        val = int(segment)
+        if len(segment) == 4 and 1900 <= val <= 2100:
+            return False
+    except (ValueError, TypeError, OverflowError):
         return False
     return not previous or previous.lower() not in NON_RESOURCE_SEGMENTS
 
@@ -148,8 +156,13 @@ def _singular(value: str) -> str:
 def _parameter_name(previous: str | None) -> str:
     if not previous or previous.lower() in NON_RESOURCE_SEGMENTS:
         return "resourceId"
-    words = [word for word in re.split(r"[-_]", _singular(previous)) if word]
+    # Stripping parameter placeholders if previous segment was dynamic
+    clean_prev = re.sub(r"^\{|\}$", "", previous)
+    words = [word for word in re.split(r"[-_]", _singular(clean_prev)) if word]
     if not words:
+        return "resourceId"
+    # Ensure parameter name starts with a valid alpha character
+    if not words[0][0].isalpha():
         return "resourceId"
     camel = words[0] + "".join(word.title() for word in words[1:])
     return f"{camel}Id"

@@ -36,11 +36,13 @@ def _load_invariants(workspace: WorkspacePaths) -> InvariantStore:
 
 
 def _bullet_list(items: list[str]) -> str:
-    return "\n".join(f"- {redact_text(item)}" for item in items)
+    return "\n".join(f"- {redact_text(item).replace('|', '\\|')}" for item in items)
 
 
 def _numbered_list(items: list[str]) -> str:
-    return "\n".join(f"{index}. {redact_text(item)}" for index, item in enumerate(items, 1))
+    return "\n".join(
+        f"{index}. {redact_text(item).replace('|', '\\|')}" for index, item in enumerate(items, 1)
+    )
 
 
 def _evidence_list(evidence: EvidenceMetadata) -> str:

@@ -238,6 +238,14 @@ def _object_authorization_hypothesis(
             "inferred only from the explicitly trusted path scope. Cross-substitution has not "
             "yet been tested."
         )
+    elif binding is not None and binding.source == "RESPONSE_BODY":
+        owner_field = (binding.owner_field_path or "owner association").rsplit(".", 1)[-1]
+        reasoning = (
+            f"{binding.distinct_actors} researcher-controlled actors were passively observed "
+            f"using distinct authenticated {parameter} values. Successful JSON responses matched "
+            f"the requested object IDs and contained {binding.distinct_owner_values} distinct "
+            f"{owner_field} values. Cross-substitution has not yet been tested."
+        )
     elif unauthenticated_binding and binding is not None:
         owner_field = (binding.owner_field_path or "owner association").rsplit(".", 1)[-1]
         attacker_capability = [

@@ -276,6 +276,11 @@ def _caido_request(entry: dict[str, Any]) -> tuple[str, str, dict[str, str], Any
         host = str(request.get("host") or entry.get("host") or "")
         target = str(request.get("path") or entry.get("path") or "/")
         url = f"{scheme}://{host}{target}"
+    if isinstance(body, str) and request.get("isBase64") is True:
+        try:
+            body = base64.b64decode(body).decode("utf-8", errors="replace")
+        except Exception:
+            pass
     return url, method.upper() or "GET", headers, body
 
 
@@ -292,6 +297,11 @@ def _caido_response(entry: dict[str, Any]) -> tuple[int | None, dict[str, str], 
     if status is None and status_line.startswith("HTTP/"):
         parts = status_line.split()
         status = _integer(parts[1]) if len(parts) > 1 else None
+    if isinstance(body, str) and response.get("isBase64") is True:
+        try:
+            body = base64.b64decode(body).decode("utf-8", errors="replace")
+        except Exception:
+            pass
     return status, headers, body
 
 

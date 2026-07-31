@@ -403,6 +403,9 @@ class WebOperations:
         tuple[Path, ...],
     ]:
         target = resolve_workspace_deletion_target(paths.root)
+        resolved_root = target.root.resolve()
+        if not resolved_root.is_relative_to(self.workspace_root):
+            raise WorkspaceError(f"Workspace path escapes configured root: {resolved_root}")
         if not purge:
             return target, None, None, ()
 

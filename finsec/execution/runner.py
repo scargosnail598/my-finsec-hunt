@@ -342,8 +342,14 @@ def _compare(
             comparison.status_code is not None
             and 200 <= comparison.status_code < 300
             and comparison.returned_object_id == expected.object_value
-            and comparison.owner_fingerprint == expected.owner_fingerprint
-            and comparison.owner_fingerprint != baseline.owner_fingerprint
+            and (
+                comparison.owner_fingerprint == expected.owner_fingerprint
+                or expected.owner_fingerprint is None
+            )
+            and (
+                comparison.owner_fingerprint != baseline.owner_fingerprint
+                or (expected.owner_fingerprint is None and baseline.owner_fingerprint is None)
+            )
             and bool(comparison.json_paths)
         ):
             outcome = "CROSS_OBJECT_RESPONSE_OBSERVED"

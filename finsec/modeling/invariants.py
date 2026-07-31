@@ -95,11 +95,13 @@ def _drafts(endpoints: EndpointStore, resources: ResourceStore) -> list[dict[str
                 )
             )
 
-        object_parameters = [
-            parameter.name
-            for parameter in endpoint.parameters
-            if parameter.semantic_type == "object_identifier" and parameter.client_controlled
-        ]
+        object_parameters = list(
+            dict.fromkeys(
+                parameter.name
+                for parameter in endpoint.parameters
+                if parameter.semantic_type == "object_identifier" and parameter.client_controlled
+            )
+        )
         for parameter in object_parameters:
             drafts.append(
                 _base(

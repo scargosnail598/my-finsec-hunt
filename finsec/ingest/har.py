@@ -44,7 +44,12 @@ def _headers(items: Any) -> dict[str, str]:
         return result
     for item in items:
         if isinstance(item, dict) and isinstance(item.get("name"), str):
-            result[item["name"].lower()] = str(item.get("value", ""))
+            k = item["name"].lower()
+            v = str(item.get("value", ""))
+            if k in result:
+                result[k] = f"{result[k]}, {v}" if k != "cookie" else f"{result[k]}; {v}"
+            else:
+                result[k] = v
     return result
 
 
@@ -174,9 +179,12 @@ def _parse_entry(
         raise HarFormatError("HAR request URL has no host.")
 
     status = response.get("status")
-    status_code = (
-        int(status) if isinstance(status, int | float | str) and str(status).isdigit() else None
-    )
+    status_code: int | None = None
+    if isinstance(status, int | float | str):
+        try:
+            status_code = int(status)
+        except (ValueError, TypeError, OverflowError):
+            status_code = None
     return Observation(
         id=observation_id,
         timestamp=entry.get("startedDateTime"),

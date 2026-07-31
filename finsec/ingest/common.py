@@ -110,13 +110,25 @@ def append_observations(
 def headers_from_any(value: Any) -> dict[str, str]:
     """Normalize mapping or name/value-list headers without retaining them in observations."""
 
-    if isinstance(value, dict):
-        return {str(name).lower(): str(item) for name, item in value.items()}
     result: dict[str, str] = {}
+    if isinstance(value, dict):
+        for name, item in value.items():
+            k = str(name).lower()
+            v = str(item)
+            if k in result:
+                result[k] = f"{result[k]}, {v}" if k != "cookie" else f"{result[k]}; {v}"
+            else:
+                result[k] = v
+        return result
     if isinstance(value, list):
         for item in value:
             if isinstance(item, dict) and isinstance(item.get("name"), str):
-                result[item["name"].lower()] = str(item.get("value", ""))
+                k = item["name"].lower()
+                v = str(item.get("value", ""))
+                if k in result:
+                    result[k] = f"{result[k]}, {v}" if k != "cookie" else f"{result[k]}; {v}"
+                else:
+                    result[k] = v
     return result
 
 
@@ -203,7 +215,15 @@ def parse_raw_http(value: str) -> tuple[str, dict[str, str], str]:
         name, delimiter, item = line.partition(":")
         if delimiter:
             current = name.strip().lower()
-            headers[current] = item.strip()
+            val = item.strip()
+            if current in headers:
+                headers[current] = (
+                    f"{headers[current]}, {val}"
+                    if current != "cookie"
+                    else f"{headers[current]}; {val}"
+                )
+            else:
+                headers[current] = val
     return start_line, headers, body if separator else ""
 
 

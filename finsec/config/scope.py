@@ -6,6 +6,8 @@ def host_matches(pattern: str, host: str) -> bool:
 
     normalized_pattern = pattern.strip().lower().rstrip(".")
     normalized_host = host.strip().lower().rstrip(".")
+    if normalized_pattern == "*":
+        return True
     if normalized_pattern.startswith("*."):
         suffix = normalized_pattern[2:]
         return bool(suffix) and normalized_host.endswith(f".{suffix}")
