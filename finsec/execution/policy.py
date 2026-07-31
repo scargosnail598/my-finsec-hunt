@@ -60,6 +60,18 @@ class PreparedExecution:
     authentication_events: tuple[dict[str, object], ...] = ()
 
 
+@dataclass(frozen=True)
+class ReviewedRequestExport:
+    """Approved structured requests validated for passive external-tool export."""
+
+    workspace: WorkspacePaths
+    target: TargetDocument
+    hypothesis: HypothesisRecord
+    plan: TestPlanRecord
+    plan_checksum: str
+    target_policy_checksum: str
+
+
 def plan_checksum(plan: TestPlanRecord) -> str:
     """Fingerprint generated plan content while excluding human lifecycle annotations."""
 
@@ -941,4 +953,40 @@ def review_execution_authority(
         target_policy_checksum=current_target_checksum,
         runtime_headers={},
         authentication_preflight=preflights,
+    )
+
+
+def review_request_export(
+    workspace: WorkspacePaths,
+    hypothesis_id: str,
+) -> ReviewedRequestExport:
+    """Validate approval, current inputs, and host scope without resolving secrets or DNS."""
+
+    target, hypothesis, plan, endpoints = _load_inputs(workspace, hypothesis_id)
+    _validate_plan_current(workspace, target, hypothesis, plan, action="Request export")
+    _validate_static_policy(target, hypothesis, plan, endpoints)
+    current_plan_checksum = plan_checksum(plan)
+    current_target_checksum = target_policy_checksum(target)
+    _validate_approval(
+        target,
+        plan,
+        current_plan_checksum,
+        current_target_checksum,
+        non_interactive=False,
+        approval_token_env=None,
+    )
+    for request in plan.requests:
+        if request.scheme not in {"http", "https"}:
+            raise FinsecError("Request export refused: only HTTP and HTTPS are supported.")
+        if not host_is_covered(request.host, target.scope.hosts):
+            raise FinsecError(
+                f"Request export refused: host {request.host} is outside target scope."
+            )
+    return ReviewedRequestExport(
+        workspace=workspace,
+        target=target,
+        hypothesis=hypothesis,
+        plan=plan,
+        plan_checksum=current_plan_checksum,
+        target_policy_checksum=current_target_checksum,
     )

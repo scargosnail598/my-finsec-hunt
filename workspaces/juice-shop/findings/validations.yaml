@@ -1,2 +1,128 @@
 version: 1
-validations: []
+validations:
+- id: FND-001
+  key: validation:HYP-010
+  hypothesis_id: HYP-010
+  title: Potential cross-account Basket access through basketId on GET /rest/basket/{basketId}
+  disposition: NEEDS_MORE_EVIDENCE
+  summary: Required evidence or skeptical validation controls are incomplete.
+  checks:
+  - id: SCOPE-ENDPOINTS
+    question: Are all source endpoint hosts explicitly in scope?
+    result: PASS
+    detail: All source endpoint hosts are recorded in target.yaml scope.
+  - id: SCOPE-COMPLIANCE
+    question: Was the evidence collected within program scope?
+    result: MISSING
+    detail: Researcher assessment is not recorded.
+  - id: RULES-COMPLIANCE
+    question: Did collection comply with program restrictions?
+    result: MISSING
+    detail: Researcher assessment is not recorded.
+  - id: CONTROLLED-ACCOUNTS
+    question: Were all affected identities researcher-controlled?
+    result: MISSING
+    detail: Researcher assessment is not recorded.
+  - id: BOUNDARY
+    question: Is ownership, tenant, role, or state boundary evidence present?
+    result: MISSING
+    detail: Researcher assessment is not recorded.
+  - id: SECURE-CONTROL
+    question: Was expected secure behavior absent in the controlled reproduction?
+    result: MISSING
+    detail: Researcher assessment is not recorded.
+  - id: ATTACKER-GAIN
+    question: Did the actor gain an unauthorized capability?
+    result: MISSING
+    detail: Researcher assessment is not recorded.
+  - id: ACTUAL-BEHAVIOR
+    question: Was the actual server behavior directly verified?
+    result: MISSING
+    detail: Researcher assessment is not recorded.
+  - id: AUTHORITATIVE-RESULT
+    question: Was data or state verified through an authoritative source?
+    result: MISSING
+    detail: Researcher assessment is not recorded.
+  - id: NEGATIVE-CONTROL
+    question: Was an appropriate negative or owner control performed?
+    result: MISSING
+    detail: Researcher assessment is not recorded.
+  - id: CLEAN-SESSION
+    question: Was the result reproduced in a clean session?
+    result: MISSING
+    detail: Researcher assessment is not recorded.
+  - id: ALTERNATIVES
+    question: Were caching, UI, test-data, and timing explanations ruled out?
+    result: MISSING
+    detail: Researcher assessment is not recorded.
+  - id: IMPACT
+    question: Was meaningful security impact demonstrated?
+    result: MISSING
+    detail: Researcher assessment is not recorded.
+  - id: PREREQUISITES
+    question: Are the stated attacker prerequisites realistic?
+    result: MISSING
+    detail: Researcher assessment is not recorded.
+  - id: INTENDED-BEHAVIOR
+    question: Is the behavior undocumented and not intended?
+    result: MISSING
+    detail: Researcher assessment is not recorded.
+  - id: SERVER-BOUNDARY
+    question: Is the result more than a client-side-only issue?
+    result: MISSING
+    detail: Researcher assessment is not recorded.
+  - id: DUPLICATE
+    question: Has known-duplicate risk been checked and ruled out?
+    result: MISSING
+    detail: Researcher assessment is not recorded.
+  - id: REDACTION
+    question: Were stored artifacts reviewed for secret and personal-data redaction?
+    result: MISSING
+    detail: Researcher assessment is not recorded.
+  - id: PLAN-APPROVAL
+    question: Was a review-ready plan explicitly approved before testing?
+    result: PASS
+    detail: Plan is READY_FOR_REVIEW and APPROVED.
+  - id: EVIDENCE-INTEGRITY
+    question: Do indexed evidence files exist with matching checksums?
+    result: PASS
+    detail: All artifact checksums match.
+  - id: EVIDENCE-REQUEST
+    question: Are at least 1 redacted request artifact(s) present?
+    result: PASS
+    detail: Found 2 artifact(s).
+  - id: EVIDENCE-RESPONSE
+    question: Are at least 1 redacted response artifact(s) present?
+    result: PASS
+    detail: Found 2 artifact(s).
+  evidence_artifacts:
+  - EVD-001
+  - EVD-002
+  - EVD-003
+  - EVD-004
+  - EVD-005
+  - EVD-006
+  missing_requirements:
+  - Researcher assessment is not recorded.
+  - Researcher assessment is not recorded.
+  - Researcher assessment is not recorded.
+  - Researcher assessment is not recorded.
+  - Researcher assessment is not recorded.
+  - Researcher assessment is not recorded.
+  - Researcher assessment is not recorded.
+  - Researcher assessment is not recorded.
+  - Researcher assessment is not recorded.
+  - Researcher assessment is not recorded.
+  - Researcher assessment is not recorded.
+  - Researcher assessment is not recorded.
+  - Researcher assessment is not recorded.
+  - Researcher assessment is not recorded.
+  - Researcher assessment is not recorded.
+  - Researcher assessment is not recorded.
+  - Researcher assessment is not recorded.
+  report_ready: false
+  generation:
+    managed: true
+    generator: phase4-validator
+    generated_checksum: 8a2b55e4cc23379f5161de179c138e23a8f725a62136dc2a6f6c6480c6401255
+    source_fingerprint: 53db259bdbc4d358047ed46b421e12555c5a3b0c8e64ebc320af2dd8bd4000a9

@@ -1,0 +1,77 @@
+version: 1
+hypothesis_id: HYP-010
+test_id: TEST-001
+artifacts:
+- id: EVD-001
+  kind: request
+  path: executions/execution-v1/baseline-request.txt
+  source_name: baseline-request.txt
+  sha256: 47ba64590bb12ad54ed67880a68c4e2605acd370908011126522a9990dc0e39c
+  redaction: AUTOMATIC
+  description: Bounded execution baseline request.
+- id: EVD-002
+  kind: response
+  path: executions/execution-v1/baseline-response.json
+  source_name: baseline-response.json
+  sha256: 1264d0c4e1d56caf6ab0140e2624eace0a73f70cf499362dfdc5c3e28c9f5d44
+  redaction: AUTOMATIC
+  description: Redacted bounded execution baseline response.
+- id: EVD-003
+  kind: request
+  path: executions/execution-v1/mutated-request.txt
+  source_name: mutated-request.txt
+  sha256: 63420fdaf3a8447952bbe7065fc73ab15ba415f4d51eb332d130eaeb55f213c8
+  redaction: AUTOMATIC
+  description: Bounded execution mutated request.
+- id: EVD-004
+  kind: response
+  path: executions/execution-v1/mutated-response.json
+  source_name: mutated-response.json
+  sha256: f5760c47498a6b3ee42bb2f44e90ae0060a03a188eb3b95f26156cfca58071ff
+  redaction: AUTOMATIC
+  description: Redacted bounded execution mutated response.
+- id: EVD-005
+  kind: other
+  path: executions/execution-v1/comparison.yaml
+  source_name: comparison.yaml
+  sha256: 7eefd096039f46f5936e1cc82c23e83acc88c858c3bf7afb12823d7637fdbc5f
+  redaction: AUTOMATIC
+  description: Conservative machine comparison requiring human validation.
+- id: EVD-006
+  kind: other
+  path: executions/execution-v1/execution-metadata.yaml
+  source_name: execution-metadata.yaml
+  sha256: 69b7fba91a63bb4ec23c02a87aba8c0682849d332cba900f38a56318836178f1
+  redaction: AUTOMATIC
+  description: Bounded execution metadata without credentials.
+assessment:
+  scope_compliant: null
+  rules_compliant: null
+  researcher_controlled_accounts: null
+  ownership_or_boundary_verified: null
+  expected_secure_behavior_observed: null
+  unauthorized_capability_demonstrated: null
+  actual_behavior_verified: null
+  authoritative_result_verified: null
+  negative_control_performed: null
+  reproduced_clean_session: null
+  alternative_explanations_ruled_out: null
+  meaningful_impact_demonstrated: null
+  realistic_prerequisites: null
+  documented_or_intended_behavior: null
+  client_side_only: null
+  known_duplicate: null
+  redaction_reviewed: null
+narrative:
+  report_title: null
+  summary: null
+  root_cause: null
+  affected_boundary: null
+  actual_behavior: null
+  reproduction_steps: []
+  technical_impact: null
+  business_impact: null
+  realistic_attack_scenario: null
+  severity_rationale: null
+  remediation: null
+notes: null

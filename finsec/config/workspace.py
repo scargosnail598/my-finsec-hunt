@@ -70,6 +70,11 @@ class WorkspacePaths:
 
         return self.root / "tests" / "executions" / hypothesis_id.upper()
 
+    def burp_exports_for(self, hypothesis_id: str) -> Path:
+        """Return the revisioned Burp-export directory for one hypothesis."""
+
+        return self.root / "tests" / "burp" / hypothesis_id.upper()
+
     @property
     def validations(self) -> Path:
         return self.root / "findings" / "validations.yaml"
@@ -109,6 +114,7 @@ WORKSPACE_DIRECTORIES = (
     "observations/mobile",
     "api",
     "model",
+    "tests/burp",
     "tests/plans",
     "tests/executions",
     "evidence",

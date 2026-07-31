@@ -75,6 +75,22 @@ python -m pip install -e ".[dev]"
 Run `./install.sh --help` for custom interpreter, virtual-environment, offline, and development
 options.
 
+## Local Web UI
+
+FinSec Hunt includes a bundled, read-only research cockpit for browsing the selected workspace's
+pipeline state, normalized endpoints, inferred model, hypotheses, plans, evidence metadata,
+validations, reports, and scope documents:
+
+```bash
+hunt web --workspace workspaces/example-fintech
+```
+
+Then open `http://127.0.0.1:8765`. Omit `--workspace` to select among direct children of the
+`workspaces/` directory, or pass `--workspace-root PATH`. The server binds only to a loopback
+address because it has no login screen. It never returns credential profile references, raw
+request values, evidence file contents, or secret material, and it exposes no approval or active
+execution action.
+
 ## Local MCP Server
 
 FinSec Hunt includes a safety-bounded stdio MCP server. It exposes sanitized research context and
@@ -329,6 +345,20 @@ Unsupported plans remain `BLOCKED` even when the hypothesis is still worth manua
 `hunt approve` checks template, ownership-baseline, method, scope, and policy blockers before it
 asks for the typed approval phrase.
 
+To work through the exact approved comparison manually in Burp Repeater, export secret-free raw
+HTTP messages:
+
+```bash
+hunt export-burp HYP-002 -w workspaces/example-fintech
+```
+
+Exports are revisioned beneath `tests/burp/HYP-002/export-vN/`. Each request contains an
+actor-specific placeholder instead of Authorization, Cookie, API-key, or other credential values.
+The manifest binds the files to the approved plan and target-policy checksums and records the exact
+mutation, request budget, and stop conditions. Sending a file from Burp is manual active execution
+outside FinSec Hunt; insert only the current credential for the labeled controlled actor and follow
+the approved plan.
+
 Then run the no-network dry-run, which verifies both approval binding and actor authentication
 preflight:
 
@@ -438,7 +468,7 @@ anything and preserves sibling workspaces, credential files, and capture directo
 - `finsec/recon/`: GraphQL schema and bounded static mobile discovery.
 - `finsec/modeling/`: actors, resources, operation maps, invariants, and edit-preserving merges.
 - `finsec/hypotheses/`: evidence gates, mutation-based candidates, and transparent scoring.
-- `finsec/testing/`: safety policy checks and structured plan generation.
+- `finsec/testing/`: safety policy checks, structured plans, and secret-free Burp exports.
 - `finsec/execution/`: explicit approval, scope/DNS enforcement, bounded HTTP, and audit records.
 - `finsec/evidence/`: evidence scaffolds, redaction, indexing, and checksums.
 - `finsec/mcp/`: safety-bounded workspace service, structured MCP responses, and centralized

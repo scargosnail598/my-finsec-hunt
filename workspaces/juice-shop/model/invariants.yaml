@@ -1,2 +1,1931 @@
 version: 1
-invariants: []
+invariants:
+- id: INV-001
+  key: authentication:EP-002
+  category: authentication
+  statement: Access to GET /api/Addresss should require an authenticated context equivalent
+    to the context observed in source traffic.
+  resources:
+  - Addresss
+  endpoints:
+  - EP-002
+  evidence:
+  - EP-002
+  - OBS-000070
+  - OBS-000200
+  - OBS-000206
+  - OBS-000384
+  - OBS-000428
+  - OBS-000434
+  - OBS-000590
+  - OBS-000592
+  - OBS-000622
+  - OBS-000626
+  - OBS-000842
+  - OBS-000892
+  - OBS-000932
+  - OBS-001026
+  - OBS-001292
+  - OBS-001361
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: f5fbc372fcd6e57e010a908508d1dfd7076d9ee6401c7fef31c0eaa4a6139396
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-002
+  key: authentication:EP-003
+  category: authentication
+  statement: Access to GET /api/Addresss/{addresssId} should require an authenticated
+    context equivalent to the context observed in source traffic.
+  resources:
+  - Addresss
+  endpoints:
+  - EP-003
+  evidence:
+  - EP-003
+  - OBS-000072
+  - OBS-000081
+  - OBS-000091
+  - OBS-000202
+  - OBS-000205
+  - OBS-000386
+  - OBS-000395
+  - OBS-000405
+  - OBS-000430
+  - OBS-000433
+  - OBS-000593
+  - OBS-000602
+  - OBS-000611
+  - OBS-000623
+  - OBS-000625
+  - OBS-000933
+  - OBS-001027
+  - OBS-001034
+  - OBS-001043
+  - OBS-001293
+  - OBS-001300
+  - OBS-001308
+  - OBS-001362
+  - OBS-001369
+  - OBS-001377
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: fb5477124ab39f678b34285133850fd988b2046127e2df83d6cd6ed0e39ea3b6
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-003
+  key: authentication:EP-004
+  category: authentication
+  statement: Access to GET /api/Cards should require an authenticated context equivalent
+    to the context observed in source traffic.
+  resources:
+  - Card
+  endpoints:
+  - EP-004
+  evidence:
+  - EP-004
+  - OBS-000078
+  - OBS-000277
+  - OBS-000392
+  - OBS-000598
+  - OBS-000600
+  - OBS-000896
+  - OBS-000938
+  - OBS-000942
+  - OBS-000947
+  - OBS-000952
+  - OBS-001032
+  - OBS-001298
+  - OBS-001314
+  - OBS-001319
+  - OBS-001324
+  - OBS-001329
+  - OBS-001335
+  - OBS-001367
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 15df97b5065cae9e2c3bd28f4815a6363c2149e64fdb4fda83e0a675bb3264a6
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-004
+  key: authentication:EP-005
+  category: authentication
+  statement: Access to GET /api/Challenges/ should require an authenticated context
+    equivalent to the context observed in source traffic.
+  resources:
+  - Challenge
+  endpoints:
+  - EP-005
+  evidence:
+  - EP-005
+  - OBS-000022
+  - OBS-000026
+  - OBS-000167
+  - OBS-000174
+  - OBS-000244
+  - OBS-000251
+  - OBS-000318
+  - OBS-000322
+  - OBS-000472
+  - OBS-000479
+  - OBS-000529
+  - OBS-000536
+  - OBS-000677
+  - OBS-000684
+  - OBS-000734
+  - OBS-000741
+  - OBS-000775
+  - OBS-000782
+  - OBS-000818
+  - OBS-000825
+  - OBS-000869
+  - OBS-000876
+  - OBS-000992
+  - OBS-000999
+  - OBS-001095
+  - OBS-001102
+  - OBS-001155
+  - OBS-001162
+  - OBS-001258
+  - OBS-001265
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: e46c89cf8e016c850786186a4a520e2ce71c5d18d8444c1c59394e7ed36e65f5
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-005
+  key: authentication:EP-006
+  category: authentication
+  statement: Access to GET /api/Deliverys should require an authenticated context
+    equivalent to the context observed in source traffic.
+  resources:
+  - Delivery
+  endpoints:
+  - EP-006
+  evidence:
+  - EP-006
+  - OBS-000073
+  - OBS-000387
+  - OBS-000594
+  - OBS-000934
+  - OBS-001028
+  - OBS-001294
+  - OBS-001363
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 8fa085e1211e0f40faf46a4ee92e1f8651bbd02ec62d2a1906866acf8474bdda
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-007
+  key: authentication:EP-008
+  category: authentication
+  statement: Access to GET /api/Products/{productId} should require an authenticated
+    context equivalent to the context observed in source traffic.
+  resources:
+  - Product
+  endpoints:
+  - EP-008
+  evidence:
+  - EP-008
+  - OBS-000065
+  - OBS-000379
+  - OBS-000581
+  - OBS-000586
+  - OBS-000924
+  - OBS-001217
+  - OBS-001357
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: dc300a156c3ad3cb01fc4aaf6183a0ac061d1a3ac2b64de7dc76b1d2a3621f44
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-008
+  key: authentication:EP-009
+  category: authentication
+  statement: Access to GET /api/Quantitys/ should require an authenticated context
+    equivalent to the context observed in source traffic.
+  resources:
+  - Quantity
+  endpoints:
+  - EP-009
+  evidence:
+  - EP-009
+  - OBS-000045
+  - OBS-000092
+  - OBS-000177
+  - OBS-000254
+  - OBS-000279
+  - OBS-000325
+  - OBS-000359
+  - OBS-000562
+  - OBS-000688
+  - OBS-000901
+  - OBS-001002
+  - OBS-001044
+  - OBS-001105
+  - OBS-001174
+  - OBS-001198
+  - OBS-001268
+  - OBS-001338
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: dcb9b6f380bfaa537ac0ac215c3654c2416645b0d25584128f72c3f8719ab454
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-009
+  key: authentication:EP-017
+  category: authentication
+  statement: Access to GET /profile should require an authenticated context equivalent
+    to the context observed in source traffic.
+  resources:
+  - Profile
+  endpoints:
+  - EP-017
+  evidence:
+  - EP-017
+  - OBS-000131
+  - OBS-000208
+  - OBS-000436
+  - OBS-000493
+  - OBS-000627
+  - OBS-000642
+  - OBS-000958
+  - OBS-001061
+  - OBS-001223
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: a14606697ee57c0c31cdfcf88c8784ebcda02af57e60ac20eb881dd981a9a7ef
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-010
+  key: authentication:EP-018
+  category: authentication
+  statement: Access to GET /rest/admin/application-configuration should require an
+    authenticated context equivalent to the context observed in source traffic.
+  resources:
+  - ApplicationConfiguration
+  endpoints:
+  - EP-018
+  evidence:
+  - EP-018
+  - OBS-000021
+  - OBS-000025
+  - OBS-000027
+  - OBS-000028
+  - OBS-000037
+  - OBS-000077
+  - OBS-000090
+  - OBS-000166
+  - OBS-000172
+  - OBS-000175
+  - OBS-000176
+  - OBS-000243
+  - OBS-000249
+  - OBS-000252
+  - OBS-000253
+  - OBS-000317
+  - OBS-000321
+  - OBS-000323
+  - OBS-000324
+  - OBS-000348
+  - OBS-000391
+  - OBS-000404
+  - OBS-000471
+  - OBS-000477
+  - OBS-000480
+  - OBS-000481
+  - OBS-000528
+  - OBS-000534
+  - OBS-000537
+  - OBS-000538
+  - OBS-000549
+  - OBS-000551
+  - OBS-000555
+  - OBS-000597
+  - OBS-000610
+  - OBS-000676
+  - OBS-000682
+  - OBS-000685
+  - OBS-000686
+  - OBS-000687
+  - OBS-000695
+  - OBS-000733
+  - OBS-000739
+  - OBS-000742
+  - OBS-000743
+  - OBS-000744
+  - OBS-000752
+  - OBS-000774
+  - OBS-000780
+  - OBS-000783
+  - OBS-000784
+  - OBS-000817
+  - OBS-000823
+  - OBS-000826
+  - OBS-000827
+  - OBS-000839
+  - OBS-000868
+  - OBS-000874
+  - OBS-000877
+  - OBS-000878
+  - OBS-000895
+  - OBS-000937
+  - OBS-000941
+  - OBS-000946
+  - OBS-000951
+  - OBS-000957
+  - OBS-000991
+  - OBS-000997
+  - OBS-001000
+  - OBS-001001
+  - OBS-001031
+  - OBS-001042
+  - OBS-001094
+  - OBS-001100
+  - OBS-001103
+  - OBS-001104
+  - OBS-001154
+  - OBS-001160
+  - OBS-001163
+  - OBS-001164
+  - OBS-001191
+  - OBS-001257
+  - OBS-001263
+  - OBS-001266
+  - OBS-001267
+  - OBS-001297
+  - OBS-001307
+  - OBS-001313
+  - OBS-001318
+  - OBS-001323
+  - OBS-001328
+  - OBS-001334
+  - OBS-001366
+  - OBS-001376
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: cefa560c2a4c2c315380b53238a06cc1ca91d22b64bf7496485fb7bc7d8f83af
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-011
+  key: authentication:EP-019
+  category: authentication
+  statement: Access to GET /rest/admin/application-version should require an authenticated
+    context equivalent to the context observed in source traffic.
+  resources:
+  - ApplicationVersion
+  endpoints:
+  - EP-019
+  evidence:
+  - EP-019
+  - OBS-000020
+  - OBS-000024
+  - OBS-000165
+  - OBS-000171
+  - OBS-000242
+  - OBS-000248
+  - OBS-000316
+  - OBS-000320
+  - OBS-000470
+  - OBS-000476
+  - OBS-000527
+  - OBS-000533
+  - OBS-000675
+  - OBS-000681
+  - OBS-000732
+  - OBS-000738
+  - OBS-000773
+  - OBS-000779
+  - OBS-000816
+  - OBS-000822
+  - OBS-000867
+  - OBS-000873
+  - OBS-000990
+  - OBS-000996
+  - OBS-001093
+  - OBS-001099
+  - OBS-001153
+  - OBS-001159
+  - OBS-001256
+  - OBS-001262
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 00e8612f9e77f28e519adcbb66d6a207215b84bc2c8078eafab691c592318160
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-012
+  key: authentication:EP-020
+  category: authentication
+  statement: Access to GET /rest/basket/{basketId} should require an authenticated
+    context equivalent to the context observed in source traffic.
+  resources:
+  - Basket
+  endpoints:
+  - EP-020
+  evidence:
+  - EP-020
+  - OBS-000042
+  - OBS-000063
+  - OBS-000066
+  - OBS-000067
+  - OBS-000082
+  - OBS-000087
+  - OBS-000109
+  - OBS-000128
+  - OBS-000170
+  - OBS-000247
+  - OBS-000356
+  - OBS-000377
+  - OBS-000380
+  - OBS-000381
+  - OBS-000396
+  - OBS-000401
+  - OBS-000422
+  - OBS-000475
+  - OBS-000490
+  - OBS-000532
+  - OBS-000559
+  - OBS-000579
+  - OBS-000582
+  - OBS-000583
+  - OBS-000587
+  - OBS-000588
+  - OBS-000604
+  - OBS-000608
+  - OBS-000680
+  - OBS-000737
+  - OBS-000745
+  - OBS-000778
+  - OBS-000785
+  - OBS-000821
+  - OBS-000835
+  - OBS-000872
+  - OBS-000886
+  - OBS-000922
+  - OBS-000925
+  - OBS-000926
+  - OBS-000995
+  - OBS-001024
+  - OBS-001036
+  - OBS-001040
+  - OBS-001098
+  - OBS-001158
+  - OBS-001195
+  - OBS-001215
+  - OBS-001218
+  - OBS-001261
+  - OBS-001290
+  - OBS-001302
+  - OBS-001305
+  - OBS-001309
+  - OBS-001355
+  - OBS-001358
+  - OBS-001359
+  - OBS-001370
+  - OBS-001374
+  - OBS-001380
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 96cc84c5b0cf111ab3747b74a82a4360538e5ea1ab57a764cafe1ce2167b2865
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-013
+  key: authentication:EP-021
+  category: authentication
+  statement: Access to GET /rest/languages should require an authenticated context
+    equivalent to the context observed in source traffic.
+  resources:
+  - Language
+  endpoints:
+  - EP-021
+  evidence:
+  - EP-021
+  - OBS-000023
+  - OBS-000169
+  - OBS-000246
+  - OBS-000319
+  - OBS-000474
+  - OBS-000531
+  - OBS-000679
+  - OBS-000736
+  - OBS-000777
+  - OBS-000820
+  - OBS-000871
+  - OBS-000994
+  - OBS-001097
+  - OBS-001157
+  - OBS-001260
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 938c4be0bfec3c3211cba8099fdb71f9d6a6205c7dbe0097b6f834a1810ec08f
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-014
+  key: authentication:EP-022
+  category: authentication
+  statement: Access to GET /rest/order-history should require an authenticated context
+    equivalent to the context observed in source traffic.
+  resources:
+  - OrderHistory
+  endpoints:
+  - EP-022
+  evidence:
+  - EP-022
+  - OBS-000029
+  - OBS-000112
+  - OBS-000117
+  - OBS-000121
+  - OBS-000125
+  - OBS-000407
+  - OBS-000412
+  - OBS-000416
+  - OBS-000420
+  - OBS-000425
+  - OBS-000482
+  - OBS-000539
+  - OBS-000614
+  - OBS-000794
+  - OBS-000845
+  - OBS-000889
+  - OBS-000899
+  - OBS-001128
+  - OBS-001131
+  - OBS-001133
+  - OBS-001165
+  - OBS-001220
+  - OBS-001382
+  - OBS-001385
+  - OBS-001388
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 5079cf8515d960f6eb1882cc65c162862cdb562bb0bc6735cb358145ac9a8fb7
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-015
+  key: authentication:EP-023
+  category: authentication
+  statement: Access to GET /rest/products/search should require an authenticated context
+    equivalent to the context observed in source traffic.
+  resources:
+  - Product
+  endpoints:
+  - EP-023
+  evidence:
+  - EP-023
+  - OBS-000046
+  - OBS-000093
+  - OBS-000178
+  - OBS-000255
+  - OBS-000280
+  - OBS-000326
+  - OBS-000360
+  - OBS-000563
+  - OBS-000689
+  - OBS-000902
+  - OBS-001003
+  - OBS-001045
+  - OBS-001106
+  - OBS-001175
+  - OBS-001199
+  - OBS-001269
+  - OBS-001339
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 52c009d0be86946d51951bc4af892e642dea3c9548285dcf5fc0dec79561b851
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-016
+  key: authentication:EP-024
+  category: authentication
+  statement: Access to GET /rest/track-order/{trackOrderId} should require an authenticated
+    context equivalent to the context observed in source traffic.
+  resources:
+  - TrackOrder
+  endpoints:
+  - EP-024
+  evidence:
+  - EP-024
+  - OBS-000088
+  - OBS-000115
+  - OBS-000119
+  - OBS-000123
+  - OBS-000402
+  - OBS-000410
+  - OBS-000414
+  - OBS-000418
+  - OBS-000547
+  - OBS-000609
+  - OBS-000796
+  - OBS-000828
+  - OBS-000847
+  - OBS-000879
+  - OBS-000891
+  - OBS-001041
+  - OBS-001130
+  - OBS-001132
+  - OBS-001222
+  - OBS-001306
+  - OBS-001375
+  - OBS-001384
+  - OBS-001387
+  - OBS-001393
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: ff299fe9901f59726c4403e510005c6a4d79c28357fa637b0881d5aa690c48ab
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-017
+  key: authentication:EP-025
+  category: authentication
+  statement: Access to GET /rest/user/whoami should require an authenticated context
+    equivalent to the context observed in source traffic.
+  resources:
+  - Whoami
+  endpoints:
+  - EP-025
+  evidence:
+  - EP-025
+  - OBS-000039
+  - OBS-000040
+  - OBS-000043
+  - OBS-000044
+  - OBS-000068
+  - OBS-000083
+  - OBS-000110
+  - OBS-000129
+  - OBS-000168
+  - OBS-000173
+  - OBS-000245
+  - OBS-000250
+  - OBS-000350
+  - OBS-000351
+  - OBS-000353
+  - OBS-000354
+  - OBS-000357
+  - OBS-000358
+  - OBS-000382
+  - OBS-000397
+  - OBS-000423
+  - OBS-000473
+  - OBS-000478
+  - OBS-000491
+  - OBS-000530
+  - OBS-000535
+  - OBS-000556
+  - OBS-000557
+  - OBS-000560
+  - OBS-000561
+  - OBS-000589
+  - OBS-000605
+  - OBS-000678
+  - OBS-000683
+  - OBS-000712
+  - OBS-000735
+  - OBS-000740
+  - OBS-000746
+  - OBS-000776
+  - OBS-000781
+  - OBS-000786
+  - OBS-000819
+  - OBS-000824
+  - OBS-000836
+  - OBS-000840
+  - OBS-000870
+  - OBS-000875
+  - OBS-000887
+  - OBS-000918
+  - OBS-000927
+  - OBS-000993
+  - OBS-000998
+  - OBS-001025
+  - OBS-001037
+  - OBS-001096
+  - OBS-001101
+  - OBS-001156
+  - OBS-001161
+  - OBS-001192
+  - OBS-001193
+  - OBS-001196
+  - OBS-001197
+  - OBS-001259
+  - OBS-001264
+  - OBS-001291
+  - OBS-001303
+  - OBS-001310
+  - OBS-001360
+  - OBS-001371
+  - OBS-001381
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 5cd941f6c537dac0917bab4078d17c9de54fac3034c2df7ced70402e558640f1
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-018
+  key: authentication:EP-026
+  category: authentication
+  statement: Access to GET /rest/wallet/balance should require an authenticated context
+    equivalent to the context observed in source traffic.
+  resources:
+  - Wallet
+  endpoints:
+  - EP-026
+  evidence:
+  - EP-026
+  - OBS-000076
+  - OBS-000390
+  - OBS-000596
+  - OBS-000893
+  - OBS-000894
+  - OBS-000898
+  - OBS-000936
+  - OBS-000939
+  - OBS-000940
+  - OBS-000944
+  - OBS-000945
+  - OBS-000949
+  - OBS-000950
+  - OBS-000953
+  - OBS-001030
+  - OBS-001296
+  - OBS-001311
+  - OBS-001312
+  - OBS-001316
+  - OBS-001317
+  - OBS-001321
+  - OBS-001322
+  - OBS-001326
+  - OBS-001327
+  - OBS-001331
+  - OBS-001333
+  - OBS-001337
+  - OBS-001365
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 73f94f318f09cd751461aa8b3e31971044fde7d08bc52e9de4bd1f2947b4bfcb
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-019
+  key: authentication:EP-027
+  category: authentication
+  statement: Access to GET /socket.io/ should require an authenticated context equivalent
+    to the context observed in source traffic.
+  resources:
+  - Socket.Io
+  endpoints:
+  - EP-027
+  evidence:
+  - EP-027
+  - OBS-000018
+  - OBS-000034
+  - OBS-000035
+  - OBS-000163
+  - OBS-000182
+  - OBS-000183
+  - OBS-000240
+  - OBS-000259
+  - OBS-000260
+  - OBS-000314
+  - OBS-000330
+  - OBS-000331
+  - OBS-000468
+  - OBS-000487
+  - OBS-000488
+  - OBS-000525
+  - OBS-000544
+  - OBS-000545
+  - OBS-000616
+  - OBS-000618
+  - OBS-000619
+  - OBS-000620
+  - OBS-000673
+  - OBS-000693
+  - OBS-000694
+  - OBS-000730
+  - OBS-000750
+  - OBS-000751
+  - OBS-000771
+  - OBS-000790
+  - OBS-000791
+  - OBS-000814
+  - OBS-000832
+  - OBS-000833
+  - OBS-000865
+  - OBS-000883
+  - OBS-000884
+  - OBS-000988
+  - OBS-001007
+  - OBS-001008
+  - OBS-001091
+  - OBS-001110
+  - OBS-001111
+  - OBS-001151
+  - OBS-001170
+  - OBS-001171
+  - OBS-001254
+  - OBS-001273
+  - OBS-001274
+  - OBS-001389
+  - OBS-001391
+  - OBS-001392
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: acbc391058414e9ff8fe5f90aa38e4ed2abc7fcdc149baaf24b338fffc469401
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-020
+  key: authentication:EP-033
+  category: authentication
+  statement: Access to POST /api/BasketItems/ should require an authenticated context
+    equivalent to the context observed in source traffic.
+  resources:
+  - Basketitem
+  endpoints:
+  - EP-033
+  evidence:
+  - EP-033
+  - OBS-000064
+  - OBS-000378
+  - OBS-000580
+  - OBS-000923
+  - OBS-001216
+  - OBS-001356
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 105e7847b9c025880670b44e27a35bf2b24c47c4b48b8e46d28ceaf156185b54
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-021
+  key: authentication:EP-034
+  category: authentication
+  statement: Access to POST /rest/basket/{basketId}/checkout should require an authenticated
+    context equivalent to the context observed in source traffic.
+  resources:
+  - Basket
+  endpoints:
+  - EP-034
+  evidence:
+  - EP-034
+  - OBS-000086
+  - OBS-000400
+  - OBS-000607
+  - OBS-001039
+  - OBS-001304
+  - OBS-001373
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: c0718fa361eafebdfe4d2715389e017881920d25c693d0d4e666fcae97d5ebb3
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-022
+  key: authentication:EP-036
+  category: authentication
+  statement: Access to POST /socket.io/ should require an authenticated context equivalent
+    to the context observed in source traffic.
+  resources:
+  - Socket.Io
+  endpoints:
+  - EP-036
+  evidence:
+  - EP-036
+  - OBS-000033
+  - OBS-000181
+  - OBS-000258
+  - OBS-000329
+  - OBS-000486
+  - OBS-000543
+  - OBS-000617
+  - OBS-000692
+  - OBS-000749
+  - OBS-000789
+  - OBS-000831
+  - OBS-000882
+  - OBS-001006
+  - OBS-001109
+  - OBS-001169
+  - OBS-001272
+  - OBS-001390
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 88c799ee7cb0bdd050bf6d0f1dde7fbb6299116b5c2ccc16573d2af767f552fe
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-023
+  key: authentication:EP-037
+  category: authentication
+  statement: Access to PUT /api/Addresss/{addresssId} should require an authenticated
+    context equivalent to the context observed in source traffic.
+  resources:
+  - Addresss
+  endpoints:
+  - EP-037
+  evidence:
+  - EP-037
+  - OBS-000204
+  - OBS-000432
+  - OBS-000624
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 04247aa30262f04ab2144e43c32bc19bdf75910c1dea69d81885e9ba61be4425
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-031
+  key: authentication:EP-038
+  category: authentication
+  statement: Access to GET /api/BasketItems/{basketitemId} should require an authenticated
+    context equivalent to the context observed in source traffic.
+  resources:
+  - Basketitem
+  endpoints:
+  - EP-038
+  evidence:
+  - EP-038
+  - OBS-000584
+  - OBS-000928
+  - OBS-000930
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 42011e29ecb9ec20b963926fd61930e9c34e8db672907341e4e34fe62cd09f63
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-032
+  key: authentication:EP-039
+  category: authentication
+  statement: Access to GET /api/Cards/{cardId} should require an authenticated context
+    equivalent to the context observed in source traffic.
+  resources:
+  - Card
+  endpoints:
+  - EP-039
+  evidence:
+  - EP-039
+  - OBS-000603
+  - OBS-001035
+  - OBS-001301
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 500f736edf6a2ee5cbe00eb74be44fb4d17690917212cd9d51d96c623698eb06
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-033
+  key: authentication:EP-040
+  category: authentication
+  statement: Access to GET /api/Deliverys/{deliveryId} should require an authenticated
+    context equivalent to the context observed in source traffic.
+  resources:
+  - Delivery
+  endpoints:
+  - EP-040
+  evidence:
+  - EP-040
+  - OBS-000075
+  - OBS-000080
+  - OBS-000389
+  - OBS-000394
+  - OBS-000595
+  - OBS-000601
+  - OBS-000935
+  - OBS-001029
+  - OBS-001033
+  - OBS-001295
+  - OBS-001299
+  - OBS-001364
+  - OBS-001368
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 3d7639247b1d30978ba7f24001c34cfeae46e848494a712e41a8fa018ed2a510
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-034
+  key: authentication:EP-041
+  category: authentication
+  statement: Access to GET /api/Recycles/ should require an authenticated context
+    equivalent to the context observed in source traffic.
+  resources:
+  - Recycle
+  endpoints:
+  - EP-041
+  evidence:
+  - EP-041
+  - OBS-000841
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: c5d778af9498749cf7a18631b610822a571d9a1e77faa88eb42fe3f7de1d2a2f
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-035
+  key: authentication:EP-042
+  category: authentication
+  statement: Access to GET /api/SecurityQuestions/ should require an authenticated
+    context equivalent to the context observed in source traffic.
+  resources:
+  - Securityquestion
+  endpoints:
+  - EP-042
+  evidence:
+  - EP-042
+  - OBS-000552
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: e8efed3b6ff00139fb4110896dad9d1f264c218ff37208b2a844671976c9429a
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-036
+  key: authentication:EP-044
+  category: authentication
+  statement: Access to GET /rest/products/42/reviews should require an authenticated
+    context equivalent to the context observed in source traffic.
+  resources:
+  - Review
+  endpoints:
+  - EP-044
+  evidence:
+  - EP-044
+  - OBS-000919
+  - OBS-000920
+  - OBS-000921
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: ca4c567103be1f0b5bcad144e687d38604fcef11a980c7e8e67d6037a93ca7d3
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-037
+  key: authentication:EP-045
+  category: authentication
+  statement: Access to GET /rest/saveLoginIp should require an authenticated context
+    equivalent to the context observed in source traffic.
+  resources:
+  - Saveloginip
+  endpoints:
+  - EP-045
+  evidence:
+  - EP-045
+  - OBS-001173
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: e59e1a68fde134b98e7ef6587a7203ba477e81c30b5e8ee8b61e720ff295b725
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-038
+  key: authentication:EP-046
+  category: authentication
+  statement: Access to GET /rest/user/change-password should require an authenticated
+    context equivalent to the context observed in source traffic.
+  resources:
+  - ChangePassword
+  endpoints:
+  - EP-046
+  evidence:
+  - EP-046
+  - OBS-000621
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 0b80d8b4446a3da4b7bda4630b78d5181fc8a3e7c9fd603a6e104a0d8bfd6870
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-039
+  key: authentication:EP-047
+  category: authentication
+  statement: Access to POST /api/Addresss/ should require an authenticated context
+    equivalent to the context observed in source traffic.
+  resources:
+  - Addresss
+  endpoints:
+  - EP-047
+  evidence:
+  - EP-047
+  - OBS-000591
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 26e0820a7f90d9c771ff13a8b1aeb14c7f11da1d970861c51c08e6640ab41d17
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-040
+  key: authentication:EP-048
+  category: authentication
+  statement: Access to POST /api/Cards/ should require an authenticated context equivalent
+    to the context observed in source traffic.
+  resources:
+  - Card
+  endpoints:
+  - EP-048
+  evidence:
+  - EP-048
+  - OBS-000599
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 266f05c841559f2c1cd6150110fdd6f7103fa7f0900b075af3261afe4d59a1b5
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-041
+  key: authentication:EP-049
+  category: authentication
+  statement: Access to POST /api/SecurityAnswers/ should require an authenticated
+    context equivalent to the context observed in source traffic.
+  resources:
+  - Securityanswer
+  endpoints:
+  - EP-049
+  evidence:
+  - EP-049
+  - OBS-000554
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 63928b210aa31ed4314863f275dcdd03e319336bbff613c3df96e389068eaee3
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-042
+  key: authentication:EP-050
+  category: authentication
+  statement: Access to POST /api/Users/ should require an authenticated context equivalent
+    to the context observed in source traffic.
+  resources:
+  - User
+  endpoints:
+  - EP-050
+  evidence:
+  - EP-050
+  - OBS-000553
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 442d71e120943ef1c32296fbc7f0a7ba23f33011cb0aa9cda17e29862014a06d
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-043
+  key: authentication:EP-051
+  category: authentication
+  statement: Access to POST /profile should require an authenticated context equivalent
+    to the context observed in source traffic.
+  resources:
+  - Profile
+  endpoints:
+  - EP-051
+  evidence:
+  - EP-051
+  - OBS-000641
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: fd0b7c4fb0e2c844923efc85a749dd3a6f01d39d2cba0ba087556a4cb55ee900
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-044
+  key: authentication:EP-052
+  category: authentication
+  statement: Access to PUT /api/BasketItems/{basketitemId} should require an authenticated
+    context equivalent to the context observed in source traffic.
+  resources:
+  - Basketitem
+  endpoints:
+  - EP-052
+  evidence:
+  - EP-052
+  - OBS-000585
+  - OBS-000929
+  - OBS-000931
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 9715a7d3446862025e1a1c5d6a7cd8f6e6b7ac1397aba9a8ea7fa42d76e47669
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-045
+  key: authentication:EP-053
+  category: authentication
+  statement: Access to PUT /rest/wallet/balance should require an authenticated context
+    equivalent to the context observed in source traffic.
+  resources:
+  - Wallet
+  endpoints:
+  - EP-053
+  evidence:
+  - EP-053
+  - OBS-000897
+  - OBS-000943
+  - OBS-000948
+  - OBS-001315
+  - OBS-001320
+  - OBS-001325
+  - OBS-001330
+  - OBS-001336
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: a449f471b4693bb4eebc7e518bda42cabac1863a8f30c32ca64d69480b73177e
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-024
+  key: object-authorization:EP-003:addresssId
+  category: authorization
+  statement: Operations on Addresss selected by addresssId must authorize the calling
+    actor for that specific object.
+  resources:
+  - Addresss
+  endpoints:
+  - EP-003
+  evidence:
+  - EP-003
+  - OBS-000072
+  - OBS-000081
+  - OBS-000091
+  - OBS-000202
+  - OBS-000205
+  - OBS-000386
+  - OBS-000395
+  - OBS-000405
+  - OBS-000430
+  - OBS-000433
+  - OBS-000593
+  - OBS-000602
+  - OBS-000611
+  - OBS-000623
+  - OBS-000625
+  - OBS-000933
+  - OBS-001027
+  - OBS-001034
+  - OBS-001043
+  - OBS-001293
+  - OBS-001300
+  - OBS-001308
+  - OBS-001362
+  - OBS-001369
+  - OBS-001377
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: e71d632f74d63590816d990a262f5edb466c05ed512a589c2aa0696ff09c37dd
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-025
+  key: object-authorization:EP-008:productId
+  category: authorization
+  statement: Operations on Product selected by productId must authorize the calling
+    actor for that specific object.
+  resources:
+  - Product
+  endpoints:
+  - EP-008
+  evidence:
+  - EP-008
+  - OBS-000065
+  - OBS-000379
+  - OBS-000581
+  - OBS-000586
+  - OBS-000924
+  - OBS-001217
+  - OBS-001357
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 096e4ae3c280d912968b4469b9adcbd673db3acf6286aed06903e928d51cd1a5
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-026
+  key: object-authorization:EP-020:basketId
+  category: authorization
+  statement: Operations on Basket selected by basketId must authorize the calling
+    actor for that specific object.
+  resources:
+  - Basket
+  endpoints:
+  - EP-020
+  evidence:
+  - EP-020
+  - OBS-000042
+  - OBS-000063
+  - OBS-000066
+  - OBS-000067
+  - OBS-000082
+  - OBS-000087
+  - OBS-000109
+  - OBS-000128
+  - OBS-000170
+  - OBS-000247
+  - OBS-000356
+  - OBS-000377
+  - OBS-000380
+  - OBS-000381
+  - OBS-000396
+  - OBS-000401
+  - OBS-000422
+  - OBS-000475
+  - OBS-000490
+  - OBS-000532
+  - OBS-000559
+  - OBS-000579
+  - OBS-000582
+  - OBS-000583
+  - OBS-000587
+  - OBS-000588
+  - OBS-000604
+  - OBS-000608
+  - OBS-000680
+  - OBS-000737
+  - OBS-000745
+  - OBS-000778
+  - OBS-000785
+  - OBS-000821
+  - OBS-000835
+  - OBS-000872
+  - OBS-000886
+  - OBS-000922
+  - OBS-000925
+  - OBS-000926
+  - OBS-000995
+  - OBS-001024
+  - OBS-001036
+  - OBS-001040
+  - OBS-001098
+  - OBS-001158
+  - OBS-001195
+  - OBS-001215
+  - OBS-001218
+  - OBS-001261
+  - OBS-001290
+  - OBS-001302
+  - OBS-001305
+  - OBS-001309
+  - OBS-001355
+  - OBS-001358
+  - OBS-001359
+  - OBS-001370
+  - OBS-001374
+  - OBS-001380
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 44e62e02d01a7f102f1dca5f1fe9a3cd3f636c559dff3016706bbd8d476cdd73
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-027
+  key: object-authorization:EP-024:trackOrderId
+  category: authorization
+  statement: Operations on TrackOrder selected by trackOrderId must authorize the
+    calling actor for that specific object.
+  resources:
+  - TrackOrder
+  endpoints:
+  - EP-024
+  evidence:
+  - EP-024
+  - OBS-000088
+  - OBS-000115
+  - OBS-000119
+  - OBS-000123
+  - OBS-000402
+  - OBS-000410
+  - OBS-000414
+  - OBS-000418
+  - OBS-000547
+  - OBS-000609
+  - OBS-000796
+  - OBS-000828
+  - OBS-000847
+  - OBS-000879
+  - OBS-000891
+  - OBS-001041
+  - OBS-001130
+  - OBS-001132
+  - OBS-001222
+  - OBS-001306
+  - OBS-001375
+  - OBS-001384
+  - OBS-001387
+  - OBS-001393
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: c081cda2ac64f862aa6a66b0a07e018746bd1ff76b23c1865bb60a053e636269
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-028
+  key: object-authorization:EP-034:basketId
+  category: authorization
+  statement: Operations on Basket selected by basketId must authorize the calling
+    actor for that specific object.
+  resources:
+  - Basket
+  endpoints:
+  - EP-034
+  evidence:
+  - EP-034
+  - OBS-000086
+  - OBS-000400
+  - OBS-000607
+  - OBS-001039
+  - OBS-001304
+  - OBS-001373
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 5fc4a932d0d1205def08f8343407488377010bc0a6947413456f15e98f27997d
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-029
+  key: object-authorization:EP-034:paymentId
+  category: authorization
+  statement: Operations on Basket selected by paymentId must authorize the calling
+    actor for that specific object.
+  resources:
+  - Basket
+  endpoints:
+  - EP-034
+  evidence:
+  - EP-034
+  - OBS-000086
+  - OBS-000400
+  - OBS-000607
+  - OBS-001039
+  - OBS-001304
+  - OBS-001373
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 59171ad154c09be68cfc933e07216a9f0ddf9f3d7400b165666f64711869c726
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-030
+  key: object-authorization:EP-037:addresssId
+  category: authorization
+  statement: Operations on Addresss selected by addresssId must authorize the calling
+    actor for that specific object.
+  resources:
+  - Addresss
+  endpoints:
+  - EP-037
+  evidence:
+  - EP-037
+  - OBS-000204
+  - OBS-000432
+  - OBS-000624
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 8210ca551047513399abdb8f758c6e7078b97ee6d87eb1d535634290171064f1
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-046
+  key: object-authorization:EP-038:basketitemId
+  category: authorization
+  statement: Operations on Basketitem selected by basketitemId must authorize the
+    calling actor for that specific object.
+  resources:
+  - Basketitem
+  endpoints:
+  - EP-038
+  evidence:
+  - EP-038
+  - OBS-000584
+  - OBS-000928
+  - OBS-000930
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 384cdd471cfc6a51400422db70b757e48bea2ee644c7f606b411271ce8cff4c5
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-047
+  key: object-authorization:EP-039:cardId
+  category: authorization
+  statement: Operations on Card selected by cardId must authorize the calling actor
+    for that specific object.
+  resources:
+  - Card
+  endpoints:
+  - EP-039
+  evidence:
+  - EP-039
+  - OBS-000603
+  - OBS-001035
+  - OBS-001301
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: d67181911f33d78f4a3cbeb878c385a877ceaa8e2ac6537a30133b3c71b456ba
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-048
+  key: object-authorization:EP-040:deliveryId
+  category: authorization
+  statement: Operations on Delivery selected by deliveryId must authorize the calling
+    actor for that specific object.
+  resources:
+  - Delivery
+  endpoints:
+  - EP-040
+  evidence:
+  - EP-040
+  - OBS-000075
+  - OBS-000080
+  - OBS-000389
+  - OBS-000394
+  - OBS-000595
+  - OBS-000601
+  - OBS-000935
+  - OBS-001029
+  - OBS-001033
+  - OBS-001295
+  - OBS-001299
+  - OBS-001364
+  - OBS-001368
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: c39e43d41552cd123136bc26ec78ac6a1199a6cc0b151b80fada2a18b42db519
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-049
+  key: object-authorization:EP-049:UserId
+  category: authorization
+  statement: Operations on Securityanswer selected by UserId must authorize the calling
+    actor for that specific object.
+  resources:
+  - Securityanswer
+  endpoints:
+  - EP-049
+  evidence:
+  - EP-049
+  - OBS-000554
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 2c898d8191b92b0871e628fdbf70af5d755b86a4215055e83426aa79de0c8d23
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-050
+  key: object-authorization:EP-050:id
+  category: authorization
+  statement: Operations on User selected by id must authorize the calling actor for
+    that specific object.
+  resources:
+  - User
+  endpoints:
+  - EP-050
+  evidence:
+  - EP-050
+  - OBS-000553
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 422aff8a165bb40e51ea13f7f3a827be4fe4006b6d7a19495c5de7b3853a081d
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-051
+  key: object-authorization:EP-052:basketitemId
+  category: authorization
+  statement: Operations on Basketitem selected by basketitemId must authorize the
+    calling actor for that specific object.
+  resources:
+  - Basketitem
+  endpoints:
+  - EP-052
+  evidence:
+  - EP-052
+  - OBS-000585
+  - OBS-000929
+  - OBS-000931
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 7e310813d05f5763a2655307c7792452b11e1aadf75451cba34ec6950bed8610
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-052
+  key: object-authorization:EP-053:paymentId
+  category: authorization
+  statement: Operations on Wallet selected by paymentId must authorize the calling
+    actor for that specific object.
+  resources:
+  - Wallet
+  endpoints:
+  - EP-053
+  evidence:
+  - EP-053
+  - OBS-000897
+  - OBS-000943
+  - OBS-000948
+  - OBS-001315
+  - OBS-001320
+  - OBS-001325
+  - OBS-001330
+  - OBS-001336
+  confidence: low
+  knowledge_status: ASSUMED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint exposes a caller-controlled object identifier, but ownership,
+    delegation, tenant, and role rules are not yet observed.
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: b951d5aa9d0bfa18b253ee9aa42bf8ee0e3791ed6d30b1c339e187c0e83de913
+    source_fingerprint: 2a6bf7bdf78ccff917e30d85fce144deb633aa80a0cfa63816032f3f930f7a27
+- id: INV-006
+  key: authentication:EP-007
+  category: authentication
+  statement: Access to GET /api/Deliverys/1 should require an authenticated context
+    equivalent to the context observed in source traffic.
+  resources:
+  - Delivery
+  endpoints:
+  - EP-007
+  evidence:
+  - EP-007
+  - OBS-000075
+  - OBS-000080
+  - OBS-000389
+  - OBS-000394
+  confidence: medium
+  knowledge_status: INFERRED
+  validation_status: NOT_CONFIRMED
+  rationale: The endpoint inventory inferred an authentication requirement from observed
+    requests; server policy is not yet confirmed.
+  disposition: SUPPRESSED_INSUFFICIENT_EVIDENCE
+  generation:
+    managed: true
+    generator: phase2-invariant-extractor
+    generated_checksum: 4484be4c9d6c00501529db256363c8964ca2a45571ae9e182565a35db9d5286f
+    source_fingerprint: d4466dc265bbf2e4a21fa262d3be23bb8d728b8de2757639bc1a5e7b06a4fb0d

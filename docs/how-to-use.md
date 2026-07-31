@@ -502,6 +502,19 @@ The command validates deterministic blockers before showing the typed confirmati
 blocked or unsupported plan exits immediately with the ownership, template, scope, method, or
 policy reason and does not ask for `APPROVE HYP-xxx`.
 
+Export the exact approved requests for manual use in Burp Repeater when desired:
+
+```bash
+hunt export-burp HYP-002 -w workspaces/<slug>
+```
+
+The command sends no request and never resolves or writes credential values. It creates immutable,
+revisioned raw HTTP files under `tests/burp/HYP-002/export-vN/` plus a manifest containing the plan
+checksum, target-policy checksum, mutation, request budget, and stop conditions. Authorization,
+Cookie, API-key, and other runtime headers appear only as actor-specific placeholders. Replace a
+placeholder inside Burp with the current credential for that controlled actor. Sending from Burp
+is manual active execution outside FinSec Hunt's bounded runner.
+
 Dry-run validates the checksum-bound approval, actor credential references, local secret
 resolution, expiration margin, refresh availability, exact/wildcard scope, DNS destination,
 method, mutation dimension, request budget, timeout, redirect policy, and expected evidence paths.

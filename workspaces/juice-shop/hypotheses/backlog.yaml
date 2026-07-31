@@ -1,2 +1,2770 @@
 version: 1
-hypotheses: []
+hypotheses:
+- id: HYP-001
+  key: auth-enforcement-research:addresss
+  title: Determine whether authentication is enforced on sensitive Addresss endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Addresss / EP-003, EP-037
+  source:
+    endpoints:
+    - EP-003
+    - EP-037
+    invariants:
+    - INV-002
+    - INV-023
+    observations:
+    - OBS-000072
+    - OBS-000081
+    - OBS-000091
+    - OBS-000202
+    - OBS-000204
+    - OBS-000205
+    - OBS-000386
+    - OBS-000395
+    - OBS-000405
+    - OBS-000430
+    - OBS-000432
+    - OBS-000433
+    - OBS-000593
+    - OBS-000602
+    - OBS-000611
+    - OBS-000623
+    - OBS-000624
+    - OBS-000625
+    - OBS-000933
+    - OBS-001027
+    - OBS-001034
+    - OBS-001043
+    - OBS-001293
+    - OBS-001300
+    - OBS-001308
+    - OBS-001362
+    - OBS-001369
+    - OBS-001377
+  invariant:
+  - INV-002
+  - INV-023
+  observations:
+  - OBS-000072
+  - OBS-000081
+  - OBS-000091
+  - OBS-000202
+  - OBS-000204
+  - OBS-000205
+  - OBS-000386
+  - OBS-000395
+  - OBS-000405
+  - OBS-000430
+  - OBS-000432
+  - OBS-000433
+  - OBS-000593
+  - OBS-000602
+  - OBS-000611
+  - OBS-000623
+  - OBS-000624
+  - OBS-000625
+  - OBS-000933
+  - OBS-001027
+  - OBS-001034
+  - OBS-001043
+  - OBS-001293
+  - OBS-001300
+  - OBS-001308
+  - OBS-001362
+  - OBS-001369
+  - OBS-001377
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Addresss endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 9a5db27d66a060cb1b5f53bd9d888fbf6ba12d67d83852602ca2d9f5a1c2b1c5
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-002
+  key: auth-enforcement-research:basket
+  title: Determine whether authentication is enforced on sensitive Basket endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Basket / EP-020
+  source:
+    endpoints:
+    - EP-020
+    invariants:
+    - INV-012
+    observations:
+    - OBS-000042
+    - OBS-000063
+    - OBS-000066
+    - OBS-000067
+    - OBS-000082
+    - OBS-000087
+    - OBS-000109
+    - OBS-000128
+    - OBS-000170
+    - OBS-000247
+    - OBS-000356
+    - OBS-000377
+    - OBS-000380
+    - OBS-000381
+    - OBS-000396
+    - OBS-000401
+    - OBS-000422
+    - OBS-000475
+    - OBS-000490
+    - OBS-000532
+    - OBS-000559
+    - OBS-000579
+    - OBS-000582
+    - OBS-000583
+    - OBS-000587
+    - OBS-000588
+    - OBS-000604
+    - OBS-000608
+    - OBS-000680
+    - OBS-000737
+    - OBS-000745
+    - OBS-000778
+    - OBS-000785
+    - OBS-000821
+    - OBS-000835
+    - OBS-000872
+    - OBS-000886
+    - OBS-000922
+    - OBS-000925
+    - OBS-000926
+    - OBS-000995
+    - OBS-001024
+    - OBS-001036
+    - OBS-001040
+    - OBS-001098
+    - OBS-001158
+    - OBS-001195
+    - OBS-001215
+    - OBS-001218
+    - OBS-001261
+    - OBS-001290
+    - OBS-001302
+    - OBS-001305
+    - OBS-001309
+    - OBS-001355
+    - OBS-001358
+    - OBS-001359
+    - OBS-001370
+    - OBS-001374
+    - OBS-001380
+  invariant:
+  - INV-012
+  observations:
+  - OBS-000042
+  - OBS-000063
+  - OBS-000066
+  - OBS-000067
+  - OBS-000082
+  - OBS-000087
+  - OBS-000109
+  - OBS-000128
+  - OBS-000170
+  - OBS-000247
+  - OBS-000356
+  - OBS-000377
+  - OBS-000380
+  - OBS-000381
+  - OBS-000396
+  - OBS-000401
+  - OBS-000422
+  - OBS-000475
+  - OBS-000490
+  - OBS-000532
+  - OBS-000559
+  - OBS-000579
+  - OBS-000582
+  - OBS-000583
+  - OBS-000587
+  - OBS-000588
+  - OBS-000604
+  - OBS-000608
+  - OBS-000680
+  - OBS-000737
+  - OBS-000745
+  - OBS-000778
+  - OBS-000785
+  - OBS-000821
+  - OBS-000835
+  - OBS-000872
+  - OBS-000886
+  - OBS-000922
+  - OBS-000925
+  - OBS-000926
+  - OBS-000995
+  - OBS-001024
+  - OBS-001036
+  - OBS-001040
+  - OBS-001098
+  - OBS-001158
+  - OBS-001195
+  - OBS-001215
+  - OBS-001218
+  - OBS-001261
+  - OBS-001290
+  - OBS-001302
+  - OBS-001305
+  - OBS-001309
+  - OBS-001355
+  - OBS-001358
+  - OBS-001359
+  - OBS-001370
+  - OBS-001374
+  - OBS-001380
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Basket endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 3
+    testability: 2
+    total: 9
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 9ede02fb9e0f8dfce0ef1153b1406e1313ecb8430f617bc3a2dc16b17fb79bf8
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-014
+  key: auth-enforcement-research:basketitem
+  title: Determine whether authentication is enforced on sensitive Basketitem endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Basketitem / EP-038, EP-052
+  source:
+    endpoints:
+    - EP-038
+    - EP-052
+    invariants:
+    - INV-031
+    - INV-044
+    observations:
+    - OBS-000584
+    - OBS-000585
+    - OBS-000928
+    - OBS-000929
+    - OBS-000930
+    - OBS-000931
+  invariant:
+  - INV-031
+  - INV-044
+  observations:
+  - OBS-000584
+  - OBS-000585
+  - OBS-000928
+  - OBS-000929
+  - OBS-000930
+  - OBS-000931
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Basketitem
+    endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 1c033a61aec154d2efc934d59e441912d3e53495610637730f840e7370a8561a
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-015
+  key: auth-enforcement-research:card
+  title: Determine whether authentication is enforced on sensitive Card endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Card / EP-039
+  source:
+    endpoints:
+    - EP-039
+    invariants:
+    - INV-032
+    observations:
+    - OBS-000603
+    - OBS-001035
+    - OBS-001301
+  invariant:
+  - INV-032
+  observations:
+  - OBS-000603
+  - OBS-001035
+  - OBS-001301
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Card endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 1030ef11fffa454eb8b5125eb0a0eda4a8f1a7426439ac25affceca1d1879f0d
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-003
+  key: auth-enforcement-research:challenge
+  title: Determine whether authentication is enforced on sensitive Challenge endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Challenge / EP-005
+  source:
+    endpoints:
+    - EP-005
+    invariants:
+    - INV-004
+    observations:
+    - OBS-000022
+    - OBS-000026
+    - OBS-000167
+    - OBS-000174
+    - OBS-000244
+    - OBS-000251
+    - OBS-000318
+    - OBS-000322
+    - OBS-000472
+    - OBS-000479
+    - OBS-000529
+    - OBS-000536
+    - OBS-000677
+    - OBS-000684
+    - OBS-000734
+    - OBS-000741
+    - OBS-000775
+    - OBS-000782
+    - OBS-000818
+    - OBS-000825
+    - OBS-000869
+    - OBS-000876
+    - OBS-000992
+    - OBS-000999
+    - OBS-001095
+    - OBS-001102
+    - OBS-001155
+    - OBS-001162
+    - OBS-001258
+    - OBS-001265
+  invariant:
+  - INV-004
+  observations:
+  - OBS-000022
+  - OBS-000026
+  - OBS-000167
+  - OBS-000174
+  - OBS-000244
+  - OBS-000251
+  - OBS-000318
+  - OBS-000322
+  - OBS-000472
+  - OBS-000479
+  - OBS-000529
+  - OBS-000536
+  - OBS-000677
+  - OBS-000684
+  - OBS-000734
+  - OBS-000741
+  - OBS-000775
+  - OBS-000782
+  - OBS-000818
+  - OBS-000825
+  - OBS-000869
+  - OBS-000876
+  - OBS-000992
+  - OBS-000999
+  - OBS-001095
+  - OBS-001102
+  - OBS-001155
+  - OBS-001162
+  - OBS-001258
+  - OBS-001265
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Challenge
+    endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 4b4c180ab3f2a94b600e27a3f7e630e4e7454871d5d9c178e2639002e518ca39
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-016
+  key: auth-enforcement-research:changepassword
+  title: Determine whether authentication is enforced on sensitive ChangePassword
+    endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: ChangePassword / EP-046
+  source:
+    endpoints:
+    - EP-046
+    invariants:
+    - INV-038
+    observations:
+    - OBS-000621
+  invariant:
+  - INV-038
+  observations:
+  - OBS-000621
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive ChangePassword
+    endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: c122c29b825e09dbd480d3b5a82e08c7412eb7d07f360064e96065341fa4d945
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-017
+  key: auth-enforcement-research:delivery
+  title: Determine whether authentication is enforced on sensitive Delivery endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Delivery / EP-040
+  source:
+    endpoints:
+    - EP-040
+    invariants:
+    - INV-033
+    observations:
+    - OBS-000075
+    - OBS-000080
+    - OBS-000389
+    - OBS-000394
+    - OBS-000595
+    - OBS-000601
+    - OBS-000935
+    - OBS-001029
+    - OBS-001033
+    - OBS-001295
+    - OBS-001299
+    - OBS-001364
+    - OBS-001368
+  invariant:
+  - INV-033
+  observations:
+  - OBS-000075
+  - OBS-000080
+  - OBS-000389
+  - OBS-000394
+  - OBS-000595
+  - OBS-000601
+  - OBS-000935
+  - OBS-001029
+  - OBS-001033
+  - OBS-001295
+  - OBS-001299
+  - OBS-001364
+  - OBS-001368
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Delivery endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 004d4fc0cb59eada3bc7aa1352ce9e605b42813145ad27bef025f7b47db270b2
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-004
+  key: auth-enforcement-research:product
+  title: Determine whether authentication is enforced on sensitive Product endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Product / EP-008, EP-023
+  source:
+    endpoints:
+    - EP-008
+    - EP-023
+    invariants:
+    - INV-007
+    - INV-015
+    observations:
+    - OBS-000046
+    - OBS-000065
+    - OBS-000093
+    - OBS-000178
+    - OBS-000255
+    - OBS-000280
+    - OBS-000326
+    - OBS-000360
+    - OBS-000379
+    - OBS-000563
+    - OBS-000581
+    - OBS-000586
+    - OBS-000689
+    - OBS-000902
+    - OBS-000924
+    - OBS-001003
+    - OBS-001045
+    - OBS-001106
+    - OBS-001175
+    - OBS-001199
+    - OBS-001217
+    - OBS-001269
+    - OBS-001339
+    - OBS-001357
+  invariant:
+  - INV-007
+  - INV-015
+  observations:
+  - OBS-000046
+  - OBS-000065
+  - OBS-000093
+  - OBS-000178
+  - OBS-000255
+  - OBS-000280
+  - OBS-000326
+  - OBS-000360
+  - OBS-000379
+  - OBS-000563
+  - OBS-000581
+  - OBS-000586
+  - OBS-000689
+  - OBS-000902
+  - OBS-000924
+  - OBS-001003
+  - OBS-001045
+  - OBS-001106
+  - OBS-001175
+  - OBS-001199
+  - OBS-001217
+  - OBS-001269
+  - OBS-001339
+  - OBS-001357
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Product endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: bb4cac4ccd20be33b78ad2aa6f703baaf77d9302176c8b3b8ab02a61c09d5b38
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-018
+  key: auth-enforcement-research:saveloginip
+  title: Determine whether authentication is enforced on sensitive Saveloginip endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Saveloginip / EP-045
+  source:
+    endpoints:
+    - EP-045
+    invariants:
+    - INV-037
+    observations:
+    - OBS-001173
+  invariant:
+  - INV-037
+  observations:
+  - OBS-001173
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Saveloginip
+    endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: b22b872a5e1b4acc7088aaa2922cfd418fd364517d79e03c880236ac6e6cf580
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-005
+  key: auth-enforcement-research:socket.io
+  title: Determine whether authentication is enforced on sensitive Socket.Io endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Socket.Io / EP-027
+  source:
+    endpoints:
+    - EP-027
+    invariants:
+    - INV-019
+    observations:
+    - OBS-000018
+    - OBS-000034
+    - OBS-000035
+    - OBS-000163
+    - OBS-000182
+    - OBS-000183
+    - OBS-000240
+    - OBS-000259
+    - OBS-000260
+    - OBS-000314
+    - OBS-000330
+    - OBS-000331
+    - OBS-000468
+    - OBS-000487
+    - OBS-000488
+    - OBS-000525
+    - OBS-000544
+    - OBS-000545
+    - OBS-000616
+    - OBS-000618
+    - OBS-000619
+    - OBS-000620
+    - OBS-000673
+    - OBS-000693
+    - OBS-000694
+    - OBS-000730
+    - OBS-000750
+    - OBS-000751
+    - OBS-000771
+    - OBS-000790
+    - OBS-000791
+    - OBS-000814
+    - OBS-000832
+    - OBS-000833
+    - OBS-000865
+    - OBS-000883
+    - OBS-000884
+    - OBS-000988
+    - OBS-001007
+    - OBS-001008
+    - OBS-001091
+    - OBS-001110
+    - OBS-001111
+    - OBS-001151
+    - OBS-001170
+    - OBS-001171
+    - OBS-001254
+    - OBS-001273
+    - OBS-001274
+    - OBS-001389
+    - OBS-001391
+    - OBS-001392
+  invariant:
+  - INV-019
+  observations:
+  - OBS-000018
+  - OBS-000034
+  - OBS-000035
+  - OBS-000163
+  - OBS-000182
+  - OBS-000183
+  - OBS-000240
+  - OBS-000259
+  - OBS-000260
+  - OBS-000314
+  - OBS-000330
+  - OBS-000331
+  - OBS-000468
+  - OBS-000487
+  - OBS-000488
+  - OBS-000525
+  - OBS-000544
+  - OBS-000545
+  - OBS-000616
+  - OBS-000618
+  - OBS-000619
+  - OBS-000620
+  - OBS-000673
+  - OBS-000693
+  - OBS-000694
+  - OBS-000730
+  - OBS-000750
+  - OBS-000751
+  - OBS-000771
+  - OBS-000790
+  - OBS-000791
+  - OBS-000814
+  - OBS-000832
+  - OBS-000833
+  - OBS-000865
+  - OBS-000883
+  - OBS-000884
+  - OBS-000988
+  - OBS-001007
+  - OBS-001008
+  - OBS-001091
+  - OBS-001110
+  - OBS-001111
+  - OBS-001151
+  - OBS-001170
+  - OBS-001171
+  - OBS-001254
+  - OBS-001273
+  - OBS-001274
+  - OBS-001389
+  - OBS-001391
+  - OBS-001392
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Socket.Io
+    endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 66a2dfbb33eac2b8aa373b1e6e3b1a7dce1ad758cc732576ed3e4898214c23a3
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-006
+  key: auth-enforcement-research:trackorder
+  title: Determine whether authentication is enforced on sensitive TrackOrder endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: TrackOrder / EP-024
+  source:
+    endpoints:
+    - EP-024
+    invariants:
+    - INV-016
+    observations:
+    - OBS-000088
+    - OBS-000115
+    - OBS-000119
+    - OBS-000123
+    - OBS-000402
+    - OBS-000410
+    - OBS-000414
+    - OBS-000418
+    - OBS-000547
+    - OBS-000609
+    - OBS-000796
+    - OBS-000828
+    - OBS-000847
+    - OBS-000879
+    - OBS-000891
+    - OBS-001041
+    - OBS-001130
+    - OBS-001132
+    - OBS-001222
+    - OBS-001306
+    - OBS-001375
+    - OBS-001384
+    - OBS-001387
+    - OBS-001393
+  invariant:
+  - INV-016
+  observations:
+  - OBS-000088
+  - OBS-000115
+  - OBS-000119
+  - OBS-000123
+  - OBS-000402
+  - OBS-000410
+  - OBS-000414
+  - OBS-000418
+  - OBS-000547
+  - OBS-000609
+  - OBS-000796
+  - OBS-000828
+  - OBS-000847
+  - OBS-000879
+  - OBS-000891
+  - OBS-001041
+  - OBS-001130
+  - OBS-001132
+  - OBS-001222
+  - OBS-001306
+  - OBS-001375
+  - OBS-001384
+  - OBS-001387
+  - OBS-001393
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive TrackOrder
+    endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: b28329f136f8dcbb98c5fd65391c60a301719e3ba710d07adf0fdb4aab278e8d
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-007
+  key: auth-enforcement-research:wallet
+  title: Determine whether authentication is enforced on sensitive Wallet endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Wallet / EP-026, EP-053
+  source:
+    endpoints:
+    - EP-026
+    - EP-053
+    invariants:
+    - INV-018
+    - INV-045
+    observations:
+    - OBS-000076
+    - OBS-000390
+    - OBS-000596
+    - OBS-000893
+    - OBS-000894
+    - OBS-000897
+    - OBS-000898
+    - OBS-000936
+    - OBS-000939
+    - OBS-000940
+    - OBS-000943
+    - OBS-000944
+    - OBS-000945
+    - OBS-000948
+    - OBS-000949
+    - OBS-000950
+    - OBS-000953
+    - OBS-001030
+    - OBS-001296
+    - OBS-001311
+    - OBS-001312
+    - OBS-001315
+    - OBS-001316
+    - OBS-001317
+    - OBS-001320
+    - OBS-001321
+    - OBS-001322
+    - OBS-001325
+    - OBS-001326
+    - OBS-001327
+    - OBS-001330
+    - OBS-001331
+    - OBS-001333
+    - OBS-001336
+    - OBS-001337
+    - OBS-001365
+  invariant:
+  - INV-018
+  - INV-045
+  observations:
+  - OBS-000076
+  - OBS-000390
+  - OBS-000596
+  - OBS-000893
+  - OBS-000894
+  - OBS-000897
+  - OBS-000898
+  - OBS-000936
+  - OBS-000939
+  - OBS-000940
+  - OBS-000943
+  - OBS-000944
+  - OBS-000945
+  - OBS-000948
+  - OBS-000949
+  - OBS-000950
+  - OBS-000953
+  - OBS-001030
+  - OBS-001296
+  - OBS-001311
+  - OBS-001312
+  - OBS-001315
+  - OBS-001316
+  - OBS-001317
+  - OBS-001320
+  - OBS-001321
+  - OBS-001322
+  - OBS-001325
+  - OBS-001326
+  - OBS-001327
+  - OBS-001330
+  - OBS-001331
+  - OBS-001333
+  - OBS-001336
+  - OBS-001337
+  - OBS-001365
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Wallet endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: unknown
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: bbac06f6bfb8e6a2788139db73fbed53d864c34ae647bd5f2ae3e004ba22b39b
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-008
+  key: auth-enforcement-research:whoami
+  title: Determine whether authentication is enforced on sensitive Whoami endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Whoami / EP-025
+  source:
+    endpoints:
+    - EP-025
+    invariants:
+    - INV-017
+    observations:
+    - OBS-000039
+    - OBS-000040
+    - OBS-000043
+    - OBS-000044
+    - OBS-000068
+    - OBS-000083
+    - OBS-000110
+    - OBS-000129
+    - OBS-000168
+    - OBS-000173
+    - OBS-000245
+    - OBS-000250
+    - OBS-000350
+    - OBS-000351
+    - OBS-000353
+    - OBS-000354
+    - OBS-000357
+    - OBS-000358
+    - OBS-000382
+    - OBS-000397
+    - OBS-000423
+    - OBS-000473
+    - OBS-000478
+    - OBS-000491
+    - OBS-000530
+    - OBS-000535
+    - OBS-000556
+    - OBS-000557
+    - OBS-000560
+    - OBS-000561
+    - OBS-000589
+    - OBS-000605
+    - OBS-000678
+    - OBS-000683
+    - OBS-000712
+    - OBS-000735
+    - OBS-000740
+    - OBS-000746
+    - OBS-000776
+    - OBS-000781
+    - OBS-000786
+    - OBS-000819
+    - OBS-000824
+    - OBS-000836
+    - OBS-000840
+    - OBS-000870
+    - OBS-000875
+    - OBS-000887
+    - OBS-000918
+    - OBS-000927
+    - OBS-000993
+    - OBS-000998
+    - OBS-001025
+    - OBS-001037
+    - OBS-001096
+    - OBS-001101
+    - OBS-001156
+    - OBS-001161
+    - OBS-001192
+    - OBS-001193
+    - OBS-001196
+    - OBS-001197
+    - OBS-001259
+    - OBS-001264
+    - OBS-001291
+    - OBS-001303
+    - OBS-001310
+    - OBS-001360
+    - OBS-001371
+    - OBS-001381
+  invariant:
+  - INV-017
+  observations:
+  - OBS-000039
+  - OBS-000040
+  - OBS-000043
+  - OBS-000044
+  - OBS-000068
+  - OBS-000083
+  - OBS-000110
+  - OBS-000129
+  - OBS-000168
+  - OBS-000173
+  - OBS-000245
+  - OBS-000250
+  - OBS-000350
+  - OBS-000351
+  - OBS-000353
+  - OBS-000354
+  - OBS-000357
+  - OBS-000358
+  - OBS-000382
+  - OBS-000397
+  - OBS-000423
+  - OBS-000473
+  - OBS-000478
+  - OBS-000491
+  - OBS-000530
+  - OBS-000535
+  - OBS-000556
+  - OBS-000557
+  - OBS-000560
+  - OBS-000561
+  - OBS-000589
+  - OBS-000605
+  - OBS-000678
+  - OBS-000683
+  - OBS-000712
+  - OBS-000735
+  - OBS-000740
+  - OBS-000746
+  - OBS-000776
+  - OBS-000781
+  - OBS-000786
+  - OBS-000819
+  - OBS-000824
+  - OBS-000836
+  - OBS-000840
+  - OBS-000870
+  - OBS-000875
+  - OBS-000887
+  - OBS-000918
+  - OBS-000927
+  - OBS-000993
+  - OBS-000998
+  - OBS-001025
+  - OBS-001037
+  - OBS-001096
+  - OBS-001101
+  - OBS-001156
+  - OBS-001161
+  - OBS-001192
+  - OBS-001193
+  - OBS-001196
+  - OBS-001197
+  - OBS-001259
+  - OBS-001264
+  - OBS-001291
+  - OBS-001303
+  - OBS-001310
+  - OBS-001360
+  - OBS-001371
+  - OBS-001381
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Whoami endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 4ae40576bebf069f0d8ca6cc8f54d1626ee6a347c35f572dee85509aa4e4176b
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-009
+  key: auth-object-access:get:/api/Addresss/{addresssId}:addresss:addresssid
+  title: Potential cross-account Addresss access through addresssId on GET /api/Addresss/{addresssId}
+  kind: SECURITY_HYPOTHESIS
+  disposition: ACTIVE
+  category: authorization
+  component: Addresss / EP-003
+  source:
+    endpoints:
+    - EP-003
+    invariants:
+    - INV-024
+    observations:
+    - OBS-000072
+    - OBS-000081
+    - OBS-000091
+    - OBS-000202
+    - OBS-000205
+    - OBS-000386
+    - OBS-000395
+    - OBS-000405
+    - OBS-000430
+    - OBS-000433
+    - OBS-000593
+    - OBS-000602
+    - OBS-000611
+    - OBS-000623
+    - OBS-000625
+    - OBS-000933
+    - OBS-001027
+    - OBS-001034
+    - OBS-001043
+    - OBS-001293
+    - OBS-001300
+    - OBS-001308
+    - OBS-001362
+    - OBS-001369
+    - OBS-001377
+  invariant:
+  - INV-024
+  observations:
+  - OBS-000072
+  - OBS-000081
+  - OBS-000091
+  - OBS-000202
+  - OBS-000205
+  - OBS-000386
+  - OBS-000395
+  - OBS-000405
+  - OBS-000430
+  - OBS-000433
+  - OBS-000593
+  - OBS-000602
+  - OBS-000611
+  - OBS-000623
+  - OBS-000625
+  - OBS-000933
+  - OBS-001027
+  - OBS-001034
+  - OBS-001043
+  - OBS-001293
+  - OBS-001300
+  - OBS-001308
+  - OBS-001362
+  - OBS-001369
+  - OBS-001377
+  mutation_dimensions:
+  - ACTOR
+  - OBJECT
+  required_state:
+  - Researcher Account A owns a reachable Addresss object.
+  attacker_capability:
+  - Researcher Account B is separately authenticated.
+  - Can substitute Account A's addresssId into Account B's request.
+  evidence_status: ASSUMED
+  hypothesis: An authenticated Researcher Account B may be able to use Account A's
+    addresssId with GET /api/Addresss/{addresssId} to cross the object-ownership boundary.
+  reasoning: EP-003 accepts the client-controlled identifier addresssId, while ownership,
+    delegation, tenant, and role conditions remain unconfirmed.
+  preconditions:
+  - Both accounts and the target object belong to the researcher.
+  - Account A owns a non-sensitive test Addresss in a safe state.
+  - Account B can reproduce the same operation against its own object when applicable.
+  expected_secure_behavior: The server rejects Account B's request and leaves Account
+    A's object and data unchanged.
+  possible_vulnerable_behavior: The server returns Account A's Addresss data or applies
+    the requested operation to Account A's object.
+  potential_impact:
+    confidentiality: high
+    integrity: none
+    availability: none
+    financial: unknown
+  evidence_to_collect:
+  - Account A ownership evidence for the test object.
+  - Account B redacted request containing only the substituted identifier.
+  - Server response and Account A before/after state.
+  eligibility_evidence:
+  - authenticated endpoint observed
+  - client-controlled addresssId found in path
+  - two researcher-controlled actors are configured
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  missing_evidence:
+  - ownership relationship is not confirmed
+  - a second controlled actor baseline is not yet captured
+  generation_rule:
+    id: AUTH_OBJECT_ACCESS
+    version: '3'
+  priority_rationale:
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  scores:
+    impact: 4
+    likelihood: 3
+    confidence: 2
+    testability: 5
+    total: 14
+  priority: P1
+  status: TEST_PLANNED
+  safety_notes:
+  - Use only researcher-owned accounts and objects.
+  - Change exactly one identifier and submit one request.
+  - Stop immediately after minimum proof of boundary behavior.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: d9d173ceaa6a67be076e9e2615c7473f2972745bf6e52faaa425ebd136f425fa
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-019
+  key: auth-object-access:get:/api/BasketItems/{basketitemId}:basketitem:basketitemid
+  title: Potential cross-account Basketitem access through basketitemId on GET /api/BasketItems/{basketitemId}
+  kind: SECURITY_HYPOTHESIS
+  disposition: ACTIVE
+  category: authorization
+  component: Basketitem / EP-038
+  source:
+    endpoints:
+    - EP-038
+    invariants:
+    - INV-046
+    observations:
+    - OBS-000584
+    - OBS-000928
+    - OBS-000930
+  invariant:
+  - INV-046
+  observations:
+  - OBS-000584
+  - OBS-000928
+  - OBS-000930
+  mutation_dimensions:
+  - ACTOR
+  - OBJECT
+  required_state:
+  - Researcher Account A owns a reachable Basketitem object.
+  attacker_capability:
+  - Researcher Account B is separately authenticated.
+  - Can substitute Account A's basketitemId into Account B's request.
+  evidence_status: ASSUMED
+  hypothesis: An authenticated Researcher Account B may be able to use Account A's
+    basketitemId with GET /api/BasketItems/{basketitemId} to cross the object-ownership
+    boundary.
+  reasoning: EP-038 accepts the client-controlled identifier basketitemId, while ownership,
+    delegation, tenant, and role conditions remain unconfirmed.
+  preconditions:
+  - Both accounts and the target object belong to the researcher.
+  - Account A owns a non-sensitive test Basketitem in a safe state.
+  - Account B can reproduce the same operation against its own object when applicable.
+  expected_secure_behavior: The server rejects Account B's request and leaves Account
+    A's object and data unchanged.
+  possible_vulnerable_behavior: The server returns Account A's Basketitem data or
+    applies the requested operation to Account A's object.
+  potential_impact:
+    confidentiality: high
+    integrity: none
+    availability: none
+    financial: unknown
+  evidence_to_collect:
+  - Account A ownership evidence for the test object.
+  - Account B redacted request containing only the substituted identifier.
+  - Server response and Account A before/after state.
+  eligibility_evidence:
+  - authenticated endpoint observed
+  - client-controlled basketitemId found in path
+  - two researcher-controlled actors are configured
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  missing_evidence:
+  - ownership relationship is not confirmed
+  - a second controlled actor baseline is not yet captured
+  generation_rule:
+    id: AUTH_OBJECT_ACCESS
+    version: '3'
+  priority_rationale:
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  scores:
+    impact: 4
+    likelihood: 3
+    confidence: 2
+    testability: 5
+    total: 14
+  priority: P1
+  status: NOT_TESTED
+  safety_notes:
+  - Use only researcher-owned accounts and objects.
+  - Change exactly one identifier and submit one request.
+  - Stop immediately after minimum proof of boundary behavior.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: abc33f0dbac42e0f967cab2b98e7943083c3b28d77faa5cef98694f50cbf0f09
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-020
+  key: auth-object-access:get:/api/Cards/{cardId}:card:cardid
+  title: Potential cross-account Card access through cardId on GET /api/Cards/{cardId}
+  kind: SECURITY_HYPOTHESIS
+  disposition: ACTIVE
+  category: authorization
+  component: Card / EP-039
+  source:
+    endpoints:
+    - EP-039
+    invariants:
+    - INV-047
+    observations:
+    - OBS-000603
+    - OBS-001035
+    - OBS-001301
+  invariant:
+  - INV-047
+  observations:
+  - OBS-000603
+  - OBS-001035
+  - OBS-001301
+  mutation_dimensions:
+  - ACTOR
+  - OBJECT
+  required_state:
+  - Researcher Account A owns a reachable Card object.
+  attacker_capability:
+  - Researcher Account B is separately authenticated.
+  - Can substitute Account A's cardId into Account B's request.
+  evidence_status: ASSUMED
+  hypothesis: An authenticated Researcher Account B may be able to use Account A's
+    cardId with GET /api/Cards/{cardId} to cross the object-ownership boundary.
+  reasoning: EP-039 accepts the client-controlled identifier cardId, while ownership,
+    delegation, tenant, and role conditions remain unconfirmed.
+  preconditions:
+  - Both accounts and the target object belong to the researcher.
+  - Account A owns a non-sensitive test Card in a safe state.
+  - Account B can reproduce the same operation against its own object when applicable.
+  expected_secure_behavior: The server rejects Account B's request and leaves Account
+    A's object and data unchanged.
+  possible_vulnerable_behavior: The server returns Account A's Card data or applies
+    the requested operation to Account A's object.
+  potential_impact:
+    confidentiality: high
+    integrity: none
+    availability: none
+    financial: unknown
+  evidence_to_collect:
+  - Account A ownership evidence for the test object.
+  - Account B redacted request containing only the substituted identifier.
+  - Server response and Account A before/after state.
+  eligibility_evidence:
+  - authenticated endpoint observed
+  - client-controlled cardId found in path
+  - two researcher-controlled actors are configured
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  missing_evidence:
+  - ownership relationship is not confirmed
+  - a second controlled actor baseline is not yet captured
+  generation_rule:
+    id: AUTH_OBJECT_ACCESS
+    version: '3'
+  priority_rationale:
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  scores:
+    impact: 4
+    likelihood: 3
+    confidence: 2
+    testability: 5
+    total: 14
+  priority: P1
+  status: NOT_TESTED
+  safety_notes:
+  - Use only researcher-owned accounts and objects.
+  - Change exactly one identifier and submit one request.
+  - Stop immediately after minimum proof of boundary behavior.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: b72e7fda7a0fe85b2109ea8f3aa75e7a9c790c16ac72ab55f108e11761ef968b
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-021
+  key: auth-object-access:get:/api/Deliverys/{deliveryId}:delivery:deliveryid
+  title: Potential cross-account Delivery access through deliveryId on GET /api/Deliverys/{deliveryId}
+  kind: SECURITY_HYPOTHESIS
+  disposition: ACTIVE
+  category: authorization
+  component: Delivery / EP-040
+  source:
+    endpoints:
+    - EP-040
+    invariants:
+    - INV-048
+    observations:
+    - OBS-000075
+    - OBS-000080
+    - OBS-000389
+    - OBS-000394
+    - OBS-000595
+    - OBS-000601
+    - OBS-000935
+    - OBS-001029
+    - OBS-001033
+    - OBS-001295
+    - OBS-001299
+    - OBS-001364
+    - OBS-001368
+  invariant:
+  - INV-048
+  observations:
+  - OBS-000075
+  - OBS-000080
+  - OBS-000389
+  - OBS-000394
+  - OBS-000595
+  - OBS-000601
+  - OBS-000935
+  - OBS-001029
+  - OBS-001033
+  - OBS-001295
+  - OBS-001299
+  - OBS-001364
+  - OBS-001368
+  mutation_dimensions:
+  - ACTOR
+  - OBJECT
+  required_state:
+  - Researcher Account A owns a reachable Delivery object.
+  attacker_capability:
+  - Researcher Account B is separately authenticated.
+  - Can substitute Account A's deliveryId into Account B's request.
+  evidence_status: ASSUMED
+  hypothesis: An authenticated Researcher Account B may be able to use Account A's
+    deliveryId with GET /api/Deliverys/{deliveryId} to cross the object-ownership
+    boundary.
+  reasoning: EP-040 accepts the client-controlled identifier deliveryId, while ownership,
+    delegation, tenant, and role conditions remain unconfirmed.
+  preconditions:
+  - Both accounts and the target object belong to the researcher.
+  - Account A owns a non-sensitive test Delivery in a safe state.
+  - Account B can reproduce the same operation against its own object when applicable.
+  expected_secure_behavior: The server rejects Account B's request and leaves Account
+    A's object and data unchanged.
+  possible_vulnerable_behavior: The server returns Account A's Delivery data or applies
+    the requested operation to Account A's object.
+  potential_impact:
+    confidentiality: high
+    integrity: none
+    availability: none
+    financial: unknown
+  evidence_to_collect:
+  - Account A ownership evidence for the test object.
+  - Account B redacted request containing only the substituted identifier.
+  - Server response and Account A before/after state.
+  eligibility_evidence:
+  - authenticated endpoint observed
+  - client-controlled deliveryId found in path
+  - two researcher-controlled actors are configured
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  missing_evidence:
+  - ownership relationship is not confirmed
+  - a second controlled actor baseline is not yet captured
+  generation_rule:
+    id: AUTH_OBJECT_ACCESS
+    version: '3'
+  priority_rationale:
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  scores:
+    impact: 4
+    likelihood: 3
+    confidence: 2
+    testability: 5
+    total: 14
+  priority: P1
+  status: NOT_TESTED
+  safety_notes:
+  - Use only researcher-owned accounts and objects.
+  - Change exactly one identifier and submit one request.
+  - Stop immediately after minimum proof of boundary behavior.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: c05192bf7d5913953dedd336d03a107eb05eca86783ffa4e17f8e307ccc286c6
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-010
+  key: auth-object-access:get:/rest/basket/{basketId}:basket:basketid
+  title: Potential cross-account Basket access through basketId on GET /rest/basket/{basketId}
+  kind: SECURITY_HYPOTHESIS
+  disposition: ACTIVE
+  category: authorization
+  component: Basket / EP-020
+  source:
+    endpoints:
+    - EP-020
+    invariants:
+    - INV-026
+    observations:
+    - OBS-000042
+    - OBS-000063
+    - OBS-000066
+    - OBS-000067
+    - OBS-000082
+    - OBS-000087
+    - OBS-000109
+    - OBS-000128
+    - OBS-000170
+    - OBS-000247
+    - OBS-000356
+    - OBS-000377
+    - OBS-000380
+    - OBS-000381
+    - OBS-000396
+    - OBS-000401
+    - OBS-000422
+    - OBS-000475
+    - OBS-000490
+    - OBS-000532
+    - OBS-000559
+    - OBS-000579
+    - OBS-000582
+    - OBS-000583
+    - OBS-000587
+    - OBS-000588
+    - OBS-000604
+    - OBS-000608
+    - OBS-000680
+    - OBS-000737
+    - OBS-000745
+    - OBS-000778
+    - OBS-000785
+    - OBS-000821
+    - OBS-000835
+    - OBS-000872
+    - OBS-000886
+    - OBS-000922
+    - OBS-000925
+    - OBS-000926
+    - OBS-000995
+    - OBS-001024
+    - OBS-001036
+    - OBS-001040
+    - OBS-001098
+    - OBS-001158
+    - OBS-001195
+    - OBS-001215
+    - OBS-001218
+    - OBS-001261
+    - OBS-001290
+    - OBS-001302
+    - OBS-001305
+    - OBS-001309
+    - OBS-001355
+    - OBS-001358
+    - OBS-001359
+    - OBS-001370
+    - OBS-001374
+    - OBS-001380
+  invariant:
+  - INV-026
+  observations:
+  - OBS-000042
+  - OBS-000063
+  - OBS-000066
+  - OBS-000067
+  - OBS-000082
+  - OBS-000087
+  - OBS-000109
+  - OBS-000128
+  - OBS-000170
+  - OBS-000247
+  - OBS-000356
+  - OBS-000377
+  - OBS-000380
+  - OBS-000381
+  - OBS-000396
+  - OBS-000401
+  - OBS-000422
+  - OBS-000475
+  - OBS-000490
+  - OBS-000532
+  - OBS-000559
+  - OBS-000579
+  - OBS-000582
+  - OBS-000583
+  - OBS-000587
+  - OBS-000588
+  - OBS-000604
+  - OBS-000608
+  - OBS-000680
+  - OBS-000737
+  - OBS-000745
+  - OBS-000778
+  - OBS-000785
+  - OBS-000821
+  - OBS-000835
+  - OBS-000872
+  - OBS-000886
+  - OBS-000922
+  - OBS-000925
+  - OBS-000926
+  - OBS-000995
+  - OBS-001024
+  - OBS-001036
+  - OBS-001040
+  - OBS-001098
+  - OBS-001158
+  - OBS-001195
+  - OBS-001215
+  - OBS-001218
+  - OBS-001261
+  - OBS-001290
+  - OBS-001302
+  - OBS-001305
+  - OBS-001309
+  - OBS-001355
+  - OBS-001358
+  - OBS-001359
+  - OBS-001370
+  - OBS-001374
+  - OBS-001380
+  mutation_dimensions:
+  - ACTOR
+  - OBJECT
+  required_state:
+  - Researcher Account A owns a reachable Basket object.
+  attacker_capability:
+  - Researcher Account B is separately authenticated.
+  - Can substitute Account A's basketId into Account B's request.
+  evidence_status: INFERRED
+  hypothesis: An authenticated Researcher Account B may be able to use Account A's
+    basketId with GET /rest/basket/{basketId} to cross the object-ownership boundary.
+  reasoning: EP-020 accepts the client-controlled identifier basketId, while ownership,
+    delegation, tenant, and role conditions remain unconfirmed.
+  preconditions:
+  - Both accounts and the target object belong to the researcher.
+  - Account A owns a non-sensitive test Basket in a safe state.
+  - Account B can reproduce the same operation against its own object when applicable.
+  expected_secure_behavior: The server rejects Account B's request and leaves Account
+    A's object and data unchanged.
+  possible_vulnerable_behavior: The server returns Account A's Basket data or applies
+    the requested operation to Account A's object.
+  potential_impact:
+    confidentiality: high
+    integrity: none
+    availability: none
+    financial: unknown
+  evidence_to_collect:
+  - Account A ownership evidence for the test object.
+  - Account B redacted request containing only the substituted identifier.
+  - Server response and Account A before/after state.
+  eligibility_evidence:
+  - first-party JSON API
+  - client-controlled basketId path parameter
+  - 2 researcher-controlled actors observed
+  - distinct controlled object IDs are linked to actor baselines
+  - successful resource-specific JSON responses
+  - response object IDs match requested object IDs
+  - 2 distinct UserId values observed across actor baselines
+  - ownership provenance is RESPONSE_BODY
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  - two controlled actors have distinct object baselines
+  - successful JSON response object IDs match requested IDs
+  - distinct owner/account values observed at $.data.UserId
+  missing_evidence:
+  - Account A requesting Account B's object has not been tested
+  - Account B requesting Account A's object has not been tested
+  - server-side authorization behavior is not yet confirmed
+  generation_rule:
+    id: AUTH_OBJECT_ACCESS
+    version: '3'
+  priority_rationale:
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  - two controlled actors have distinct object baselines
+  - successful JSON response object IDs match requested IDs
+  - distinct owner/account values observed at $.data.UserId
+  scores:
+    impact: 4
+    likelihood: 3
+    confidence: 3
+    testability: 5
+    total: 15
+  priority: P1
+  status: NEEDS_EVIDENCE
+  safety_notes:
+  - Use only researcher-owned accounts and objects.
+  - Change exactly one identifier and submit one request.
+  - Stop immediately after minimum proof of boundary behavior.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 55bd4292234e8ced017367edb418364e5f41534fb3310d4ff615049732640abb
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-011
+  key: auth-object-access:get:/rest/track-order/{trackOrderId}:trackorder:trackorderid
+  title: Potential cross-account TrackOrder access through trackOrderId on GET /rest/track-order/{trackOrderId}
+  kind: SECURITY_HYPOTHESIS
+  disposition: ACTIVE
+  category: authorization
+  component: TrackOrder / EP-024
+  source:
+    endpoints:
+    - EP-024
+    invariants:
+    - INV-027
+    observations:
+    - OBS-000088
+    - OBS-000115
+    - OBS-000119
+    - OBS-000123
+    - OBS-000402
+    - OBS-000410
+    - OBS-000414
+    - OBS-000418
+    - OBS-000547
+    - OBS-000609
+    - OBS-000796
+    - OBS-000828
+    - OBS-000847
+    - OBS-000879
+    - OBS-000891
+    - OBS-001041
+    - OBS-001130
+    - OBS-001132
+    - OBS-001222
+    - OBS-001306
+    - OBS-001375
+    - OBS-001384
+    - OBS-001387
+    - OBS-001393
+  invariant:
+  - INV-027
+  observations:
+  - OBS-000088
+  - OBS-000115
+  - OBS-000119
+  - OBS-000123
+  - OBS-000402
+  - OBS-000410
+  - OBS-000414
+  - OBS-000418
+  - OBS-000547
+  - OBS-000609
+  - OBS-000796
+  - OBS-000828
+  - OBS-000847
+  - OBS-000879
+  - OBS-000891
+  - OBS-001041
+  - OBS-001130
+  - OBS-001132
+  - OBS-001222
+  - OBS-001306
+  - OBS-001375
+  - OBS-001384
+  - OBS-001387
+  - OBS-001393
+  mutation_dimensions:
+  - ACTOR
+  - OBJECT
+  required_state:
+  - Researcher Account A owns a reachable TrackOrder object.
+  attacker_capability:
+  - Researcher Account B is separately authenticated.
+  - Can substitute Account A's trackOrderId into Account B's request.
+  evidence_status: ASSUMED
+  hypothesis: An authenticated Researcher Account B may be able to use Account A's
+    trackOrderId with GET /rest/track-order/{trackOrderId} to cross the object-ownership
+    boundary.
+  reasoning: EP-024 accepts the client-controlled identifier trackOrderId, while ownership,
+    delegation, tenant, and role conditions remain unconfirmed.
+  preconditions:
+  - Both accounts and the target object belong to the researcher.
+  - Account A owns a non-sensitive test TrackOrder in a safe state.
+  - Account B can reproduce the same operation against its own object when applicable.
+  expected_secure_behavior: The server rejects Account B's request and leaves Account
+    A's object and data unchanged.
+  possible_vulnerable_behavior: The server returns Account A's TrackOrder data or
+    applies the requested operation to Account A's object.
+  potential_impact:
+    confidentiality: high
+    integrity: none
+    availability: none
+    financial: unknown
+  evidence_to_collect:
+  - Account A ownership evidence for the test object.
+  - Account B redacted request containing only the substituted identifier.
+  - Server response and Account A before/after state.
+  eligibility_evidence:
+  - authenticated endpoint observed
+  - client-controlled trackOrderId found in path
+  - two researcher-controlled actors are configured
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  missing_evidence:
+  - ownership relationship is not confirmed
+  - a second controlled actor baseline is not yet captured
+  generation_rule:
+    id: AUTH_OBJECT_ACCESS
+    version: '3'
+  priority_rationale:
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  scores:
+    impact: 4
+    likelihood: 3
+    confidence: 2
+    testability: 5
+    total: 14
+  priority: P1
+  status: TEST_PLANNED
+  safety_notes:
+  - Use only researcher-owned accounts and objects.
+  - Change exactly one identifier and submit one request.
+  - Stop immediately after minimum proof of boundary behavior.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: b11f60e40e105f1b39e5398bbb6d17fb16d3e2b056ae24b856243144dc818399
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-012
+  key: auth-object-access:put:/api/Addresss/{addresssId}:addresss:addresssid
+  title: Potential cross-account Addresss modification through addresssId on PUT /api/Addresss/{addresssId}
+  kind: SECURITY_HYPOTHESIS
+  disposition: ACTIVE
+  category: authorization
+  component: Addresss / EP-037
+  source:
+    endpoints:
+    - EP-037
+    invariants:
+    - INV-030
+    observations:
+    - OBS-000204
+    - OBS-000432
+    - OBS-000624
+  invariant:
+  - INV-030
+  observations:
+  - OBS-000204
+  - OBS-000432
+  - OBS-000624
+  mutation_dimensions:
+  - ACTOR
+  - OBJECT
+  required_state:
+  - Researcher Account A owns a reachable Addresss object.
+  attacker_capability:
+  - Researcher Account B is separately authenticated.
+  - Can substitute Account A's addresssId into Account B's request.
+  evidence_status: ASSUMED
+  hypothesis: An authenticated Researcher Account B may be able to use Account A's
+    addresssId with PUT /api/Addresss/{addresssId} to cross the object-ownership boundary.
+  reasoning: EP-037 accepts the client-controlled identifier addresssId, while ownership,
+    delegation, tenant, and role conditions remain unconfirmed.
+  preconditions:
+  - Both accounts and the target object belong to the researcher.
+  - Account A owns a non-sensitive test Addresss in a safe state.
+  - Account B can reproduce the same operation against its own object when applicable.
+  expected_secure_behavior: The server rejects Account B's request and leaves Account
+    A's object and data unchanged.
+  possible_vulnerable_behavior: The server returns Account A's Addresss data or applies
+    the requested operation to Account A's object.
+  potential_impact:
+    confidentiality: low
+    integrity: high
+    availability: low
+    financial: unknown
+  evidence_to_collect:
+  - Account A ownership evidence for the test object.
+  - Account B redacted request containing only the substituted identifier.
+  - Server response and Account A before/after state.
+  eligibility_evidence:
+  - authenticated endpoint observed
+  - client-controlled addresssId found in path
+  - two researcher-controlled actors are configured
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  - mutation-like business action observed
+  missing_evidence:
+  - ownership relationship is not confirmed
+  - a second controlled actor baseline is not yet captured
+  generation_rule:
+    id: AUTH_OBJECT_ACCESS
+    version: '3'
+  priority_rationale:
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  - mutation-like business action observed
+  scores:
+    impact: 4
+    likelihood: 3
+    confidence: 2
+    testability: 5
+    total: 14
+  priority: P1
+  status: TEST_PLANNED
+  safety_notes:
+  - Use only researcher-owned accounts and objects.
+  - Change exactly one identifier and submit one request.
+  - Stop immediately after minimum proof of boundary behavior.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: ab88ded543ed45184448c020389c5e2cf81abf3626cf675d9277760a2b914c5a
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-022
+  key: auth-object-access:put:/api/BasketItems/{basketitemId}:basketitem:basketitemid
+  title: Potential cross-account Basketitem modification through basketitemId on PUT
+    /api/BasketItems/{basketitemId}
+  kind: SECURITY_HYPOTHESIS
+  disposition: ACTIVE
+  category: authorization
+  component: Basketitem / EP-052
+  source:
+    endpoints:
+    - EP-052
+    invariants:
+    - INV-051
+    observations:
+    - OBS-000585
+    - OBS-000929
+    - OBS-000931
+  invariant:
+  - INV-051
+  observations:
+  - OBS-000585
+  - OBS-000929
+  - OBS-000931
+  mutation_dimensions:
+  - ACTOR
+  - OBJECT
+  required_state:
+  - Researcher Account A owns a reachable Basketitem object.
+  attacker_capability:
+  - Researcher Account B is separately authenticated.
+  - Can substitute Account A's basketitemId into Account B's request.
+  evidence_status: ASSUMED
+  hypothesis: An authenticated Researcher Account B may be able to use Account A's
+    basketitemId with PUT /api/BasketItems/{basketitemId} to cross the object-ownership
+    boundary.
+  reasoning: EP-052 accepts the client-controlled identifier basketitemId, while ownership,
+    delegation, tenant, and role conditions remain unconfirmed.
+  preconditions:
+  - Both accounts and the target object belong to the researcher.
+  - Account A owns a non-sensitive test Basketitem in a safe state.
+  - Account B can reproduce the same operation against its own object when applicable.
+  expected_secure_behavior: The server rejects Account B's request and leaves Account
+    A's object and data unchanged.
+  possible_vulnerable_behavior: The server returns Account A's Basketitem data or
+    applies the requested operation to Account A's object.
+  potential_impact:
+    confidentiality: low
+    integrity: high
+    availability: low
+    financial: unknown
+  evidence_to_collect:
+  - Account A ownership evidence for the test object.
+  - Account B redacted request containing only the substituted identifier.
+  - Server response and Account A before/after state.
+  eligibility_evidence:
+  - authenticated endpoint observed
+  - client-controlled basketitemId found in path
+  - two researcher-controlled actors are configured
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  - security-sensitive request field observed
+  - mutation-like business action observed
+  missing_evidence:
+  - ownership relationship is not confirmed
+  - a second controlled actor baseline is not yet captured
+  generation_rule:
+    id: AUTH_OBJECT_ACCESS
+    version: '3'
+  priority_rationale:
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  - security-sensitive request field observed
+  - mutation-like business action observed
+  scores:
+    impact: 4
+    likelihood: 3
+    confidence: 2
+    testability: 5
+    total: 14
+  priority: P1
+  status: NOT_TESTED
+  safety_notes:
+  - Use only researcher-owned accounts and objects.
+  - Change exactly one identifier and submit one request.
+  - Stop immediately after minimum proof of boundary behavior.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 1941b02b3fc9faec0815d6ca2aa19d382706f2f1bfa9e27b4542b960d516052d
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-023
+  key: auth-object-access:put:/rest/wallet/balance:wallet:paymentid
+  title: Potential cross-account Wallet modification through paymentId on PUT /rest/wallet/balance
+  kind: SECURITY_HYPOTHESIS
+  disposition: ACTIVE
+  category: authorization
+  component: Wallet / EP-053
+  source:
+    endpoints:
+    - EP-053
+    invariants:
+    - INV-052
+    observations:
+    - OBS-000897
+    - OBS-000943
+    - OBS-000948
+    - OBS-001315
+    - OBS-001320
+    - OBS-001325
+    - OBS-001330
+    - OBS-001336
+  invariant:
+  - INV-052
+  observations:
+  - OBS-000897
+  - OBS-000943
+  - OBS-000948
+  - OBS-001315
+  - OBS-001320
+  - OBS-001325
+  - OBS-001330
+  - OBS-001336
+  mutation_dimensions:
+  - ACTOR
+  - OBJECT
+  required_state:
+  - Researcher Account A owns a reachable Wallet object.
+  attacker_capability:
+  - Researcher Account B is separately authenticated.
+  - Can substitute Account A's paymentId into Account B's request.
+  evidence_status: ASSUMED
+  hypothesis: An authenticated Researcher Account B may be able to use Account A's
+    paymentId with PUT /rest/wallet/balance to cross the object-ownership boundary.
+  reasoning: EP-053 accepts the client-controlled identifier paymentId, while ownership,
+    delegation, tenant, and role conditions remain unconfirmed.
+  preconditions:
+  - Both accounts and the target object belong to the researcher.
+  - Account A owns a non-sensitive test Wallet in a safe state.
+  - Account B can reproduce the same operation against its own object when applicable.
+  expected_secure_behavior: The server rejects Account B's request and leaves Account
+    A's object and data unchanged.
+  possible_vulnerable_behavior: The server returns Account A's Wallet data or applies
+    the requested operation to Account A's object.
+  potential_impact:
+    confidentiality: low
+    integrity: high
+    availability: low
+    financial: high
+  evidence_to_collect:
+  - Account A ownership evidence for the test object.
+  - Account B redacted request containing only the substituted identifier.
+  - Server response and Account A before/after state.
+  eligibility_evidence:
+  - authenticated endpoint observed
+  - client-controlled paymentId found in body
+  - two researcher-controlled actors are configured
+  - first-party API endpoint
+  - financial or wallet-related path
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  - security-sensitive request field observed
+  - mutation-like business action observed
+  missing_evidence:
+  - ownership relationship is not confirmed
+  - a second controlled actor baseline is not yet captured
+  generation_rule:
+    id: AUTH_OBJECT_ACCESS
+    version: '3'
+  priority_rationale:
+  - first-party API endpoint
+  - financial or wallet-related path
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  - security-sensitive request field observed
+  - mutation-like business action observed
+  scores:
+    impact: 5
+    likelihood: 3
+    confidence: 2
+    testability: 5
+    total: 15
+  priority: P1
+  status: NOT_TESTED
+  safety_notes:
+  - Use only researcher-owned accounts and objects.
+  - Change exactly one identifier and submit one request.
+  - Stop immediately after minimum proof of boundary behavior.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: f0160bdd11f3a87f0ef005be9ad171d8e9a956b995cb1905b8ca93bad34c7f49
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-013
+  key: research:post:/rest/user/login
+  title: Determine security semantics of POST /rest/user/login
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Login / EP-035
+  source:
+    endpoints:
+    - EP-035
+    invariants: []
+    observations:
+    - OBS-000041
+    - OBS-000352
+    - OBS-000355
+    - OBS-000558
+    - OBS-001194
+  invariant: []
+  observations:
+  - OBS-000041
+  - OBS-000352
+  - OBS-000355
+  - OBS-000558
+  - OBS-001194
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine security semantics of POST /rest/user/login
+  reasoning: The endpoint is security-relevant but lacks sufficient ownership, action,
+    or lifecycle evidence for a vulnerability hypothesis.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - Authenticated baseline request and response field structure.
+  - Researcher-confirmed resource ownership, action, and lifecycle semantics.
+  eligibility_evidence:
+  - first-party API endpoint
+  - authentication-sensitive path
+  - authenticated endpoint observed
+  - generic POST with no state evidence
+  missing_evidence:
+  - The endpoint is security-relevant but lacks sufficient ownership, action, or lifecycle
+    evidence for a vulnerability hypothesis.
+  generation_rule:
+    id: RESEARCH_DISCOVERY
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 43e8f9268a54e986473f188d70ed1de53ac58421f7271623a2f90bc242f005e7
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-024
+  key: value-boundary:EP-052:quantity
+  title: Boundary values in quantity may bypass validation on PUT /api/BasketItems/{basketitemId}
+  kind: SECURITY_HYPOTHESIS
+  disposition: ACTIVE
+  category: value_validation
+  component: Basketitem / EP-052
+  source:
+    endpoints:
+    - EP-052
+    invariants:
+    - INV-044
+    - INV-051
+    observations:
+    - OBS-000585
+    - OBS-000929
+    - OBS-000931
+  invariant:
+  - INV-044
+  - INV-051
+  observations:
+  - OBS-000585
+  - OBS-000929
+  - OBS-000931
+  mutation_dimensions:
+  - VALUE
+  required_state:
+  - A documented safe boundary and reversible researcher-owned object are available.
+  attacker_capability:
+  - Can modify one observed value field (quantity) in a valid request.
+  evidence_status: ASSUMED
+  hypothesis: The server may accept an invalid zero, boundary, precision, or currency
+    combination in quantity on PUT /api/BasketItems/{basketitemId}.
+  reasoning: Financially relevant fields are directly observed in the request, but
+    server-side range, precision, currency, and consistency rules are not confirmed.
+  preconditions:
+  - Program rules permit a single boundary-value request.
+  - The researcher selects a non-dangerous documented boundary rather than an automatically
+    generated extreme value.
+  expected_secure_behavior: The server rejects invalid combinations without reserving,
+    moving, or misaccounting value.
+  possible_vulnerable_behavior: The server accepts an invalid value combination and
+    creates an incorrect state or financial result.
+  potential_impact:
+    confidentiality: none
+    integrity: high
+    availability: low
+    financial: unknown
+  evidence_to_collect:
+  - The documented or observed valid boundary.
+  - One redacted modified request and response.
+  - Authoritative before/after state and accounting values.
+  eligibility_evidence:
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  - first-party API endpoint
+  - mutation-like business action observed
+  - security-sensitive request field observed
+  missing_evidence:
+  - Researcher validation evidence is not collected.
+  generation_rule:
+    id: VALUE_VALIDATION
+    version: '2'
+  priority_rationale:
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  - first-party API endpoint
+  - mutation-like business action observed
+  - security-sensitive request field observed
+  scores:
+    impact: 3
+    likelihood: 2
+    confidence: 2
+    testability: 4
+    total: 11
+  priority: P2
+  status: NOT_TESTED
+  safety_notes:
+  - Do not generate or execute extreme values automatically.
+  - Use the smallest safe test value and one request only.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 54d4a52b3a4d09990a4935b7a3830a1a2daefc5ce2e9b20c8f0fcdb342256632
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb
+- id: HYP-025
+  key: value-boundary:EP-053:balance
+  title: Boundary values in balance may bypass validation on PUT /rest/wallet/balance
+  kind: SECURITY_HYPOTHESIS
+  disposition: ACTIVE
+  category: value_validation
+  component: Wallet / EP-053
+  source:
+    endpoints:
+    - EP-053
+    invariants:
+    - INV-045
+    - INV-052
+    observations:
+    - OBS-000897
+    - OBS-000943
+    - OBS-000948
+    - OBS-001315
+    - OBS-001320
+    - OBS-001325
+    - OBS-001330
+    - OBS-001336
+  invariant:
+  - INV-045
+  - INV-052
+  observations:
+  - OBS-000897
+  - OBS-000943
+  - OBS-000948
+  - OBS-001315
+  - OBS-001320
+  - OBS-001325
+  - OBS-001330
+  - OBS-001336
+  mutation_dimensions:
+  - VALUE
+  required_state:
+  - A documented safe boundary and reversible researcher-owned object are available.
+  attacker_capability:
+  - Can modify one observed value field (balance) in a valid request.
+  evidence_status: ASSUMED
+  hypothesis: The server may accept an invalid zero, boundary, precision, or currency
+    combination in balance on PUT /rest/wallet/balance.
+  reasoning: Financially relevant fields are directly observed in the request, but
+    server-side range, precision, currency, and consistency rules are not confirmed.
+  preconditions:
+  - Program rules permit a single boundary-value request.
+  - The researcher selects a non-dangerous documented boundary rather than an automatically
+    generated extreme value.
+  expected_secure_behavior: The server rejects invalid combinations without reserving,
+    moving, or misaccounting value.
+  possible_vulnerable_behavior: The server accepts an invalid value combination and
+    creates an incorrect state or financial result.
+  potential_impact:
+    confidentiality: none
+    integrity: high
+    availability: low
+    financial: high
+  evidence_to_collect:
+  - The documented or observed valid boundary.
+  - One redacted modified request and response.
+  - Authoritative before/after state and accounting values.
+  eligibility_evidence:
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  - financial or wallet-related path
+  - first-party API endpoint
+  - mutation-like business action observed
+  - security-sensitive request field observed
+  missing_evidence:
+  - Researcher validation evidence is not collected.
+  generation_rule:
+    id: VALUE_VALIDATION
+    version: '2'
+  priority_rationale:
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  - financial or wallet-related path
+  - first-party API endpoint
+  - mutation-like business action observed
+  - security-sensitive request field observed
+  scores:
+    impact: 5
+    likelihood: 2
+    confidence: 2
+    testability: 4
+    total: 13
+  priority: P2
+  status: NOT_TESTED
+  safety_notes:
+  - Do not generate or execute extreme values automatically.
+  - Use the smallest safe test value and one request only.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 53890492b7e3744a342f04e35e875e12eff367397b510da9c76207a5c5783af3
+    source_fingerprint: 9779c24a867f0e9551da8d326e690570a91a0f2bac2a30dac1de7716192ec0cb

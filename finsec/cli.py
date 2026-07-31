@@ -66,6 +66,7 @@ from finsec.recon.graphql import ingest_graphql
 from finsec.recon.mobile import scan_mobile
 from finsec.reporting.generator import generate_report
 from finsec.setup import SetupResult, run_setup_wizard
+from finsec.testing.burp import export_burp_requests
 from finsec.testing.planner import generate_plan
 from finsec.utils.yaml_store import load_yaml
 from finsec.validation.validator import validate_hypothesis
@@ -1901,6 +1902,29 @@ def approve_command(
     console.print("No request was sent.")
 
 
+@app.command("export-burp")
+def export_burp_command(
+    hypothesis_id: Annotated[str, typer.Argument(help="Hypothesis ID such as HYP-001.")],
+    workspace: WorkspaceOption = None,
+) -> None:
+    """Export an approved structured plan as secret-free Burp Repeater requests."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        result = export_burp_requests(paths, hypothesis_id)
+    except FinsecError as error:
+        _abort(error)
+    action = "Created" if result.created else "Reused"
+    console.print(f"[green]{action} {len(result.requests)} Burp Repeater request files.[/green]")
+    console.print(f"Export: {escape(str(result.root))}")
+    console.print(f"Manifest: {escape(str(result.manifest))}")
+    for request in result.requests:
+        console.print(f"- {escape(str(request))}")
+    console.print("Runtime credentials remain actor-specific placeholders.")
+    console.print("Sending from Burp is manual active execution; follow the approved plan.")
+    console.print("No request was sent.")
+
+
 def _execution_summary(prepared: Any) -> None:
     plan = prepared.plan
     console.print(f"[bold]Hypothesis:[/bold] {prepared.hypothesis.id}")
@@ -2283,6 +2307,43 @@ def status_command(workspace: WorkspaceOption = None) -> None:
                 "\nNext: review missing evidence with "
                 f"'hunt hypotheses --research-tasks --workspace {paths.root}'."
             )
+
+
+@app.command("web")
+def web_command(
+    workspace: WorkspaceOption = None,
+    workspace_root: Annotated[
+        Path,
+        typer.Option(
+            "--workspace-root",
+            help="Directory containing target workspaces when --workspace is omitted.",
+        ),
+    ] = Path("workspaces"),
+    host: Annotated[
+        str,
+        typer.Option("--host", help="Loopback address for the unauthenticated local UI."),
+    ] = "127.0.0.1",
+    port: Annotated[
+        int,
+        typer.Option("--port", min=1, max=65535, help="Local TCP port for the Web UI."),
+    ] = 8765,
+) -> None:
+    """Serve the read-only local research cockpit without target network access."""
+
+    try:
+        selected = resolve_workspace(workspace).root if workspace is not None else None
+        from finsec.web.server import run_server
+
+        console.print(f"[green]FinSec Hunt Web UI:[/green] http://{host}:{port}")
+        console.print("The UI is read-only and cannot approve or execute test plans.")
+        run_server(
+            workspace_root=workspace_root,
+            workspace=selected,
+            host=host,
+            port=port,
+        )
+    except FinsecError as error:
+        _abort(error)
 
 
 def main() -> Any:

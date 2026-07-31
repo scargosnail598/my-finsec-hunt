@@ -13,22 +13,57 @@ accounts:
   authenticated: true
   actor_type: authenticated_user
   authentication:
-    auth_type: unconfigured
-    components: []
+    auth_type: mixed
+    profile_ref: actor-saeedmehmandoust-default
+    components:
+    - name: Authorization
+      location: header
+      credential_ref: actor-auth-saeedmehmandoust-authorization
+      purpose: access
+      replay_required: true
+      value_prefix: ''
+    - name: Cookie
+      location: cookie
+      credential_ref: actor-auth-saeedmehmandoust-cookie
+      purpose: session
+      replay_required: true
+      value_prefix: ''
+      cookie_domain: juice-shop.local
+      cookie_path: /
+      cookie_session_only: false
     source:
-      type: manual
+      type: har
+      file_reference: saeedmehmandoust-track3.har
+      captured_at: '2026-07-30T15:05:27.155000Z'
     expiration:
-      detectable: false
-      source: unknown
+      detectable: true
+      expires_at: '2026-07-30T23:05:27Z'
+      last_checked_at: '2026-07-30T15:05:27.155000Z'
+      source: cookie
     refresh:
       configured: false
       request_budget: 1
       auto_refresh: false
+    baseline:
+      method: GET
+      scheme: http
+      host: juice-shop.local
+      port: 3000
+      path: /rest/basket/6
+      query_parameters: {}
+      safe_headers:
+        Accept: application/json, text/plain, */*
+        Accept-Language: en-US,en;q=0.9
+      expected_status: 200
+      expected_content_type: application/json; charset=utf-8
     identity:
       roles: []
       baseline_confirmed: false
-    status: MISSING
-    target_hosts: []
+    status: READY
+    context_fingerprint: cc2965d1d12f9acd09cc00540b59b7a72285db203a6e8f3b6b0030c61a27607f
+    target_hosts:
+    - juice-shop.local
+    last_validated_at: '2026-07-30T15:05:27.155000Z'
     legacy_environment: {}
   attributes:
     verification_level: unknown
@@ -39,22 +74,57 @@ accounts:
   authenticated: true
   actor_type: authenticated_user
   authentication:
-    auth_type: unconfigured
-    components: []
+    auth_type: mixed
+    profile_ref: actor-mrscargo-default
+    components:
+    - name: Authorization
+      location: header
+      credential_ref: actor-auth-mrscargo-authorization
+      purpose: access
+      replay_required: true
+      value_prefix: ''
+    - name: Cookie
+      location: cookie
+      credential_ref: actor-auth-mrscargo-cookie
+      purpose: session
+      replay_required: true
+      value_prefix: ''
+      cookie_domain: juice-shop.local
+      cookie_path: /
+      cookie_session_only: false
     source:
-      type: manual
+      type: har
+      file_reference: scargo-track2.har
+      captured_at: '2026-07-30T13:54:01.350000Z'
     expiration:
-      detectable: false
-      source: unknown
+      detectable: true
+      expires_at: '2027-07-30T09:36:09Z'
+      last_checked_at: '2026-07-30T13:54:01.350000Z'
+      source: cookie
     refresh:
       configured: false
       request_budget: 1
       auto_refresh: false
+    baseline:
+      method: GET
+      scheme: http
+      host: juice-shop.local
+      port: 3000
+      path: /rest/saveLoginIp
+      query_parameters: {}
+      safe_headers:
+        Accept: application/json, text/plain, */*
+        Accept-Language: en-US,en;q=0.9
+      expected_status: 200
+      expected_content_type: application/json; charset=utf-8
     identity:
       roles: []
       baseline_confirmed: false
-    status: MISSING
-    target_hosts: []
+    status: READY
+    context_fingerprint: 531566af0a6192b04341f4886f7e289a8756f75687edfc5920c4e1bdb0136874
+    target_hosts:
+    - juice-shop.local
+    last_validated_at: '2026-07-30T13:54:01.350000Z'
     legacy_environment: {}
   attributes:
     verification_level: unknown
@@ -65,7 +135,7 @@ testing:
   local_lab: true
   human_approval_required: true
   destructive_testing: false
-  active_execution_enabled: false
+  active_execution_enabled: true
   maximum_parallel_requests: 1
   maximum_requests_per_plan: 3
   read_only_only: true
