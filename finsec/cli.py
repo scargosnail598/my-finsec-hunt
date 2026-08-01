@@ -33,12 +33,15 @@ from finsec.config.models import TargetDocument
 from finsec.config.workspace import (
     CaptureDeletionTarget,
     WorkspacePaths,
+    clear_default_workspace,
     create_workspace,
     delete_capture_directory,
     delete_workspace,
+    load_default_workspace,
     resolve_capture_deletion_target,
     resolve_workspace,
     resolve_workspace_deletion_target,
+    set_default_workspace,
 )
 from finsec.errors import FinsecError
 from finsec.evidence.manager import add_evidence, ensure_evidence
@@ -83,7 +86,7 @@ app = typer.Typer(
     no_args_is_help=True,
 )
 workspace_app = typer.Typer(
-    help="Manage an explicitly selected workspace lifecycle.",
+    help="Select a default workspace or manage an explicit workspace lifecycle.",
     no_args_is_help=True,
 )
 app.add_typer(workspace_app, name="workspace")
@@ -95,7 +98,11 @@ console = Console()
 
 WorkspaceOption = Annotated[
     Path | None,
-    typer.Option("--workspace", "-w", help="Target workspace containing target.yaml."),
+    typer.Option(
+        "--workspace",
+        "-w",
+        help="Target workspace; defaults to the current or configured workspace.",
+    ),
 ]
 
 ALLOWED_CHANNELS = {"WEB", "MOBILE", "PARTNER_API", "PUBLIC_API", "UNKNOWN"}
@@ -283,6 +290,50 @@ def setup_command(
         raise typer.Exit(code=130) from error
     except (FinsecError, OSError, ValidationError) as error:
         _abort(error)
+
+
+@workspace_app.command("use")
+def workspace_use_command(
+    workspace: Annotated[
+        Path,
+        typer.Argument(help="Workspace directory to use by default."),
+    ],
+) -> None:
+    """Select the default workspace for commands that omit --workspace."""
+
+    try:
+        selected = set_default_workspace(workspace)
+    except (FinsecError, OSError) as error:
+        _abort(error)
+    console.print(f"[green]Default workspace:[/green] {selected.root}")
+
+
+@workspace_app.command("current")
+def workspace_current_command() -> None:
+    """Show the configured default workspace selection."""
+
+    try:
+        selected = load_default_workspace()
+    except FinsecError as error:
+        _abort(error)
+    if selected is None:
+        console.print("No default workspace is configured.")
+        return
+    console.print(f"[green]Default workspace:[/green] {selected.root}")
+
+
+@workspace_app.command("clear")
+def workspace_clear_command() -> None:
+    """Clear the configured default workspace selection."""
+
+    try:
+        removed = clear_default_workspace()
+    except (FinsecError, OSError) as error:
+        _abort(error)
+    if removed:
+        console.print("[green]Cleared the default workspace.[/green]")
+    else:
+        console.print("No default workspace was configured.")
 
 
 @workspace_app.command("delete")
@@ -2316,7 +2367,7 @@ def web_command(
         Path,
         typer.Option(
             "--workspace-root",
-            help="Directory containing target workspaces when --workspace is omitted.",
+            help="Workspace directory root used when no explicit or default workspace is selected.",
         ),
     ] = Path("workspaces"),
     capture_root: Annotated[
@@ -2338,7 +2389,12 @@ def web_command(
     """Serve the local setup, passive-ingestion, and research cockpit."""
 
     try:
-        selected = resolve_workspace(workspace).root if workspace is not None else None
+        selected: Path | None
+        if workspace is not None:
+            selected = resolve_workspace(workspace).root
+        else:
+            configured = load_default_workspace()
+            selected = configured.root if configured is not None else None
         from finsec.web.server import run_server
 
         console.print(f"[green]FinSec Hunt Web UI:[/green] http://{host}:{port}")

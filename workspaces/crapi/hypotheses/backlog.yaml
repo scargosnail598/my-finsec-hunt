@@ -1,0 +1,2269 @@
+version: 1
+hypotheses:
+- id: HYP-010
+  key: auth-enforcement-research:coupon
+  title: Determine whether authentication is enforced on sensitive Coupon endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Coupon / EP-015
+  source:
+    endpoints:
+    - EP-015
+    invariants:
+    - INV-010
+    observations:
+    - OBS-000027
+    - OBS-000110
+  invariant:
+  - INV-010
+  observations:
+  - OBS-000027
+  - OBS-000110
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Coupon endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: cf96031cdb1d7891d589b292ca3d63528dfef720c8315829c2bf814ae0cf681d
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-011
+  key: auth-enforcement-research:email
+  title: Determine whether authentication is enforced on sensitive Email endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Email / EP-063
+  source:
+    endpoints:
+    - EP-063
+    invariants:
+    - INV-024
+    observations:
+    - OBS-000353
+  invariant:
+  - INV-024
+  observations:
+  - OBS-000353
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Email endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: a3d85afa566a4c7428d74692d54d88d68854ab52101c26501269fb6ce1c8d654
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-012
+  key: auth-enforcement-research:mechanic
+  title: Determine whether authentication is enforced on sensitive Mechanic endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Mechanic / EP-065
+  source:
+    endpoints:
+    - EP-065
+    invariants:
+    - INV-025
+    observations:
+    - OBS-000249
+    - OBS-000419
+  invariant:
+  - INV-025
+  observations:
+  - OBS-000249
+  - OBS-000419
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Mechanic endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: caae291b56bfe1f0b92e42f4b680456c3315665d1abd330401244248d791517f
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-009
+  key: auth-enforcement-research:mechanicreport
+  title: Determine whether authentication is enforced on sensitive MechanicReport
+    endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: MechanicReport / EP-054
+  source:
+    endpoints:
+    - EP-054
+    invariants:
+    - INV-020
+    observations:
+    - OBS-000181
+    - OBS-000261
+    - OBS-000326
+    - OBS-000467
+    - OBS-000516
+    - OBS-000580
+  invariant:
+  - INV-020
+  observations:
+  - OBS-000181
+  - OBS-000261
+  - OBS-000326
+  - OBS-000467
+  - OBS-000516
+  - OBS-000580
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive MechanicReport
+    endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: c304db6c720f55f9490d479d3088660d49f6610afc331167b13e8e7820a3620f
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-013
+  key: auth-enforcement-research:order
+  title: Determine whether authentication is enforced on sensitive Order endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Order / EP-010, EP-020, EP-021
+  source:
+    endpoints:
+    - EP-010
+    - EP-020
+    - EP-021
+    invariants:
+    - INV-006
+    - INV-013
+    - INV-014
+    observations:
+    - OBS-000010
+    - OBS-000011
+    - OBS-000012
+    - OBS-000028
+    - OBS-000057
+    - OBS-000058
+    - OBS-000059
+    - OBS-000084
+    - OBS-000107
+    - OBS-000108
+    - OBS-000269
+    - OBS-000270
+    - OBS-000271
+    - OBS-000474
+    - OBS-000475
+    - OBS-000476
+  invariant:
+  - INV-006
+  - INV-013
+  - INV-014
+  observations:
+  - OBS-000010
+  - OBS-000011
+  - OBS-000012
+  - OBS-000028
+  - OBS-000057
+  - OBS-000058
+  - OBS-000059
+  - OBS-000084
+  - OBS-000107
+  - OBS-000108
+  - OBS-000269
+  - OBS-000270
+  - OBS-000271
+  - OBS-000474
+  - OBS-000475
+  - OBS-000476
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Order endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 7ed5d05f589471e2fb248f41f1e026a471d490bb464f7518846219f786640f6c
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-014
+  key: auth-enforcement-research:phonenumber
+  title: Determine whether authentication is enforced on sensitive PhoneNumber endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: PhoneNumber / EP-018
+  source:
+    endpoints:
+    - EP-018
+    invariants:
+    - INV-011
+    observations:
+    - OBS-000036
+    - OBS-000068
+  invariant:
+  - INV-011
+  observations:
+  - OBS-000036
+  - OBS-000068
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive PhoneNumber
+    endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 1ec42e70bcf7e5364b3d696eea6a9417afb59beed17f6f8e295c9a843063f37d
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-015
+  key: auth-enforcement-research:picture
+  title: Determine whether authentication is enforced on sensitive Picture endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Picture / EP-019
+  source:
+    endpoints:
+    - EP-019
+    invariants:
+    - INV-012
+    observations:
+    - OBS-000047
+    - OBS-000067
+  invariant:
+  - INV-012
+  observations:
+  - OBS-000047
+  - OBS-000067
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Picture endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 6cccf9619c6ee3191c36d2d426dd3a1e834c5607c850db3c88832d577b230c15
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-003
+  key: auth-enforcement-research:post
+  title: Determine whether authentication is enforced on sensitive Post endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Post / EP-003, EP-004, EP-013, EP-014
+  source:
+    endpoints:
+    - EP-003
+    - EP-004
+    - EP-013
+    - EP-014
+    invariants:
+    - INV-001
+    - INV-002
+    - INV-008
+    - INV-009
+    observations:
+    - OBS-000014
+    - OBS-000015
+    - OBS-000016
+    - OBS-000031
+    - OBS-000043
+    - OBS-000044
+    - OBS-000045
+    - OBS-000061
+    - OBS-000062
+    - OBS-000063
+    - OBS-000064
+    - OBS-000065
+    - OBS-000096
+    - OBS-000098
+    - OBS-000100
+    - OBS-000101
+    - OBS-000102
+    - OBS-000103
+    - OBS-000114
+    - OBS-000116
+    - OBS-000117
+    - OBS-000118
+    - OBS-000119
+    - OBS-000120
+    - OBS-000278
+    - OBS-000280
+  invariant:
+  - INV-001
+  - INV-002
+  - INV-008
+  - INV-009
+  observations:
+  - OBS-000014
+  - OBS-000015
+  - OBS-000016
+  - OBS-000031
+  - OBS-000043
+  - OBS-000044
+  - OBS-000045
+  - OBS-000061
+  - OBS-000062
+  - OBS-000063
+  - OBS-000064
+  - OBS-000065
+  - OBS-000096
+  - OBS-000098
+  - OBS-000100
+  - OBS-000101
+  - OBS-000102
+  - OBS-000103
+  - OBS-000114
+  - OBS-000116
+  - OBS-000117
+  - OBS-000118
+  - OBS-000119
+  - OBS-000120
+  - OBS-000278
+  - OBS-000280
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Post endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 5b77b57103218b64c2684fe1ad139e9f64c760f3e642c83440a7265bbdf566e9
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-004
+  key: auth-enforcement-research:product
+  title: Determine whether authentication is enforced on sensitive Product endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Product / EP-011
+  source:
+    endpoints:
+    - EP-011
+    invariants:
+    - INV-007
+    observations:
+    - OBS-000007
+    - OBS-000024
+    - OBS-000029
+    - OBS-000054
+    - OBS-000075
+    - OBS-000104
+    - OBS-000109
+    - OBS-000266
+    - OBS-000471
+  invariant:
+  - INV-007
+  observations:
+  - OBS-000007
+  - OBS-000024
+  - OBS-000029
+  - OBS-000054
+  - OBS-000075
+  - OBS-000104
+  - OBS-000109
+  - OBS-000266
+  - OBS-000471
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Product endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: bb40759733983c890f623654aa297976820f791afa1c3a3a3edb1d9003daef96
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-016
+  key: auth-enforcement-research:servicerequest
+  title: Determine whether authentication is enforced on sensitive ServiceRequest
+    endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: ServiceRequest / EP-067
+  source:
+    endpoints:
+    - EP-067
+    invariants:
+    - INV-027
+    observations:
+    - OBS-000176
+    - OBS-000256
+    - OBS-000321
+    - OBS-000462
+    - OBS-000511
+    - OBS-000575
+  invariant:
+  - INV-027
+  observations:
+  - OBS-000176
+  - OBS-000256
+  - OBS-000321
+  - OBS-000462
+  - OBS-000511
+  - OBS-000575
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive ServiceRequest
+    endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 1c72a214e57eeaae4d6db055f7e94905f0c6fb93046aae2c312ab2cdd95aa6e7
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-017
+  key: auth-enforcement-research:vehicle
+  title: Determine whether authentication is enforced on sensitive Vehicle endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Vehicle / EP-062
+  source:
+    endpoints:
+    - EP-062
+    invariants:
+    - INV-023
+    observations:
+    - OBS-000354
+  invariant:
+  - INV-023
+  observations:
+  - OBS-000354
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Vehicle endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 379a6298a8e0ec91fb154f46d2d8ed1a1e1e151f86a63bbaa984f2c9de965b1d
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-018
+  key: auth-enforcement-research:video
+  title: Determine whether authentication is enforced on sensitive Video endpoints
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Video / EP-066
+  source:
+    endpoints:
+    - EP-066
+    invariants:
+    - INV-026
+    observations:
+    - OBS-000035
+    - OBS-000046
+    - OBS-000066
+    - OBS-000121
+    - OBS-000122
+    - OBS-000281
+  invariant:
+  - INV-026
+  observations:
+  - OBS-000035
+  - OBS-000046
+  - OBS-000066
+  - OBS-000121
+  - OBS-000122
+  - OBS-000281
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Video endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - no concrete authentication-enforcement failure is observed
+  generation_rule:
+    id: AUTH_ENFORCEMENT_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 85cfcf55e4f1a52149c6bc334c15a3e8b66b685bf7156cc940c59fc878b98fff
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-006
+  key: auth-object-access:get:/community/api/v2/community/posts/{postId}:post:postid
+  title: Potential cross-account Post access through postId on GET /community/api/v2/community/posts/{postId}
+  kind: SECURITY_HYPOTHESIS
+  disposition: ACTIVE
+  category: authorization
+  component: Post / EP-004
+  source:
+    endpoints:
+    - EP-004
+    invariants:
+    - INV-015
+    observations:
+    - OBS-000044
+    - OBS-000064
+    - OBS-000098
+    - OBS-000102
+    - OBS-000116
+    - OBS-000119
+    - OBS-000280
+  invariant:
+  - INV-015
+  observations:
+  - OBS-000044
+  - OBS-000064
+  - OBS-000098
+  - OBS-000102
+  - OBS-000116
+  - OBS-000119
+  - OBS-000280
+  mutation_dimensions:
+  - ACTOR
+  - OBJECT
+  required_state:
+  - Researcher Account A owns a reachable Post object.
+  attacker_capability:
+  - Researcher Account B is separately authenticated.
+  - Can substitute Account A's postId into Account B's request.
+  evidence_status: ASSUMED
+  hypothesis: An authenticated Researcher Account B may be able to use Account A's
+    postId with GET /community/api/v2/community/posts/{postId} to cross the object-ownership
+    boundary.
+  reasoning: EP-004 accepts the client-controlled identifier postId, while ownership,
+    delegation, tenant, and role conditions remain unconfirmed.
+  preconditions:
+  - Both accounts and the target object belong to the researcher.
+  - Account A owns a non-sensitive test Post in a safe state.
+  - Account B can reproduce the same operation against its own object when applicable.
+  expected_secure_behavior: The server rejects Account B's request and leaves Account
+    A's object and data unchanged.
+  possible_vulnerable_behavior: The server returns Account A's Post data or applies
+    the requested operation to Account A's object.
+  potential_impact:
+    confidentiality: high
+    integrity: none
+    availability: none
+    financial: unknown
+  evidence_to_collect:
+  - Account A ownership evidence for the test object.
+  - Account B redacted request containing only the substituted identifier.
+  - Server response and Account A before/after state.
+  eligibility_evidence:
+  - authenticated endpoint observed
+  - client-controlled postId found in path
+  - two researcher-controlled actors are configured
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  missing_evidence:
+  - ownership relationship is not confirmed
+  - a second controlled actor baseline is not yet captured
+  generation_rule:
+    id: AUTH_OBJECT_ACCESS
+    version: '3'
+  priority_rationale:
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  scores:
+    impact: 4
+    likelihood: 3
+    confidence: 2
+    testability: 5
+    total: 14
+  priority: P1
+  status: TEST_PLANNED
+  safety_notes:
+  - Use only researcher-owned accounts and objects.
+  - Change exactly one identifier and submit one request.
+  - Stop immediately after minimum proof of boundary behavior.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 31387ab3a3980ea3c5dd8865574e2b33501ce94d45b87b5ce9980ecdac0d50ec
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-019
+  key: auth-object-access:get:/identity/api/v2/user/videos/{videoId}:video:videoid
+  title: Potential cross-account Video access through videoId on GET /identity/api/v2/user/videos/{videoId}
+  kind: SECURITY_HYPOTHESIS
+  disposition: ACTIVE
+  category: authorization
+  component: Video / EP-066
+  source:
+    endpoints:
+    - EP-066
+    invariants:
+    - INV-031
+    observations:
+    - OBS-000035
+    - OBS-000046
+    - OBS-000066
+    - OBS-000121
+    - OBS-000122
+    - OBS-000281
+  invariant:
+  - INV-031
+  observations:
+  - OBS-000035
+  - OBS-000046
+  - OBS-000066
+  - OBS-000121
+  - OBS-000122
+  - OBS-000281
+  mutation_dimensions:
+  - ACTOR
+  - OBJECT
+  required_state:
+  - Researcher Account A owns a reachable Video object.
+  attacker_capability:
+  - Researcher Account B is separately authenticated.
+  - Can substitute Account A's videoId into Account B's request.
+  evidence_status: ASSUMED
+  hypothesis: An authenticated Researcher Account B may be able to use Account A's
+    videoId with GET /identity/api/v2/user/videos/{videoId} to cross the object-ownership
+    boundary.
+  reasoning: EP-066 accepts the client-controlled identifier videoId, while ownership,
+    delegation, tenant, and role conditions remain unconfirmed.
+  preconditions:
+  - Both accounts and the target object belong to the researcher.
+  - Account A owns a non-sensitive test Video in a safe state.
+  - Account B can reproduce the same operation against its own object when applicable.
+  expected_secure_behavior: The server rejects Account B's request and leaves Account
+    A's object and data unchanged.
+  possible_vulnerable_behavior: The server returns Account A's Video data or applies
+    the requested operation to Account A's object.
+  potential_impact:
+    confidentiality: high
+    integrity: none
+    availability: none
+    financial: unknown
+  evidence_to_collect:
+  - Account A ownership evidence for the test object.
+  - Account B redacted request containing only the substituted identifier.
+  - Server response and Account A before/after state.
+  eligibility_evidence:
+  - authenticated endpoint observed
+  - client-controlled videoId found in path
+  - two researcher-controlled actors are configured
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  missing_evidence:
+  - ownership relationship is not confirmed
+  - a second controlled actor baseline is not yet captured
+  generation_rule:
+    id: AUTH_OBJECT_ACCESS
+    version: '3'
+  priority_rationale:
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  scores:
+    impact: 4
+    likelihood: 3
+    confidence: 2
+    testability: 5
+    total: 14
+  priority: P1
+  status: NOT_TESTED
+  safety_notes:
+  - Use only researcher-owned accounts and objects.
+  - Change exactly one identifier and submit one request.
+  - Stop immediately after minimum proof of boundary behavior.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 193d72e1c6da71f3efd35600bac5943e7f764f28ef59c3a8aa029ca389333ccc
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-020
+  key: auth-object-access:get:/workshop/api/mechanic/mechanic_report:mechanicreport:report_id
+  title: Potential cross-account MechanicReport access through report_id on GET /workshop/api/mechanic/mechanic_report
+  kind: SECURITY_HYPOTHESIS
+  disposition: ACTIVE
+  category: authorization
+  component: MechanicReport / EP-054
+  source:
+    endpoints:
+    - EP-054
+    invariants:
+    - INV-030
+    observations:
+    - OBS-000181
+    - OBS-000261
+    - OBS-000326
+    - OBS-000467
+    - OBS-000516
+    - OBS-000580
+  invariant:
+  - INV-030
+  observations:
+  - OBS-000181
+  - OBS-000261
+  - OBS-000326
+  - OBS-000467
+  - OBS-000516
+  - OBS-000580
+  mutation_dimensions:
+  - ACTOR
+  - OBJECT
+  required_state:
+  - Researcher Account A owns a reachable MechanicReport object.
+  attacker_capability:
+  - Researcher Account B is separately authenticated.
+  - Can substitute Account A's report_id into Account B's request.
+  evidence_status: ASSUMED
+  hypothesis: An authenticated Researcher Account B may be able to use Account A's
+    report_id with GET /workshop/api/mechanic/mechanic_report to cross the object-ownership
+    boundary.
+  reasoning: EP-054 accepts the client-controlled identifier report_id, while ownership,
+    delegation, tenant, and role conditions remain unconfirmed.
+  preconditions:
+  - Both accounts and the target object belong to the researcher.
+  - Account A owns a non-sensitive test MechanicReport in a safe state.
+  - Account B can reproduce the same operation against its own object when applicable.
+  expected_secure_behavior: The server rejects Account B's request and leaves Account
+    A's object and data unchanged.
+  possible_vulnerable_behavior: The server returns Account A's MechanicReport data
+    or applies the requested operation to Account A's object.
+  potential_impact:
+    confidentiality: high
+    integrity: none
+    availability: none
+    financial: unknown
+  evidence_to_collect:
+  - Account A ownership evidence for the test object.
+  - Account B redacted request containing only the substituted identifier.
+  - Server response and Account A before/after state.
+  eligibility_evidence:
+  - authenticated endpoint observed
+  - client-controlled report_id found in query
+  - two researcher-controlled actors are configured
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  missing_evidence:
+  - ownership relationship is not confirmed
+  - a second controlled actor baseline is not yet captured
+  generation_rule:
+    id: AUTH_OBJECT_ACCESS
+    version: '3'
+  priority_rationale:
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  scores:
+    impact: 4
+    likelihood: 3
+    confidence: 2
+    testability: 5
+    total: 14
+  priority: P1
+  status: TEST_PLANNED
+  safety_notes:
+  - Use only researcher-owned accounts and objects.
+  - Change exactly one identifier and submit one request.
+  - Stop immediately after minimum proof of boundary behavior.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: c377b768cd969522435dbe61009118b1ffbab977c3e5e17fb02b6bfdfc17585a
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-021
+  key: auth-object-access:get:/workshop/api/merchant/service_requests/{serviceRequestId}:servicerequest:servicerequestid
+  title: Potential cross-account ServiceRequest access through serviceRequestId on
+    GET /workshop/api/merchant/service_requests/{serviceRequestId}
+  kind: SECURITY_HYPOTHESIS
+  disposition: ACTIVE
+  category: authorization
+  component: ServiceRequest / EP-067
+  source:
+    endpoints:
+    - EP-067
+    invariants:
+    - INV-032
+    observations:
+    - OBS-000176
+    - OBS-000256
+    - OBS-000321
+    - OBS-000462
+    - OBS-000511
+    - OBS-000575
+  invariant:
+  - INV-032
+  observations:
+  - OBS-000176
+  - OBS-000256
+  - OBS-000321
+  - OBS-000462
+  - OBS-000511
+  - OBS-000575
+  mutation_dimensions:
+  - ACTOR
+  - OBJECT
+  required_state:
+  - Researcher Account A owns a reachable ServiceRequest object.
+  attacker_capability:
+  - Researcher Account B is separately authenticated.
+  - Can substitute Account A's serviceRequestId into Account B's request.
+  evidence_status: ASSUMED
+  hypothesis: An authenticated Researcher Account B may be able to use Account A's
+    serviceRequestId with GET /workshop/api/merchant/service_requests/{serviceRequestId}
+    to cross the object-ownership boundary.
+  reasoning: EP-067 accepts the client-controlled identifier serviceRequestId, while
+    ownership, delegation, tenant, and role conditions remain unconfirmed.
+  preconditions:
+  - Both accounts and the target object belong to the researcher.
+  - Account A owns a non-sensitive test ServiceRequest in a safe state.
+  - Account B can reproduce the same operation against its own object when applicable.
+  expected_secure_behavior: The server rejects Account B's request and leaves Account
+    A's object and data unchanged.
+  possible_vulnerable_behavior: The server returns Account A's ServiceRequest data
+    or applies the requested operation to Account A's object.
+  potential_impact:
+    confidentiality: high
+    integrity: none
+    availability: none
+    financial: unknown
+  evidence_to_collect:
+  - Account A ownership evidence for the test object.
+  - Account B redacted request containing only the substituted identifier.
+  - Server response and Account A before/after state.
+  eligibility_evidence:
+  - authenticated endpoint observed
+  - client-controlled serviceRequestId found in path
+  - two researcher-controlled actors are configured
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  missing_evidence:
+  - ownership relationship is not confirmed
+  - a second controlled actor baseline is not yet captured
+  generation_rule:
+    id: AUTH_OBJECT_ACCESS
+    version: '3'
+  priority_rationale:
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  scores:
+    impact: 4
+    likelihood: 3
+    confidence: 2
+    testability: 5
+    total: 14
+  priority: P1
+  status: NOT_TESTED
+  safety_notes:
+  - Use only researcher-owned accounts and objects.
+  - Change exactly one identifier and submit one request.
+  - Stop immediately after minimum proof of boundary behavior.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 27c328660bac42b8ffd39f4c57a67b61f8e04607924597496943e5682fc80903
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-022
+  key: auth-object-access:post:/community/api/v2/community/posts/{postId}/comment:post:postid
+  title: Potential cross-account Post modification through postId on POST /community/api/v2/community/posts/{postId}/comment
+  kind: SECURITY_HYPOTHESIS
+  disposition: ACTIVE
+  category: authorization
+  component: Post / EP-014
+  source:
+    endpoints:
+    - EP-014
+    invariants:
+    - INV-016
+    observations:
+    - OBS-000045
+    - OBS-000065
+    - OBS-000100
+    - OBS-000103
+    - OBS-000117
+    - OBS-000120
+  invariant:
+  - INV-016
+  observations:
+  - OBS-000045
+  - OBS-000065
+  - OBS-000100
+  - OBS-000103
+  - OBS-000117
+  - OBS-000120
+  mutation_dimensions:
+  - ACTOR
+  - OBJECT
+  required_state:
+  - Researcher Account A owns a reachable Post object.
+  attacker_capability:
+  - Researcher Account B is separately authenticated.
+  - Can substitute Account A's postId into Account B's request.
+  evidence_status: ASSUMED
+  hypothesis: An authenticated Researcher Account B may be able to use Account A's
+    postId with POST /community/api/v2/community/posts/{postId}/comment to cross the
+    object-ownership boundary.
+  reasoning: EP-014 accepts the client-controlled identifier postId, while ownership,
+    delegation, tenant, and role conditions remain unconfirmed.
+  preconditions:
+  - Both accounts and the target object belong to the researcher.
+  - Account A owns a non-sensitive test Post in a safe state.
+  - Account B can reproduce the same operation against its own object when applicable.
+  expected_secure_behavior: The server rejects Account B's request and leaves Account
+    A's object and data unchanged.
+  possible_vulnerable_behavior: The server returns Account A's Post data or applies
+    the requested operation to Account A's object.
+  potential_impact:
+    confidentiality: low
+    integrity: high
+    availability: low
+    financial: unknown
+  evidence_to_collect:
+  - Account A ownership evidence for the test object.
+  - Account B redacted request containing only the substituted identifier.
+  - Server response and Account A before/after state.
+  eligibility_evidence:
+  - authenticated endpoint observed
+  - client-controlled postId found in path
+  - two researcher-controlled actors are configured
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  - mutation-like business action observed
+  missing_evidence:
+  - ownership relationship is not confirmed
+  - a second controlled actor baseline is not yet captured
+  generation_rule:
+    id: AUTH_OBJECT_ACCESS
+    version: '3'
+  priority_rationale:
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  - mutation-like business action observed
+  scores:
+    impact: 4
+    likelihood: 3
+    confidence: 2
+    testability: 5
+    total: 14
+  priority: P1
+  status: NOT_TESTED
+  safety_notes:
+  - Use only researcher-owned accounts and objects.
+  - Change exactly one identifier and submit one request.
+  - Stop immediately after minimum proof of boundary behavior.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 0db83c5fe0e85aa0325a8ec98de8dee3f7fa91491cbde5cd2b3a19304daf1d17
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-023
+  key: auth-object-access:post:/workshop/api/shop/orders/return_order:order:order_id
+  title: Potential cross-account Order modification through order_id on POST /workshop/api/shop/orders/return_order
+  kind: SECURITY_HYPOTHESIS
+  disposition: ACTIVE
+  category: authorization
+  component: Order / EP-021
+  source:
+    endpoints:
+    - EP-021
+    invariants:
+    - INV-028
+    observations:
+    - OBS-000012
+    - OBS-000059
+    - OBS-000271
+    - OBS-000476
+  invariant:
+  - INV-028
+  observations:
+  - OBS-000012
+  - OBS-000059
+  - OBS-000271
+  - OBS-000476
+  mutation_dimensions:
+  - ACTOR
+  - OBJECT
+  required_state:
+  - Researcher Account A owns a reachable Order object.
+  attacker_capability:
+  - Researcher Account B is separately authenticated.
+  - Can substitute Account A's order_id into Account B's request.
+  evidence_status: ASSUMED
+  hypothesis: An authenticated Researcher Account B may be able to use Account A's
+    order_id with POST /workshop/api/shop/orders/return_order to cross the object-ownership
+    boundary.
+  reasoning: EP-021 accepts the client-controlled identifier order_id, while ownership,
+    delegation, tenant, and role conditions remain unconfirmed.
+  preconditions:
+  - Both accounts and the target object belong to the researcher.
+  - Account A owns a non-sensitive test Order in a safe state.
+  - Account B can reproduce the same operation against its own object when applicable.
+  expected_secure_behavior: The server rejects Account B's request and leaves Account
+    A's object and data unchanged.
+  possible_vulnerable_behavior: The server returns Account A's Order data or applies
+    the requested operation to Account A's object.
+  potential_impact:
+    confidentiality: low
+    integrity: high
+    availability: low
+    financial: unknown
+  evidence_to_collect:
+  - Account A ownership evidence for the test object.
+  - Account B redacted request containing only the substituted identifier.
+  - Server response and Account A before/after state.
+  eligibility_evidence:
+  - authenticated endpoint observed
+  - client-controlled order_id found in query
+  - two researcher-controlled actors are configured
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  - mutation-like business action observed
+  missing_evidence:
+  - ownership relationship is not confirmed
+  - a second controlled actor baseline is not yet captured
+  generation_rule:
+    id: AUTH_OBJECT_ACCESS
+    version: '3'
+  priority_rationale:
+  - first-party API endpoint
+  - authenticated endpoint observed
+  - client-controlled object identifier observed
+  - mutation-like business action observed
+  scores:
+    impact: 4
+    likelihood: 3
+    confidence: 2
+    testability: 5
+    total: 14
+  priority: P1
+  status: NOT_TESTED
+  safety_notes:
+  - Use only researcher-owned accounts and objects.
+  - Change exactly one identifier and submit one request.
+  - Stop immediately after minimum proof of boundary behavior.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: e61f58a3e901c6b63c757f9d9a89e9e2d0937b7a637e1b8a5f870de5f53e889f
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-027
+  key: function-authorization-research:post:/workshop/api/shop/products
+  title: Determine whether user can invoke role-restricted Product creation on POST
+    /workshop/api/shop/products
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Product / POST /workshop/api/shop/products
+  source:
+    endpoints: []
+    invariants: []
+    observations: []
+  invariant: []
+  observations: []
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether roles outside admin can invoke POST /workshop/api/shop/products.
+  reasoning: Researcher policy marks Product creation as restricted to admin. Product
+    creation is restricted to administrators or privileged users. Runtime evidence
+    does not yet demonstrate a non-allowed role successfully invoking the function.
+  preconditions:
+  - Collect a redacted runtime baseline using only a researcher-controlled account.
+  - Do not create persistent state without an explicit cleanup plan and approval.
+  expected_secure_behavior: Roles outside admin are rejected and no Product state
+    is created or changed.
+  possible_vulnerable_behavior: A role outside admin receives a success response and
+    the Product creation effect persists.
+  potential_impact:
+    confidentiality: none
+    integrity: high
+    availability: low
+    financial: unknown
+  evidence_to_collect:
+  - Researcher-controlled account role evidence for user.
+  - Redacted POST /workshop/api/shop/products request and response.
+  - Authoritative Product state before and after the request.
+  - Policy evidence that allowed roles are limited to admin.
+  eligibility_evidence:
+  - 'researcher-authored function policy allows only: admin'
+  - Product creation is restricted to administrators or privileged users.
+  missing_evidence:
+  - the configured function endpoint is not present in inventory
+  - a successful runtime POST /workshop/api/shop/products request from a non-allowed
+    role is absent
+  generation_rule:
+    id: FUNCTION_AUTHORIZATION_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 3
+    likelihood: 2
+    confidence: 3
+    testability: 2
+    total: 10
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending a state-changing request.
+  - Use only researcher-controlled roles and reversible local-lab state.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: d15af3ef6a7396b1fd5bf358676e6f97f5a7d879ff4b1f07cc69fe3a9955f0ae
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-028
+  key: jwt-algorithm:post:/identity/api/auth/verify
+  title: Unsigned JWT acceptance may bypass authentication on POST /identity/api/auth/verify
+  kind: SECURITY_HYPOTHESIS
+  disposition: ACTIVE
+  category: authentication
+  component: JWT verification / EP-017
+  source:
+    endpoints:
+    - EP-017
+    invariants: []
+    observations:
+    - OBS-000005
+    - OBS-000017
+    - OBS-000022
+    - OBS-000033
+    - OBS-000052
+    - OBS-000069
+    - OBS-000073
+    - OBS-000090
+    - OBS-000112
+    - OBS-000124
+    - OBS-000133
+    - OBS-000186
+    - OBS-000203
+    - OBS-000252
+    - OBS-000274
+    - OBS-000284
+    - OBS-000330
+    - OBS-000348
+    - OBS-000356
+    - OBS-000373
+    - OBS-000422
+    - OBS-000479
+    - OBS-000505
+    - OBS-000522
+    - OBS-000563
+    - OBS-000569
+    - OBS-000584
+  invariant: []
+  observations:
+  - OBS-000005
+  - OBS-000017
+  - OBS-000022
+  - OBS-000033
+  - OBS-000052
+  - OBS-000069
+  - OBS-000073
+  - OBS-000090
+  - OBS-000112
+  - OBS-000124
+  - OBS-000133
+  - OBS-000186
+  - OBS-000203
+  - OBS-000252
+  - OBS-000274
+  - OBS-000284
+  - OBS-000330
+  - OBS-000348
+  - OBS-000356
+  - OBS-000373
+  - OBS-000422
+  - OBS-000479
+  - OBS-000505
+  - OBS-000522
+  - OBS-000563
+  - OBS-000569
+  - OBS-000584
+  mutation_dimensions:
+  - VALUE
+  required_state:
+  - A valid signed JWT issued to a researcher-controlled account is available outside
+    the workspace.
+  attacker_capability:
+  - Can replace the JWT header algorithm with alg=none and omit the signature.
+  evidence_status: INFERRED
+  hypothesis: POST /identity/api/auth/verify may accept an unsigned JWT using alg=none,
+    allowing attacker-controlled identity or authorization claims to bypass signature
+    validation.
+  reasoning: Successful runtime requests show that EP-017 processes the configured
+    body field token. Researcher policy requires rejection of alg=none. Unsigned JWTs
+    must never satisfy token verification or authorize modified claims. The unsigned-token
+    mutation has not yet been tested.
+  preconditions:
+  - Use only a JWT issued to a researcher-controlled account as the baseline.
+  - Keep token material outside generated workspace artifacts.
+  - Obtain explicit human approval before sending the one modified request.
+  expected_secure_behavior: The server rejects alg=none JWTs regardless of supplied
+    claims and does not create or accept an authenticated context.
+  possible_vulnerable_behavior: The endpoint returns success for an unsigned JWT and
+    trusts its modified subject, role, or other security-relevant claims.
+  potential_impact:
+    confidentiality: high
+    integrity: high
+    availability: none
+    financial: unknown
+  evidence_to_collect:
+  - Redacted successful signed-JWT baseline request and response.
+  - Redacted alg=none control response without retaining token material.
+  - A safe identity endpoint response showing which subject and roles were accepted.
+  - Whether the verification endpoint issues or enables any authenticated session.
+  eligibility_evidence:
+  - 'successful runtime request contains configured JWT field: token'
+  - 'researcher-authored JWT policy rejects: alg=none'
+  - Unsigned JWTs must never satisfy token verification or authorize modified claims.
+  missing_evidence:
+  - the response to one controlled unsigned alg=none JWT is not recorded
+  - the resulting accepted subject, role, or session state is not confirmed
+  generation_rule:
+    id: JWT_ALGORITHM_VALIDATION
+    version: '1'
+  priority_rationale:
+  - JWT signature bypass can permit authentication and authorization claim forgery.
+  - A successful verifier baseline exists for a researcher-controlled account.
+  scores:
+    impact: 5
+    likelihood: 3
+    confidence: 3
+    testability: 4
+    total: 15
+  priority: P1
+  status: NOT_TESTED
+  safety_notes:
+  - JWT fabrication is manual-only and is not supported by bounded execution.
+  - Use only researcher-controlled identity claims and send at most one modified request.
+  - Stop immediately if the token is accepted or any external identity becomes visible.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 9327655a61d60b63b6d6261685caa9908086402d5aecd5f978afd451bb64267b
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-024
+  key: research:identity-change:EP-018
+  title: Determine reauthentication and verification binding for POST /identity/api/v2/user/change-phone-number
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: PhoneNumber / EP-018
+  source:
+    endpoints:
+    - EP-018
+    invariants: []
+    observations:
+    - OBS-000036
+    - OBS-000068
+  invariant: []
+  observations:
+  - OBS-000036
+  - OBS-000068
+  mutation_dimensions:
+  - ACTOR
+  - STATE
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine reauthentication and verification binding for POST /identity/api/v2/user/change-phone-number
+  reasoning: An authenticated identity-change operation is observed, but reauthentication,
+    challenge binding, notification, and session invalidation semantics are not recorded.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - Whether the current credential or a fresh challenge is required.
+  - Which old and new identity values the challenge is bound to.
+  - Notification, rollback, and existing-session invalidation behavior.
+  eligibility_evidence:
+  - authenticated identity-change operation observed
+  - old/new identity value fields are client controlled
+  missing_evidence:
+  - reauthentication and verification-binding requirements are not observed
+  generation_rule:
+    id: IDENTITY_CHANGE_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: a378f3a12c36dfa5e1743e89f6193bf81fce38c4fd5a9a9ec950285253806ca1
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-025
+  key: research:outbound-request:EP-065:mechanic_api
+  title: Determine whether mechanic_api controls a server-side outbound request on
+    POST /workshop/api/merchant/contact_mechanic
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Mechanic / EP-065
+  source:
+    endpoints:
+    - EP-065
+    invariants: []
+    observations:
+    - OBS-000249
+    - OBS-000419
+  invariant: []
+  observations:
+  - OBS-000249
+  - OBS-000419
+  mutation_dimensions:
+  - VALUE
+  required_state: []
+  attacker_capability:
+  - Can supply a researcher-controlled value in mechanic_api after explicit approval.
+  evidence_status: INFERRED
+  hypothesis: Determine whether mechanic_api controls a server-side outbound request
+    on POST /workshop/api/merchant/contact_mechanic
+  reasoning: The request contains destination-like field(s) mechanic_api, but passive
+    traffic does not establish whether the server resolves or contacts those values.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - Documentation or researcher annotation describing each destination-like field.
+  - Whether the server performs DNS resolution or an outbound connection.
+  - The destination allowlist, redirect policy, and retry limits if outbound access
+    exists.
+  eligibility_evidence:
+  - 'client-controlled destination-like field observed: mechanic_api'
+  missing_evidence:
+  - server-side outbound request behavior is not established by passive evidence
+  generation_rule:
+    id: OUTBOUND_REQUEST_RESEARCH
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 9aee72772229a6852070147ca31968cd362d6cd177ff0e88dde1427b2343981a
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-007
+  key: research:post:/identity/api/auth/login
+  title: Determine security semantics of POST /identity/api/auth/login
+  kind: RESEARCH_TASK
+  disposition: NEEDS_RESEARCH
+  category: research
+  component: Login / EP-016
+  source:
+    endpoints:
+    - EP-016
+    invariants: []
+    observations:
+    - OBS-000001
+    - OBS-000018
+    - OBS-000048
+    - OBS-000070
+    - OBS-000564
+  invariant: []
+  observations:
+  - OBS-000001
+  - OBS-000018
+  - OBS-000048
+  - OBS-000070
+  - OBS-000564
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine security semantics of POST /identity/api/auth/login
+  reasoning: The endpoint is security-relevant but lacks sufficient ownership, action,
+    or lifecycle evidence for a vulnerability hypothesis.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - Authenticated baseline request and response field structure.
+  - Researcher-confirmed resource ownership, action, and lifecycle semantics.
+  eligibility_evidence:
+  - first-party API endpoint
+  - authentication-sensitive path
+  - no authentication requirement observed
+  - generic POST with no state evidence
+  missing_evidence:
+  - The endpoint is security-relevant but lacks sufficient ownership, action, or lifecycle
+    evidence for a vulnerability hypothesis.
+  generation_rule:
+    id: RESEARCH_DISCOVERY
+    version: '1'
+  priority_rationale:
+  - Research tasks are not vulnerability priorities.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 3aa2f3f48991e2d4f66ef6658cf6f6654ae2d829eef166af96f1c382cec6ce1c
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-026
+  key: value-boundary:EP-020:quantity
+  title: Boundary values in quantity may bypass validation on POST /workshop/api/shop/orders
+  kind: SECURITY_HYPOTHESIS
+  disposition: ACTIVE
+  category: value_validation
+  component: Order / EP-020
+  source:
+    endpoints:
+    - EP-020
+    invariants:
+    - INV-013
+    observations:
+    - OBS-000010
+    - OBS-000057
+    - OBS-000107
+    - OBS-000269
+    - OBS-000474
+  invariant:
+  - INV-013
+  observations:
+  - OBS-000010
+  - OBS-000057
+  - OBS-000107
+  - OBS-000269
+  - OBS-000474
+  mutation_dimensions:
+  - VALUE
+  required_state:
+  - A documented safe boundary and reversible researcher-owned object are available.
+  attacker_capability:
+  - Can modify one observed value field (quantity) in a valid request.
+  evidence_status: ASSUMED
+  hypothesis: The server may accept an invalid zero, boundary, precision, or currency
+    combination in quantity on POST /workshop/api/shop/orders.
+  reasoning: Financially relevant fields are directly observed in the request, but
+    server-side range, precision, currency, and consistency rules are not confirmed.
+  preconditions:
+  - Program rules permit a single boundary-value request.
+  - The researcher selects a non-dangerous documented boundary rather than an automatically
+    generated extreme value.
+  expected_secure_behavior: The server rejects invalid combinations without reserving,
+    moving, or misaccounting value.
+  possible_vulnerable_behavior: The server accepts an invalid value combination and
+    creates an incorrect state or financial result.
+  potential_impact:
+    confidentiality: none
+    integrity: high
+    availability: low
+    financial: unknown
+  evidence_to_collect:
+  - The documented or observed valid boundary.
+  - One redacted modified request and response.
+  - Authoritative before/after state and accounting values.
+  eligibility_evidence:
+  - authenticated endpoint observed
+  - first-party API endpoint
+  - mutation-like business action observed
+  - security-sensitive request field observed
+  missing_evidence:
+  - Researcher validation evidence is not collected.
+  generation_rule:
+    id: VALUE_VALIDATION
+    version: '2'
+  priority_rationale:
+  - authenticated endpoint observed
+  - first-party API endpoint
+  - mutation-like business action observed
+  - security-sensitive request field observed
+  scores:
+    impact: 3
+    likelihood: 2
+    confidence: 2
+    testability: 4
+    total: 11
+  priority: P2
+  status: NOT_TESTED
+  safety_notes:
+  - Do not generate or execute extreme values automatically.
+  - Use the smallest safe test value and one request only.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: f25408da9941f1257851c9db987cc37ef092f224cb225e8e35bd76b75872e6da
+    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+- id: HYP-008
+  key: research:post:/identity/api/auth/verify
+  title: Determine security semantics of POST /identity/api/auth/verify
+  kind: SECURITY_HYPOTHESIS
+  disposition: SUPPRESSED_INSUFFICIENT_EVIDENCE
+  category: research
+  component: Auth / EP-017
+  source:
+    endpoints:
+    - EP-017
+    invariants: []
+    observations:
+    - OBS-000005
+    - OBS-000017
+    - OBS-000022
+    - OBS-000033
+    - OBS-000052
+    - OBS-000069
+    - OBS-000073
+    - OBS-000090
+    - OBS-000112
+    - OBS-000124
+    - OBS-000133
+    - OBS-000186
+    - OBS-000203
+    - OBS-000252
+    - OBS-000274
+    - OBS-000284
+    - OBS-000330
+    - OBS-000348
+    - OBS-000356
+    - OBS-000373
+    - OBS-000422
+    - OBS-000479
+    - OBS-000505
+    - OBS-000522
+    - OBS-000563
+    - OBS-000569
+    - OBS-000584
+  invariant: []
+  observations:
+  - OBS-000005
+  - OBS-000017
+  - OBS-000022
+  - OBS-000033
+  - OBS-000052
+  - OBS-000069
+  - OBS-000073
+  - OBS-000090
+  - OBS-000112
+  - OBS-000124
+  - OBS-000133
+  - OBS-000186
+  - OBS-000203
+  - OBS-000252
+  - OBS-000274
+  - OBS-000284
+  - OBS-000330
+  - OBS-000348
+  - OBS-000356
+  - OBS-000373
+  - OBS-000422
+  - OBS-000479
+  - OBS-000505
+  - OBS-000522
+  - OBS-000563
+  - OBS-000569
+  - OBS-000584
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine security semantics of POST /identity/api/auth/verify
+  reasoning: The endpoint is security-relevant but lacks sufficient ownership, action,
+    or lifecycle evidence for a vulnerability hypothesis.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - Authenticated baseline request and response field structure.
+  - Researcher-confirmed resource ownership, action, and lifecycle semantics.
+  eligibility_evidence:
+  - first-party API endpoint
+  - authentication-sensitive path
+  - security-sensitive request field observed
+  - mutation-like business action observed
+  - no authentication requirement observed
+  missing_evidence:
+  - The candidate no longer passes the current classification and evidence gates.
+  generation_rule:
+    id: LEGACY_CANDIDATE_REEVALUATION
+    version: '2'
+  priority_rationale:
+  - Suppressed candidates do not receive an active security priority.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: a1bab6ed680ab213c611da1a923b017b4204f7fc5e7d48691486a1abf80f04dd
+    source_fingerprint: 3cbbedff294a397d2d735f5f596e61ab26849de6d181d9f8575535b44840feb1
+- id: HYP-001
+  key: auth-enforcement-research:all
+  title: Determine whether authentication is enforced on sensitive All endpoints
+  kind: SECURITY_HYPOTHESIS
+  disposition: SUPPRESSED_INSUFFICIENT_EVIDENCE
+  category: research
+  component: All / EP-010
+  source:
+    endpoints:
+    - EP-010
+    invariants:
+    - INV-006
+    observations:
+    - OBS-000011
+    - OBS-000028
+    - OBS-000058
+    - OBS-000084
+    - OBS-000108
+    - OBS-000270
+    - OBS-000475
+  invariant:
+  - INV-006
+  observations:
+  - OBS-000011
+  - OBS-000028
+  - OBS-000058
+  - OBS-000084
+  - OBS-000108
+  - OBS-000270
+  - OBS-000475
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive All endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - The candidate no longer passes the current classification and evidence gates.
+  generation_rule:
+    id: LEGACY_CANDIDATE_REEVALUATION
+    version: '2'
+  priority_rationale:
+  - Suppressed candidates do not receive an active security priority.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 24351f1e53dede16c608e5a8a78ea1ac81fc122473669f51f36063b0920a0644
+    source_fingerprint: 79337318ad94984ca07ea04987c5bab7856aeacf4f4d9f15e0eb37ac5898e28f
+- id: HYP-002
+  key: auth-enforcement-research:changephonenumber
+  title: Determine whether authentication is enforced on sensitive ChangePhoneNumber
+    endpoints
+  kind: SECURITY_HYPOTHESIS
+  disposition: SUPPRESSED_INSUFFICIENT_EVIDENCE
+  category: research
+  component: ChangePhoneNumber / EP-018
+  source:
+    endpoints:
+    - EP-018
+    invariants:
+    - INV-011
+    observations:
+    - OBS-000036
+    - OBS-000068
+  invariant:
+  - INV-011
+  observations:
+  - OBS-000036
+  - OBS-000068
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive ChangePhoneNumber
+    endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - The candidate no longer passes the current classification and evidence gates.
+  generation_rule:
+    id: LEGACY_CANDIDATE_REEVALUATION
+    version: '2'
+  priority_rationale:
+  - Suppressed candidates do not receive an active security priority.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: 6281b5c2c1d5e7fca1334ff1166eacea2f35be5973ea4b554f96ef6b3d871d71
+    source_fingerprint: 79337318ad94984ca07ea04987c5bab7856aeacf4f4d9f15e0eb37ac5898e28f
+- id: HYP-005
+  key: auth-enforcement-research:recent
+  title: Determine whether authentication is enforced on sensitive Recent endpoints
+  kind: SECURITY_HYPOTHESIS
+  disposition: SUPPRESSED_INSUFFICIENT_EVIDENCE
+  category: research
+  component: Recent / EP-003
+  source:
+    endpoints:
+    - EP-003
+    invariants:
+    - INV-001
+    observations:
+    - OBS-000014
+    - OBS-000016
+    - OBS-000031
+    - OBS-000043
+    - OBS-000061
+    - OBS-000063
+    - OBS-000096
+    - OBS-000101
+    - OBS-000114
+    - OBS-000118
+    - OBS-000278
+  invariant:
+  - INV-001
+  observations:
+  - OBS-000014
+  - OBS-000016
+  - OBS-000031
+  - OBS-000043
+  - OBS-000061
+  - OBS-000063
+  - OBS-000096
+  - OBS-000101
+  - OBS-000114
+  - OBS-000118
+  - OBS-000278
+  mutation_dimensions: []
+  required_state: []
+  attacker_capability: []
+  evidence_status: INFERRED
+  hypothesis: Determine whether authentication is enforced on sensitive Recent endpoints
+  reasoning: Authenticated baselines are observed, but no anonymous, malformed, expired,
+    or revoked credential success demonstrates inconsistent enforcement.
+  preconditions:
+  - Collect only authorized passive evidence or researcher annotations.
+  expected_secure_behavior: Not yet defined; this task discovers the intended boundary.
+  possible_vulnerable_behavior: Not asserted until the missing evidence is collected.
+  potential_impact:
+    confidentiality: unknown
+    integrity: unknown
+    availability: none
+    financial: none
+  evidence_to_collect:
+  - One authorized unauthenticated or invalid-credential control response.
+  - Whether the response contains protected data or applies protected state.
+  eligibility_evidence:
+  - authenticated baseline requests are observed
+  missing_evidence:
+  - The candidate no longer passes the current classification and evidence gates.
+  generation_rule:
+    id: LEGACY_CANDIDATE_REEVALUATION
+    version: '2'
+  priority_rationale:
+  - Suppressed candidates do not receive an active security priority.
+  scores:
+    impact: 2
+    likelihood: 2
+    confidence: 2
+    testability: 2
+    total: 8
+  priority: P3
+  status: NOT_TESTED
+  safety_notes:
+  - This task does not authorize sending requests or executing a test.
+  generation:
+    managed: true
+    generator: phase3-hypothesis-generator
+    generated_checksum: f065df67df847709c05902cda9e55e38ec7a386b3377c6c2e030df566dd78c51
+    source_fingerprint: 79337318ad94984ca07ea04987c5bab7856aeacf4f4d9f15e0eb37ac5898e28f

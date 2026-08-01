@@ -50,8 +50,10 @@ from finsec.utils.yaml_store import load_yaml, write_yaml
 
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 READ_ACTIONS = {
+    "all",
     "get",
     "list",
+    "recent",
     "search",
     "filter",
     "filters",
@@ -66,8 +68,10 @@ READ_ACTIONS = {
     "config",
     "places",
     "suggestions",
+    "validate",
 }
 MUTATION_ACTIONS = {
+    "add",
     "create",
     "update",
     "edit",
@@ -90,6 +94,10 @@ MUTATION_ACTIONS = {
     "bind",
     "unbind",
     "change",
+    "comment",
+    "contact",
+    "resend",
+    "return",
 }
 OBJECT_IDENTIFIER_FIELDS = {
     "id",
@@ -106,6 +114,7 @@ OBJECT_IDENTIFIER_FIELDS = {
     "invoiceid",
     "orderid",
     "resourceid",
+    "reportid",
     "ownerid",
 }
 MONETARY_FIELDS = {
@@ -200,12 +209,15 @@ def _resource_name(
 
     segments = [segment for segment in path.split("/") if segment and not segment.startswith("{")]
     ignored = {"api", "w", action_name, *READ_ACTIONS, *MUTATION_ACTIONS}
-    candidates = [
-        segment
-        for segment in segments
-        if segment.lower() not in ignored
-        and not re.fullmatch(r"v\d+(?:\.\d+){0,2}", segment.lower())
-    ]
+    candidates: list[str] = []
+    for segment in segments:
+        lowered = segment.lower().replace("-", "_")
+        parts = lowered.split("_")
+        if len(parts) > 1 and parts[0] in ignored:
+            lowered = "_".join(parts[1:])
+        if lowered in ignored or re.fullmatch(r"v\d+(?:\.\d+){0,2}", lowered):
+            continue
+        candidates.append(lowered)
     if not candidates:
         return ("Unknown", Confidence.LOW)
     value = candidates[-1].replace("-", "_")
@@ -259,14 +271,21 @@ def _query_parameters(observations: list[Observation]) -> list[EndpointParameter
         inferred_type: ParameterType = (
             "integer" if items and all(item.isdigit() for item in items) else "string"
         )
+        semantic_type = _field_semantic_type(name)
         result.append(
             EndpointParameter(
                 name=name,
                 location="query",
                 inferred_type=inferred_type,
-                confidence=Confidence.MEDIUM,
+                confidence=Confidence.HIGH if semantic_type != "unknown" else Confidence.MEDIUM,
                 evidence=sorted(evidence[name]),
                 knowledge_status=KnowledgeStatus.INFERRED,
+                semantic_type=semantic_type,
+                normalization_reasons=(
+                    [f"query parameter name {name} has recognized security semantics"]
+                    if semantic_type != "unknown"
+                    else []
+                ),
             )
         )
     return result
@@ -858,7 +877,9 @@ def _object_access_evidence(
     return [*response_evidence, *path_evidence], decisions
 
 
-def _action(path: str, method: str) -> tuple[EndpointAction, bool, list[str]]:
+def _action(
+    path: str, method: str, *, allow_rest_collection_mutation: bool = False
+) -> tuple[EndpointAction, bool, list[str]]:
     segments = [segment.lower().replace("-", "_") for segment in path.split("/") if segment]
     tokens = [token for segment in segments for token in segment.split("_")]
     read = next((token for token in reversed(tokens) if token in READ_ACTIONS), None)
@@ -918,6 +939,23 @@ def _action(path: str, method: str) -> tuple[EndpointAction, bool, list[str]]:
             ),
             True,
             [f"{method} commonly represents mutation"],
+        )
+    terminal = segments[-1] if segments else ""
+    if (
+        method == "POST"
+        and allow_rest_collection_mutation
+        and terminal.endswith("s")
+        and terminal not in {"status", "search"}
+    ):
+        return (
+            EndpointAction(
+                name="create",
+                type="mutation",
+                confidence=Confidence.MEDIUM,
+                reasons=["local-lab POST targets a plural REST collection"],
+            ),
+            True,
+            ["local-lab POST to a plural REST collection is mutation-like"],
         )
     return (
         EndpointAction(
@@ -1081,7 +1119,14 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
             next_number += 1
 
         classification = _aggregate_classification(observations, classifications)
-        action, state_change, state_change_reasons = _action(path, method)
+        action, state_change, state_change_reasons = _action(
+            path,
+            method,
+            allow_rest_collection_mutation=(
+                (target.testing.local_lab or target.testing.synthetic)
+                and "business_logic" in target.focus
+            ),
+        )
         resource_name, resource_confidence = _resource_name(path, classification, action.name)
         rules = sorted(
             {

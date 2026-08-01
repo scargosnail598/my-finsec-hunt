@@ -1,0 +1,122 @@
+target:
+  name: demo target
+  slug: demo-target
+  type: web_api
+  base_url: http://example.com
+scope:
+  hosts:
+  - example.com
+accounts:
+- id: researcher
+  ownership: researcher
+  role: user
+  authenticated: true
+  actor_type: authenticated_user
+  authentication:
+    auth_type: unconfigured
+    components: []
+    source:
+      type: manual
+    expiration:
+      detectable: false
+      source: unknown
+    refresh:
+      configured: false
+      request_budget: 1
+      auto_refresh: false
+    identity:
+      roles: []
+      baseline_confirmed: false
+    status: MISSING
+    target_hosts: []
+    legacy_environment: {}
+  attributes:
+    verification_level: unknown
+    channel: web
+testing:
+  production: false
+  synthetic: true
+  local_lab: true
+  human_approval_required: true
+  destructive_testing: false
+  active_execution_enabled: false
+  maximum_parallel_requests: 1
+  maximum_requests_per_plan: 3
+  read_only_only: true
+  maximum_response_bytes: 2097152
+  connection_timeout_seconds: 5.0
+  read_timeout_seconds: 10.0
+  authentication_expiring_soon_seconds: 300
+  authentication_execution_margin_seconds: 120
+restrictions:
+  denial_of_service: false
+  brute_force: false
+  social_engineering: false
+  spam: false
+  destructive_actions: false
+  real_user_testing: false
+analysis:
+  include_hosts:
+  - example.com
+  exclude_hosts: []
+  suppress:
+    static_assets: true
+    telemetry: true
+    analytics: true
+    third_party: true
+  excluded_extensions:
+  - jpg
+  - jpeg
+  - png
+  - webp
+  - gif
+  - svg
+  - ico
+  - css
+  - js
+  - map
+  - woff
+  - woff2
+  - ttf
+  - eot
+  - mp4
+  - webm
+  excluded_path_patterns:
+  - /static/
+  - /assets/
+  - /images/
+  - /img/
+  - /fonts/
+  - /css/
+  - /js/
+  - /media/
+  - /gen_204
+  - /envelope/
+  - /client-exporter/
+  - /actionlog/
+  hypothesis_gates:
+    bola_minimum_score: 6
+    state_transition_minimum_score: 7
+    financial_minimum_score: 5
+  ownership_inference:
+    trusted_parent_parameters:
+    - accountId
+    - tenantId
+    - organizationId
+    - orgId
+    - workspaceId
+    - customerId
+    public_shared_parameters:
+    - regionId
+    - zoneId
+    - productId
+    - planId
+    - categoryId
+    - countryId
+    - languageId
+  classification_overrides: {}
+focus:
+- authorization
+- authentication
+- business_logic
+- financial_workflows

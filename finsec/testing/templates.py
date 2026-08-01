@@ -579,6 +579,18 @@ def build_execution_templates(
     if not endpoints:
         blockers = ["No source endpoint is available for structured request generation."]
         return ExecutionTemplateResult([], _execution(target, "UNSUPPORTED", [], None, blockers))
+    if hypothesis.generation_rule.get("id") == "JWT_ALGORITHM_VALIDATION":
+        blockers = [
+            "JWT algorithm validation is manual-only; unsigned-token fabrication is not "
+            "supported by bounded execution."
+        ]
+        return ExecutionTemplateResult([], _execution(target, "UNSUPPORTED", [], None, blockers))
+    if hypothesis.generation_rule.get("id") == "FUNCTION_AUTHORIZATION":
+        blockers = [
+            "Function-authorization validation is manual-only; state-changing role replay is "
+            "not supported by bounded execution."
+        ]
+        return ExecutionTemplateResult([], _execution(target, "UNSUPPORTED", [], None, blockers))
     if hypothesis.category == "authorization":
         return _object_substitution(workspace, target, endpoints[0], observations)
     if hypothesis.category == "authentication":

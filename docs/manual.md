@@ -398,6 +398,9 @@ The validator (`finsec/validation/validator.py`) evaluates 15 deterministic chec
 | Command | Arguments / Flags | Purpose |
 |---|---|---|
 | `hunt setup` | `--name`, `--slug`, `--host`, `--account`, `--yes` | Interactive/non-interactive workspace setup wizard. |
+| `hunt workspace use` | `<workspace>` | Persist the default workspace for commands that omit `-w`. |
+| `hunt workspace current` | none | Show the configured default workspace. |
+| `hunt workspace clear` | none | Clear the configured default and return to automatic discovery. |
 | `hunt ingest` | `<file.har> -w <workspace> --actor <actor> --channel <channel> [--capture-auth]` | Ingest HAR capture with optional credential extraction. |
 | `hunt ingest-burp` | `<file.xml> -w <workspace> --actor <actor> --channel <channel> [--capture-auth]` | Ingest Burp XML history file. |
 | `hunt ingest-caido` | `<file.json> -w <workspace> --actor <actor> --channel <channel>` | Ingest Caido JSON export. |
@@ -415,6 +418,10 @@ The validator (`finsec/validation/validator.py`) evaluates 15 deterministic chec
 | `hunt validate` | `<HYP-xxx> -w <workspace>` | Run 15 skeptical validation checks. |
 | `hunt report` | `<HYP-xxx> -w <workspace>` | Render versioned Markdown report. |
 | `hunt workspace delete` | `-w <workspace> [--purge] [--confirm <slug>]` | Safely delete or purge workspace & data. |
+
+For workspace-aware commands, `-w` is optional after `hunt workspace use <workspace>`. Explicit
+`-w` takes precedence over the current-directory workspace, configured default, and single local
+workspace discovery. `hunt workspace delete` remains explicit and never uses the saved default.
 
 ---
 

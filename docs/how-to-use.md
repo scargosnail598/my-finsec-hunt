@@ -95,6 +95,40 @@ credential references, and refresh configuration.
 The lower-level `hunt init NAME` command remains available for scripts and migrations, but it
 creates an intentionally incomplete target that must be edited before useful analysis.
 
+### Select A Default Workspace
+
+Select a workspace once to omit `-w workspaces/<slug>` from normal workspace-aware commands:
+
+```bash
+hunt workspace use workspaces/<slug>
+hunt workspace current
+hunt status
+hunt workflow --no-ingest
+```
+
+FinSec Hunt resolves workspaces in this order:
+
+1. An explicit `--workspace` or `-w` option.
+2. A workspace containing the current directory or one of its ancestors.
+3. The configured default workspace.
+4. The only workspace under `./workspaces`, when exactly one exists.
+
+This means an explicit option always overrides the default, and changing into another workspace
+temporarily selects that workspace without changing the saved default. The selection is stored as
+an absolute path in `$XDG_CONFIG_HOME/finsec-hunt/default-workspace`, normally
+`~/.config/finsec-hunt/default-workspace`. Set `FINSEC_HUNT_CONFIG_DIR` to relocate this small
+configuration file for automation.
+
+To remove the saved selection:
+
+```bash
+hunt workspace clear
+```
+
+`hunt web` opens the configured default when present and otherwise serves the workspace root.
+`hunt setup`, `hunt init`, and `hunt workspace delete` keep their explicit behavior; permanent
+deletion never infers the configured default.
+
 ## 3. Configure Actor Authentication
 
 Capture replay authentication while importing actor traffic:
@@ -696,7 +730,13 @@ workspace or capture markers.
 
 `Multiple workspaces found`:
 
-- Pass `--workspace workspaces/<slug>` explicitly.
+- Select one with `hunt workspace use workspaces/<slug>`, or pass
+  `--workspace workspaces/<slug>` explicitly for a one-command override.
+
+`Configured default workspace is unavailable`:
+
+- The selected directory was moved or deleted. Run `hunt workspace use PATH` with its new path, or
+  run `hunt workspace clear` to return to automatic discovery.
 
 `Cannot infer the capture directory` during purge:
 

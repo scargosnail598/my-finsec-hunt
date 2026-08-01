@@ -14,6 +14,7 @@ from finsec.modeling.generator import generate_model
 from finsec.modeling.invariants import generate_invariants
 from finsec.modeling.models import EndpointStore
 from finsec.normalization.inventory import build_inventory
+from finsec.testing.planner import generate_plan
 from finsec.utils.yaml_store import load_yaml, write_yaml
 
 
@@ -25,6 +26,7 @@ def _entry(
     *,
     request: dict[str, Any] | None = None,
     authenticated: bool = True,
+    status: int = 200,
 ) -> dict[str, Any]:
     headers: list[dict[str, str]] = []
     if authenticated:
@@ -43,7 +45,7 @@ def _entry(
         "startedDateTime": f"2026-02-01T10:{index:02d}:00Z",
         "request": request_document,
         "response": {
-            "status": 200,
+            "status": status,
             "headers": [{"name": "Content-Type", "value": "application/json"}],
             "content": {"mimeType": "application/json", "text": json.dumps(response)},
         },
@@ -56,6 +58,9 @@ def _workspace(
     *,
     accounts: int = 1,
     payment_states: list[str] | None = None,
+    local_lab: bool = False,
+    function_authorization_rules: list[dict[str, Any]] | None = None,
+    jwt_algorithm_rules: list[dict[str, Any]] | None = None,
 ) -> WorkspacePaths:
     workspace = create_workspace("precision", tmp_path / "workspaces")
     target = load_yaml(workspace.target)
@@ -64,6 +69,9 @@ def _workspace(
         {"id": f"ACCOUNT_{index}", "ownership": "researcher"} for index in range(1, accounts + 1)
     ]
     target["testing"]["production"] = False
+    target["testing"]["local_lab"] = local_lab
+    target["analysis"]["function_authorization_rules"] = function_authorization_rules or []
+    target["analysis"]["jwt_algorithm_rules"] = jwt_algorithm_rules or []
     write_yaml(workspace.target, target)
 
     capture = tmp_path / "precision.har"
@@ -314,6 +322,299 @@ def test_valid_path_and_body_bola_hypotheses_remain_active(tmp_path: Path) -> No
     assert any(
         item.category == "authorization" and "walletId" in item.hypothesis for item in active
     )
+
+
+def test_short_opaque_service_request_ids_generate_one_bola(tmp_path: Path) -> None:
+    workspace = _multi_actor_workspace(
+        tmp_path,
+        [
+            (
+                "ACCOUNT_A",
+                _entry(
+                    1,
+                    "GET",
+                    "/api/service_requests/0P96308CFVJ2B8J9G",
+                    {"id": "0P96308CFVJ2B8J9G", "userId": 10},
+                ),
+            ),
+            (
+                "ACCOUNT_B",
+                _entry(
+                    2,
+                    "GET",
+                    "/api/service_requests/4WL2V5NHJZN2KG55E",
+                    {"id": "4WL2V5NHJZN2KG55E", "userId": 11},
+                ),
+            ),
+        ],
+    )
+
+    endpoint = _endpoints(workspace).endpoints[0]
+    assert endpoint.path == "/api/service_requests/{serviceRequestId}"
+    assert endpoint.resource.type == "ServiceRequest"
+    assert endpoint.object_access[0].actor_object_binding_observed is True
+
+    authorization = [
+        item
+        for item in _records(workspace).hypotheses
+        if item.category == "authorization" and item.disposition == "ACTIVE"
+    ]
+    assert len(authorization) == 1
+    assert "serviceRequestId" in authorization[0].hypothesis
+
+
+def test_query_object_id_and_local_lab_collection_create_specific_candidates(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(
+        tmp_path,
+        [
+            _entry(
+                1,
+                "GET",
+                "/api/mechanic_report?report_id=12",
+                {"id": 12, "userId": 10},
+            ),
+            _entry(
+                2,
+                "POST",
+                "/api/orders",
+                {"id": 5, "status": "created"},
+                request={"quantity": 1},
+            ),
+        ],
+        accounts=2,
+        local_lab=True,
+    )
+    records = _records(workspace).hypotheses
+
+    report = next(
+        item for item in _endpoints(workspace).endpoints if "mechanic_report" in item.path
+    )
+    report_id = next(item for item in report.parameters if item.name == "report_id")
+    assert report_id.semantic_type == "object_identifier"
+    assert any(
+        item.category == "authorization" and "report_id" in item.hypothesis for item in records
+    )
+
+    order = next(item for item in _endpoints(workspace).endpoints if item.path == "/api/orders")
+    assert order.action.type == "mutation"
+    assert order.state_change is True
+    assert any(item.category == "value_validation" and "quantity" in item.title for item in records)
+
+
+def test_business_logic_fields_create_specific_passive_research_tasks(tmp_path: Path) -> None:
+    workspace = _workspace(
+        tmp_path,
+        [
+            _entry(
+                1,
+                "POST",
+                "/api/contact_mechanic",
+                {"status": "queued"},
+                request={
+                    "mechanic_api": "https://mechanic.example.test",
+                    "number_of_repeats": 1,
+                },
+            ),
+            _entry(
+                2,
+                "POST",
+                "/api/user/change-phone-number",
+                {"status": "pending"},
+                request={"old_number": "1000", "new_number": "2000"},
+            ),
+        ],
+        local_lab=True,
+    )
+    tasks = [item for item in _records(workspace).hypotheses if item.kind == "RESEARCH_TASK"]
+    rules = {item.generation_rule.get("id") for item in tasks}
+
+    assert "OUTBOUND_REQUEST_RESEARCH" in rules
+    assert "IDENTITY_CHANGE_RESEARCH" in rules
+    assert any("mechanic_api" in item.title for item in tasks)
+    assert any("reauthentication and verification binding" in item.title.lower() for item in tasks)
+
+
+def test_missing_role_restricted_route_creates_bfla_research_task(tmp_path: Path) -> None:
+    workspace = _workspace(
+        tmp_path,
+        [_entry(1, "GET", "/api/products", {"products": []})],
+        function_authorization_rules=[
+            {
+                "method": "POST",
+                "path": "/api/products",
+                "resource": "Product",
+                "allowed_roles": ["admin"],
+                "rationale": "Product creation is restricted to administrators.",
+            }
+        ],
+    )
+    task = next(
+        item
+        for item in _records(workspace).hypotheses
+        if item.generation_rule.get("id") == "FUNCTION_AUTHORIZATION_RESEARCH"
+    )
+
+    assert task.kind == "RESEARCH_TASK"
+    assert task.disposition == "NEEDS_RESEARCH"
+    assert task.source.endpoints == []
+    assert "user" in task.title
+    assert "endpoint is not present in inventory" in " ".join(task.missing_evidence)
+
+
+def test_disallowed_role_success_creates_active_bfla_hypothesis_and_manual_plan(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(
+        tmp_path,
+        [
+            _entry(
+                1,
+                "POST",
+                "/api/products",
+                {"id": 5, "name": "Researcher Product"},
+                request={"name": "Researcher Product", "price": 1},
+                status=201,
+            )
+        ],
+        local_lab=True,
+        function_authorization_rules=[
+            {
+                "method": "POST",
+                "path": "/api/products",
+                "resource": "Product",
+                "allowed_roles": ["admin"],
+                "rationale": "Product creation is restricted to administrators.",
+            }
+        ],
+    )
+    hypothesis = next(
+        item
+        for item in _records(workspace).hypotheses
+        if item.generation_rule.get("id") == "FUNCTION_AUTHORIZATION"
+    )
+
+    assert hypothesis.kind == "SECURITY_HYPOTHESIS"
+    assert hypothesis.disposition == "ACTIVE"
+    assert hypothesis.category == "authorization"
+    assert hypothesis.mutation_dimensions == ["ACTOR"]
+    assert hypothesis.priority == "P1"
+    assert "user" in hypothesis.title
+    assert "admin" in hypothesis.hypothesis
+
+    plan = generate_plan(workspace, hypothesis.id).plan
+    assert plan.status == "BLOCKED"
+    assert not any("Two researcher-controlled accounts" in item for item in plan.execution.blockers)
+    assert any("manual-only" in item for item in plan.execution.blockers)
+
+
+def test_observed_role_rejection_suppresses_bfla_candidate(tmp_path: Path) -> None:
+    workspace = _workspace(
+        tmp_path,
+        [
+            _entry(
+                1,
+                "POST",
+                "/api/products",
+                {"error": "forbidden"},
+                request={"name": "Researcher Product", "price": 1},
+                status=403,
+            )
+        ],
+        local_lab=True,
+        function_authorization_rules=[
+            {
+                "method": "POST",
+                "path": "/api/products",
+                "resource": "Product",
+                "allowed_roles": ["admin"],
+                "rationale": "Product creation is restricted to administrators.",
+            }
+        ],
+    )
+
+    assert not any(
+        item.generation_rule.get("id")
+        in {"FUNCTION_AUTHORIZATION", "FUNCTION_AUTHORIZATION_RESEARCH"}
+        for item in _records(workspace).hypotheses
+    )
+
+
+def test_successful_jwt_verifier_baseline_creates_algorithm_hypothesis_and_manual_plan(
+    tmp_path: Path,
+) -> None:
+    workspace = _workspace(
+        tmp_path,
+        [
+            _entry(
+                1,
+                "POST",
+                "/identity/api/auth/verify",
+                {"status": "success", "message": "verified"},
+                request={"token": "SYNTHETIC_SIGNED_JWT"},
+                authenticated=False,
+            ),
+            _entry(2, "GET", "/api/profile/1", {"id": 1}),
+        ],
+        local_lab=True,
+        jwt_algorithm_rules=[
+            {
+                "method": "POST",
+                "path": "/identity/api/auth/verify",
+                "token_location": "body",
+                "token_parameter": "token",
+                "rejected_algorithms": ["None"],
+                "rationale": "Unsigned JWTs must never satisfy token verification.",
+            }
+        ],
+    )
+    hypothesis = next(
+        item
+        for item in _records(workspace).hypotheses
+        if item.generation_rule.get("id") == "JWT_ALGORITHM_VALIDATION"
+    )
+
+    assert hypothesis.kind == "SECURITY_HYPOTHESIS"
+    assert hypothesis.disposition == "ACTIVE"
+    assert hypothesis.category == "authentication"
+    assert hypothesis.mutation_dimensions == ["VALUE"]
+    assert hypothesis.priority == "P1"
+    assert "Unsigned JWT acceptance" in hypothesis.title
+    assert "alg=none" in hypothesis.hypothesis
+
+    plan = generate_plan(workspace, hypothesis.id).plan
+    assert plan.status == "BLOCKED"
+    assert any("manual-only" in item for item in plan.execution.blockers)
+    assert any("do not add privileged claims" in item for item in plan.actions)
+
+
+def test_missing_jwt_verifier_route_creates_targeted_research_task(tmp_path: Path) -> None:
+    workspace = _workspace(
+        tmp_path,
+        [_entry(1, "GET", "/api/profile", {"id": 1})],
+        jwt_algorithm_rules=[
+            {
+                "method": "POST",
+                "path": "/identity/api/auth/verify",
+                "token_location": "body",
+                "token_parameter": "token",
+                "rejected_algorithms": ["none"],
+                "rationale": "Unsigned JWTs must never satisfy token verification.",
+            }
+        ],
+    )
+    task = next(
+        item
+        for item in _records(workspace).hypotheses
+        if item.generation_rule.get("id") == "JWT_ALGORITHM_VALIDATION_RESEARCH"
+    )
+
+    assert task.kind == "RESEARCH_TASK"
+    assert task.disposition == "NEEDS_RESEARCH"
+    assert task.source.endpoints == []
+    assert "unsigned JWTs" in task.title
+    assert "endpoint is not in inventory" in " ".join(task.missing_evidence)
 
 
 def test_unauthenticated_account_scoped_basket_baselines_promote_one_bola(

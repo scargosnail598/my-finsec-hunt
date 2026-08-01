@@ -898,6 +898,8 @@ def _collect_advanced(
         excluded_path_patterns=list(dict.fromkeys([*base.excluded_path_patterns, *added_paths])),
         hypothesis_gates=gates,
         ownership_inference=base.ownership_inference,
+        function_authorization_rules=base.function_authorization_rules,
+        jwt_algorithm_rules=base.jwt_algorithm_rules,
         classification_overrides=base.classification_overrides,
     )
     return analysis, selected_focus, enriched_accounts, capture_relative

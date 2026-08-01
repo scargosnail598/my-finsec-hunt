@@ -91,7 +91,37 @@ def _steps(
     operation = (
         f"{endpoint.method} {endpoint.path}" if endpoint is not None else "the observed operation"
     )
-    if hypothesis.category == "authorization":
+    jwt_algorithm_validation = hypothesis.generation_rule.get("id") == "JWT_ALGORITHM_VALIDATION"
+    function_authorization = hypothesis.generation_rule.get("id") == "FUNCTION_AUTHORIZATION"
+    if jwt_algorithm_validation:
+        setup = [
+            f"Authenticate as {actor or 'the researcher-controlled account'}.",
+            f"Capture one successful signed-JWT baseline for {operation} with token material "
+            "redacted from storage.",
+        ]
+        actions = [
+            "After explicit approval, change only the JWT algorithm to the configured rejected "
+            "value and remove the signature.",
+            "Preserve the researcher-controlled subject and do not add privileged claims.",
+            "Submit exactly one unsigned-token request and perform one safe identity check.",
+        ]
+        assertions = [
+            "The unsigned JWT is rejected and no authenticated identity or session is accepted.",
+        ]
+    elif function_authorization:
+        setup = [
+            f"Record the configured role for {actor or 'the researcher-controlled account'}.",
+            "Record the authoritative function-to-role policy and initial resource state.",
+        ]
+        actions = [
+            f"Review the existing successful {operation} observation without replaying it.",
+            "Verify whether the role was outside the configured allowed-role set.",
+            "Verify the resulting resource state using an independent safe read.",
+        ]
+        assertions = [
+            "A non-allowed role must not create or change privileged resource state.",
+        ]
+    elif hypothesis.category == "authorization":
         setup = [
             f"{owner or 'Researcher Account A'} creates or selects the test object.",
             "Record object ownership and initial state.",
@@ -211,7 +241,8 @@ def _draft(
     )
     concurrency = False
     request_budget = execution_templates.execution.request_budget or 2
-    requires_two_accounts = hypothesis.category == "authorization"
+    function_authorization = hypothesis.generation_rule.get("id") == "FUNCTION_AUTHORIZATION"
+    requires_two_accounts = hypothesis.category == "authorization" and not function_authorization
     blockers: list[str] = []
     endpoint_hosts = {host for item in source_endpoints for host in item.hosts}
     if not hypothesis.source.endpoints:

@@ -172,6 +172,33 @@ captures/example-fintech/         researcher-controlled input area
 Original captures stay outside the workspace. Generated redacted derivatives live under the
 workspace and sensitive paths are added to `.gitignore`.
 
+## Select A Default Workspace
+
+When you have more than one target, select the workspace used by commands that omit `-w`:
+
+```bash
+hunt workspace use workspaces/example-fintech
+hunt workspace current
+hunt status
+hunt workflow --no-ingest
+```
+
+The selection is stored as an absolute path in
+`$XDG_CONFIG_HOME/finsec-hunt/default-workspace` (normally
+`~/.config/finsec-hunt/default-workspace`). Resolution order is an explicit `--workspace`, a
+workspace containing the current directory, the configured default, and finally a single
+workspace under the current directory's `workspaces/` folder.
+
+Clear the selection when you want automatic discovery again:
+
+```bash
+hunt workspace clear
+```
+
+`hunt web` opens the configured default when one exists; without one it keeps serving the
+workspace root. Setup, initialization, and permanent deletion retain their explicit selection
+behavior. In particular, `hunt workspace delete` always requires `--workspace`.
+
 ## From Setup To Workflow: First-Time Guide
 
 `hunt setup` prepares the project and can hand off to passive capture ingestion, but it never

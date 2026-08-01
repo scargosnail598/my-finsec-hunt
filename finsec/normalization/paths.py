@@ -17,7 +17,7 @@ UUID_PATTERN = re.compile(
 )
 ULID_PATTERN = re.compile(r"^[0-7][0-9A-HJKMNP-TV-Z]{25}$", re.IGNORECASE)
 HEX_PATTERN = re.compile(r"^[0-9a-fA-F]{16,64}$")
-OPAQUE_PATTERN = re.compile(r"^[A-Za-z0-9_-]{20,80}$")
+OPAQUE_PATTERN = re.compile(r"^[A-Za-z0-9_-]{16,80}$")
 STRUCTURED_ID_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{7,63}$")
 VERSION_PATTERNS = (
     re.compile(r"^v\d+$", re.IGNORECASE),
@@ -105,7 +105,11 @@ def _strong_identifier(segment: str) -> tuple[ParameterType, str] | None:
         return ("string", "ulid")
     if HEX_PATTERN.fullmatch(segment):
         return ("string", "long_hex")
-    if OPAQUE_PATTERN.fullmatch(segment) and any(char.isdigit() for char in segment):
+    if (
+        OPAQUE_PATTERN.fullmatch(segment)
+        and any(char.isdigit() for char in segment)
+        and any(char.isalpha() for char in segment)
+    ):
         return ("string", "long_opaque")
     if STRUCTURED_ID_PATTERN.fullmatch(segment):
         separators = segment.count("-") + segment.count("_")
@@ -166,6 +170,19 @@ def _parameter_name(previous: str | None) -> str:
         return "resourceId"
     camel = words[0] + "".join(word.title() for word in words[1:])
     return f"{camel}Id"
+
+
+def _is_terminal_resource_number(
+    segments: list[str], index: int, classification: EndpointPrimaryClassification | None
+) -> bool:
+    """Recognize a lone numeric object ID after a plural first-party resource segment."""
+
+    if classification != EndpointPrimaryClassification.FIRST_PARTY_API:
+        return False
+    if index != len(segments) - 1 or index == 0:
+        return False
+    previous = segments[index - 1].lower()
+    return previous.endswith("s") and previous not in NON_RESOURCE_SEGMENTS
 
 
 def normalize_paths(
@@ -239,20 +256,37 @@ def normalize_paths(
                         )
                     )
                     rules.append(rule)
-                elif index in numeric_positions:
+                elif index in numeric_positions or (
+                    signature[index] == "<NUMERIC_CANDIDATE>"
+                    and _is_terminal_resource_number(
+                        original,
+                        index,
+                        classifications.get(observation.id) if classifications else None,
+                    )
+                ):
                     name = _parameter_name(previous)
                     normalized.append(f"{{{name}}}")
+                    rule = (
+                        "repeated_numeric"
+                        if index in numeric_positions
+                        else "terminal_resource_numeric"
+                    )
+                    reason = (
+                        "same route structure observed with multiple integer values"
+                        if rule == "repeated_numeric"
+                        else "terminal integer follows a plural first-party resource segment"
+                    )
                     parameters.append(
                         PathParameter(
                             name,
                             "integer",
                             Confidence.MEDIUM,
-                            "repeated_numeric",
+                            rule,
                             tuple(sorted({_segments(item.path)[index] for item in items})),
-                            ("same route structure observed with multiple integer values",),
+                            (reason,),
                         )
                     )
-                    rules.append("repeated_numeric")
+                    rules.append(rule)
                 else:
                     normalized.append(segment)
 

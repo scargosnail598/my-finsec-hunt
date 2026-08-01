@@ -7,7 +7,7 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from finsec.config.models import TargetDocument
+from finsec.config.models import FunctionAuthorizationRule, JwtAlgorithmRule, TargetDocument
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
 from finsec.hypotheses.domain import HypothesisRecord, HypothesisStatus, HypothesisStore
@@ -443,6 +443,602 @@ def _authentication_research_task(
         }
     )
     return task
+
+
+def _looks_like_outbound_destination(name: str) -> bool:
+    compact = re.sub(r"[^a-z0-9]", "", name.lower())
+    return compact.endswith(("api", "endpoint", "host", "domain", "url", "uri")) or any(
+        marker in compact for marker in ("callback", "webhook")
+    )
+
+
+def _outbound_request_research_task(
+    endpoint: Endpoint, parameter_names: list[str]
+) -> dict[str, Any]:
+    """Create a passive lead for inputs that may select a server-side destination."""
+
+    fields = ", ".join(parameter_names)
+    reason = (
+        f"The request contains destination-like field(s) {fields}, but passive traffic does not "
+        "establish whether the server resolves or contacts those values."
+    )
+    task = _research_task(endpoint, reason)
+    task.update(
+        {
+            "key": f"research:outbound-request:{endpoint.id}:{'-'.join(parameter_names)}",
+            "title": (
+                f"Determine whether {fields} controls a server-side outbound request on "
+                f"{endpoint.method} {endpoint.path}"
+            ),
+            "mutation_dimensions": ["VALUE"],
+            "attacker_capability": [
+                f"Can supply a researcher-controlled value in {fields} after explicit approval."
+            ],
+            "hypothesis": (
+                f"Determine whether {fields} controls a server-side outbound request on "
+                f"{endpoint.method} {endpoint.path}"
+            ),
+            "reasoning": reason,
+            "evidence_to_collect": [
+                "Documentation or researcher annotation describing each destination-like field.",
+                "Whether the server performs DNS resolution or an outbound connection.",
+                "The destination allowlist, redirect policy, and retry limits if outbound "
+                "access exists.",
+            ],
+            "eligibility_evidence": [
+                f"client-controlled destination-like field observed: {name}"
+                for name in parameter_names
+            ],
+            "missing_evidence": [
+                "server-side outbound request behavior is not established by passive evidence"
+            ],
+            "generation_rule": {"id": "OUTBOUND_REQUEST_RESEARCH", "version": "1"},
+        }
+    )
+    return task
+
+
+def _identity_change_research_task(endpoint: Endpoint) -> dict[str, Any]:
+    """Create a passive lead for account-identity changes with old/new value fields."""
+
+    reason = (
+        "An authenticated identity-change operation is observed, but reauthentication, challenge "
+        "binding, notification, and session invalidation semantics are not recorded."
+    )
+    task = _research_task(endpoint, reason)
+    task.update(
+        {
+            "key": f"research:identity-change:{endpoint.id}",
+            "title": (
+                f"Determine reauthentication and verification binding for "
+                f"{endpoint.method} {endpoint.path}"
+            ),
+            "mutation_dimensions": ["ACTOR", "STATE"],
+            "hypothesis": (
+                f"Determine reauthentication and verification binding for "
+                f"{endpoint.method} {endpoint.path}"
+            ),
+            "reasoning": reason,
+            "evidence_to_collect": [
+                "Whether the current credential or a fresh challenge is required.",
+                "Which old and new identity values the challenge is bound to.",
+                "Notification, rollback, and existing-session invalidation behavior.",
+            ],
+            "eligibility_evidence": [
+                "authenticated identity-change operation observed",
+                "old/new identity value fields are client controlled",
+            ],
+            "missing_evidence": [
+                "reauthentication and verification-binding requirements are not observed"
+            ],
+            "generation_rule": {"id": "IDENTITY_CHANGE_RESEARCH", "version": "1"},
+        }
+    )
+    return task
+
+
+def _business_logic_research_tasks(
+    target: TargetDocument, endpoints: EndpointStore
+) -> list[dict[str, Any]]:
+    if "business_logic" not in target.focus:
+        return []
+
+    drafts: list[dict[str, Any]] = []
+    for endpoint in endpoints.endpoints:
+        if endpoint.disposition != "ACTIVE" or endpoint.method in {"HEAD", "OPTIONS"}:
+            continue
+        request_parameters = [
+            item
+            for item in endpoint.parameters
+            if item.source == "request" and item.client_controlled
+        ]
+        outbound = sorted(
+            {
+                item.name
+                for item in request_parameters
+                if _looks_like_outbound_destination(item.name)
+            }
+        )
+        if outbound:
+            drafts.append(_outbound_request_research_task(endpoint, outbound))
+
+        names = {re.sub(r"[^a-z0-9]", "", item.name.lower()) for item in request_parameters}
+        identity_change = (
+            "change" in endpoint.path.lower()
+            and any(name.startswith("old") for name in names)
+            and any(name.startswith("new") for name in names)
+        )
+        if endpoint.authentication.required and identity_change:
+            drafts.append(_identity_change_research_task(endpoint))
+    return drafts
+
+
+def _function_action(rule: FunctionAuthorizationRule) -> str:
+    return {
+        "GET": "access",
+        "POST": "creation",
+        "PUT": "replacement",
+        "PATCH": "update",
+        "DELETE": "deletion",
+    }[rule.method]
+
+
+def _function_authorization_research_task(
+    rule: FunctionAuthorizationRule,
+    endpoint: Endpoint | None,
+    runtime: list[Observation],
+    disallowed_roles: list[str],
+) -> dict[str, Any]:
+    allowed = ", ".join(rule.allowed_roles)
+    actor_label = ", ".join(disallowed_roles) if disallowed_roles else "a non-allowed role"
+    action = _function_action(rule)
+    endpoint_ids = [endpoint.id] if endpoint is not None else []
+    observations = sorted(item.id for item in runtime)
+    missing_evidence = [
+        f"a successful runtime {rule.method} {rule.path} request from a non-allowed role is absent"
+    ]
+    if endpoint is None:
+        missing_evidence.insert(0, "the configured function endpoint is not present in inventory")
+    return {
+        "key": f"function-authorization-research:{rule.method.lower()}:{rule.path}",
+        "title": (
+            f"Determine whether {actor_label} can invoke role-restricted {rule.resource} "
+            f"{action} on {rule.method} {rule.path}"
+        ),
+        "kind": "RESEARCH_TASK",
+        "disposition": "NEEDS_RESEARCH",
+        "category": "research",
+        "component": (
+            f"{rule.resource} / {endpoint.id}"
+            if endpoint is not None
+            else f"{rule.resource} / {rule.method} {rule.path}"
+        ),
+        "source": {
+            "endpoints": endpoint_ids,
+            "invariants": [],
+            "observations": observations,
+        },
+        "invariant": [],
+        "observations": observations,
+        "mutation_dimensions": [],
+        "required_state": [],
+        "attacker_capability": [],
+        "evidence_status": KnowledgeStatus.INFERRED,
+        "hypothesis": (
+            f"Determine whether roles outside {allowed} can invoke {rule.method} {rule.path}."
+        ),
+        "reasoning": (
+            f"Researcher policy marks {rule.resource} {action} as restricted to {allowed}. "
+            f"{rule.rationale} Runtime evidence does not yet demonstrate a non-allowed role "
+            "successfully invoking the function."
+        ),
+        "preconditions": [
+            "Collect a redacted runtime baseline using only a researcher-controlled account.",
+            "Do not create persistent state without an explicit cleanup plan and approval.",
+        ],
+        "expected_secure_behavior": (
+            f"Roles outside {allowed} are rejected and no {rule.resource} state is created "
+            "or changed."
+        ),
+        "possible_vulnerable_behavior": (
+            f"A role outside {allowed} receives a success response and the {rule.resource} "
+            f"{action} effect persists."
+        ),
+        "potential_impact": {
+            "confidentiality": "low" if rule.method == "GET" else "none",
+            "integrity": "high" if rule.method != "GET" else "none",
+            "availability": "low" if rule.method != "GET" else "none",
+            "financial": "unknown",
+        },
+        "evidence_to_collect": [
+            f"Researcher-controlled account role evidence for {actor_label}.",
+            f"Redacted {rule.method} {rule.path} request and response.",
+            f"Authoritative {rule.resource} state before and after the request.",
+            f"Policy evidence that allowed roles are limited to {allowed}.",
+        ],
+        "eligibility_evidence": [
+            f"researcher-authored function policy allows only: {allowed}",
+            rule.rationale,
+        ],
+        "missing_evidence": missing_evidence,
+        "generation_rule": {"id": "FUNCTION_AUTHORIZATION_RESEARCH", "version": "1"},
+        "priority_rationale": ["Research tasks are not vulnerability priorities."],
+        "scores": _score(3, 2, 3, 2),
+        "priority": "P3",
+        "status": "NOT_TESTED",
+        "safety_notes": [
+            "This task does not authorize sending a state-changing request.",
+            "Use only researcher-controlled roles and reversible local-lab state.",
+        ],
+    }
+
+
+def _function_authorization_hypothesis(
+    rule: FunctionAuthorizationRule,
+    endpoint: Endpoint,
+    successes: list[tuple[Observation, str]],
+) -> dict[str, Any]:
+    allowed = ", ".join(rule.allowed_roles)
+    observed_roles = sorted({role for _, role in successes})
+    roles = ", ".join(observed_roles)
+    role_key = "-".join(observed_roles)
+    action = _function_action(rule)
+    observation_ids = sorted(item.id for item, _ in successes)
+    scores = _score(4, 3, 4, 4)
+    return {
+        "key": f"function-authorization:{rule.method.lower()}:{rule.path}:{role_key}",
+        "title": (
+            f"Potential {roles} access to role-restricted {rule.resource} {action} on "
+            f"{rule.method} {rule.path}"
+        ),
+        "category": "authorization",
+        "component": f"{rule.resource} / {endpoint.id}",
+        "source": {
+            "endpoints": [endpoint.id],
+            "invariants": [],
+            "observations": observation_ids,
+        },
+        "invariant": [],
+        "observations": observation_ids,
+        "mutation_dimensions": ["ACTOR"],
+        "required_state": [
+            f"A harmless, reversible {rule.resource} input is available in the authorized lab."
+        ],
+        "attacker_capability": [
+            f"Can authenticate as a researcher-controlled account with role {role}."
+            for role in observed_roles
+        ],
+        "evidence_status": KnowledgeStatus.INFERRED,
+        "hypothesis": (
+            f"A researcher-controlled {roles} account may invoke {rule.method} {rule.path}, "
+            f"although policy restricts {rule.resource} {action} to {allowed}."
+        ),
+        "reasoning": (
+            f"Runtime traffic records HTTP success for role(s) {roles}. Researcher policy allows "
+            f"only {allowed}. {rule.rationale} Persistence and complete function-level "
+            "authorization behavior remain to be validated."
+        ),
+        "preconditions": [
+            "The account and any created state are researcher controlled.",
+            "The role policy is supported by documentation, source, or an authoritative "
+            "annotation.",
+            "A cleanup path exists before any further state-changing validation.",
+        ],
+        "expected_secure_behavior": (
+            f"Roles outside {allowed} are rejected and no {rule.resource} state is created "
+            "or changed."
+        ),
+        "possible_vulnerable_behavior": (
+            f"The {roles} request succeeds and the {rule.resource} {action} effect persists."
+        ),
+        "potential_impact": {
+            "confidentiality": "low" if rule.method == "GET" else "none",
+            "integrity": "high" if rule.method != "GET" else "none",
+            "availability": "low" if rule.method != "GET" else "none",
+            "financial": "unknown",
+        },
+        "evidence_to_collect": [
+            f"Role evidence for each observed non-allowed role: {roles}.",
+            f"Redacted successful {rule.method} {rule.path} request and response.",
+            f"Authoritative {rule.resource} state before and after the request.",
+            f"Policy evidence that allowed roles are limited to {allowed}.",
+        ],
+        "eligibility_evidence": [
+            f"researcher-authored function policy allows only: {allowed}",
+            f"successful runtime request observed from non-allowed role(s): {roles}",
+            rule.rationale,
+        ],
+        "missing_evidence": [
+            f"confirm that the {rule.resource} {action} effect persisted",
+            "confirm that no narrower delegation or role exception applies",
+        ],
+        "generation_rule": {"id": "FUNCTION_AUTHORIZATION", "version": "1"},
+        "priority_rationale": [
+            "A non-allowed role reached a policy-restricted state-changing function.",
+            "Function-level authorization failure can affect shared application integrity.",
+        ],
+        "scores": scores,
+        "priority": _priority(4, 3, 4, 4),
+        "status": "NOT_TESTED",
+        "safety_notes": [
+            "Do not repeat the state-changing request without an approved cleanup plan.",
+            "Use only researcher-controlled accounts and local-lab objects.",
+        ],
+    }
+
+
+def _function_authorization_hypotheses(
+    target: TargetDocument,
+    observations: dict[str, Observation],
+    endpoints: EndpointStore,
+) -> list[dict[str, Any]]:
+    endpoint_by_key = {
+        (item.method, item.path): item
+        for item in endpoints.endpoints
+        if item.disposition == "ACTIVE"
+    }
+    roles_by_actor = {
+        account.id: account.role.strip()
+        for account in target.accounts
+        if account.ownership == "researcher" and account.role.strip()
+    }
+    drafts: list[dict[str, Any]] = []
+    for rule in sorted(
+        target.analysis.function_authorization_rules,
+        key=lambda item: (item.method, item.path),
+    ):
+        endpoint = endpoint_by_key.get((rule.method, rule.path))
+        runtime = _runtime_observations(endpoint, observations) if endpoint is not None else []
+        allowed = {item.casefold() for item in rule.allowed_roles}
+        disallowed_roles = sorted(
+            {role for role in roles_by_actor.values() if role.casefold() not in allowed}
+        )
+        successes = [
+            (item, roles_by_actor[item.actor])
+            for item in runtime
+            if item.actor in roles_by_actor
+            and roles_by_actor[item.actor].casefold() not in allowed
+            and item.status_code is not None
+            and 200 <= item.status_code < 300
+        ]
+        if successes and endpoint is not None:
+            drafts.append(_function_authorization_hypothesis(rule, endpoint, successes))
+            continue
+        rejected = any(
+            item.actor in roles_by_actor
+            and roles_by_actor[item.actor].casefold() not in allowed
+            and item.status_code in {401, 403, 404}
+            for item in runtime
+        )
+        if not rejected:
+            drafts.append(
+                _function_authorization_research_task(
+                    rule,
+                    endpoint,
+                    runtime,
+                    disallowed_roles,
+                )
+            )
+    return drafts
+
+
+def _jwt_algorithms(rule: JwtAlgorithmRule) -> str:
+    return ", ".join(f"alg={item}" for item in rule.rejected_algorithms)
+
+
+def _jwt_baseline_matches(rule: JwtAlgorithmRule, observation: Observation) -> bool:
+    if observation.status_code is None or not 200 <= observation.status_code < 300:
+        return False
+    if rule.token_location == "body":
+        return rule.token_parameter in observation.request_fields
+    if rule.token_location == "query":
+        return rule.token_parameter in observation.query_parameters
+    return True
+
+
+def _jwt_algorithm_research_task(
+    rule: JwtAlgorithmRule,
+    endpoint: Endpoint | None,
+    runtime: list[Observation],
+) -> dict[str, Any]:
+    algorithms = _jwt_algorithms(rule)
+    endpoint_ids = [endpoint.id] if endpoint is not None else []
+    observations = sorted(item.id for item in runtime)
+    missing_evidence = [
+        (
+            f"a successful signed-JWT baseline using {rule.token_location} field "
+            f"{rule.token_parameter} is absent"
+        ),
+        f"no controlled {algorithms} rejection or acceptance response is recorded",
+    ]
+    if endpoint is None:
+        missing_evidence.insert(0, "the configured JWT verification endpoint is not in inventory")
+    return {
+        "key": f"jwt-algorithm-research:{rule.method.lower()}:{rule.path}",
+        "title": (
+            f"Determine whether {rule.method} {rule.path} rejects unsigned JWTs using {algorithms}"
+        ),
+        "kind": "RESEARCH_TASK",
+        "disposition": "NEEDS_RESEARCH",
+        "category": "research",
+        "component": (
+            f"JWT verification / {endpoint.id}"
+            if endpoint is not None
+            else f"JWT verification / {rule.method} {rule.path}"
+        ),
+        "source": {
+            "endpoints": endpoint_ids,
+            "invariants": [],
+            "observations": observations,
+        },
+        "invariant": [],
+        "observations": observations,
+        "mutation_dimensions": [],
+        "required_state": [],
+        "attacker_capability": [],
+        "evidence_status": KnowledgeStatus.ASSUMED,
+        "hypothesis": (
+            f"Determine whether {rule.method} {rule.path} accepts a JWT whose header selects "
+            f"{algorithms} and whose signature is absent."
+        ),
+        "reasoning": (
+            f"Researcher policy requires rejection of {algorithms} for the configured "
+            f"{rule.token_location} field {rule.token_parameter}. {rule.rationale} A suitable "
+            "successful baseline is not yet available for a bounded comparison."
+        ),
+        "preconditions": [
+            "Collect a redacted successful signed-JWT baseline for a researcher-owned account.",
+            "Do not retain the signed or unsigned token value in workspace artifacts.",
+        ],
+        "expected_secure_behavior": (
+            f"The server rejects {algorithms} JWTs regardless of supplied claims and does not "
+            "create or accept an authenticated context."
+        ),
+        "possible_vulnerable_behavior": (
+            "The server accepts an unsigned JWT and trusts its attacker-controlled claims."
+        ),
+        "potential_impact": {
+            "confidentiality": "high",
+            "integrity": "high",
+            "availability": "none",
+            "financial": "unknown",
+        },
+        "evidence_to_collect": [
+            "Redacted successful signed-JWT baseline request and response.",
+            f"Redacted {algorithms} control response without retaining token material.",
+            "A safe identity check showing which subject and roles the server accepted.",
+        ],
+        "eligibility_evidence": [
+            f"researcher-authored JWT policy rejects: {algorithms}",
+            rule.rationale,
+        ],
+        "missing_evidence": missing_evidence,
+        "generation_rule": {"id": "JWT_ALGORITHM_VALIDATION_RESEARCH", "version": "1"},
+        "priority_rationale": ["Research tasks are not vulnerability priorities."],
+        "scores": _score(5, 2, 2, 2),
+        "priority": "P3",
+        "status": "NOT_TESTED",
+        "safety_notes": [
+            "This task does not authorize constructing or sending an unsigned token.",
+            "Use only a researcher-controlled identity and stop after minimum proof.",
+        ],
+    }
+
+
+def _jwt_algorithm_hypothesis(
+    rule: JwtAlgorithmRule,
+    endpoint: Endpoint,
+    baselines: list[Observation],
+) -> dict[str, Any]:
+    algorithms = _jwt_algorithms(rule)
+    observation_ids = sorted(item.id for item in baselines)
+    scores = _score(5, 3, 3, 4)
+    return {
+        "key": f"jwt-algorithm:{rule.method.lower()}:{rule.path}",
+        "title": (
+            f"Unsigned JWT acceptance may bypass authentication on {rule.method} {rule.path}"
+        ),
+        "category": "authentication",
+        "component": f"JWT verification / {endpoint.id}",
+        "source": {
+            "endpoints": [endpoint.id],
+            "invariants": [],
+            "observations": observation_ids,
+        },
+        "invariant": [],
+        "observations": observation_ids,
+        "mutation_dimensions": ["VALUE"],
+        "required_state": [
+            "A valid signed JWT issued to a researcher-controlled account is available outside "
+            "the workspace."
+        ],
+        "attacker_capability": [
+            f"Can replace the JWT header algorithm with {algorithms} and omit the signature."
+        ],
+        "evidence_status": KnowledgeStatus.INFERRED,
+        "hypothesis": (
+            f"{rule.method} {rule.path} may accept an unsigned JWT using {algorithms}, allowing "
+            "attacker-controlled identity or authorization claims to bypass signature validation."
+        ),
+        "reasoning": (
+            f"Successful runtime requests show that {endpoint.id} processes the configured "
+            f"{rule.token_location} field {rule.token_parameter}. Researcher policy requires "
+            f"rejection of {algorithms}. {rule.rationale} The unsigned-token mutation has not "
+            "yet been tested."
+        ),
+        "preconditions": [
+            "Use only a JWT issued to a researcher-controlled account as the baseline.",
+            "Keep token material outside generated workspace artifacts.",
+            "Obtain explicit human approval before sending the one modified request.",
+        ],
+        "expected_secure_behavior": (
+            f"The server rejects {algorithms} JWTs regardless of supplied claims and does not "
+            "create or accept an authenticated context."
+        ),
+        "possible_vulnerable_behavior": (
+            "The endpoint returns success for an unsigned JWT and trusts its modified subject, "
+            "role, or other security-relevant claims."
+        ),
+        "potential_impact": {
+            "confidentiality": "high",
+            "integrity": "high",
+            "availability": "none",
+            "financial": "unknown",
+        },
+        "evidence_to_collect": [
+            "Redacted successful signed-JWT baseline request and response.",
+            f"Redacted {algorithms} control response without retaining token material.",
+            "A safe identity endpoint response showing which subject and roles were accepted.",
+            "Whether the verification endpoint issues or enables any authenticated session.",
+        ],
+        "eligibility_evidence": [
+            f"successful runtime request contains configured JWT field: {rule.token_parameter}",
+            f"researcher-authored JWT policy rejects: {algorithms}",
+            rule.rationale,
+        ],
+        "missing_evidence": [
+            f"the response to one controlled unsigned {algorithms} JWT is not recorded",
+            "the resulting accepted subject, role, or session state is not confirmed",
+        ],
+        "generation_rule": {"id": "JWT_ALGORITHM_VALIDATION", "version": "1"},
+        "priority_rationale": [
+            "JWT signature bypass can permit authentication and authorization claim forgery.",
+            "A successful verifier baseline exists for a researcher-controlled account.",
+        ],
+        "scores": scores,
+        "priority": _priority(5, 3, 3, 4),
+        "status": "NOT_TESTED",
+        "safety_notes": [
+            "JWT fabrication is manual-only and is not supported by bounded execution.",
+            "Use only researcher-controlled identity claims and send at most one modified request.",
+            "Stop immediately if the token is accepted or any external identity becomes visible.",
+        ],
+    }
+
+
+def _jwt_algorithm_hypotheses(
+    target: TargetDocument,
+    observations: dict[str, Observation],
+    endpoints: EndpointStore,
+) -> list[dict[str, Any]]:
+    endpoint_by_key = {
+        (item.method, item.path): item
+        for item in endpoints.endpoints
+        if item.disposition == "ACTIVE"
+    }
+    drafts: list[dict[str, Any]] = []
+    for rule in sorted(
+        target.analysis.jwt_algorithm_rules,
+        key=lambda item: (item.method, item.path, item.token_location, item.token_parameter),
+    ):
+        endpoint = endpoint_by_key.get((rule.method, rule.path))
+        runtime = _runtime_observations(endpoint, observations) if endpoint is not None else []
+        baselines = [item for item in runtime if _jwt_baseline_matches(rule, item)]
+        if endpoint is not None and baselines:
+            drafts.append(_jwt_algorithm_hypothesis(rule, endpoint, baselines))
+        else:
+            drafts.append(_jwt_algorithm_research_task(rule, endpoint, runtime))
+    return drafts
 
 
 def _state_research_task(
@@ -1152,6 +1748,9 @@ def _drafts(
     drafts.extend(_value_hypotheses(target, endpoints, invariants, resources, observation_by_id))
     drafts.extend(_version_hypotheses(endpoints, invariants, resources, observation_by_id))
     drafts.extend(_channel_hypotheses(endpoints, invariants, resources, observation_by_id))
+    drafts.extend(_business_logic_research_tasks(target, endpoints))
+    drafts.extend(_function_authorization_hypotheses(target, observation_by_id, endpoints))
+    drafts.extend(_jwt_algorithm_hypotheses(target, observation_by_id, endpoints))
     active_endpoint_ids.update(
         endpoint_id
         for draft in drafts

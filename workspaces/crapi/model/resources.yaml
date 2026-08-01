@@ -1,0 +1,1536 @@
+version: 1
+resources:
+- id: RES-001
+  key: resource:%f0%9f%91%a4
+  name: '%F0%9F%91%A4'
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-001
+    action: read
+    method: GET
+    path: /%F0%9F%91%A4
+    state_change: false
+    authentication_required: false
+    evidence:
+    - OBS-000037
+    - OBS-000040
+    - OBS-000078
+    - OBS-000081
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-001
+  - OBS-000037
+  - OBS-000040
+  - OBS-000078
+  - OBS-000081
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 094158cbe45cdf8a85b381f49a76ea92144cc0884931a6868df41f917040b284
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-002
+  key: resource:%f0%9f%a4%96
+  name: '%F0%9F%A4%96'
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-002
+    action: read
+    method: GET
+    path: /%F0%9F%A4%96
+    state_change: false
+    authentication_required: false
+    evidence:
+    - OBS-000038
+    - OBS-000039
+    - OBS-000041
+    - OBS-000042
+    - OBS-000079
+    - OBS-000080
+    - OBS-000082
+    - OBS-000083
+    - OBS-000094
+    - OBS-000135
+    - OBS-000183
+    - OBS-000196
+    - OBS-000205
+    - OBS-000263
+    - OBS-000264
+    - OBS-000328
+    - OBS-000351
+    - OBS-000366
+    - OBS-000375
+    - OBS-000469
+    - OBS-000518
+    - OBS-000519
+    - OBS-000582
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-002
+  - OBS-000038
+  - OBS-000039
+  - OBS-000041
+  - OBS-000042
+  - OBS-000079
+  - OBS-000080
+  - OBS-000082
+  - OBS-000083
+  - OBS-000094
+  - OBS-000135
+  - OBS-000183
+  - OBS-000196
+  - OBS-000205
+  - OBS-000263
+  - OBS-000264
+  - OBS-000328
+  - OBS-000351
+  - OBS-000366
+  - OBS-000375
+  - OBS-000469
+  - OBS-000518
+  - OBS-000519
+  - OBS-000582
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 645df3c35e8c85dc21ad0fcc8634f80778ec68d27b4556b3742221edfc6970af
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-004
+  key: resource:auth
+  name: Auth
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-017
+    action: verify
+    method: POST
+    path: /identity/api/auth/verify
+    state_change: true
+    authentication_required: false
+    evidence:
+    - OBS-000005
+    - OBS-000017
+    - OBS-000022
+    - OBS-000033
+    - OBS-000052
+    - OBS-000069
+    - OBS-000073
+    - OBS-000090
+    - OBS-000112
+    - OBS-000124
+    - OBS-000133
+    - OBS-000186
+    - OBS-000203
+    - OBS-000252
+    - OBS-000274
+    - OBS-000284
+    - OBS-000330
+    - OBS-000348
+    - OBS-000356
+    - OBS-000373
+    - OBS-000422
+    - OBS-000479
+    - OBS-000505
+    - OBS-000522
+    - OBS-000563
+    - OBS-000569
+    - OBS-000584
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields:
+  - status
+  evidence:
+  - EP-017
+  - OBS-000005
+  - OBS-000017
+  - OBS-000022
+  - OBS-000033
+  - OBS-000052
+  - OBS-000069
+  - OBS-000073
+  - OBS-000090
+  - OBS-000112
+  - OBS-000124
+  - OBS-000133
+  - OBS-000186
+  - OBS-000203
+  - OBS-000252
+  - OBS-000274
+  - OBS-000284
+  - OBS-000330
+  - OBS-000348
+  - OBS-000356
+  - OBS-000373
+  - OBS-000422
+  - OBS-000479
+  - OBS-000505
+  - OBS-000522
+  - OBS-000563
+  - OBS-000569
+  - OBS-000584
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: f6970dd12a701ad9faf1e229d90783c180d3c0548616beddc45bec0e2284a981
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-028
+  key: resource:coupon
+  name: Coupon
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-015
+    action: validate
+    method: POST
+    path: /community/api/v2/coupon/validate-coupon
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000027
+    - OBS-000110
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-015
+  - OBS-000027
+  - OBS-000110
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 942999f3c9b2f90e2b4e1849dbe848f6e49d61988153ec36bdf3d9a23289c5b6
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-006
+  key: resource:dashboard
+  name: Dashboard
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-005
+    action: read
+    method: GET
+    path: /identity/api/v2/user/dashboard
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000002
+    - OBS-000004
+    - OBS-000019
+    - OBS-000021
+    - OBS-000032
+    - OBS-000049
+    - OBS-000051
+    - OBS-000071
+    - OBS-000072
+    - OBS-000089
+    - OBS-000111
+    - OBS-000123
+    - OBS-000132
+    - OBS-000185
+    - OBS-000202
+    - OBS-000250
+    - OBS-000273
+    - OBS-000282
+    - OBS-000347
+    - OBS-000355
+    - OBS-000372
+    - OBS-000420
+    - OBS-000478
+    - OBS-000504
+    - OBS-000521
+    - OBS-000565
+    - OBS-000567
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-005
+  - OBS-000002
+  - OBS-000004
+  - OBS-000019
+  - OBS-000021
+  - OBS-000032
+  - OBS-000049
+  - OBS-000051
+  - OBS-000071
+  - OBS-000072
+  - OBS-000089
+  - OBS-000111
+  - OBS-000123
+  - OBS-000132
+  - OBS-000185
+  - OBS-000202
+  - OBS-000250
+  - OBS-000273
+  - OBS-000282
+  - OBS-000347
+  - OBS-000355
+  - OBS-000372
+  - OBS-000420
+  - OBS-000478
+  - OBS-000504
+  - OBS-000521
+  - OBS-000565
+  - OBS-000567
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 26300fd85bb69c0688680d9ce5e56f37ec3c50ac2b9eac3e0c1d77c71bcf55bc
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-029
+  key: resource:email
+  name: Email
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-063
+    action: resend
+    method: POST
+    path: /identity/api/v2/vehicle/resend_email
+    state_change: true
+    authentication_required: true
+    evidence:
+    - OBS-000353
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-063
+  - OBS-000353
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: f03d63b1cdc0c05f3670805b8c2beaf8d1056cfde99f6a4b55319f0a4557e9d6
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-016
+  key: resource:manifest.json
+  name: Manifest.Json
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-024
+    action: read
+    method: GET
+    path: /manifest.json
+    state_change: false
+    authentication_required: false
+    evidence:
+    - OBS-000088
+    - OBS-000131
+    - OBS-000180
+    - OBS-000193
+    - OBS-000201
+    - OBS-000260
+    - OBS-000325
+    - OBS-000346
+    - OBS-000363
+    - OBS-000371
+    - OBS-000466
+    - OBS-000515
+    - OBS-000579
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-024
+  - OBS-000088
+  - OBS-000131
+  - OBS-000180
+  - OBS-000193
+  - OBS-000201
+  - OBS-000260
+  - OBS-000325
+  - OBS-000346
+  - OBS-000363
+  - OBS-000371
+  - OBS-000466
+  - OBS-000515
+  - OBS-000579
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: c876393bb12776abc539b22b109e6d993b02f18df786e213b13693997ceedd3d
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-022
+  key: resource:mechanic
+  name: Mechanic
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-052
+    action: read
+    method: GET
+    path: /workshop/api/mechanic
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000247
+    - OBS-000417
+    - OBS-000501
+    knowledge_status: INFERRED
+  - endpoint: EP-053
+    action: read
+    method: GET
+    path: /workshop/api/mechanic/
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000248
+    - OBS-000418
+    - OBS-000502
+    knowledge_status: INFERRED
+  - endpoint: EP-065
+    action: contact
+    method: POST
+    path: /workshop/api/merchant/contact_mechanic
+    state_change: true
+    authentication_required: true
+    evidence:
+    - OBS-000249
+    - OBS-000419
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-052
+  - EP-053
+  - EP-065
+  - OBS-000247
+  - OBS-000248
+  - OBS-000249
+  - OBS-000417
+  - OBS-000418
+  - OBS-000419
+  - OBS-000501
+  - OBS-000502
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 45b17a6c4b4313bd7fb06a3a64ad3b1f2de27c02a853c4dfa47eac08fc8e315b
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-023
+  key: resource:mechanicreport
+  name: MechanicReport
+  identifiers:
+  - report_id
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-054
+    action: read
+    method: GET
+    path: /workshop/api/mechanic/mechanic_report
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000181
+    - OBS-000261
+    - OBS-000326
+    - OBS-000467
+    - OBS-000516
+    - OBS-000580
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields:
+  - status
+  evidence:
+  - EP-054
+  - OBS-000181
+  - OBS-000261
+  - OBS-000326
+  - OBS-000467
+  - OBS-000516
+  - OBS-000580
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 38b5636cc9ed57c7aed6633535475a97205c94d704bcd53db6e9e2af00dead2e
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-007
+  key: resource:order
+  name: Order
+  identifiers:
+  - order_id
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-020
+    action: create
+    method: POST
+    path: /workshop/api/shop/orders
+    state_change: true
+    authentication_required: true
+    evidence:
+    - OBS-000010
+    - OBS-000057
+    - OBS-000107
+    - OBS-000269
+    - OBS-000474
+    knowledge_status: INFERRED
+  - endpoint: EP-010
+    action: all
+    method: GET
+    path: /workshop/api/shop/orders/all
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000011
+    - OBS-000028
+    - OBS-000058
+    - OBS-000084
+    - OBS-000108
+    - OBS-000270
+    - OBS-000475
+    knowledge_status: INFERRED
+  - endpoint: EP-021
+    action: return
+    method: POST
+    path: /workshop/api/shop/orders/return_order
+    state_change: true
+    authentication_required: true
+    evidence:
+    - OBS-000012
+    - OBS-000059
+    - OBS-000271
+    - OBS-000476
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields:
+  - order.status
+  - orders[].status
+  evidence:
+  - EP-010
+  - EP-020
+  - EP-021
+  - OBS-000010
+  - OBS-000011
+  - OBS-000012
+  - OBS-000028
+  - OBS-000057
+  - OBS-000058
+  - OBS-000059
+  - OBS-000084
+  - OBS-000107
+  - OBS-000108
+  - OBS-000269
+  - OBS-000270
+  - OBS-000271
+  - OBS-000474
+  - OBS-000475
+  - OBS-000476
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: c8d65c96ed14104cf8dcffca848a16c5a8c4af0702f86167897b893f40749fd3
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-030
+  key: resource:phonenumber
+  name: PhoneNumber
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-018
+    action: change
+    method: POST
+    path: /identity/api/v2/user/change-phone-number
+    state_change: true
+    authentication_required: true
+    evidence:
+    - OBS-000036
+    - OBS-000068
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields:
+  - status
+  evidence:
+  - EP-018
+  - OBS-000036
+  - OBS-000068
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 41a33c7c3b58dbb75fa85f2933fda1ff39b804476ca70e83f2bfe2536b7c64ed
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-008
+  key: resource:picture
+  name: Picture
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-019
+    action: create
+    method: POST
+    path: /identity/api/v2/user/pictures
+    state_change: true
+    authentication_required: true
+    evidence:
+    - OBS-000047
+    - OBS-000067
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields:
+  - status
+  evidence:
+  - EP-019
+  - OBS-000047
+  - OBS-000067
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: db2960f84d8c93a05f4cf2bb6a93a9352810b208026f4cb2d7d25c6cecbe803d
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-009
+  key: resource:post
+  name: Post
+  identifiers:
+  - postId
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-013
+    action: create
+    method: POST
+    path: /community/api/v2/community/posts
+    state_change: true
+    authentication_required: true
+    evidence:
+    - OBS-000015
+    - OBS-000062
+    knowledge_status: INFERRED
+  - endpoint: EP-003
+    action: recent
+    method: GET
+    path: /community/api/v2/community/posts/recent
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000014
+    - OBS-000016
+    - OBS-000031
+    - OBS-000043
+    - OBS-000061
+    - OBS-000063
+    - OBS-000096
+    - OBS-000101
+    - OBS-000114
+    - OBS-000118
+    - OBS-000278
+    knowledge_status: INFERRED
+  - endpoint: EP-004
+    action: read
+    method: GET
+    path: /community/api/v2/community/posts/{postId}
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000044
+    - OBS-000064
+    - OBS-000098
+    - OBS-000102
+    - OBS-000116
+    - OBS-000119
+    - OBS-000280
+    knowledge_status: INFERRED
+  - endpoint: EP-014
+    action: comment
+    method: POST
+    path: /community/api/v2/community/posts/{postId}/comment
+    state_change: true
+    authentication_required: true
+    evidence:
+    - OBS-000045
+    - OBS-000065
+    - OBS-000100
+    - OBS-000103
+    - OBS-000117
+    - OBS-000120
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-003
+  - EP-004
+  - EP-013
+  - EP-014
+  - OBS-000014
+  - OBS-000015
+  - OBS-000016
+  - OBS-000031
+  - OBS-000043
+  - OBS-000044
+  - OBS-000045
+  - OBS-000061
+  - OBS-000062
+  - OBS-000063
+  - OBS-000064
+  - OBS-000065
+  - OBS-000096
+  - OBS-000098
+  - OBS-000100
+  - OBS-000101
+  - OBS-000102
+  - OBS-000103
+  - OBS-000114
+  - OBS-000116
+  - OBS-000117
+  - OBS-000118
+  - OBS-000119
+  - OBS-000120
+  - OBS-000278
+  - OBS-000280
+  confidence: medium
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: b501864f227232dcc60684d1f586a6340f82161f571360d44397c2f598e24bba
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-010
+  key: resource:product
+  name: Product
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-011
+    action: read
+    method: GET
+    path: /workshop/api/shop/products
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000007
+    - OBS-000024
+    - OBS-000029
+    - OBS-000054
+    - OBS-000075
+    - OBS-000104
+    - OBS-000109
+    - OBS-000266
+    - OBS-000471
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-011
+  - OBS-000007
+  - OBS-000024
+  - OBS-000029
+  - OBS-000054
+  - OBS-000075
+  - OBS-000104
+  - OBS-000109
+  - OBS-000266
+  - OBS-000471
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 14dfb1003c0bd8f66b0f25045ab9b28b79a2e7009b76948c98ce2a5eba0afaa2
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-025
+  key: resource:servicereport
+  name: ServiceReport
+  identifiers:
+  - id
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-048
+    action: read
+    method: GET
+    path: /service-report
+    state_change: false
+    authentication_required: false
+    evidence:
+    - OBS-000177
+    - OBS-000257
+    - OBS-000322
+    - OBS-000463
+    - OBS-000512
+    - OBS-000576
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-048
+  - OBS-000177
+  - OBS-000257
+  - OBS-000322
+  - OBS-000463
+  - OBS-000512
+  - OBS-000576
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 86c94f7f52b2472f8d97407cf3a2ab876691942634fb47ecdf8c0e1ed4da89c5
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-031
+  key: resource:servicerequest
+  name: ServiceRequest
+  identifiers:
+  - serviceRequestId
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-067
+    action: read
+    method: GET
+    path: /workshop/api/merchant/service_requests/{serviceRequestId}
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000176
+    - OBS-000256
+    - OBS-000321
+    - OBS-000462
+    - OBS-000511
+    - OBS-000575
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-067
+  - OBS-000176
+  - OBS-000256
+  - OBS-000321
+  - OBS-000462
+  - OBS-000511
+  - OBS-000575
+  confidence: medium
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: c1be5f4d494153506d04e38d33c7670814b65bda0ea47c614cf81157a3a6c9b3
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-026
+  key: resource:shop
+  name: Shop
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-049
+    action: read
+    method: GET
+    path: /shop
+    state_change: false
+    authentication_required: false
+    evidence:
+    - OBS-000190
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-049
+  - OBS-000190
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 998e72cb48400fe4055e2ac9843e5b666530737d214f414fb2d762aa5ca6993c
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-017
+  key: resource:state
+  name: State
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-023
+    action: read
+    method: GET
+    path: /chatbot/genai/state
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000095
+    - OBS-000137
+    - OBS-000184
+    - OBS-000197
+    - OBS-000209
+    - OBS-000265
+    - OBS-000329
+    - OBS-000352
+    - OBS-000367
+    - OBS-000379
+    - OBS-000470
+    - OBS-000520
+    - OBS-000583
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-023
+  - OBS-000095
+  - OBS-000137
+  - OBS-000184
+  - OBS-000197
+  - OBS-000209
+  - OBS-000265
+  - OBS-000329
+  - OBS-000352
+  - OBS-000367
+  - OBS-000379
+  - OBS-000470
+  - OBS-000520
+  - OBS-000583
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: b4a0a2f6d8157fb5b032d560eb5373f0541203f9b0ef055ff4f6ae9c7cce8cd5
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-014
+  key: resource:vehicle
+  name: Vehicle
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-062
+    action: add
+    method: POST
+    path: /identity/api/v2/vehicle/add_vehicle
+    state_change: true
+    authentication_required: true
+    evidence:
+    - OBS-000354
+    knowledge_status: INFERRED
+  - endpoint: EP-007
+    action: read
+    method: GET
+    path: /identity/api/v2/vehicle/vehicles
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000006
+    - OBS-000023
+    - OBS-000034
+    - OBS-000053
+    - OBS-000074
+    - OBS-000093
+    - OBS-000113
+    - OBS-000125
+    - OBS-000136
+    - OBS-000187
+    - OBS-000206
+    - OBS-000254
+    - OBS-000275
+    - OBS-000286
+    - OBS-000350
+    - OBS-000357
+    - OBS-000376
+    - OBS-000424
+    - OBS-000480
+    - OBS-000507
+    - OBS-000523
+    - OBS-000574
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-007
+  - EP-062
+  - OBS-000006
+  - OBS-000023
+  - OBS-000034
+  - OBS-000053
+  - OBS-000074
+  - OBS-000093
+  - OBS-000113
+  - OBS-000125
+  - OBS-000136
+  - OBS-000187
+  - OBS-000206
+  - OBS-000254
+  - OBS-000275
+  - OBS-000286
+  - OBS-000350
+  - OBS-000354
+  - OBS-000357
+  - OBS-000376
+  - OBS-000424
+  - OBS-000480
+  - OBS-000507
+  - OBS-000523
+  - OBS-000574
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 25b2b59fdb7c7a5222faa763591def0fc9491c158446f6937e0a8b8a99b8141a
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-027
+  key: resource:vehicleservicedashboard
+  name: VehicleServiceDashboard
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-051
+    action: read
+    method: GET
+    path: /vehicle-service-dashboard
+    state_change: false
+    authentication_required: false
+    evidence:
+    - OBS-000360
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-051
+  - OBS-000360
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: e5d7da26c8a2f1d9b1497b641bdb231751dcdb550aed1d21739c776a1eaae719
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-015
+  key: resource:video
+  name: Video
+  identifiers:
+  - videoId
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-066
+    action: read
+    method: GET
+    path: /identity/api/v2/user/videos/{videoId}
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000035
+    - OBS-000046
+    - OBS-000066
+    - OBS-000121
+    - OBS-000122
+    - OBS-000281
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields:
+  - status
+  evidence:
+  - EP-066
+  - OBS-000035
+  - OBS-000046
+  - OBS-000066
+  - OBS-000121
+  - OBS-000122
+  - OBS-000281
+  confidence: medium
+  knowledge_status: INFERRED
+  disposition: ACTIVE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 392dfb4c7d5c0d03872cb9cb44bd87a7be50bb7f1c01dbd7e3d3ba963d7e12e0
+    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+- id: RES-018
+  key: resource:0p96308cfvj2b8j9g
+  name: 0P96308Cfvj2B8J9G
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-055
+    action: read
+    method: GET
+    path: /workshop/api/merchant/service_requests/0P96308CFVJ2B8J9G
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000462
+    - OBS-000511
+    - OBS-000575
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-055
+  - OBS-000462
+  - OBS-000511
+  - OBS-000575
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: SUPPRESSED_INSUFFICIENT_EVIDENCE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: febe70397712c506b420932ac8d48d2a67a99b9274eb7bc0d0e58a44c3b1f053
+    source_fingerprint: 2443c9cde383694ba6eab4db0621fb56120377155a97b8ddf70fd4d487498193
+- id: RES-019
+  key: resource:4wl2v5nhjzn2kg55e
+  name: 4Wl2V5Nhjzn2Kg55E
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-056
+    action: read
+    method: GET
+    path: /workshop/api/merchant/service_requests/4WL2V5NHJZN2KG55E
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000176
+    - OBS-000256
+    - OBS-000321
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-056
+  - OBS-000176
+  - OBS-000256
+  - OBS-000321
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: SUPPRESSED_INSUFFICIENT_EVIDENCE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 35534fba4acd65b77aecba41baf5287f0bd0eb0daa23f3873792324b3ff08c76
+    source_fingerprint: 2443c9cde383694ba6eab4db0621fb56120377155a97b8ddf70fd4d487498193
+- id: RES-020
+  key: resource:addvehicle
+  name: AddVehicle
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-062
+    action: create_or_execute
+    method: POST
+    path: /identity/api/v2/vehicle/add_vehicle
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000354
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-062
+  - OBS-000354
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: SUPPRESSED_INSUFFICIENT_EVIDENCE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 5de1ace4e7d40dd13b2c1a76eca00b532bdd0aa5706cfafb4927fe91e5b24e3a
+    source_fingerprint: 2443c9cde383694ba6eab4db0621fb56120377155a97b8ddf70fd4d487498193
+- id: RES-003
+  key: resource:all
+  name: All
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-010
+    action: read
+    method: GET
+    path: /workshop/api/shop/orders/all
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000011
+    - OBS-000028
+    - OBS-000058
+    - OBS-000084
+    - OBS-000108
+    - OBS-000270
+    - OBS-000475
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields:
+  - orders[].status
+  evidence:
+  - EP-010
+  - OBS-000011
+  - OBS-000028
+  - OBS-000058
+  - OBS-000084
+  - OBS-000108
+  - OBS-000270
+  - OBS-000475
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: SUPPRESSED_INSUFFICIENT_EVIDENCE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 19ead3b36c84365d3d7c2211d1d63e726b56724fe6675f4e36c2eab430277d47
+    source_fingerprint: 2443c9cde383694ba6eab4db0621fb56120377155a97b8ddf70fd4d487498193
+- id: RES-005
+  key: resource:changephonenumber
+  name: ChangePhoneNumber
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-018
+    action: change
+    method: POST
+    path: /identity/api/v2/user/change-phone-number
+    state_change: true
+    authentication_required: true
+    evidence:
+    - OBS-000036
+    - OBS-000068
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields:
+  - status
+  evidence:
+  - EP-018
+  - OBS-000036
+  - OBS-000068
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: SUPPRESSED_INSUFFICIENT_EVIDENCE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 1c780a0636c995e00039e1f878133df685686d0b250bde41858a4c14d5996398
+    source_fingerprint: 2443c9cde383694ba6eab4db0621fb56120377155a97b8ddf70fd4d487498193
+- id: RES-021
+  key: resource:contactmechanic
+  name: ContactMechanic
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-065
+    action: create_or_execute
+    method: POST
+    path: /workshop/api/merchant/contact_mechanic
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000249
+    - OBS-000419
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-065
+  - OBS-000249
+  - OBS-000419
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: SUPPRESSED_INSUFFICIENT_EVIDENCE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 2a55d702e3945960164d6b8af0a826123f548e3f100887e2b34c2858c7ef743b
+    source_fingerprint: 2443c9cde383694ba6eab4db0621fb56120377155a97b8ddf70fd4d487498193
+- id: RES-011
+  key: resource:recent
+  name: Recent
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-003
+    action: read
+    method: GET
+    path: /community/api/v2/community/posts/recent
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000014
+    - OBS-000016
+    - OBS-000031
+    - OBS-000043
+    - OBS-000061
+    - OBS-000063
+    - OBS-000096
+    - OBS-000101
+    - OBS-000114
+    - OBS-000118
+    - OBS-000278
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-003
+  - OBS-000014
+  - OBS-000016
+  - OBS-000031
+  - OBS-000043
+  - OBS-000061
+  - OBS-000063
+  - OBS-000096
+  - OBS-000101
+  - OBS-000114
+  - OBS-000118
+  - OBS-000278
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: SUPPRESSED_INSUFFICIENT_EVIDENCE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 54f7eb0bd46f809023e78fff57111d4f6240984ac5c5e1b39bce841f52111a3a
+    source_fingerprint: 2443c9cde383694ba6eab4db0621fb56120377155a97b8ddf70fd4d487498193
+- id: RES-024
+  key: resource:resendemail
+  name: ResendEmail
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-063
+    action: create_or_execute
+    method: POST
+    path: /identity/api/v2/vehicle/resend_email
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000353
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-063
+  - OBS-000353
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: SUPPRESSED_INSUFFICIENT_EVIDENCE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: d0c61c1c05b126ddcfabd018eda01d3308c0d66dfb80afd077b18ac9b9177c91
+    source_fingerprint: 2443c9cde383694ba6eab4db0621fb56120377155a97b8ddf70fd4d487498193
+- id: RES-012
+  key: resource:returnorder
+  name: ReturnOrder
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-021
+    action: create_or_execute
+    method: POST
+    path: /workshop/api/shop/orders/return_order
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000012
+    - OBS-000059
+    - OBS-000271
+    - OBS-000476
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields:
+  - order.status
+  evidence:
+  - EP-021
+  - OBS-000012
+  - OBS-000059
+  - OBS-000271
+  - OBS-000476
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: SUPPRESSED_INSUFFICIENT_EVIDENCE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 0646fd277578a10ca09baa5c6a03e723f5fbcdefb60382ef128f4c5bd4d3449f
+    source_fingerprint: 2443c9cde383694ba6eab4db0621fb56120377155a97b8ddf70fd4d487498193
+- id: RES-013
+  key: resource:validatecoupon
+  name: ValidateCoupon
+  identifiers: []
+  owner:
+    value: unknown
+    knowledge_status: ASSUMED
+    confidence: low
+    evidence: []
+  operations:
+  - endpoint: EP-015
+    action: create_or_execute
+    method: POST
+    path: /community/api/v2/coupon/validate-coupon
+    state_change: false
+    authentication_required: true
+    evidence:
+    - OBS-000027
+    - OBS-000110
+    knowledge_status: INFERRED
+  states: []
+  sensitive_fields: []
+  evidence:
+  - EP-015
+  - OBS-000027
+  - OBS-000110
+  confidence: low
+  knowledge_status: INFERRED
+  disposition: SUPPRESSED_INSUFFICIENT_EVIDENCE
+  generation:
+    managed: true
+    generator: phase2-modeler
+    generated_checksum: 3ae56e7f4ead1b1f1cd97d21f652a8f5e2cfdc6e6acf3acfc8f37f511dee07ec
+    source_fingerprint: 2443c9cde383694ba6eab4db0621fb56120377155a97b8ddf70fd4d487498193

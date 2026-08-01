@@ -1,7 +1,9 @@
 """Creation and discovery of independent target workspaces."""
 
+import os
 import re
 import shutil
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -13,6 +15,7 @@ from finsec.modeling.models import EndpointStore, ObservationStore
 from finsec.utils.yaml_store import load_yaml, write_yaml
 
 TARGET_NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]{0,62}[a-z0-9]$|^[a-z0-9]$")
+DEFAULT_WORKSPACE_FILENAME = "default-workspace"
 
 
 @dataclass(frozen=True)
@@ -180,8 +183,107 @@ def create_workspace(name: str, workspace_root: Path) -> WorkspacePaths:
     return paths
 
 
-def resolve_workspace(explicit: Path | None = None, start: Path | None = None) -> WorkspacePaths:
-    """Resolve an explicit workspace, an ancestor workspace, or one local target."""
+def default_workspace_config_path() -> Path:
+    """Return the per-user file that stores the selected default workspace."""
+
+    configured_root = os.environ.get("FINSEC_HUNT_CONFIG_DIR")
+    if configured_root:
+        root = Path(configured_root).expanduser()
+    else:
+        xdg_root = os.environ.get("XDG_CONFIG_HOME")
+        root = (
+            Path(xdg_root).expanduser() / "finsec-hunt"
+            if xdg_root
+            else Path.home() / ".config" / "finsec-hunt"
+        )
+    return (root / DEFAULT_WORKSPACE_FILENAME).absolute()
+
+
+def load_default_workspace(config_path: Path | None = None) -> WorkspacePaths | None:
+    """Load and validate the configured default workspace, if one is selected."""
+
+    path = (config_path or default_workspace_config_path()).expanduser()
+    if not path.exists() and not path.is_symlink():
+        return None
+    if path.is_symlink() or not path.is_file():
+        raise WorkspaceError(
+            f"Default workspace configuration is not a safe regular file: {path}. "
+            "Run 'hunt workspace clear' and select it again."
+        )
+    try:
+        stored = path.read_text(encoding="utf-8").strip()
+    except OSError as error:
+        raise WorkspaceError(f"Cannot read default workspace configuration: {path}") from error
+    selected = Path(stored).expanduser() if stored else None
+    if selected is None or not selected.is_absolute():
+        raise WorkspaceError(
+            f"Default workspace configuration is invalid: {path}. "
+            "Run 'hunt workspace clear' and select it again."
+        )
+    root = selected.resolve()
+    if not (root / "target.yaml").is_file():
+        raise WorkspaceError(
+            f"Configured default workspace is unavailable: {root}. "
+            "Run 'hunt workspace use PATH' or 'hunt workspace clear'."
+        )
+    return WorkspacePaths(root)
+
+
+def set_default_workspace(path: Path, config_path: Path | None = None) -> WorkspacePaths:
+    """Validate and atomically persist one default workspace selection."""
+
+    workspace = resolve_workspace(path)
+    destination = (config_path or default_workspace_config_path()).expanduser()
+    directory = destination.parent
+    if directory.is_symlink() or (directory.exists() and not directory.is_dir()):
+        raise WorkspaceError(f"Default workspace configuration directory is not safe: {directory}")
+    directory.mkdir(parents=True, exist_ok=True, mode=0o700)
+    if os.name == "posix":
+        os.chmod(directory, 0o700)
+    if destination.is_symlink() or (destination.exists() and not destination.is_file()):
+        raise WorkspaceError(
+            f"Default workspace configuration is not a safe regular file: {destination}"
+        )
+
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{destination.name}.tmp-",
+        dir=directory,
+        text=True,
+    )
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as handle:
+            handle.write(f"{workspace.root}\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, destination)
+        if os.name == "posix":
+            os.chmod(destination, 0o600)
+    except Exception:
+        temporary.unlink(missing_ok=True)
+        raise
+    return workspace
+
+
+def clear_default_workspace(config_path: Path | None = None) -> bool:
+    """Remove the configured default workspace selection if it exists."""
+
+    path = (config_path or default_workspace_config_path()).expanduser()
+    if not path.exists() and not path.is_symlink():
+        return False
+    if path.exists() and not path.is_file() and not path.is_symlink():
+        raise WorkspaceError(f"Default workspace configuration is not a file: {path}")
+    path.unlink()
+    return True
+
+
+def resolve_workspace(
+    explicit: Path | None = None,
+    start: Path | None = None,
+    *,
+    default_config: Path | None = None,
+) -> WorkspacePaths:
+    """Resolve an explicit, ancestor, configured default, or single local workspace."""
 
     if explicit is not None:
         root = explicit.expanduser().resolve()
@@ -194,13 +296,22 @@ def resolve_workspace(explicit: Path | None = None, start: Path | None = None) -
         if (candidate / "target.yaml").is_file():
             return WorkspacePaths(candidate)
 
+    configured = load_default_workspace(default_config)
+    if configured is not None:
+        return configured
+
     workspace_root = current / "workspaces"
     matches = sorted(workspace_root.glob("*/target.yaml")) if workspace_root.is_dir() else []
     if len(matches) == 1:
         return WorkspacePaths(matches[0].parent)
     if len(matches) > 1:
-        raise WorkspaceError("Multiple workspaces found; pass --workspace PATH.")
-    raise WorkspaceError("No workspace found; run 'hunt setup' or pass --workspace PATH.")
+        raise WorkspaceError(
+            "Multiple workspaces found; pass --workspace PATH or run 'hunt workspace use PATH'."
+        )
+    raise WorkspaceError(
+        "No workspace found; run 'hunt setup', pass --workspace PATH, or run "
+        "'hunt workspace use PATH'."
+    )
 
 
 def resolve_workspace_deletion_target(

@@ -1,9 +1,9 @@
 """Strongly typed target configuration models."""
 
 from datetime import datetime
-from typing import Literal
+from typing import Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 ClassificationOverride = Literal[
     "FIRST_PARTY_API",
@@ -255,6 +255,75 @@ class OwnershipInferenceConfig(StrictModel):
     )
 
 
+class FunctionAuthorizationRule(StrictModel):
+    """Researcher-authored policy describing which roles may invoke one function."""
+
+    method: Literal["GET", "POST", "PUT", "PATCH", "DELETE"]
+    path: str
+    resource: str
+    allowed_roles: list[str] = Field(min_length=1)
+    rationale: str
+
+    @field_validator("path")
+    @classmethod
+    def path_is_normalized(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized.startswith("/") or "?" in normalized or "#" in normalized:
+            raise ValueError("path must be an absolute normalized path without query or fragment")
+        return normalized
+
+    @field_validator("resource", "rationale")
+    @classmethod
+    def text_is_not_empty(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("value cannot be empty")
+        return normalized
+
+    @field_validator("allowed_roles")
+    @classmethod
+    def roles_are_not_empty(cls, value: list[str]) -> list[str]:
+        normalized = [item.strip() for item in value]
+        if any(not item for item in normalized):
+            raise ValueError("allowed roles cannot contain empty values")
+        return list(dict.fromkeys(normalized))
+
+
+class JwtAlgorithmRule(StrictModel):
+    """Researcher-authored policy for JWT algorithm enforcement on one endpoint."""
+
+    method: Literal["GET", "POST", "PUT", "PATCH", "DELETE"]
+    path: str
+    token_location: Literal["header", "cookie", "body", "query"]
+    token_parameter: str
+    rejected_algorithms: list[str] = Field(min_length=1)
+    rationale: str
+
+    @field_validator("path")
+    @classmethod
+    def path_is_normalized(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized.startswith("/") or "?" in normalized or "#" in normalized:
+            raise ValueError("path must be an absolute normalized path without query or fragment")
+        return normalized
+
+    @field_validator("token_parameter", "rationale")
+    @classmethod
+    def text_is_not_empty(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("value cannot be empty")
+        return normalized
+
+    @field_validator("rejected_algorithms")
+    @classmethod
+    def algorithms_are_not_empty(cls, value: list[str]) -> list[str]:
+        normalized = [item.strip().lower() for item in value]
+        if any(not item for item in normalized):
+            raise ValueError("rejected algorithms cannot contain empty values")
+        return list(dict.fromkeys(normalized))
+
+
 class AnalysisConfig(StrictModel):
     """Researcher-editable deterministic classification and gating policy."""
 
@@ -299,7 +368,24 @@ class AnalysisConfig(StrictModel):
     )
     hypothesis_gates: HypothesisGateConfig = Field(default_factory=HypothesisGateConfig)
     ownership_inference: OwnershipInferenceConfig = Field(default_factory=OwnershipInferenceConfig)
+    function_authorization_rules: list[FunctionAuthorizationRule] = Field(default_factory=list)
+    jwt_algorithm_rules: list[JwtAlgorithmRule] = Field(default_factory=list)
     classification_overrides: dict[str, ClassificationOverride] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def analysis_rules_are_unique(self) -> Self:
+        keys = [(item.method, item.path) for item in self.function_authorization_rules]
+        if len(keys) != len(set(keys)):
+            raise ValueError("function authorization rules must use unique method/path pairs")
+        jwt_keys = [
+            (item.method, item.path, item.token_location, item.token_parameter.casefold())
+            for item in self.jwt_algorithm_rules
+        ]
+        if len(jwt_keys) != len(set(jwt_keys)):
+            raise ValueError(
+                "JWT algorithm rules must use unique method/path/location/parameter tuples"
+            )
+        return self
 
 
 class TargetDocument(StrictModel):
