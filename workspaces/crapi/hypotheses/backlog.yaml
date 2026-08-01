@@ -1635,7 +1635,7 @@ hypotheses:
     testability: 4
     total: 15
   priority: P1
-  status: NOT_TESTED
+  status: TEST_PLANNED
   safety_notes:
   - JWT fabrication is manual-only and is not supported by bounded execution.
   - Use only researcher-controlled identity claims and send at most one modified request.
