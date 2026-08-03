@@ -24,6 +24,7 @@ from finsec.modeling.models import (
     Observation,
     ObservationStore,
 )
+from finsec.readiness.provenance import hypothesis_source_fingerprint, record_stage_provenance
 from finsec.utils.yaml_store import load_yaml, write_yaml
 
 VERSION_PATTERN = re.compile(r"(?P<prefix>/(?:api/)?)v(?P<version>\d+)(?=/|$)", re.IGNORECASE)
@@ -1817,14 +1818,12 @@ def generate_hypotheses(workspace: WorkspacePaths) -> HypothesisResult:
     """Generate a specific backlog without changing lifecycle status or notes."""
 
     target, observations, endpoints, resources, invariants = _load_inputs(workspace)
-    fingerprint = stable_fingerprint(
-        {
-            "target": target.model_dump(mode="json"),
-            "observations": observations.model_dump(mode="json", exclude_none=True),
-            "endpoints": endpoints.model_dump(mode="json", exclude_none=True),
-            "resources": resources.model_dump(mode="json", exclude_none=True),
-            "invariants": invariants.model_dump(mode="json", exclude_none=True),
-        }
+    fingerprint = hypothesis_source_fingerprint(
+        target,
+        observations,
+        endpoints,
+        resources,
+        invariants,
     )
     drafts = _drafts(target, observations, endpoints, resources, invariants)
     merge = merge_generated_records(
@@ -1886,6 +1885,13 @@ def generate_hypotheses(workspace: WorkspacePaths) -> HypothesisResult:
             f"Cannot validate hypothesis backlog {workspace.hypotheses}: {error}"
         ) from error
     write_yaml(workspace.hypotheses, store.model_dump(mode="json", exclude_none=True))
+    record_stage_provenance(
+        workspace,
+        key="hypothesize",
+        stage="hypothesize",
+        producer="phase3-hypothesis-generator",
+        input_fingerprint=fingerprint,
+    )
     return HypothesisResult(len(store.hypotheses), merge.conflicts)
 
 

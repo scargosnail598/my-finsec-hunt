@@ -67,6 +67,14 @@ FINSEC_HUNT_IMPORT_ROOT=/absolute/path/to/sanitized-hars \
   /absolute/path/to/.venv/bin/hunt-mcp
 ```
 
+Or use the alias:
+
+```bash
+FINSEC_HUNT_WORKSPACE=/absolute/path/to/workspace \
+FINSEC_HUNT_IMPORT_ROOT=/absolute/path/to/sanitized-hars \
+  /absolute/path/to/.venv/bin/finsec-hunt-operator
+```
+
 Equivalent module form:
 
 ```bash

@@ -1096,9 +1096,9 @@ endpoints:
     observed_paths:
     - /api/Deliverys
     rules: []
-- id: EP-009
+- id: EP-057
   method: GET
-  path: /api/Deliverys/1
+  path: /api/Deliverys/{deliveryId}
   hosts:
   - juice-shop.local
   channels:
@@ -1116,7 +1116,7 @@ endpoints:
     - host is included in target analysis scope
   resource:
     type: Delivery
-    confidence: low
+    confidence: medium
     knowledge_status: INFERRED
   action:
     name: read
@@ -1124,19 +1124,44 @@ endpoints:
     confidence: high
     reasons:
     - GET is a safe HTTP method
-  parameters: []
+  parameters:
+  - name: deliveryId
+    location: path
+    source: request
+    inferred_type: integer
+    confidence: medium
+    evidence:
+    - OBS-000101
+    - OBS-000107
+    - OBS-000427
+    - OBS-000433
+    knowledge_status: INFERRED
+    semantic_type: object_identifier
+    client_controlled: true
+    original_examples:
+    - '1'
+    normalization_reasons:
+    - terminal integer follows a plural first-party resource segment
   object_access: []
-  ownership_inference: []
+  ownership_inference:
+  - parameter: deliveryId
+    classification: UNCLASSIFIED
+    status: REJECTED
+    controlled_actors: 0
+    distinct_scope_values: 0
+    observations: []
+    reasons:
+    - deliveryId is not allowlisted as a trusted ownership scope parameter.
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
   - GET is a safe HTTP method
   financial_impact: none
-  security_relevance: 2
+  security_relevance: 6
   relevance_reasons:
   - first-party API endpoint
   - authenticated endpoint observed
-  - no client-controlled input structure observed
+  - client-controlled object identifier observed
   disposition: ACTIVE
   observed_by:
   - mrscargo
@@ -1151,7 +1176,8 @@ endpoints:
   normalization:
     observed_paths:
     - /api/Deliverys/1
-    rules: []
+    rules:
+    - terminal_resource_numeric
 - id: EP-010
   method: GET
   path: /api/Feedbacks/
@@ -11216,35 +11242,7 @@ endpoints:
     original_examples: []
     normalization_reasons:
     - response JSON contains field $.status
-  object_access:
-  - identifier: basketId
-    source: RESPONSE_BODY
-    confidence: high
-    owner_field_path: $.data.UserId
-    baselines:
-    - actor: mrscargo
-      requested_value: '6'
-      response_object_path: $.data.id
-      owner_value_fingerprint: f1d3825973e71668ef20dedf3dfb0ec82477c4e79dedec911c0cfd24a26da163
-      observations:
-      - OBS-000696
-    - actor: saeedmehmandoust
-      requested_value: '7'
-      response_object_path: $.data.id
-      owner_value_fingerprint: 87d63e266f7a9461fb9ebf4f5233166f6bce7ad4524b130c8e86b553128f7155
-      observations:
-      - OBS-000284
-      - OBS-000313
-      - OBS-000316
-      - OBS-000317
-      - OBS-000320
-      - OBS-000321
-      - OBS-000329
-    distinct_actors: 2
-    distinct_objects: 2
-    distinct_owner_values: 2
-    distinct_scope_values: 0
-    actor_object_binding_observed: true
+  object_access: []
   ownership_inference:
   - parameter: basketId
     classification: UNCLASSIFIED
@@ -11259,14 +11257,11 @@ endpoints:
   state_change_reasons:
   - GET is a safe HTTP method
   financial_impact: none
-  security_relevance: 9
+  security_relevance: 6
   relevance_reasons:
   - first-party API endpoint
   - authenticated endpoint observed
   - client-controlled object identifier observed
-  - two controlled actors have distinct object baselines
-  - successful JSON response object IDs match requested IDs
-  - distinct owner/account values observed at $.data.UserId
   disposition: ACTIVE
   observed_by:
   - mrscargo
@@ -12793,7 +12788,7 @@ endpoints:
     - GET response content type is text/html
     - host is included in target analysis scope
   resource:
-    type: ChangePassword
+    type: Password
     confidence: low
     knowledge_status: INFERRED
   action:
@@ -14083,11 +14078,11 @@ endpoints:
     confidence: low
     knowledge_status: INFERRED
   action:
-    name: unknown
-    type: unknown
-    confidence: low
+    name: create
+    type: mutation
+    confidence: medium
     reasons:
-    - POST without a business action is not sufficient evidence of mutation
+    - local-lab POST targets a plural REST collection
   parameters:
   - name: city
     location: body
@@ -14196,16 +14191,16 @@ endpoints:
     - request JSON contains field $.zipCode
   object_access: []
   ownership_inference: []
-  state_change: false
+  state_change: true
   state_change_confidence: INFERRED
   state_change_reasons:
-  - no mutating action or observed state delta
+  - local-lab POST to a plural REST collection is mutation-like
   financial_impact: none
-  security_relevance: 1
+  security_relevance: 6
   relevance_reasons:
   - first-party API endpoint
   - authenticated endpoint observed
-  - generic POST with no state evidence
+  - mutation-like business action observed
   disposition: ACTIVE
   observed_by:
   - mrscargo
@@ -14242,11 +14237,11 @@ endpoints:
     confidence: low
     knowledge_status: INFERRED
   action:
-    name: unknown
-    type: unknown
-    confidence: low
+    name: create
+    type: mutation
+    confidence: medium
     reasons:
-    - POST without a business action is not sufficient evidence of mutation
+    - local-lab POST targets a plural REST collection
   parameters:
   - name: BasketId
     location: body
@@ -14413,17 +14408,17 @@ endpoints:
     - response JSON contains field $.status
   object_access: []
   ownership_inference: []
-  state_change: false
+  state_change: true
   state_change_confidence: INFERRED
   state_change_reasons:
-  - no mutating action or observed state delta
+  - local-lab POST to a plural REST collection is mutation-like
   financial_impact: none
-  security_relevance: 3
+  security_relevance: 8
   relevance_reasons:
   - first-party API endpoint
   - authenticated endpoint observed
   - security-sensitive request field observed
-  - generic POST with no state evidence
+  - mutation-like business action observed
   disposition: ACTIVE
   observed_by:
   - mrscargo
@@ -14462,11 +14457,11 @@ endpoints:
     confidence: low
     knowledge_status: INFERRED
   action:
-    name: unknown
-    type: unknown
-    confidence: low
+    name: create
+    type: mutation
+    confidence: medium
     reasons:
-    - POST without a business action is not sufficient evidence of mutation
+    - local-lab POST targets a plural REST collection
   parameters:
   - name: cardNum
     location: body
@@ -14530,16 +14525,16 @@ endpoints:
     - request JSON contains field $.fullName
   object_access: []
   ownership_inference: []
-  state_change: false
+  state_change: true
   state_change_confidence: INFERRED
   state_change_reasons:
-  - no mutating action or observed state delta
+  - local-lab POST to a plural REST collection is mutation-like
   financial_impact: none
-  security_relevance: 1
+  security_relevance: 6
   relevance_reasons:
   - first-party API endpoint
   - authenticated endpoint observed
-  - generic POST with no state evidence
+  - mutation-like business action observed
   disposition: ACTIVE
   observed_by:
   - mrscargo
@@ -14576,11 +14571,11 @@ endpoints:
     confidence: low
     knowledge_status: INFERRED
   action:
-    name: unknown
-    type: unknown
-    confidence: low
+    name: create
+    type: mutation
+    confidence: medium
     reasons:
-    - POST without a business action is not sufficient evidence of mutation
+    - local-lab POST targets a plural REST collection
   parameters:
   - name: UserId
     location: body
@@ -14726,17 +14721,17 @@ endpoints:
     - response JSON contains field $.status
   object_access: []
   ownership_inference: []
-  state_change: false
+  state_change: true
   state_change_confidence: INFERRED
   state_change_reasons:
-  - no mutating action or observed state delta
+  - local-lab POST to a plural REST collection is mutation-like
   financial_impact: none
-  security_relevance: 3
+  security_relevance: 8
   relevance_reasons:
   - first-party API endpoint
   - authenticated endpoint observed
   - client-controlled object identifier observed
-  - generic POST with no state evidence
+  - mutation-like business action observed
   disposition: ACTIVE
   observed_by:
   - mrscargo

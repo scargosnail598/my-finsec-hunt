@@ -62,7 +62,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: cf96031cdb1d7891d589b292ca3d63528dfef720c8315829c2bf814ae0cf681d
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-011
   key: auth-enforcement-research:email
   title: Determine whether authentication is enforced on sensitive Email endpoints
@@ -123,7 +123,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: a3d85afa566a4c7428d74692d54d88d68854ab52101c26501269fb6ce1c8d654
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-012
   key: auth-enforcement-research:mechanic
   title: Determine whether authentication is enforced on sensitive Mechanic endpoints
@@ -186,7 +186,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: caae291b56bfe1f0b92e42f4b680456c3315665d1abd330401244248d791517f
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-009
   key: auth-enforcement-research:mechanicreport
   title: Determine whether authentication is enforced on sensitive MechanicReport
@@ -259,7 +259,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: c304db6c720f55f9490d479d3088660d49f6610afc331167b13e8e7820a3620f
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-013
   key: auth-enforcement-research:order
   title: Determine whether authentication is enforced on sensitive Order endpoints
@@ -356,7 +356,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: 7ed5d05f589471e2fb248f41f1e026a471d490bb464f7518846219f786640f6c
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-014
   key: auth-enforcement-research:phonenumber
   title: Determine whether authentication is enforced on sensitive PhoneNumber endpoints
@@ -420,7 +420,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: 1ec42e70bcf7e5364b3d696eea6a9417afb59beed17f6f8e295c9a843063f37d
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-015
   key: auth-enforcement-research:picture
   title: Determine whether authentication is enforced on sensitive Picture endpoints
@@ -483,7 +483,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: 6cccf9619c6ee3191c36d2d426dd3a1e834c5607c850db3c88832d577b230c15
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-003
   key: auth-enforcement-research:post
   title: Determine whether authentication is enforced on sensitive Post endpoints
@@ -603,7 +603,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: 5b77b57103218b64c2684fe1ad139e9f64c760f3e642c83440a7265bbdf566e9
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-004
   key: auth-enforcement-research:product
   title: Determine whether authentication is enforced on sensitive Product endpoints
@@ -680,7 +680,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: bb40759733983c890f623654aa297976820f791afa1c3a3a3edb1d9003daef96
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-016
   key: auth-enforcement-research:servicerequest
   title: Determine whether authentication is enforced on sensitive ServiceRequest
@@ -753,7 +753,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: 1c72a214e57eeaae4d6db055f7e94905f0c6fb93046aae2c312ab2cdd95aa6e7
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-017
   key: auth-enforcement-research:vehicle
   title: Determine whether authentication is enforced on sensitive Vehicle endpoints
@@ -814,7 +814,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: 379a6298a8e0ec91fb154f46d2d8ed1a1e1e151f86a63bbaa984f2c9de965b1d
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-018
   key: auth-enforcement-research:video
   title: Determine whether authentication is enforced on sensitive Video endpoints
@@ -885,7 +885,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: 85cfcf55e4f1a52149c6bc334c15a3e8b66b685bf7156cc940c59fc878b98fff
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-006
   key: auth-object-access:get:/community/api/v2/community/posts/{postId}:post:postid
   title: Potential cross-account Post access through postId on GET /community/api/v2/community/posts/{postId}
@@ -980,7 +980,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: 31387ab3a3980ea3c5dd8865574e2b33501ce94d45b87b5ce9980ecdac0d50ec
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-019
   key: auth-object-access:get:/identity/api/v2/user/videos/{videoId}:video:videoid
   title: Potential cross-account Video access through videoId on GET /identity/api/v2/user/videos/{videoId}
@@ -1073,7 +1073,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: 193d72e1c6da71f3efd35600bac5943e7f764f28ef59c3a8aa029ca389333ccc
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-020
   key: auth-object-access:get:/workshop/api/mechanic/mechanic_report:mechanicreport:report_id
   title: Potential cross-account MechanicReport access through report_id on GET /workshop/api/mechanic/mechanic_report
@@ -1166,7 +1166,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: c377b768cd969522435dbe61009118b1ffbab977c3e5e17fb02b6bfdfc17585a
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-021
   key: auth-object-access:get:/workshop/api/merchant/service_requests/{serviceRequestId}:servicerequest:servicerequestid
   title: Potential cross-account ServiceRequest access through serviceRequestId on
@@ -1260,7 +1260,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: 27c328660bac42b8ffd39f4c57a67b61f8e04607924597496943e5682fc80903
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-022
   key: auth-object-access:post:/community/api/v2/community/posts/{postId}/comment:post:postid
   title: Potential cross-account Post modification through postId on POST /community/api/v2/community/posts/{postId}/comment
@@ -1355,7 +1355,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: 0db83c5fe0e85aa0325a8ec98de8dee3f7fa91491cbde5cd2b3a19304daf1d17
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-023
   key: auth-object-access:post:/workshop/api/shop/orders/return_order:order:order_id
   title: Potential cross-account Order modification through order_id on POST /workshop/api/shop/orders/return_order
@@ -1446,7 +1446,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: e61f58a3e901c6b63c757f9d9a89e9e2d0937b7a637e1b8a5f870de5f53e889f
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-027
   key: function-authorization-research:post:/workshop/api/shop/products
   title: Determine whether user can invoke role-restricted Product creation on POST
@@ -1513,7 +1513,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: d15af3ef6a7396b1fd5bf358676e6f97f5a7d879ff4b1f07cc69fe3a9955f0ae
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-028
   key: jwt-algorithm:post:/identity/api/auth/verify
   title: Unsigned JWT acceptance may bypass authentication on POST /identity/api/auth/verify
@@ -1644,7 +1644,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: 9327655a61d60b63b6d6261685caa9908086402d5aecd5f978afd451bb64267b
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-024
   key: research:identity-change:EP-018
   title: Determine reauthentication and verification binding for POST /identity/api/v2/user/change-phone-number
@@ -1709,7 +1709,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: a378f3a12c36dfa5e1743e89f6193bf81fce38c4fd5a9a9ec950285253806ca1
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-025
   key: research:outbound-request:EP-065:mechanic_api
   title: Determine whether mechanic_api controls a server-side outbound request on
@@ -1776,7 +1776,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: 9aee72772229a6852070147ca31968cd362d6cd177ff0e88dde1427b2343981a
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-007
   key: research:post:/identity/api/auth/login
   title: Determine security semantics of POST /identity/api/auth/login
@@ -1847,7 +1847,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: 3aa2f3f48991e2d4f66ef6658cf6f6654ae2d829eef166af96f1c382cec6ce1c
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-026
   key: value-boundary:EP-020:quantity
   title: Boundary values in quantity may bypass validation on POST /workshop/api/shop/orders
@@ -1932,7 +1932,7 @@ hypotheses:
     managed: true
     generator: phase3-hypothesis-generator
     generated_checksum: f25408da9941f1257851c9db987cc37ef092f224cb225e8e35bd76b75872e6da
-    source_fingerprint: 05f3b95ef4cb40d9424f89c3002f9ec6a2ebb3d74ad67ff47aa010ae3d6ccc3e
+    source_fingerprint: 5aaf2c1bf8c401fd82a0737e89704b49c80f13b7f1d044bf000cf9519ec0c60a
 - id: HYP-008
   key: research:post:/identity/api/auth/verify
   title: Determine security semantics of POST /identity/api/auth/verify

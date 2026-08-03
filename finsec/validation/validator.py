@@ -21,8 +21,9 @@ from finsec.evidence.domain import (
 from finsec.evidence.manager import load_evidence
 from finsec.hypotheses.domain import HypothesisRecord, HypothesisStatus
 from finsec.hypotheses.generator import find_hypothesis, update_hypothesis_status
-from finsec.modeling.merge import merge_generated_records, stable_fingerprint
+from finsec.modeling.merge import merge_generated_records
 from finsec.modeling.models import Endpoint, EndpointStore
+from finsec.readiness.provenance import validation_source_fingerprint
 from finsec.testing.domain import TestPlanRecord, TestPlanStore
 from finsec.utils.yaml_store import load_yaml, write_yaml
 from finsec.validation.domain import (
@@ -434,14 +435,12 @@ def validate_hypothesis(workspace: WorkspacePaths, hypothesis_id: str) -> Valida
         "missing_requirements": missing,
         "report_ready": report_ready,
     }
-    fingerprint = stable_fingerprint(
-        {
-            "target": target.model_dump(mode="json"),
-            "endpoints": endpoint_store.model_dump(mode="json", exclude_none=True),
-            "hypothesis": hypothesis.model_dump(mode="json", exclude_none=True),
-            "plan": plan.model_dump(mode="json", exclude_none=True) if plan else None,
-            "evidence": evidence.model_dump(mode="json", exclude_none=True),
-        }
+    fingerprint = validation_source_fingerprint(
+        target,
+        endpoint_store,
+        hypothesis,
+        plan,
+        evidence,
     )
     merge = merge_generated_records(
         workspace.validations,

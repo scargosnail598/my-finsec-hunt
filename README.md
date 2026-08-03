@@ -105,7 +105,8 @@ FINSEC_HUNT_IMPORT_ROOT=/absolute/path/to/sanitized-hars \
 ```
 
 The MCP server cannot execute requests, approve plans, overwrite an existing workspace, return raw
-traffic, or accept filesystem paths from a model. See [docs/mcp-server.md](docs/mcp-server.md) for
+traffic, or accept filesystem paths from a model. It can be started with `hunt-mcp` or the new
+`finsec-hunt-operator` alias. See [docs/mcp-server.md](docs/mcp-server.md) for
 the threat model, Inspector usage, Linux and Windows/WSL host configuration, and cloud-model
 privacy notes.
 
@@ -198,6 +199,27 @@ hunt workspace clear
 `hunt web` opens the configured default when one exists; without one it keeps serving the
 workspace root. Setup, initialization, and permanent deletion retain their explicit selection
 behavior. In particular, `hunt workspace delete` always requires `--workspace`.
+
+## Canonical Readiness Status
+
+Use the shared readiness engine to see all twelve pipeline stages, structured blockers, separate
+actor credential/identity/ownership facts, and the safest next action:
+
+```bash
+hunt status --workspace workspaces/example-fintech
+hunt status --workspace workspaces/example-fintech --json
+```
+
+The lifecycle states are `NOT_CONFIGURED`, `BLOCKED`, `READY`, `COMPLETE`, and `STALE`.
+`CLI_ONLY` is capability metadata, not readiness: a stage may be ready while intentionally lacking
+a Web action. Status resolution is read-only, exposes no credential values, and is shared by the
+CLI, Web overview, and MCP workspace summary.
+
+Derived stages use existing generation metadata plus semantic fingerprints in the non-secret
+internal `.finsec/readiness-provenance.yaml` sidecar. Relevant input changes stale only dependent
+results; credential refreshes do not stale offline endpoint/model analysis. Existing workspaces
+remain readable, while non-empty legacy derived artifacts without trusted provenance are
+conservatively reported as stale until regenerated.
 
 ## From Setup To Workflow: First-Time Guide
 
@@ -499,6 +521,7 @@ anything and preserves sibling workspaces, credential files, and capture directo
 - `finsec/testing/`: safety policy checks, structured plans, and secret-free Burp exports.
 - `finsec/execution/`: explicit approval, scope/DNS enforcement, bounded HTTP, and audit records.
 - `finsec/evidence/`: evidence scaffolds, redaction, indexing, and checksums.
+- `finsec/readiness/`: canonical pipeline lifecycle, blocker, actor-readiness, and provenance rules.
 - `finsec/mcp/`: safety-bounded workspace service, structured MCP responses, and centralized
   sanitization.
 - `finsec/validation/`: skeptical completeness, integrity, scope, and control checks.

@@ -86,6 +86,12 @@ class WorkspacePaths:
     def reports(self) -> Path:
         return self.root / "reports"
 
+    @property
+    def readiness_provenance(self) -> Path:
+        """Return the internal, non-secret readiness provenance store."""
+
+        return self.root / ".finsec" / "readiness-provenance.yaml"
+
     def evidence_for(self, hypothesis_id: str) -> Path:
         """Return the evidence directory for a validated hypothesis ID."""
 

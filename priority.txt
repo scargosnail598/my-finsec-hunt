@@ -1,0 +1,11 @@
+The highest-priority remaining tasks are:
+Safe Web plan generation — Generate plans without approval or execution; show policy blockers, budgets, mutations, and stop conditions.
+Evidence management — Add bounded evidence scaffolding/import with redaction confirmation, integrity metadata, and strict file safety.
+Web validation action — Preview prerequisites, run offline skeptical validation, and display every check and missing requirement.
+Web report generation — Allow reports only from current confirmed validations while preserving immutable revisions.
+Stage-level passive actions — Independently rerun inventory, modeling, invariants, or hypotheses and expose preserved-edit conflicts.
+Security/API hardening — Complete threat-model tests, API contracts, secret-canary coverage, worker-thread execution, and cache invalidation.
+Execution audit visibility — Show sanitized execution results and audit revisions without adding browser execution controls.
+Review UX improvements — Add classification summaries, normalization anomalies, invariant filtering, suppressed hypotheses, and lifecycle history.
+Additional Web ingestion — Add reviewed Burp, Caido, and OpenAPI imports with the existing HAR safety controls.
+GraphQL/mobile views — Expose existing recon counts and provenance-aware inventories without presenting static discoveries as runtime proof.

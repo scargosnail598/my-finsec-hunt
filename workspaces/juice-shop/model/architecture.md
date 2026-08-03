@@ -24,16 +24,16 @@
 | Basketitem | 2 | basketitemId | INFERRED |
 | Card | 3 | cardId | INFERRED |
 | Challenge | 1 | None observed | INFERRED |
-| ChangePassword | 1 | None observed | INFERRED |
 | Complaint | 1 | UserId | INFERRED |
 | ContinueCode | 1 | None observed | INFERRED |
-| Delivery | 2 | None observed | INFERRED |
+| Delivery | 2 | deliveryId | INFERRED |
 | Feedback | 1 | None observed | INFERRED |
 | File | 1 | None observed | INFERRED |
 | FileUpload | 1 | None observed | INFERRED |
 | Hint | 1 | None observed | INFERRED |
 | Language | 1 | None observed | INFERRED |
 | OrderHistory | 1 | None observed | INFERRED |
+| Password | 1 | None observed | INFERRED |
 | Product | 4 | productId | INFERRED |
 | Profile | 2 | None observed | INFERRED |
 | Quantity | 1 | None observed | INFERRED |

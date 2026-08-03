@@ -10,6 +10,7 @@ from finsec.errors import FinsecError
 from finsec.modeling.domain import InvariantRecord, InvariantStore, ResourceStore
 from finsec.modeling.merge import merge_generated_records, stable_fingerprint
 from finsec.modeling.models import Confidence, Endpoint, EndpointStore, KnowledgeStatus
+from finsec.readiness.provenance import invariant_source_fingerprint, record_stage_provenance
 from finsec.utils.yaml_store import load_yaml, write_yaml
 
 FINANCIAL_RESOURCES = {
@@ -161,12 +162,7 @@ def generate_invariants(workspace: WorkspacePaths) -> InvariantResult:
     """Generate only evidence-linked invariants and mark unsupported policy assumptions."""
 
     endpoints, resources = _load_inputs(workspace)
-    fingerprint = stable_fingerprint(
-        {
-            "endpoints": endpoints.model_dump(mode="json", exclude_none=True),
-            "resources": resources.model_dump(mode="json", exclude_none=True),
-        }
-    )
+    fingerprint = invariant_source_fingerprint(endpoints, resources)
     drafts = _drafts(endpoints, resources)
     merge = merge_generated_records(
         workspace.invariants,
@@ -208,6 +204,13 @@ def generate_invariants(workspace: WorkspacePaths) -> InvariantResult:
             f"Cannot validate invariant model {workspace.invariants}: {error}"
         ) from error
     write_yaml(workspace.invariants, store.model_dump(mode="json", exclude_none=True))
+    record_stage_provenance(
+        workspace,
+        key="invariants",
+        stage="invariants",
+        producer="phase2-invariant-extractor",
+        input_fingerprint=fingerprint,
+    )
     return InvariantResult(
         sum(item.disposition == "ACTIVE" for item in store.invariants), merge.conflicts
     )

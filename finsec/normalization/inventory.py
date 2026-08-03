@@ -45,6 +45,11 @@ from finsec.normalization.ownership import (
     normalized_parameter_name,
 )
 from finsec.normalization.paths import NormalizedPath, normalize_paths
+from finsec.readiness.provenance import (
+    inventory_source_fingerprint,
+    output_fingerprint,
+    record_stage_provenance,
+)
 from finsec.utils.redaction import REDACTED
 from finsec.utils.yaml_store import load_yaml, write_yaml
 
@@ -1204,5 +1209,16 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
         )
 
     store = EndpointStore(endpoints=endpoints)
-    write_yaml(workspace.endpoints, store.model_dump(mode="json", exclude_none=True))
+    document = store.model_dump(mode="json", exclude_none=True)
+    write_yaml(workspace.endpoints, document)
+    fingerprint = inventory_source_fingerprint(target, observation_store)
+    for stage in ("classify", "normalize"):
+        record_stage_provenance(
+            workspace,
+            key=stage,
+            stage=stage,
+            producer="endpoint-inventory",
+            input_fingerprint=fingerprint,
+            output_fingerprint_value=output_fingerprint(document),
+        )
     return InventoryResult(len(endpoints), len(observation_store.observations))

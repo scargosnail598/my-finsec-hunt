@@ -15,7 +15,7 @@ Authentication presence does not prove object or function authorization.
 | EP-006 | `GET /api/Cards/{cardId}` | Card | Required (`mixed`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
 | EP-007 | `GET /api/Challenges/` | Challenge | Required (`mixed`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
 | EP-008 | `GET /api/Deliverys` | Delivery | Required (`mixed`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
-| EP-009 | `GET /api/Deliverys/1` | Delivery | Required (`mixed`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
+| EP-057 | `GET /api/Deliverys/{deliveryId}` | Delivery | Required (`mixed`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
 | EP-010 | `GET /api/Feedbacks/` | Feedback | Required (`mixed`, INFERRED) | mrscargo | NOT CONFIRMED |
 | EP-011 | `GET /api/Hints/` | Hint | Required (`mixed`, INFERRED) | mrscargo | NOT CONFIRMED |
 | EP-012 | `GET /api/Products/{productId}` | Product | Required (`mixed`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
@@ -32,7 +32,7 @@ Authentication presence does not prove object or function authorization.
 | EP-032 | `GET /rest/products/{productId}/reviews` | Product | Required (`mixed`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
 | EP-033 | `GET /rest/saveLoginIp` | Saveloginip | Required (`mixed`, INFERRED) | mrscargo | NOT CONFIRMED |
 | EP-034 | `GET /rest/track-order/{trackOrderId}` | TrackOrder | Required (`mixed`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
-| EP-035 | `GET /rest/user/change-password` | ChangePassword | Required (`mixed`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
+| EP-035 | `GET /rest/user/change-password` | Password | Required (`mixed`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
 | EP-036 | `GET /rest/user/whoami` | Whoami | Required (`mixed`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
 | EP-037 | `GET /rest/wallet/balance` | Wallet | Required (`mixed`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
 | EP-038 | `GET /socket.io/` | Socket.Io | Required (`cookie`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |

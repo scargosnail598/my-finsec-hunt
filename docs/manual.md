@@ -42,6 +42,7 @@
    - 4.10 Stage 10: Dual-Checksum Approval & Bounded Execution
    - 4.11 Stage 11: Evidence Indexing & Skeptical Validation Engine
    - 4.12 Stage 12: Immutable Jinja2 Markdown Report Generation
+   - 4.13 Canonical Readiness & Blocker Engine
 5. [EXECUTION SAFETY ENGINE & POLICY CONTROLS](#5-execution-safety-engine--policy-controls)
    - 5.1 Dual-Checksum Human Approval Gate
    - 5.2 Host Scope Matching & Subdomain Logic
@@ -339,6 +340,54 @@ KnowledgeStatus = Literal["OBSERVED", "INFERRED", "ASSUMED"]
 - **CLI**: `hunt report <hyp-id>`
 - **Operation**: Renders final audit reports using Jinja2 templates (`report.md.j2`). Requires `CONFIRMED` validation disposition; refuses unvalidated findings. Produces versioned, immutable Markdown reports (`reports/HYP-xxx-report-v1.md`).
 
+### 4.13 Canonical Readiness & Blocker Engine
+
+The authoritative status entry point is:
+
+```python
+from finsec.readiness.resolver import resolve_workspace_readiness
+
+report = resolve_workspace_readiness(workspace)
+```
+
+The resolver is deterministic, read-only, safe to call repeatedly, and independent of rendering.
+It returns one strict, serializable `ReadinessReport` used by the CLI, Web overview, and MCP
+workspace summary. It never refreshes credentials, changes artifacts, approves plans, executes
+tests, or returns credential values and raw request data.
+
+Each of the twelve stages has one lifecycle state:
+
+- `NOT_CONFIGURED`: workspace or target configuration is absent.
+- `BLOCKED`: a mandatory prerequisite, evidence requirement, integrity check, or safety gate fails.
+- `READY`: dependencies are current and the stage can run, but it has no current result.
+- `COMPLETE`: a valid result matches the current relevant inputs.
+- `STALE`: a result exists, but a relevant dependency changed or provenance is untrusted.
+
+`CLI_ONLY` is not a lifecycle state. Interface capability is represented by `available_via` and
+`web_action_available`, so a stage may be `READY` and intentionally executable only through the
+CLI. Blockers and warnings are also separate: mandatory blockers prevent readiness; warnings
+describe uncertainty that does not prevent the specific safe operation.
+
+Actor readiness reports credential availability, credential expiration/local usability, target
+validation, identity confirmation, controlled ownership baselines, and authorization-execution
+capability as independent facts. A stored credential does not prove actor identity; identity does
+not prove object ownership; ownership does not approve a plan; approval does not bypass destination,
+budget, or active-execution policy; and an HTTP success response does not confirm a vulnerability.
+
+Stable blocker codes are defined in `finsec.readiness.BlockerCode`. Each blocker can be scoped to an
+artifact, actor, hypothesis, plan, or evidence set and includes secret-free evidence metadata plus
+an implemented CLI command or an explicit manual action when one exists. Equivalent blockers and
+actions are deduplicated and returned in deterministic order.
+
+Readiness combines existing per-record generation metadata with semantic fingerprints in
+`.finsec/readiness-provenance.yaml`. This non-secret internal sidecar binds generated results to
+relevant configuration and input content, not filesystem modification times. Credential lifecycle
+changes do not invalidate offline inventory/model/hypothesis results; changed observations
+invalidate only dependent analysis; changed hypotheses can stale their plans; changed evidence can
+stale validation and reporting. Legacy derived results without trusted provenance remain readable
+but are conservatively `STALE` until regenerated. Readiness resolution never deletes or rewrites
+researcher-authored artifacts.
+
 ---
 
 # 5. EXECUTION SAFETY ENGINE & POLICY CONTROLS
@@ -401,6 +450,8 @@ The validator (`finsec/validation/validator.py`) evaluates 15 deterministic chec
 | `hunt workspace use` | `<workspace>` | Persist the default workspace for commands that omit `-w`. |
 | `hunt workspace current` | none | Show the configured default workspace. |
 | `hunt workspace clear` | none | Clear the configured default and return to automatic discovery. |
+| `hunt status` | `-w <workspace>` | Show concise canonical readiness, actor dimensions, blockers, and next actions. |
+| `hunt status --json` | `-w <workspace>` | Emit the complete canonical `ReadinessReport` for automation and adapter parity. |
 | `hunt ingest` | `<file.har> -w <workspace> --actor <actor> --channel <channel> [--capture-auth]` | Ingest HAR capture with optional credential extraction. |
 | `hunt ingest-burp` | `<file.xml> -w <workspace> --actor <actor> --channel <channel> [--capture-auth]` | Ingest Burp XML history file. |
 | `hunt ingest-caido` | `<file.json> -w <workspace> --actor <actor> --channel <channel>` | Ingest Caido JSON export. |
@@ -436,6 +487,7 @@ hunt web --workspace-root workspaces --capture-root captures
 - **Loopback Binding**: Listens exclusively on `127.0.0.1:8765`.
 - **Zero Credentials in UI**: Raw tokens, secrets, cookies, and raw request bodies are never served to the browser.
 - **CSRF & Traversal Protection**: State-changing endpoints require custom headers. Workspace deletion requires path containment checks (`is_relative_to(workspace_root)`) and exact string confirmation.
+- **Canonical Status Consumer**: The overview embeds the complete readiness report and renders all twelve stages from it. Browser action availability remains separate from lifecycle state.
 
 ---
 
@@ -457,6 +509,10 @@ FINSEC_HUNT_IMPORT_ROOT=/absolute/path/to/captures \
 - `hunt_list_hypotheses`: List active hypotheses and research tasks.
 - `hunt_get_hypothesis_context`: Retrieve sanitized context for `HYP-xxx`.
 - `hunt_get_evidence_summary`: Retrieve evidence checklist & validation status.
+
+`hunt_workspace_summary` includes the same canonical `ReadinessReport` returned by
+`hunt status --json` and consumed by the Web overview. MCP clients should branch on stable blocker codes and
+capability metadata rather than recreating readiness rules from counts.
 
 ---
 

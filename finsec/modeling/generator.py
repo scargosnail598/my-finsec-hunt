@@ -31,6 +31,7 @@ from finsec.modeling.models import (
     Observation,
     ObservationStore,
 )
+from finsec.readiness.provenance import model_source_fingerprint, record_stage_provenance
 from finsec.utils.yaml_store import load_yaml, write_yaml
 
 NON_RESOURCE_COMPONENTS = {"Authenticate", "Health", "Login", "Logout", "Status"}
@@ -474,13 +475,7 @@ def generate_model(workspace: WorkspacePaths) -> ModelResult:
     """Generate models without overwriting researcher-edited YAML records."""
 
     target, observations, endpoints = _load_inputs(workspace)
-    fingerprint = stable_fingerprint(
-        {
-            "target": target.model_dump(mode="json"),
-            "observations": observations.model_dump(mode="json", exclude_none=True),
-            "endpoints": endpoints.model_dump(mode="json", exclude_none=True),
-        }
-    )
+    fingerprint = model_source_fingerprint(target, observations, endpoints)
     actor_merge = merge_generated_records(
         workspace.actors,
         "actors",
@@ -531,6 +526,13 @@ def generate_model(workspace: WorkspacePaths) -> ModelResult:
             [f"actors:{key}" for key in actor_merge.conflicts]
             + [f"resources:{key}" for key in resource_merge.conflicts]
         )
+    )
+    record_stage_provenance(
+        workspace,
+        key="model",
+        stage="model",
+        producer="phase2-modeler",
+        input_fingerprint=fingerprint,
     )
     return ModelResult(
         actors=len(actors.actors),

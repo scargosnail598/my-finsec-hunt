@@ -3,7 +3,7 @@ MCP Reference (verified)
 Sources: `finsec/mcp_server.py`, `finsec/mcp/service.py`, `finsec/mcp/models.py`, `docs/mcp-server.md`.
 
 Entry point:
-- `hunt-mcp` script maps to `finsec.mcp_server:main` (see `pyproject.toml` project.scripts).
+- `hunt-mcp` and `finsec-hunt-operator` scripts map to `finsec.mcp_server:main` (see `pyproject.toml` project.scripts).
 
 Implemented MCP tools (read-only / non-executing):
 - `hunt_setup_workspace` — create the exact configured workspace without overwriting.

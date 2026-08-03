@@ -4,6 +4,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from finsec.readiness.domain import ReadinessReport
+
 AuthenticationState = Literal["PRESENT", "ABSENT_CONFIRMED", "UNKNOWN_OR_REDACTED"]
 TestedBranch = Literal[
     "CREDENTIAL_PRESENT",
@@ -71,6 +73,7 @@ class WorkspaceSummary(McpModel):
     credential_fidelity: CredentialFidelity
     observation_authentication_states: AuthenticationStateCounts
     interpretation_rules: list[str]
+    readiness: ReadinessReport
 
 
 class WorkspaceSetupResult(McpModel):

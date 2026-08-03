@@ -307,7 +307,7 @@ actors:
     managed: true
     generator: phase2-modeler
     generated_checksum: 879b67f4b84a1e0b7cbfef51cf94904100dc6c1fb4c32c83466c199db903a3f7
-    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+    source_fingerprint: 5fd3019ad92186151d0e7d0411558dddf2a08ab0876ad84b99626fe71de1c8b4
 - id: ACT-002
   key: actor:saeedmehmandoust
   name: saeedmehmandoust
@@ -636,4 +636,4 @@ actors:
     managed: true
     generator: phase2-modeler
     generated_checksum: 5044a42359c69aacd78341541aee99574ac825934015b90cabf19bf90d516a81
-    source_fingerprint: 941ee6fc2fae259e6046bf0931a4e38a5855c6c17f162bd9a4d18bbb7b9fe8f2
+    source_fingerprint: 5fd3019ad92186151d0e7d0411558dddf2a08ab0876ad84b99626fe71de1c8b4

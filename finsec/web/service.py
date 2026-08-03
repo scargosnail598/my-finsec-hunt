@@ -19,6 +19,8 @@ from finsec.evidence.domain import EvidenceMetadata
 from finsec.hypotheses.domain import HypothesisRecord, HypothesisStore
 from finsec.modeling.domain import ActorStore, InvariantStore, ResourceStore
 from finsec.modeling.models import Endpoint, EndpointStore, ObservationStore
+from finsec.readiness.domain import LifecycleStatus, ReadinessReport
+from finsec.readiness.resolver import resolve_workspace_readiness
 from finsec.testing.domain import TestPlanRecord, TestPlanStore
 from finsec.utils.yaml_store import load_yaml
 from finsec.validation.domain import ValidationRecord, ValidationStore
@@ -181,6 +183,7 @@ def load_snapshot(paths: WorkspacePaths) -> WorkspaceSnapshot:
 def workspace_overview(snapshot: WorkspaceSnapshot) -> dict[str, Any]:
     """Build the dashboard payload while preserving research knowledge states."""
 
+    readiness = resolve_workspace_readiness(snapshot.paths)
     active_endpoints = [
         item for item in snapshot.endpoints.endpoints if item.disposition == "ACTIVE"
     ]
@@ -232,7 +235,8 @@ def workspace_overview(snapshot: WorkspaceSnapshot) -> dict[str, Any]:
         "testing": snapshot.target.testing.model_dump(mode="json"),
         "accounts": [_sanitized_account(item) for item in snapshot.target.accounts],
         "counts": counts,
-        "stages": _stage_summaries(counts),
+        "readiness": readiness.model_dump(mode="json"),
+        "stages": _stage_summaries(readiness),
         "hypothesis_statuses": _counter_payload(item.status for item in active_hypotheses),
         "plan_statuses": _counter_payload(item.status for item in snapshot.plans.plans),
         "validation_statuses": _counter_payload(
@@ -249,7 +253,7 @@ def workspace_overview(snapshot: WorkspaceSnapshot) -> dict[str, Any]:
             ),
         },
         "highest_priority": [_hypothesis_summary(item) for item in highest],
-        "next_action": _next_action(snapshot, highest, evidence_sets, reports),
+        "next_action": _next_action(readiness),
         "knowledge_legend": [
             {"state": "Observed", "description": "Recorded from supplied runtime material."},
             {"state": "Inferred", "description": "A conservative model derived from evidence."},
@@ -711,110 +715,50 @@ def _counter_payload(values: Any) -> list[dict[str, Any]]:
     ]
 
 
-def _stage_summaries(counts: dict[str, int]) -> list[dict[str, Any]]:
-    stage_counts = [
-        ("observe", "Observe", counts["observations"]),
-        ("normalize", "Normalize", counts["endpoints"]),
-        (
-            "model",
-            "Model",
-            counts["actors"] + counts["active_resources"] + counts["active_invariants"],
-        ),
-        (
-            "hypothesize",
-            "Hypothesize",
-            counts["active_hypotheses"] + counts["research_tasks"],
-        ),
-        ("plan", "Plan", counts["plans"]),
-        ("evidence", "Evidence", counts["evidence_sets"]),
-        ("validate", "Validate", counts["validations"]),
-        ("report", "Report", counts["reports"]),
-    ]
-    first_empty = next(
-        (index for index, (_, _, count) in enumerate(stage_counts) if count == 0), -1
-    )
+def _stage_summaries(readiness: ReadinessReport) -> list[dict[str, Any]]:
+    """Adapt the canonical twelve-stage report to the existing dashboard cards."""
+
     return [
         {
-            "id": stage_id,
-            "label": label,
-            "count": count,
-            "state": "current" if index == first_empty else "complete" if count else "waiting",
+            "id": stage.id,
+            "label": stage.id.value.replace("_", " ").title(),
+            "count": stage.result_count,
+            "status": stage.status,
+            "blocker_codes": [item.code for item in stage.blockers],
+            "state": (
+                "complete"
+                if stage.status == LifecycleStatus.COMPLETE
+                else "current"
+                if stage.status in {LifecycleStatus.READY, LifecycleStatus.STALE}
+                else "waiting"
+            ),
         }
-        for index, (stage_id, label, count) in enumerate(stage_counts)
+        for stage in readiness.stages
     ]
 
 
-def _next_action(
-    snapshot: WorkspaceSnapshot,
-    highest: list[HypothesisRecord],
-    evidence_sets: list[EvidenceMetadata],
-    reports: list[Path],
-) -> dict[str, str]:
-    workspace = snapshot.paths.root
-    if not snapshot.observations.observations:
+def _next_action(readiness: ReadinessReport) -> dict[str, str | None]:
+    """Adapt the first canonical remediation without deriving new readiness rules."""
+
+    if readiness.next_actions:
+        action = readiness.next_actions[0]
+        next_stage = readiness.overall.next_stage
+        stage = next((item for item in readiness.stages if item.id == next_stage), None)
         return {
-            "eyebrow": "Capture provenance",
-            "title": "Assign sanitized runtime captures",
-            "description": "Actor and channel labels are required before passive ingestion.",
-            "command": f"hunt ingest-wizard --workspace {workspace}",
-        }
-    if not snapshot.endpoints.endpoints or not snapshot.hypotheses.hypotheses:
-        return {
-            "eyebrow": "Passive pipeline",
-            "title": "Refresh deterministic analysis",
-            "description": "Rebuild inventory, models, invariants, and the research backlog.",
-            "command": f"hunt workflow --no-ingest --workspace {workspace}",
-        }
-    if not highest:
-        return {
-            "eyebrow": "Evidence gap",
-            "title": "Review research tasks",
-            "description": "No security hypothesis currently passes the evidence gates.",
-            "command": f"hunt hypotheses --research-tasks --workspace {workspace}",
-        }
-    hypothesis = highest[0]
-    plan = next(
-        (item for item in snapshot.plans.plans if item.hypothesis_id == hypothesis.id), None
-    )
-    evidence = next((item for item in evidence_sets if item.hypothesis_id == hypothesis.id), None)
-    validation = next(
-        (item for item in snapshot.validations.validations if item.hypothesis_id == hypothesis.id),
-        None,
-    )
-    has_report = any(path.name.startswith(f"{hypothesis.id}-report-") for path in reports)
-    if plan is None:
-        return {
-            "eyebrow": hypothesis.priority,
-            "title": f"Review {hypothesis.id} before planning",
-            "description": hypothesis.title,
-            "command": f"hunt show {hypothesis.id} --workspace {workspace}",
-        }
-    if evidence is None:
-        return {
-            "eyebrow": plan.status,
-            "title": f"Review the plan for {hypothesis.id}",
-            "description": "Plans remain DO_NOT_EXECUTE until separate human review and approval.",
-            "command": f"hunt plan {hypothesis.id} --workspace {workspace}",
-        }
-    if validation is None or validation.disposition == "NEEDS_MORE_EVIDENCE":
-        return {
-            "eyebrow": "Skeptical validation",
-            "title": f"Check the evidence for {hypothesis.id}",
-            "description": "Validation should attempt to disprove or downgrade the hypothesis.",
-            "command": f"hunt validate {hypothesis.id} --workspace {workspace}",
-        }
-    if validation.report_ready and not has_report:
-        return {
-            "eyebrow": "Report ready",
-            "title": f"Create an immutable report for {hypothesis.id}",
-            "description": "The current local validation contract is confirmed and report-ready.",
-            "command": f"hunt report {hypothesis.id} --workspace {workspace}",
+            "eyebrow": next_stage.value.upper() if next_stage is not None else "READINESS",
+            "title": action.label,
+            "description": stage.summary if stage is not None else "Review workspace readiness.",
+            "command": action.command,
+            "action_type": action.type,
+            "safety": action.safety,
         }
     return {
-        "eyebrow": validation.disposition,
-        "title": f"Continue reviewing {hypothesis.id}",
-        "description": "Inspect the current evidence chain and remaining validation requirements.",
-        "command": f"hunt show {hypothesis.id} --workspace {workspace}",
+        "eyebrow": readiness.overall.status,
+        "title": "Review the canonical readiness report",
+        "description": "No automated remediation is currently available.",
+        "command": None,
+        "action_type": "manual",
+        "safety": "requires_review",
     }
 
 
@@ -849,6 +793,7 @@ def _snapshot_signature(paths: WorkspacePaths) -> tuple[tuple[str, int, int], ..
         paths.hypotheses,
         paths.test_plans,
         paths.validations,
+        paths.readiness_provenance,
     )
     signature: list[tuple[str, int, int]] = []
     for path in source_paths:

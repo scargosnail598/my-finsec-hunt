@@ -27,6 +27,7 @@ from finsec.errors import FinsecError, HarFormatError, WorkspaceError
 from finsec.ingest.har import ingest_har
 from finsec.modeling.models import ChannelType
 from finsec.setup import AccountInput, build_setup_config, create_setup_workspace
+from finsec.testing.planner import generate_plan
 from finsec.utils.yaml_store import load_yaml
 from finsec.workflow import (
     ManifestChannel,
@@ -84,6 +85,12 @@ class IngestRunRequest(StrictRequest):
     assignments: list[IngestAssignmentRequest] = Field(min_length=1, max_length=250)
     run_analysis: bool = True
     reviewed: bool
+
+
+class PlanGenerationRequest(StrictRequest):
+    """Explicit acknowledgement for a local, non-executing planning write."""
+
+    acknowledged_no_approval_or_execution: Literal[True]
 
 
 class WorkspaceDeleteRequest(StrictRequest):
@@ -320,6 +327,27 @@ class WebOperations:
             "analysis": analysis,
             "progress": progress,
             "network_requests_sent": 0,
+        }
+
+    def generate_plan(
+        self,
+        paths: WorkspacePaths,
+        hypothesis_id: str,
+        request: PlanGenerationRequest,
+    ) -> dict[str, Any]:
+        """Generate or regenerate one review-only plan without approval or execution."""
+
+        if not request.acknowledged_no_approval_or_execution:
+            raise FinsecError("Confirm that planning does not approve or execute requests.")
+        result = generate_plan(paths, hypothesis_id)
+        return {
+            "hypothesis_id": result.plan.hypothesis_id,
+            "plan_id": result.plan.id,
+            "plan_store": str(result.path.relative_to(paths.root)),
+            "conflict": result.conflict,
+            "network_requests_sent": 0,
+            "approval_recorded": False,
+            "execution_performed": False,
         }
 
     def deletion_preview(self, paths: WorkspacePaths, *, purge: bool) -> dict[str, Any]:

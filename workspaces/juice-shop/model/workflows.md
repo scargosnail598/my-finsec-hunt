@@ -10,7 +10,7 @@ Operation maps are endpoint-derived. Lifecycle states and transition ordering ar
 - Owner / tenant: unknown (`ASSUMED`)
 - Operations:
   - `read` via `GET /api/Addresss` (EP-003, INFERRED)
-  - `create_or_execute` via `POST /api/Addresss/` (EP-044, INFERRED)
+  - `create` via `POST /api/Addresss/` (EP-044, INFERRED)
   - `read` via `GET /api/Addresss/{addresssId}` (EP-004, INFERRED)
 - Observed states: None
 - Transition order: `NOT CONFIRMED`
@@ -52,7 +52,7 @@ Operation maps are endpoint-derived. Lifecycle states and transition ordering ar
 - Identifiers: basketitemId
 - Owner / tenant: unknown (`ASSUMED`)
 - Operations:
-  - `create_or_execute` via `POST /api/BasketItems/` (EP-045, INFERRED)
+  - `create` via `POST /api/BasketItems/` (EP-045, INFERRED)
   - `delete` via `DELETE /api/BasketItems/{basketitemId}` (EP-001, INFERRED)
 - Observed states: None
 - Transition order: `NOT CONFIRMED`
@@ -64,7 +64,7 @@ Operation maps are endpoint-derived. Lifecycle states and transition ordering ar
 - Owner / tenant: unknown (`ASSUMED`)
 - Operations:
   - `read` via `GET /api/Cards` (EP-005, INFERRED)
-  - `create_or_execute` via `POST /api/Cards/` (EP-046, INFERRED)
+  - `create` via `POST /api/Cards/` (EP-046, INFERRED)
   - `read` via `GET /api/Cards/{cardId}` (EP-006, INFERRED)
 - Observed states: None
 - Transition order: `NOT CONFIRMED`
@@ -79,23 +79,13 @@ Operation maps are endpoint-derived. Lifecycle states and transition ordering ar
 - Observed states: None
 - Transition order: `NOT CONFIRMED`
 
-## Workflow: ChangePassword
-
-- Evidence status: `INFERRED`
-- Identifiers: None observed
-- Owner / tenant: unknown (`ASSUMED`)
-- Operations:
-  - `change` via `GET /rest/user/change-password` (EP-035, INFERRED)
-- Observed states: None
-- Transition order: `NOT CONFIRMED`
-
 ## Workflow: Complaint
 
 - Evidence status: `INFERRED`
 - Identifiers: UserId
 - Owner / tenant: unknown (`ASSUMED`)
 - Operations:
-  - `create_or_execute` via `POST /api/Complaints/` (EP-047, INFERRED)
+  - `create` via `POST /api/Complaints/` (EP-047, INFERRED)
 - Observed states: None
 - Transition order: `NOT CONFIRMED`
 
@@ -112,11 +102,11 @@ Operation maps are endpoint-derived. Lifecycle states and transition ordering ar
 ## Workflow: Delivery
 
 - Evidence status: `INFERRED`
-- Identifiers: None observed
+- Identifiers: deliveryId
 - Owner / tenant: unknown (`ASSUMED`)
 - Operations:
   - `read` via `GET /api/Deliverys` (EP-008, INFERRED)
-  - `read` via `GET /api/Deliverys/1` (EP-009, INFERRED)
+  - `read` via `GET /api/Deliverys/{deliveryId}` (EP-057, INFERRED)
 - Observed states: None
 - Transition order: `NOT CONFIRMED`
 
@@ -177,6 +167,16 @@ Operation maps are endpoint-derived. Lifecycle states and transition ordering ar
 - Owner / tenant: unknown (`ASSUMED`)
 - Operations:
   - `history` via `GET /rest/order-history` (EP-030, INFERRED)
+- Observed states: None
+- Transition order: `NOT CONFIRMED`
+
+## Workflow: Password
+
+- Evidence status: `INFERRED`
+- Identifiers: None observed
+- Owner / tenant: unknown (`ASSUMED`)
+- Operations:
+  - `change` via `GET /rest/user/change-password` (EP-035, INFERRED)
 - Observed states: None
 - Transition order: `NOT CONFIRMED`
 

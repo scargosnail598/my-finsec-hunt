@@ -44,6 +44,73 @@ authentication as the next independent step only for actors that remain incomple
 makes every authenticated actor `READY`, setup reports that state and suppresses the redundant
 prompt. Non-interactive setup skips both prompts and does not import captures.
 
+## Canonical Readiness Contract
+
+`finsec.readiness.resolve_workspace_readiness()` is the domain-layer source of truth for pipeline
+status. It evaluates all twelve stages without modifying the workspace, resolving credentials,
+refreshing authentication, approving plans, or sending network traffic. `hunt status`, the Web
+overview, and the MCP workspace summary consume the same serializable `ReadinessReport` instead of
+deriving readiness from separate file and count checks.
+
+The lifecycle states have intentionally narrow meanings:
+
+| State | Meaning |
+|---|---|
+| `NOT_CONFIGURED` | Required workspace or target configuration is absent. |
+| `BLOCKED` | Configuration exists, but a mandatory prerequisite, integrity rule, evidence requirement, or safety gate is unmet. |
+| `READY` | Current dependencies allow the stage to run, but no valid current result exists. |
+| `COMPLETE` | A valid result exists for the current relevant inputs. |
+| `STALE` | A result exists, but its relevant inputs changed or its provenance cannot be trusted. |
+
+Interface availability is separate metadata. A stage can be `READY` while `available_via` contains
+only `cli`; the Web UI must not replace that lifecycle state with `CLI_ONLY`. Warnings are also kept
+separate from mandatory blockers so, for example, unknown credential expiration does not block an
+otherwise safe offline analysis command.
+
+Dependencies are explicit rather than a forced display-order chain. Authentication and ingestion
+both depend on setup, but offline ingestion and classification do not depend on live credentials.
+Execution depends on authentication and planning, validation depends on the relevant hypothesis,
+plan, and evidence contract, and reporting depends on a current confirmed validation.
+
+Actor readiness preserves the distinction between credential availability, local usability and
+expiration, recorded target validation, confirmed actor identity, controlled ownership baselines,
+and hypothesis-specific execution capability. Captures that happen to contain two actor or object
+identifiers never manufacture ownership proof. Planning can remain available while authorization
+execution is blocked for missing identity or ownership evidence.
+
+Every mandatory reason uses a stable code, deterministic ordering, optional actor/hypothesis/plan/
+artifact scope, secret-free evidence counts, and honest next actions. Current codes are:
+
+```text
+WORKSPACE_NOT_CONFIGURED, TARGET_NOT_CONFIGURED, NO_OBSERVATIONS,
+ARTIFACT_MISSING, ARTIFACT_MALFORMED, ARTIFACT_SCHEMA_INCOMPATIBLE,
+ARTIFACT_PROVENANCE_MISSING, ARTIFACT_INTEGRITY_FAILURE,
+UPSTREAM_DEPENDENCY_CHANGED, UPSTREAM_STAGE_BLOCKED,
+NO_ACTOR_CREDENTIAL, CREDENTIAL_EXPIRED, CREDENTIAL_EXPIRATION_UNKNOWN,
+CREDENTIAL_UNUSABLE, TARGET_VALIDATION_MISSING, ACTOR_IDENTITY_NOT_CONFIRMED,
+INSUFFICIENT_CONTROLLED_ACTORS, OWNERSHIP_BASELINES_MISSING,
+OWNERSHIP_BASELINE_STALE, OWNERSHIP_BASELINE_CONFLICTING,
+NO_ELIGIBLE_HYPOTHESIS, HYPOTHESIS_REQUIRES_MORE_EVIDENCE,
+PLAN_MISSING, PLAN_STALE, PLAN_REQUEST_BUDGET_MISMATCH, PLAN_POLICY_BLOCKED,
+HUMAN_APPROVAL_MISSING, APPROVAL_STALE, ACTIVE_EXECUTION_DISABLED,
+READ_ONLY_POLICY_CONFLICT, DESTINATION_SCOPE_VALIDATION_FAILURE,
+EVIDENCE_MISSING, BEFORE_AFTER_STATE_EVIDENCE_MISSING,
+NO_CONFIRMED_VULNERABILITY
+```
+
+Readiness combines existing per-record generation metadata with semantic input fingerprints in the
+non-secret `.finsec/readiness-provenance.yaml` sidecar. Inventory fingerprints cover observations
+and only the target settings that affect classification/normalization; credential lifecycle changes
+therefore do not stale offline analysis. Modeling, invariants, hypotheses, validation, plans, and
+reports each bind to their own relevant inputs. Output fingerprints detect changed generated
+artifacts, validation fingerprints ignore mutable hypothesis lifecycle annotations, and report
+fingerprints bind the current hypothesis, evidence, invariants, validation, and rendered output.
+
+Old workspaces remain readable and are never rewritten by status calculation. A non-empty derived
+artifact without trusted readiness provenance is conservatively `STALE`; an empty legacy scaffold
+with valid inputs is `READY`. Regenerating the affected producer records current provenance without
+deleting researcher-authored evidence, notes, approvals, or report revisions.
+
 ## Why Documentation And Runtime Evidence Are Separate
 
 OpenAPI describes declared operations and security schemes, but it does not prove that a route is

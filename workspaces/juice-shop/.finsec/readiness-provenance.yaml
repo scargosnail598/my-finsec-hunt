@@ -1,0 +1,24 @@
+version: 1
+entries:
+- key: classify
+  stage: classify
+  producer: endpoint-inventory
+  input_fingerprint: c60fcb28a5a5d7344fcd3a56927049b016abca549512077c90b431762e0bf659
+  output_fingerprint: ab476042bb727a9e001cb92743fa7bb3bb4c9d5522d7aa439b276085648d039c
+- key: hypothesize
+  stage: hypothesize
+  producer: phase3-hypothesis-generator
+  input_fingerprint: 505c1ca02f107584f02871ac523342a30a4ec8ad1d5b18a8e953bd87c6bd8366
+- key: invariants
+  stage: invariants
+  producer: phase2-invariant-extractor
+  input_fingerprint: 3ee22efc38c12877a8a71d0da13aef39730157eb0e56efb866f13a75f6cc393d
+- key: model
+  stage: model
+  producer: phase2-modeler
+  input_fingerprint: edea8ded0079d30d8eee83c7e69e181b1ed53849cf56578bdc2f1cdb2dbb1fd1
+- key: normalize
+  stage: normalize
+  producer: endpoint-inventory
+  input_fingerprint: c60fcb28a5a5d7344fcd3a56927049b016abca549512077c90b431762e0bf659
+  output_fingerprint: ab476042bb727a9e001cb92743fa7bb3bb4c9d5522d7aa439b276085648d039c

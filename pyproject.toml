@@ -32,6 +32,7 @@ dev = [
 [project.scripts]
 hunt = "finsec.cli:app"
 hunt-mcp = "finsec.mcp_server:main"
+finsec-hunt-operator = "finsec.mcp_server:main"
 hunt-web = "finsec.web.server:main"
 
 [tool.setuptools.packages.find]

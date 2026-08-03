@@ -15,6 +15,11 @@ from finsec.evidence.manager import load_evidence
 from finsec.hypotheses.domain import HypothesisRecord
 from finsec.hypotheses.generator import find_hypothesis
 from finsec.modeling.domain import InvariantStore
+from finsec.readiness.provenance import (
+    output_fingerprint,
+    record_stage_provenance,
+    report_source_fingerprint,
+)
 from finsec.utils.redaction import redact_text
 from finsec.utils.yaml_store import load_yaml
 from finsec.validation.validator import validate_hypothesis
@@ -156,4 +161,19 @@ def generate_report(workspace: WorkspacePaths, hypothesis_id: str) -> ReportResu
         raise FinsecError("Validation is confirmed, but report narrative fields are incomplete.")
     hypothesis = find_hypothesis(workspace, hypothesis_id)
     evidence = load_evidence(workspace, hypothesis.id)
-    return _report_path(workspace, hypothesis.id, _render(workspace, hypothesis, evidence))
+    result = _report_path(workspace, hypothesis.id, _render(workspace, hypothesis, evidence))
+    invariants = _load_invariants(workspace)
+    record_stage_provenance(
+        workspace,
+        key=f"report:{hypothesis.id}",
+        stage="report",
+        producer="phase4-reporter",
+        input_fingerprint=report_source_fingerprint(
+            hypothesis,
+            evidence,
+            invariants,
+            validation.validation,
+        ),
+        output_fingerprint_value=output_fingerprint(result.path.read_text(encoding="utf-8")),
+    )
+    return result

@@ -21,6 +21,7 @@ from starlette.staticfiles import StaticFiles
 from finsec.errors import FinsecError, WorkspaceError
 from finsec.web.operations import (
     IngestRunRequest,
+    PlanGenerationRequest,
     SetupWorkspaceRequest,
     WebOperations,
     WorkspaceDeleteRequest,
@@ -108,6 +109,21 @@ def create_app(
         snapshot = _snapshot(catalog, snapshot_cache, request)
         return JSONResponse(hypothesis_detail(snapshot, request.path_params["hypothesis_id"]))
 
+    async def generate_hypothesis_plan(request: Request) -> Response:
+        document = PlanGenerationRequest.model_validate(await _json_document(request))
+        paths = catalog.resolve(request.path_params["workspace_key"])
+        hypothesis_id = request.path_params["hypothesis_id"]
+        result = await run_in_threadpool(
+            operations.generate_plan,
+            paths,
+            hypothesis_id,
+            document,
+        )
+        snapshot_cache.invalidate(paths)
+        detail = hypothesis_detail(snapshot_cache.get(paths), hypothesis_id)
+        detail["plan_generation"] = result
+        return JSONResponse(detail)
+
     async def endpoints(request: Request) -> Response:
         snapshot = _snapshot(catalog, snapshot_cache, request)
         return JSONResponse(endpoints_payload(snapshot))
@@ -177,6 +193,11 @@ def create_app(
         Route(
             "/api/workspaces/{workspace_key:str}/hypotheses/{hypothesis_id:str}",
             endpoint=hypothesis,
+        ),
+        Route(
+            "/api/workspaces/{workspace_key:str}/hypotheses/{hypothesis_id:str}/plan",
+            endpoint=generate_hypothesis_plan,
+            methods=["POST"],
         ),
         Route("/api/workspaces/{workspace_key:str}/endpoints", endpoint=endpoints),
         Route("/api/workspaces/{workspace_key:str}/model", endpoint=model),

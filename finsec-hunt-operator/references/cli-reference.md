@@ -30,6 +30,6 @@ Group: Burp Export
   - Preconditions: hypothesis approved with checksum-bound approval; export refuses unsafe requests.
 
 Group: MCP
-- CLI provides `hunt-mcp` entry point (module `finsec.mcp_server:main`). MCP tools and schemas are implemented in `finsec/mcp/`.
+- CLI provides `hunt-mcp` and `finsec-hunt-operator` entry points (module `finsec.mcp_server:main`). MCP tools and schemas are implemented in `finsec/mcp/`.
 
 Always verify exact flags with `hunt <command> --help` before use; do not assume flags not present in current install.

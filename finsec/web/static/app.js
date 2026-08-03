@@ -833,12 +833,16 @@ function renderOverview(data) {
         <p class="eyebrow">${escapeHtml(data.next_action.eyebrow)}</p>
         <h2>${escapeHtml(data.next_action.title)}</h2>
         <p>${escapeHtml(data.next_action.description)}</p>
-        <div class="command-row">
-          <code>${escapeHtml(data.next_action.command)}</code>
-          <button class="copy-button" type="button" data-copy="${escapeAttribute(
-            data.next_action.command,
-          )}">COPY</button>
-        </div>
+        ${
+          data.next_action.command
+            ? `<div class="command-row">
+                <code>${escapeHtml(data.next_action.command)}</code>
+                <button class="copy-button" type="button" data-copy="${escapeAttribute(
+                  data.next_action.command,
+                )}">COPY</button>
+              </div>`
+            : `<p class="eyebrow">Manual review required</p>`
+        }
       </article>
       <article class="panel">
         <div class="panel-heading">

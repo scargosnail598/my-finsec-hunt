@@ -1,7 +1,7 @@
 """Typer command-line interface for the deterministic research pipeline."""
 
+import json
 import os
-import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Annotated, Any, NoReturn, cast
@@ -63,8 +63,9 @@ from finsec.ingest.openapi import ingest_openapi
 from finsec.ingest.traffic import ingest_burp_xml, ingest_caido_json
 from finsec.modeling.generator import generate_model
 from finsec.modeling.invariants import generate_invariants
-from finsec.modeling.models import ChannelType, EndpointStore, ObservationStore
+from finsec.modeling.models import ChannelType, EndpointStore
 from finsec.normalization.inventory import build_inventory
+from finsec.readiness.resolver import resolve_workspace_readiness
 from finsec.recon.graphql import ingest_graphql
 from finsec.recon.mobile import scan_mobile
 from finsec.reporting.generator import generate_report
@@ -118,46 +119,6 @@ def _channel(value: str) -> ChannelType:
     if normalized not in ALLOWED_CHANNELS:
         raise FinsecError("Channel must be WEB, MOBILE, PARTNER_API, PUBLIC_API, or UNKNOWN.")
     return cast(ChannelType, normalized)
-
-
-def _count_yaml_list(path: Path, key: str) -> int:
-    if not path.is_file():
-        return 0
-    data = load_yaml(path)
-    if not isinstance(data, dict) or not isinstance(data.get(key), list):
-        return 0
-    return len(data[key])
-
-
-def _count_active_yaml_records(path: Path, key: str) -> int:
-    """Count records that are active or predate explicit dispositions."""
-
-    if not path.is_file():
-        return 0
-    data = load_yaml(path)
-    records = data.get(key) if isinstance(data, dict) else None
-    if not isinstance(records, list):
-        return 0
-    return sum(
-        isinstance(item, dict) and item.get("disposition", "ACTIVE") == "ACTIVE" for item in records
-    )
-
-
-def _count_workflows(path: Path) -> int:
-    if not path.is_file():
-        return 0
-    content = path.read_text(encoding="utf-8")
-    return len(re.findall(r"^## Workflow:", content, flags=re.MULTILINE))
-
-
-def _count_evidence_sets(path: Path) -> int:
-    if not path.is_dir():
-        return 0
-    return sum(1 for item in path.iterdir() if (item / "metadata.yaml").is_file())
-
-
-def _count_reports(path: Path) -> int:
-    return len(list(path.glob("HYP-*-report-v*.md"))) if path.is_dir() else 0
 
 
 def _offline_workflow_hint(paths: WorkspacePaths) -> str:
@@ -2252,112 +2213,120 @@ def report_command(
 
 
 @app.command("status")
-def status_command(workspace: WorkspaceOption = None) -> None:
-    """Show deterministic counts for the selected target workspace."""
+def status_command(
+    workspace: WorkspaceOption = None,
+    json_output: Annotated[
+        bool,
+        typer.Option("--json", help="Emit the complete canonical readiness report as JSON."),
+    ] = False,
+) -> None:
+    """Show canonical pipeline readiness for the selected target workspace."""
 
     try:
         paths = resolve_workspace(workspace)
-        target = TargetDocument.model_validate(load_yaml(paths.target))
-        observations = ObservationStore.model_validate(load_yaml(paths.observations))
-        endpoints = EndpointStore.model_validate(load_yaml(paths.endpoints))
-        hypotheses = HypothesisStore.model_validate(load_yaml(paths.hypotheses))
-    except (FinsecError, OSError, ValidationError) as error:
+        report = resolve_workspace_readiness(paths)
+    except FinsecError as error:
         _abort(error)
 
-    console.print(f"[bold]Target:[/bold] {target.target.name}\n")
-    table = Table(show_header=False, box=None, pad_edge=False)
-    table.add_column("Artifact")
-    table.add_column("Count", justify="right")
-    counts: list[tuple[str, int]] = [
-        ("Observations", len(observations.observations)),
-        ("Endpoints", len(endpoints.endpoints)),
-        ("GraphQL Operations", _count_yaml_list(paths.graphql, "operations")),
-        ("Mobile Discoveries", _count_yaml_list(paths.mobile_discoveries, "discoveries")),
-        (
-            "Active Resources",
-            _count_active_yaml_records(paths.root / "model/resources.yaml", "resources"),
-        ),
-        ("Actors", _count_yaml_list(paths.root / "model/actors.yaml", "actors")),
-        ("Workflows", _count_workflows(paths.root / "model/workflows.md")),
-        (
-            "Active Invariants",
-            _count_active_yaml_records(paths.root / "model/invariants.yaml", "invariants"),
-        ),
-        (
-            "Active Hypotheses",
-            sum(
-                item.kind == "SECURITY_HYPOTHESIS" and item.disposition == "ACTIVE"
-                for item in hypotheses.hypotheses
-            ),
-        ),
-        ("Research Tasks", sum(item.kind == "RESEARCH_TASK" for item in hypotheses.hypotheses)),
-        (
-            "Suppressed Endpoints",
-            sum(item.disposition != "ACTIVE" for item in endpoints.endpoints),
-        ),
-        ("Evidence Sets", _count_evidence_sets(paths.root / "evidence")),
-        ("Validations", _count_yaml_list(paths.validations, "validations")),
-        ("Reports", _count_reports(paths.reports)),
-    ]
-    for label, count in counts:
-        table.add_row(label, str(count))
-    console.print(table)
+    if json_output:
+        typer.echo(json.dumps(report.model_dump(mode="json"), indent=2, sort_keys=True))
+        return
 
-    highest: list[HypothesisRecord] = []
-    if hypotheses.hypotheses:
+    console.print(
+        f"[bold]Target:[/bold] {report.workspace}\n[bold]Overall:[/bold] {report.overall.status}"
+    )
+    metric_table = Table(show_header=False, box=None, pad_edge=False)
+    metric_table.add_column("Artifact")
+    metric_table.add_column("Count", justify="right")
+    for label, count in (
+        ("Observations", report.metrics.observations),
+        ("Endpoints", report.metrics.endpoints),
+        ("GraphQL Operations", report.metrics.graphql_operations),
+        ("Mobile Discoveries", report.metrics.mobile_discoveries),
+        ("Active Resources", report.metrics.resources),
+        ("Actors", report.metrics.actors),
+        ("Workflows", report.metrics.workflows),
+        ("Active Invariants", report.metrics.invariants),
+        ("Active Hypotheses", report.metrics.active_hypotheses),
+        ("Research Tasks", report.metrics.research_tasks),
+        ("Suppressed Endpoints", report.metrics.suppressed_endpoints),
+        ("Evidence Sets", report.metrics.evidence_sets),
+        ("Validations", report.metrics.validations),
+        ("Reports", report.metrics.reports),
+    ):
+        metric_table.add_row(label, str(count))
+    console.print(metric_table)
+
+    hypothesis_counts = (
+        ("NOT_TESTED", report.metrics.hypotheses_not_tested),
+        ("TEST_PLANNED", report.metrics.hypotheses_test_planned),
+        ("REFUTED", report.metrics.hypotheses_refuted),
+        ("NEEDS_EVIDENCE", report.metrics.hypotheses_needs_evidence),
+        ("CONFIRMED", report.metrics.hypotheses_confirmed),
+    )
+    if any(count for _, count in hypothesis_counts):
         console.print("\n[bold]Hypotheses[/bold]")
-        status_table = Table(show_header=False, box=None, pad_edge=False)
-        status_table.add_column("Status")
-        status_table.add_column("Count", justify="right")
-        for status in ("NOT_TESTED", "TEST_PLANNED", "REFUTED", "NEEDS_EVIDENCE", "CONFIRMED"):
-            count = sum(
-                1
-                for item in hypotheses.hypotheses
-                if item.kind == "SECURITY_HYPOTHESIS"
-                and item.disposition == "ACTIVE"
-                and item.status == status
-            )
-            status_table.add_row(status, str(count))
-        console.print(status_table)
+        hypothesis_table = Table(show_header=False, box=None, pad_edge=False)
+        hypothesis_table.add_column("Status")
+        hypothesis_table.add_column("Count", justify="right")
+        for status, count in hypothesis_counts:
+            hypothesis_table.add_row(status, str(count))
+        console.print(hypothesis_table)
+        try:
+            hypotheses = HypothesisStore.model_validate(load_yaml(paths.hypotheses))
+        except (OSError, TypeError, ValueError, ValidationError):
+            hypotheses = HypothesisStore()
         highest = sorted(
-            [
+            (
                 item
                 for item in hypotheses.hypotheses
                 if item.kind == "SECURITY_HYPOTHESIS" and item.disposition == "ACTIVE"
-            ],
+            ),
             key=lambda item: (
                 {"P1": 0, "P2": 1, "P3": 2}[item.priority],
                 -item.scores.total,
                 item.id,
             ),
         )[:5]
-        console.print("\n[bold]Highest priority[/bold]")
-        console.print(_hypothesis_table(highest))
+        if highest:
+            console.print(_hypothesis_table(highest))
+            console.print(f"Review: hunt show {highest[0].id} --workspace {paths.root}")
 
-    if not observations.observations:
-        console.print(
-            "\nNext: add authorized HAR files under the capture incoming directory and run "
-            f"'hunt ingest-wizard --workspace {paths.root}'."
-        )
-    elif not hypotheses.hypotheses:
-        console.print(f"\nNext: {_offline_workflow_hint(paths)}")
-    else:
-        active = [
-            item
-            for item in hypotheses.hypotheses
-            if item.kind == "SECURITY_HYPOTHESIS" and item.disposition == "ACTIVE"
-        ]
-        if active:
-            next_hypothesis = highest[0] if highest else active[0]
-            console.print(
-                f"\nNext: review '{next_hypothesis.id}' with "
-                f"'hunt show {next_hypothesis.id} --workspace {paths.root}'."
+    table = Table(box=None, pad_edge=False)
+    table.add_column("Stage")
+    table.add_column("Status")
+    table.add_column("Results", justify="right")
+    table.add_column("Reason")
+    for stage in report.stages:
+        reason = ", ".join(item.code for item in stage.blockers[:2]) or stage.summary
+        table.add_row(stage.id.value, stage.status.value, str(stage.result_count), reason)
+    console.print(table)
+
+    if report.actors:
+        console.print("\n[bold]Actor readiness[/bold]")
+        actor_table = Table(box=None, pad_edge=False)
+        actor_table.add_column("Actor")
+        actor_table.add_column("Credential")
+        actor_table.add_column("Target")
+        actor_table.add_column("Identity")
+        actor_table.add_column("Ownership")
+        actor_table.add_column("Authz execute")
+        for actor in report.actors:
+            actor_table.add_row(
+                actor.actor_id,
+                "available" if actor.credential.available else "missing",
+                "validated" if actor.target_validation.recorded else "unverified",
+                "confirmed" if actor.identity_confirmation.confirmed else "unconfirmed",
+                f"{actor.ownership.confirmed_baselines}/{actor.ownership.required_baselines}",
+                "ready" if actor.capabilities.authorization_execution else "blocked",
             )
-        else:
-            console.print(
-                "\nNext: review missing evidence with "
-                f"'hunt hypotheses --research-tasks --workspace {paths.root}'."
-            )
+        console.print(actor_table)
+
+    if report.next_actions:
+        console.print("\n[bold]Next actions[/bold]")
+        for action in report.next_actions:
+            detail = action.command or "manual review"
+            console.print(f"- {action.label}: {detail} ({action.safety})")
 
 
 @app.command("web")

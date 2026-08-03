@@ -64,6 +64,7 @@ from finsec.modeling.models import (
     Observation,
     ObservationStore,
 )
+from finsec.readiness.resolver import resolve_workspace_readiness
 from finsec.setup import AccountInput, build_setup_config
 from finsec.testing.domain import StructuredRequest, TestPlanStore
 from finsec.utils.yaml_store import load_yaml, write_yaml
@@ -328,6 +329,7 @@ class FinsecMcpService:
             credential_fidelity=self._credential_fidelity(),
             observation_authentication_states=authentication_states,
             interpretation_rules=self._interpretation_rules(),
+            readiness=resolve_workspace_readiness(self.workspace),
         )
 
     def list_hypotheses(

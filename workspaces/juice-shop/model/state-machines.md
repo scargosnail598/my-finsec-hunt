@@ -45,12 +45,6 @@ Concrete states require observed values or researcher input; field names alone a
 - Allowed transitions: `NOT CONFIRMED`
 - Forbidden transitions: generated only as `ASSUMED` hypotheses; test plans remain blocked until lifecycle states are confirmed
 
-## Resource: ChangePassword
-
-- Observed states: None
-- Allowed transitions: `NOT CONFIRMED`
-- Forbidden transitions: generated only as `ASSUMED` hypotheses; test plans remain blocked until lifecycle states are confirmed
-
 ## Resource: Complaint
 
 - Observed states: None
@@ -100,6 +94,12 @@ Concrete states require observed values or researcher input; field names alone a
 - Forbidden transitions: generated only as `ASSUMED` hypotheses; test plans remain blocked until lifecycle states are confirmed
 
 ## Resource: OrderHistory
+
+- Observed states: None
+- Allowed transitions: `NOT CONFIRMED`
+- Forbidden transitions: generated only as `ASSUMED` hypotheses; test plans remain blocked until lifecycle states are confirmed
+
+## Resource: Password
 
 - Observed states: None
 - Allowed transitions: `NOT CONFIRMED`
