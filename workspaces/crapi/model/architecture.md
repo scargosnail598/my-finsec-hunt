@@ -32,12 +32,12 @@
 | %F0%9F%A4%96 | 1 | None observed | INFERRED |
 | Auth | 1 | None observed | INFERRED |
 | Coupon | 1 | None observed | INFERRED |
-| Dashboard | 1 | None observed | INFERRED |
+| Dashboard | 2 | None observed | INFERRED |
 | Email | 1 | None observed | INFERRED |
 | Manifest.Json | 1 | None observed | INFERRED |
 | Mechanic | 3 | None observed | INFERRED |
 | MechanicReport | 1 | report_id | INFERRED |
-| Order | 3 | order_id | INFERRED |
+| Order | 4 | orderId, order_id | INFERRED |
 | PhoneNumber | 1 | None observed | INFERRED |
 | Picture | 1 | None observed | INFERRED |
 | Post | 4 | postId | INFERRED |
@@ -53,7 +53,7 @@
 ## Trust Boundaries
 
 - Client to API host: 12 host(s) directly observed.
-- Authentication context to endpoint: 27 endpoint(s) inferred to require it.
+- Authentication context to endpoint: 28 endpoint(s) inferred to require it.
 - Actor-to-object ownership and tenant boundaries: `NOT CONFIRMED`.
 - Backend-to-bank, payment, KYC, queue, webhook, or settlement boundaries: `NOT CONFIRMED`.
 <!-- FINSEC-GENERATED:architecture:END -->

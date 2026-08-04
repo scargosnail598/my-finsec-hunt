@@ -10,7 +10,12 @@ from pydantic import ValidationError
 from finsec.config.models import FunctionAuthorizationRule, JwtAlgorithmRule, TargetDocument
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
-from finsec.hypotheses.domain import HypothesisRecord, HypothesisStatus, HypothesisStore
+from finsec.hypotheses.domain import (
+    BusinessEpistemicStatus,
+    HypothesisRecord,
+    HypothesisStatus,
+    HypothesisStore,
+)
 from finsec.modeling.domain import InvariantRecord, InvariantStore, ResourceRecord, ResourceStore
 from finsec.modeling.invariants import FINANCIAL_RESOURCES
 from finsec.modeling.merge import merge_generated_records, stable_fingerprint
@@ -1923,6 +1928,31 @@ def update_hypothesis_status(
     for hypothesis in store.hypotheses:
         if hypothesis.id.upper() == hypothesis_id.upper():
             hypothesis.status = status
+            if hypothesis.category == "business_logic":
+                epistemic_statuses: dict[HypothesisStatus, BusinessEpistemicStatus] = {
+                    "NOT_TESTED": "TEST_CANDIDATE",
+                    "TEST_PLANNED": "TEST_PLANNED",
+                    "REFUTED": "REJECTED_BY_BACKEND",
+                    "NEEDS_EVIDENCE": "NEEDS_EVIDENCE",
+                    "CONFIRMED": "CONFIRMED",
+                }
+                hypothesis.epistemic_status = epistemic_statuses[status]
             write_yaml(workspace.hypotheses, store.model_dump(mode="json", exclude_none=True))
+            if (
+                hypothesis.category == "business_logic"
+                and workspace.business_logic_hypotheses.is_file()
+            ):
+                logic_store = load_yaml(workspace.business_logic_hypotheses)
+                if isinstance(logic_store, dict) and isinstance(
+                    logic_store.get("hypotheses"), list
+                ):
+                    for item in logic_store["hypotheses"]:
+                        if (
+                            isinstance(item, dict)
+                            and str(item.get("id", "")).upper() == hypothesis.id.upper()
+                        ):
+                            item["epistemic_status"] = hypothesis.epistemic_status
+                            break
+                    write_yaml(workspace.business_logic_hypotheses, logic_store)
             return hypothesis
     raise FinsecError(f"Hypothesis not found: {hypothesis_id}")

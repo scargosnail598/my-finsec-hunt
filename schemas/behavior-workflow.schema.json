@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finsec-hunt.local/schemas/behavior-workflow.schema.json",
+  "title": "FinSec Hunt Workflow Family Store",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "workflow_families"],
+  "properties": {
+    "version": {"const": 1},
+    "workflow_families": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/workflowFamily"}
+    }
+  },
+  "$defs": {
+    "workflowFamily": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "observed_paths",
+        "common_path",
+        "workflow_instance_ids",
+        "inference_confidence",
+        "epistemic_status"
+      ],
+      "properties": {
+        "id": {"type": "string", "pattern": "^WFAM-[A-F0-9]{16}$"},
+        "name": {"type": "string", "minLength": 1},
+        "entry_actions": {"type": "array", "items": {"type": "string"}},
+        "terminal_actions": {"type": "array", "items": {"type": "string"}},
+        "observed_paths": {
+          "type": "array",
+          "items": {"type": "array", "items": {"type": "string"}}
+        },
+        "common_path": {"type": "array", "items": {"type": "string"}},
+        "optional_steps": {"type": "array", "items": {"type": "string"}},
+        "required_looking_steps": {"type": "array", "items": {"type": "string"}},
+        "branch_points": {"type": "array", "items": {"type": "string"}},
+        "actors": {"type": "array", "items": {"type": "string"}},
+        "resource_types": {"type": "array", "items": {"type": "string"}},
+        "transition_frequencies": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 1}},
+        "outcome_distribution": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 1}},
+        "workflow_instance_ids": {"type": "array", "items": {"type": "string"}},
+        "inference_confidence": {"enum": ["HIGH_EVIDENCE", "MODERATE_EVIDENCE", "WEAK_EVIDENCE", "SPECULATIVE"]},
+        "confidence_explanation": {"type": "array", "items": {"type": "string"}},
+        "epistemic_status": {"const": "INFERRED_PATTERN"}
+      }
+    }
+  }
+}

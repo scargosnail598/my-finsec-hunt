@@ -9,6 +9,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
+from finsec.behavior.analysis import analyze_business_logic
 from finsec.config.models import TargetDocument
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
@@ -99,9 +100,16 @@ class WorkflowResult:
     actors: int
     resources: int
     workflows: int
+    workflow_instances: int
+    workflow_families: int
+    states: int
+    transitions: int
     invariants: int
+    business_invariants: int
     active_hypotheses: int
     research_tasks: int
+    logic_hypotheses: int
+    logic_research_tasks: int
     hypotheses_generated: bool
     ingested: tuple[WorkflowIngestResult, ...]
     conflicts: tuple[str, ...]
@@ -274,7 +282,13 @@ def run_offline_workflow(
         hypothesis_conflicts = hypothesis_result.conflicts
     else:
         _notify(progress, "No invariants were generated; hypothesis generation was skipped")
+    _notify(progress, "Reconstructing application behavior and business-logic hypotheses")
+    logic_result = analyze_business_logic(workspace)
     hypotheses = HypothesisStore.model_validate(load_yaml(workspace.hypotheses))
+    behavior_instances = load_yaml(workspace.workflow_instances) or {}
+    behavior_families = load_yaml(workspace.workflow_families) or {}
+    behavior_states = load_yaml(workspace.behavior_states) or {}
+    behavior_transitions = load_yaml(workspace.behavior_transitions) or {}
 
     active_hypotheses = sum(
         item.kind == "SECURITY_HYPOTHESIS" and item.disposition == "ACTIVE"
@@ -282,7 +296,14 @@ def run_offline_workflow(
     )
     research_tasks = sum(item.kind == "RESEARCH_TASK" for item in hypotheses.hypotheses)
     conflicts = tuple(
-        dict.fromkeys([*model.conflicts, *invariant_conflicts, *hypothesis_conflicts])
+        dict.fromkeys(
+            [
+                *model.conflicts,
+                *invariant_conflicts,
+                *hypothesis_conflicts,
+                *logic_result.conflicts,
+            ]
+        )
     )
     return WorkflowResult(
         observations=len(observations.observations),
@@ -291,9 +312,16 @@ def run_offline_workflow(
         actors=len(actors.actors),
         resources=len(resources.resources),
         workflows=model.workflows,
+        workflow_instances=len(behavior_instances.get("workflow_instances", [])),
+        workflow_families=len(behavior_families.get("workflow_families", [])),
+        states=len(behavior_states.get("states", [])),
+        transitions=len(behavior_transitions.get("transitions", [])),
         invariants=invariant_count,
+        business_invariants=logic_result.business_invariants,
         active_hypotheses=active_hypotheses,
         research_tasks=research_tasks,
+        logic_hypotheses=logic_result.hypotheses,
+        logic_research_tasks=logic_result.research_tasks,
         hypotheses_generated=hypotheses_generated,
         ingested=ingested,
         conflicts=conflicts,

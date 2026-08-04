@@ -15,7 +15,7 @@ class RiskClassification(EditableModel):
     financial: bool
     affects_external_user: bool
     concurrency: bool
-    request_budget: int = Field(ge=0, le=3)
+    request_budget: int = Field(ge=0, le=10)
     decision: Literal["BLOCKED", "REQUIRES_HUMAN_APPROVAL"]
     reasons: list[str] = Field(default_factory=list)
 

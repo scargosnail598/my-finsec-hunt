@@ -77,6 +77,12 @@ READ_ACTIONS = {
 }
 MUTATION_ACTIONS = {
     "add",
+    "accept",
+    "apply",
+    "capture",
+    "claim",
+    "close",
+    "complete",
     "create",
     "update",
     "edit",
@@ -89,6 +95,16 @@ MUTATION_ACTIONS = {
     "consume",
     "activate",
     "deactivate",
+    "disable",
+    "enable",
+    "expire",
+    "initiate",
+    "invite",
+    "pay",
+    "redeem",
+    "request",
+    "ship",
+    "suspend",
     "submit",
     "publish",
     "refund",
@@ -910,7 +926,7 @@ def _action(
     if mutation:
         action_type: EndpointActionType = (
             "financial_mutation"
-            if mutation in {"refund", "withdraw", "transfer", "settle"}
+            if mutation in {"capture", "pay", "refund", "return", "settle", "transfer", "withdraw"}
             else "mutation"
         )
         return (
@@ -1193,6 +1209,7 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
                 financial_impact=(
                     "unknown"
                     if EndpointPrimaryClassification.FINANCIAL in classification.tags
+                    or action.type == "financial_mutation"
                     else "none"
                 ),
                 security_relevance=relevance,

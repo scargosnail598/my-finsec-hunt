@@ -29,6 +29,19 @@ from finsec.auth.service import (
     validate_actor_baseline,
 )
 from finsec.auth.store import SecretStore
+from finsec.behavior.analysis import (
+    analyze_business_logic,
+    find_logic_hypothesis,
+    load_logic_hypotheses,
+)
+from finsec.behavior.reconstruction import (
+    build_behavior_model,
+    find_workflow_family,
+    load_workflow_families,
+    load_workflow_graph,
+    load_workflow_instances,
+)
+from finsec.behavior.rendering import render_graph
 from finsec.config.models import TargetDocument
 from finsec.config.workspace import (
     CaptureDeletionTarget,
@@ -95,6 +108,16 @@ actor_app = typer.Typer(help="Manage configured research actors.", no_args_is_he
 actor_auth_app = typer.Typer(help="Manage actor-owned authentication.", no_args_is_help=True)
 actor_app.add_typer(actor_auth_app, name="auth")
 app.add_typer(actor_app, name="actor")
+workflows_app = typer.Typer(
+    help="Reconstruct and inspect deterministic application workflows.",
+    no_args_is_help=True,
+)
+app.add_typer(workflows_app, name="workflows")
+logic_app = typer.Typer(
+    help="Analyze business invariants and workflow-level security hypotheses.",
+    no_args_is_help=True,
+)
+app.add_typer(logic_app, name="logic")
 console = Console()
 
 WorkspaceOption = Annotated[
@@ -823,10 +846,16 @@ def workflow_command(
         ("Suppressed endpoints", result.suppressed_endpoints),
         ("Actors", result.actors),
         ("Resources", result.resources),
-        ("Workflows", result.workflows),
-        ("Invariants", result.invariants),
+        ("Workflow instances", result.workflow_instances),
+        ("Workflow families", result.workflow_families),
+        ("Inferred states", result.states),
+        ("Observed transitions", result.transitions),
+        ("Endpoint invariants", result.invariants),
+        ("Business invariants", result.business_invariants),
         ("Active hypotheses", result.active_hypotheses),
         ("Research tasks", result.research_tasks),
+        ("Logic hypotheses", result.logic_hypotheses),
+        ("Logic research tasks", result.logic_research_tasks),
     ):
         table.add_row(label, str(count))
     console.print(table)
@@ -1638,6 +1667,261 @@ def explain_endpoint_command(
     )
 
 
+@workflows_app.command("build")
+def workflows_build_command(workspace: WorkspaceOption = None) -> None:
+    """Reconstruct workflow instances, families, states, transitions, and graphs offline."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        result = build_behavior_model(paths)
+    except FinsecError as error:
+        _abort(error)
+    console.print(
+        f"[green]Built {result.workflow_instances} workflow instances in "
+        f"{result.workflow_families} families.[/green]"
+    )
+    console.print(
+        f"Actions: {result.actions}; resources: {result.resource_instances}; "
+        f"transitions: {result.transitions}; propagation links: {result.propagation_links}."
+    )
+    if result.suppressed_noise:
+        console.print(
+            f"[dim]Suppressed {result.suppressed_noise} repeated polling/background "
+            "observations from workflow paths.[/dim]"
+        )
+    console.print(f"Artifacts: {paths.root / 'behavior'}")
+
+
+@workflows_app.command("list")
+def workflows_list_command(workspace: WorkspaceOption = None) -> None:
+    """List reconstructed workflow families without changing artifacts."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        families = load_workflow_families(paths).workflow_families
+    except FinsecError as error:
+        _abort(error)
+    table = Table("ID", "Name", "Instances", "Confidence", "Common path")
+    for family in sorted(families, key=lambda item: item.id):
+        table.add_row(
+            family.id,
+            family.name,
+            str(len(family.workflow_instance_ids)),
+            family.inference_confidence,
+            " -> ".join(family.common_path) or "Unresolved",
+        )
+    console.print(
+        table if families else "No workflow families are available. Run 'hunt workflows build'."
+    )
+
+
+def _workflow_panel(paths: WorkspacePaths, workflow_id: str) -> Panel:
+    family = find_workflow_family(paths, workflow_id)
+    instances = [
+        item
+        for item in load_workflow_instances(paths).workflow_instances
+        if item.family_id == family.id
+    ]
+    lines = [
+        f"[bold]Status:[/bold] {family.epistemic_status}",
+        f"[bold]Confidence:[/bold] {family.inference_confidence}",
+        f"[bold]Instances:[/bold] {', '.join(family.workflow_instance_ids)}",
+        f"[bold]Actors:[/bold] {', '.join(family.actors) or 'UNKNOWN'}",
+        f"[bold]Resources:[/bold] {', '.join(family.resource_types) or 'Unresolved'}",
+        f"[bold]Common path:[/bold] {' -> '.join(family.common_path) or 'Unresolved'}",
+        f"[bold]Required-looking:[/bold] {', '.join(family.required_looking_steps) or 'None'}",
+        f"[bold]Optional:[/bold] {', '.join(family.optional_steps) or 'None'}",
+        f"[bold]Branches:[/bold] {', '.join(family.branch_points) or 'None'}",
+        "",
+        "[bold]Inference explanation[/bold]",
+        *[f"- {item}" for item in family.confidence_explanation],
+        "",
+        "[bold]Instance ambiguity[/bold]",
+    ]
+    ambiguous = [f"{item.id}: {reason}" for item in instances for reason in item.ambiguities]
+    lines.extend(f"- {item}" for item in ambiguous or ["None recorded."])
+    return Panel("\n".join(lines), title=f"{family.id}: {family.name}")
+
+
+@workflows_app.command("show")
+def workflows_show_command(
+    workflow_id: Annotated[str, typer.Argument(help="Workflow family ID such as WFAM-...")],
+    workspace: WorkspaceOption = None,
+) -> None:
+    """Show one workflow family and its evidence basis."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        panel = _workflow_panel(paths, workflow_id)
+    except FinsecError as error:
+        _abort(error)
+    console.print(panel)
+
+
+@workflows_app.command("explain")
+def workflows_explain_command(
+    workflow_id: Annotated[str, typer.Argument(help="Workflow family ID such as WFAM-...")],
+    workspace: WorkspaceOption = None,
+) -> None:
+    """Explain why one workflow family exists and where uncertainty remains."""
+
+    workflows_show_command(workflow_id, workspace)
+
+
+@workflows_app.command("graph")
+def workflows_graph_command(
+    workflow_id: Annotated[str, typer.Argument(help="Workflow family ID such as WFAM-...")],
+    workspace: WorkspaceOption = None,
+    output_format: Annotated[
+        str,
+        typer.Option("--format", help="Graph output: text, json, dot, or mermaid."),
+    ] = "text",
+) -> None:
+    """Render one workflow graph as text, JSON, DOT, or Mermaid."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        graph = load_workflow_graph(paths, workflow_id)
+        output = render_graph(graph, output_format)
+    except (FinsecError, ValueError) as error:
+        _abort(error)
+    console.print(output, markup=False)
+
+
+@logic_app.command("analyze")
+def logic_analyze_command(workspace: WorkspaceOption = None) -> None:
+    """Infer business invariants and workflow mutations without contacting the target."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        result = analyze_business_logic(paths)
+    except FinsecError as error:
+        _abort(error)
+    console.print(
+        f"[green]Generated {result.business_invariants} business invariants, "
+        f"{result.hypotheses} active logic hypotheses, and "
+        f"{result.research_tasks} research tasks.[/green]"
+    )
+    console.print(f"Ready for planning without current blockers: {result.ready_for_planning}")
+    console.print("Offline analysis did not confirm any vulnerability or send any request.")
+    if result.conflicts:
+        console.print(
+            "[yellow]Preserved researcher-edited backlog records:[/yellow] "
+            + ", ".join(result.conflicts)
+        )
+
+
+@logic_app.command("hypotheses")
+def logic_hypotheses_command(
+    workspace: WorkspaceOption = None,
+    research_tasks: Annotated[
+        bool,
+        typer.Option("--research-tasks", help="Show under-evidenced or unsafe research tasks."),
+    ] = False,
+) -> None:
+    """List generated business-logic hypotheses or research tasks."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        records = load_logic_hypotheses(paths).hypotheses
+    except FinsecError as error:
+        _abort(error)
+    selected = [item for item in records if (item.kind == "RESEARCH_TASK") == research_tasks]
+    table = Table("ID", "Family", "Status", "Readiness", "Safety", "Title")
+    for item in sorted(selected, key=lambda value: value.id):
+        table.add_row(
+            item.id,
+            item.family,
+            item.epistemic_status,
+            str(item.score.test_readiness),
+            item.safety_classification,
+            item.title,
+        )
+    console.print(table if selected else "No matching business-logic records are available.")
+
+
+def _logic_panel(paths: WorkspacePaths, hypothesis_id: str) -> Panel:
+    item = find_logic_hypothesis(paths, hypothesis_id)
+    score = item.score
+    lines = [
+        f"[bold]Epistemic status:[/bold] {item.epistemic_status}",
+        f"[bold]Family:[/bold] {item.family}",
+        f"[bold]Workflow:[/bold] {item.workflow_family_id}",
+        f"[bold]Invariant:[/bold] {item.invariant_statement}",
+        f"[bold]Canonical behavior:[/bold] {item.canonical_behavior}",
+        f"[bold]Mutated behavior:[/bold] {item.mutated_behavior}",
+        f"[bold]Expected secure outcome:[/bold] {item.expected_secure_outcome}",
+        f"[bold]Expected vulnerable outcome:[/bold] {item.expected_vulnerable_outcome}",
+        f"[bold]Safety:[/bold] {item.safety_classification}",
+        f"[bold]Request budget:[/bold] {item.estimated_request_budget}",
+        "",
+        "[bold]Scores[/bold]",
+        f"- Likelihood: {score.likelihood}",
+        f"- Impact: {score.impact}",
+        f"- Test readiness: {score.test_readiness}",
+        f"- Safety cost: {score.safety_cost}",
+        f"- Confidence: {score.confidence}",
+        *[f"- {part.points:+d}: {part.reason}" for part in score.breakdown],
+        "",
+        "[bold]Supporting evidence[/bold]",
+        *[f"- {value}" for value in item.supporting_evidence],
+        "",
+        "[bold]Contradicting evidence[/bold]",
+        *[f"- {value}" for value in item.contradicting_evidence or ["None recorded."]],
+        "",
+        "[bold]Uncertainty[/bold]",
+        *[f"- {value}" for value in item.uncertainty],
+    ]
+    return Panel("\n".join(lines), title=f"{item.id}: {item.title}")
+
+
+@logic_app.command("explain")
+def logic_explain_command(
+    hypothesis_id: Annotated[str, typer.Argument(help="Business-logic ID such as BLH-...")],
+    workspace: WorkspaceOption = None,
+) -> None:
+    """Explain one business-logic hypothesis, score, evidence, and uncertainty."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        panel = _logic_panel(paths, hypothesis_id)
+    except FinsecError as error:
+        _abort(error)
+    console.print(panel)
+
+
+@logic_app.command("blockers")
+def logic_blockers_command(
+    hypothesis_id: Annotated[str, typer.Argument(help="Business-logic ID such as BLH-...")],
+    workspace: WorkspaceOption = None,
+) -> None:
+    """Show deterministic readiness blockers and evidence requirements."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        item = find_logic_hypothesis(paths, hypothesis_id)
+    except FinsecError as error:
+        _abort(error)
+    console.print(f"[bold]{item.id}: {item.title}[/bold]")
+    console.print("\n[bold]Readiness blockers[/bold]")
+    for blocker in item.readiness_blockers or ["None recorded."]:
+        console.print(f"- {blocker}")
+    console.print("\n[bold]State evidence required[/bold]")
+    for requirement in item.state_evidence_requirements:
+        console.print(f"- {requirement}")
+    console.print("\nThis explanation does not grant execution authority.")
+
+
+@logic_app.command("plan")
+def logic_plan_command(
+    hypothesis_id: Annotated[str, typer.Argument(help="Business-logic ID such as BLH-...")],
+    workspace: WorkspaceOption = None,
+) -> None:
+    """Route one active logic hypothesis through the existing safe planner."""
+
+    plan_command(hypothesis_id, workspace)
+
+
 @app.command("model")
 def model_command(workspace: WorkspaceOption = None) -> None:
     """Build actors, resources, authorization views, and workflow maps."""
@@ -2106,7 +2390,11 @@ def evidence_command(
         str | None,
         typer.Option(
             "--kind",
-            help="request, response, before, after, screenshot, ownership, or other.",
+            help=(
+                "request, response, before, after, delayed_after, related_state, "
+                "ledger_state, entitlement_state, inventory_state, workflow_state, "
+                "screenshot, ownership, or other."
+            ),
         ),
     ] = None,
     description: Annotated[

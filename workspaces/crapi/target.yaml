@@ -24,13 +24,13 @@ accounts:
       value_prefix: ''
     source:
       type: har
-      file_reference: saeedmehmandoust-crapi-vin.har
-      captured_at: '2026-08-01T18:39:20.691000Z'
+      file_reference: saeedmehmandoust-crapi-return.har
+      captured_at: '2026-08-03T19:33:02.448000Z'
     expiration:
       detectable: true
-      expires_at: '2026-08-08T18:39:20Z'
-      issued_at: '2026-08-01T18:39:20Z'
-      last_checked_at: '2026-08-01T18:43:16.539385Z'
+      expires_at: '2026-08-10T19:33:02Z'
+      issued_at: '2026-08-03T19:33:02Z'
+      last_checked_at: '2026-08-03T19:38:25.549074Z'
       source: jwt
     refresh:
       configured: false
@@ -58,7 +58,7 @@ accounts:
     context_fingerprint: 277db28e0f7b2b1ae46fd9745c25b1aaf484a769dcd3bfe387185e71368886eb
     target_hosts:
     - crapi.local
-    last_validated_at: '2026-08-01T18:39:20.691000Z'
+    last_validated_at: '2026-08-03T19:33:02.448000Z'
     legacy_environment: {}
   attributes:
     verification_level: unknown
@@ -80,13 +80,13 @@ accounts:
       value_prefix: ''
     source:
       type: har
-      file_reference: mrscargo-crapi-vin.har
-      captured_at: '2026-08-01T18:32:47.553000Z'
+      file_reference: mrscargo-crapi-return.har
+      captured_at: '2026-08-03T19:28:34.205000Z'
     expiration:
       detectable: true
-      expires_at: '2026-08-08T18:24:51Z'
-      issued_at: '2026-08-01T18:24:51Z'
-      last_checked_at: '2026-08-01T18:43:13.484832Z'
+      expires_at: '2026-08-10T19:28:28Z'
+      issued_at: '2026-08-03T19:28:28Z'
+      last_checked_at: '2026-08-03T19:38:22.331207Z'
       source: jwt
     refresh:
       configured: false
@@ -114,7 +114,7 @@ accounts:
     context_fingerprint: bd4359d459269fbf8f06116e87a03a34c719222b1b92982cbcf9b9e0e908951a
     target_hosts:
     - crapi.local
-    last_validated_at: '2026-08-01T18:32:47.553000Z'
+    last_validated_at: '2026-08-03T19:28:34.205000Z'
     legacy_environment: {}
   attributes:
     verification_level: unknown
@@ -214,7 +214,8 @@ analysis:
     token_parameter: token
     rejected_algorithms:
     - none
-    rationale: Unsigned JWTs must never satisfy token verification or authorize modified claims.
+    rationale: Unsigned JWTs must never satisfy token verification or authorize modified
+      claims.
   classification_overrides: {}
 focus:
 - authorization

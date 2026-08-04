@@ -61,6 +61,46 @@ class WorkspacePaths:
         return self.root / "model" / "invariants.yaml"
 
     @property
+    def behavior_actions(self) -> Path:
+        return self.root / "behavior" / "actions.yaml"
+
+    @property
+    def behavior_resources(self) -> Path:
+        return self.root / "behavior" / "resource-instances.yaml"
+
+    @property
+    def workflow_instances(self) -> Path:
+        return self.root / "behavior" / "workflow-instances.yaml"
+
+    @property
+    def workflow_families(self) -> Path:
+        return self.root / "behavior" / "workflow-families.yaml"
+
+    @property
+    def behavior_states(self) -> Path:
+        return self.root / "behavior" / "states.yaml"
+
+    @property
+    def behavior_transitions(self) -> Path:
+        return self.root / "behavior" / "transitions.yaml"
+
+    @property
+    def propagation_links(self) -> Path:
+        return self.root / "behavior" / "propagation-links.yaml"
+
+    @property
+    def workflow_graphs(self) -> Path:
+        return self.root / "behavior" / "graphs"
+
+    @property
+    def business_invariants(self) -> Path:
+        return self.root / "model" / "business-invariants.yaml"
+
+    @property
+    def business_logic_hypotheses(self) -> Path:
+        return self.root / "hypotheses" / "business-logic.yaml"
+
+    @property
     def hypotheses(self) -> Path:
         return self.root / "hypotheses" / "backlog.yaml"
 
@@ -123,6 +163,7 @@ WORKSPACE_DIRECTORIES = (
     "observations/mobile",
     "api",
     "model",
+    "behavior/graphs",
     "tests/burp",
     "tests/plans",
     "tests/executions",
@@ -148,7 +189,16 @@ EMPTY_YAML_SCAFFOLDS = {
     "model/actors.yaml": {"version": 1, "actors": []},
     "model/resources.yaml": {"version": 1, "resources": []},
     "model/invariants.yaml": {"version": 1, "invariants": []},
+    "model/business-invariants.yaml": {"version": 1, "business_invariants": []},
+    "behavior/actions.yaml": {"version": 1, "actions": []},
+    "behavior/resource-instances.yaml": {"version": 1, "resource_instances": []},
+    "behavior/workflow-instances.yaml": {"version": 1, "workflow_instances": []},
+    "behavior/workflow-families.yaml": {"version": 1, "workflow_families": []},
+    "behavior/states.yaml": {"version": 1, "states": []},
+    "behavior/transitions.yaml": {"version": 1, "transitions": []},
+    "behavior/propagation-links.yaml": {"version": 1, "propagation_links": []},
     "hypotheses/backlog.yaml": {"version": 1, "hypotheses": []},
+    "hypotheses/business-logic.yaml": {"version": 1, "hypotheses": []},
     "findings/validations.yaml": {"version": 1, "validations": []},
     "observations/mobile/discoveries.yaml": {"version": 1, "discoveries": []},
 }

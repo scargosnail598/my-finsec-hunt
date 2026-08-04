@@ -2,6 +2,7 @@
 
 import base64
 import binascii
+import contextlib
 import json
 import re
 import xml.etree.ElementTree as ET
@@ -199,15 +200,41 @@ def ingest_burp_xml(
                 source_fingerprint=f"burp:{document.digest}:{exchange.index}",
                 actor=actor,
                 channel=channel,
+                capture_identity=f"observations/raw/{capture_name}",
+                session_identity=f"{actor}:observations/raw/{capture_name}",
+                sequence_position=exchange.index,
                 host=host.lower(),
                 scheme=parsed.scheme.lower() or None,
                 method=exchange.method,
                 path=parsed.path or "/",
+                concrete_url=redact_text(exchange.url),
                 query_parameters=query_parameters(exchange.url),
                 request_fields=json_field_paths(request_body),
                 response_fields=json_field_paths(response_body),
                 status_code=exchange.status,
                 content_type=response_headers.get("content-type") or exchange.content_type,
+                relevant_header_names=sorted(
+                    {
+                        name
+                        for name in [*request_headers, *response_headers]
+                        if name
+                        in {
+                            "content-type",
+                            "idempotency-key",
+                            "location",
+                            "referer",
+                            "x-correlation-id",
+                            "x-request-id",
+                        }
+                    }
+                ),
+                redirect_target=redact_text(response_headers["location"])
+                if response_headers.get("location")
+                else None,
+                redaction_metadata=[
+                    "capture redacted before persistence",
+                    "credential values removed",
+                ],
                 authentication=authentication_from_headers(request_headers),
                 timestamp=exchange.timestamp,
             )
@@ -277,10 +304,8 @@ def _caido_request(entry: dict[str, Any]) -> tuple[str, str, dict[str, str], Any
         target = str(request.get("path") or entry.get("path") or "/")
         url = f"{scheme}://{host}{target}"
     if isinstance(body, str) and request.get("isBase64") is True:
-        try:
+        with contextlib.suppress(Exception):
             body = base64.b64decode(body).decode("utf-8", errors="replace")
-        except Exception:
-            pass
     return url, method.upper() or "GET", headers, body
 
 
@@ -298,10 +323,8 @@ def _caido_response(entry: dict[str, Any]) -> tuple[int | None, dict[str, str], 
         parts = status_line.split()
         status = _integer(parts[1]) if len(parts) > 1 else None
     if isinstance(body, str) and response.get("isBase64") is True:
-        try:
+        with contextlib.suppress(Exception):
             body = base64.b64decode(body).decode("utf-8", errors="replace")
-        except Exception:
-            pass
     return status, headers, body
 
 
@@ -338,15 +361,41 @@ def ingest_caido_json(
                 source_fingerprint=f"caido:{digest}:{index}",
                 actor=actor,
                 channel=channel,
+                capture_identity=f"observations/raw/{capture_name}",
+                session_identity=f"{actor}:observations/raw/{capture_name}",
+                sequence_position=index,
                 host=parsed.hostname.lower(),
                 scheme=parsed.scheme.lower() or None,
                 method=method,
                 path=parsed.path or "/",
+                concrete_url=redact_text(url),
                 query_parameters=query_parameters(url),
                 request_fields=json_field_paths(request_body),
                 response_fields=json_field_paths(response_body),
                 status_code=status,
                 content_type=response_headers.get("content-type"),
+                relevant_header_names=sorted(
+                    {
+                        name
+                        for name in [*request_headers, *response_headers]
+                        if name
+                        in {
+                            "content-type",
+                            "idempotency-key",
+                            "location",
+                            "referer",
+                            "x-correlation-id",
+                            "x-request-id",
+                        }
+                    }
+                ),
+                redirect_target=redact_text(response_headers["location"])
+                if response_headers.get("location")
+                else None,
+                redaction_metadata=[
+                    "capture redacted before persistence",
+                    "credential values removed",
+                ],
                 authentication=authentication_from_headers(request_headers),
             )
         )

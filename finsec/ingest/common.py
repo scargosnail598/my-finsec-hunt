@@ -38,13 +38,20 @@ class ObservationDraft:
     authentication: AuthenticationObservation
     actor: str = "UNKNOWN"
     channel: ChannelType = "UNKNOWN"
+    capture_identity: str | None = None
+    session_identity: str | None = None
+    sequence_position: int | None = None
     timestamp: str | None = None
     scheme: str | None = None
+    concrete_url: str | None = None
     query_parameters: dict[str, list[str]] = field(default_factory=dict)
     request_fields: list[str] = field(default_factory=list)
     response_fields: list[str] = field(default_factory=list)
     status_code: int | None = None
     content_type: str | None = None
+    relevant_header_names: list[str] = field(default_factory=list)
+    redirect_target: str | None = None
+    redaction_metadata: list[str] = field(default_factory=list)
     notes: str | None = None
 
 

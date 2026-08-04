@@ -1,0 +1,48 @@
+{
+  "edges": [
+    {
+      "action": "CHANGE_PHONENUMBER",
+      "actors": [
+        "mrscargo",
+        "saeedmehmandoust"
+      ],
+      "confidence": "HIGH_EVIDENCE",
+      "count": 2,
+      "derivation": "DIRECTLY_OBSERVED",
+      "destination": "NODE-63D2622B048A4509",
+      "id": "EDGE-78A771C63531141E",
+      "median_timing_seconds": null,
+      "observation_ids": [
+        "OBS-000036",
+        "OBS-000068"
+      ],
+      "relative_frequency": 1.0,
+      "resource_types": [
+        "phonenumber"
+      ],
+      "response_outcomes": [
+        "200"
+      ],
+      "source": "NODE-ACA04B8B64122EE9",
+      "workflow_instance_ids": [
+        "WFINST-1FD4847A8A1C64C5",
+        "WFINST-212CC5CC73801244"
+      ]
+    }
+  ],
+  "id": "GRAPH-A67BAC70B7EE011C",
+  "nodes": [
+    {
+      "id": "NODE-63D2622B048A4509",
+      "kind": "TERMINAL",
+      "label": "200"
+    },
+    {
+      "id": "NODE-ACA04B8B64122EE9",
+      "kind": "CHECKPOINT",
+      "label": "UNRESOLVED"
+    }
+  ],
+  "version": 1,
+  "workflow_family_id": "WFAM-5074D2F402DD9C78"
+}

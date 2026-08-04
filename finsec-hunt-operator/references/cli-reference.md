@@ -19,7 +19,11 @@ Group: Ingestion
 
 Group: Modeling & Workflow
 - `hunt workflow --workspace workspaces/<slug>` — run offline inventory, modeling, and hypothesis generation (`finsec/workflow.py`).
-  - Writes derived model artifacts (model/, hypotheses/) into the workspace.
+  - Writes derived model, behavior, invariant, and hypothesis artifacts into the workspace.
+- `hunt workflows build|list|show|explain|graph` — reconstruct or inspect deterministic workflow
+  families; graph formats are `text`, `json`, `dot`, and `mermaid`.
+- `hunt logic analyze|hypotheses|explain|blockers|plan` — infer and inspect business invariants
+  and `BLH-*` records. `logic plan` uses the existing planner and never executes a request.
 
 Group: Actor Authentication
 - `hunt actor auth refresh <ACTOR_ID> --burp <file>` — accept Burp or HAR-based refresh candidate (see `finsec/auth/service.py` and CLI hooks).

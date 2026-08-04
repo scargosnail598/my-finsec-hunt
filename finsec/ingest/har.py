@@ -21,7 +21,7 @@ from finsec.modeling.models import (
     Observation,
     ObservationStore,
 )
-from finsec.utils.redaction import redact_data, redact_named_value
+from finsec.utils.redaction import redact_data, redact_named_value, redact_text
 from finsec.utils.yaml_store import load_yaml, write_yaml
 
 
@@ -163,6 +163,7 @@ def _parse_entry(
     fingerprint: str,
     actor: str,
     channel: ChannelType,
+    sequence_position: int,
 ) -> Observation:
     if not isinstance(entry, dict):
         raise HarFormatError("Every HAR log entry must be an object.")
@@ -185,22 +186,46 @@ def _parse_entry(
             status_code = int(status)
         except (ValueError, TypeError, OverflowError):
             status_code = None
+    request_headers = _headers(request.get("headers"))
+    response_headers = _headers(response.get("headers"))
+    redirect = response.get("redirectURL")
     return Observation(
         id=observation_id,
         timestamp=entry.get("startedDateTime"),
         source_reference=source_reference,
         source_fingerprint=fingerprint,
+        capture_identity=source_reference.split("#", 1)[0],
+        session_identity=f"{actor}:{source_reference.split('#', 1)[0]}",
+        sequence_position=sequence_position,
         actor=actor,
         channel=channel,
         host=parsed_url.hostname.lower(),
         scheme=parsed_url.scheme.lower() or None,
         method=str(request.get("method", "GET")).upper(),
         path=parsed_url.path or "/",
+        concrete_url=redact_text(url),
         query_parameters=_query_parameters(request, url),
         request_fields=_request_fields(request),
         response_fields=_response_fields(response),
         status_code=status_code,
         content_type=_content_type(response),
+        relevant_header_names=sorted(
+            {
+                name
+                for name in [*request_headers, *response_headers]
+                if name
+                in {
+                    "content-type",
+                    "idempotency-key",
+                    "location",
+                    "referer",
+                    "x-correlation-id",
+                    "x-request-id",
+                }
+            }
+        ),
+        redirect_target=redact_text(redirect) if isinstance(redirect, str) and redirect else None,
+        redaction_metadata=["capture redacted before persistence", "credential values removed"],
         authentication=_authentication(request),
     )
 
@@ -281,6 +306,7 @@ def ingest_har(
             fingerprint,
             actor,
             channel,
+            index,
         )
         store.observations.append(observation)
         known_fingerprints[fingerprint] = observation

@@ -38,6 +38,7 @@
    - 4.6 Stage 6: Inferred Domain & Architectural Modeling
    - 4.7 Stage 7: Invariants Extraction & Security Properties
    - 4.8 Stage 8: Evidence-Gated Security Hypothesis Generation
+   - 4.8A Workflow & Business Logic Analysis Engine
    - 4.9 Stage 9: Bounded Test Planning & Safety Checks
    - 4.10 Stage 10: Dual-Checksum Approval & Bounded Execution
    - 4.11 Stage 11: Evidence Indexing & Skeptical Validation Engine
@@ -316,6 +317,21 @@ KnowledgeStatus = Literal["OBSERVED", "INFERRED", "ASSUMED"]
   - **BOLA / IDOR**: Requires authenticated baseline + client-controlled parameter + observed multi-actor access.
   - **Research Tasks**: Incomplete leads or documentation-only operations (from OpenAPI) are routed to research tasks rather than active hypotheses.
 
+### Stage 8A: Workflow & Business Logic Analysis Engine
+- **Modules**: `finsec/behavior/`, with integration in `finsec/workflow.py`
+- **CLI**: `hunt workflows ...`, `hunt logic ...`, and the main `hunt workflow`
+- **Operation**: Reconstructs conservative workflow instances and families from already-redacted
+  observations, derives states, transitions, propagation links, and business invariants, then
+  generates minimal workflow mutations as `BLH-*` hypotheses or research tasks.
+- **Safety boundary**: Offline analysis never confirms a vulnerability. Business-logic plans use
+  the canonical planner, remain `DO_NOT_EXECUTE`, and are manual-only in the current bounded runner.
+  State-changing validation requires request, response, before, after, delayed-after, and related
+  resource state where applicable.
+
+The complete model, artifact formats, scoring rules, mutation families, CLI examples, synthetic
+fixture, and incomplete-capture troubleshooting are documented in
+[`docs/business-logic-analysis.md`](business-logic-analysis.md).
+
 ### Stage 9: Bounded Test Planning & Safety Checks
 - **Module**: `finsec/testing/planner.py`
 - **CLI**: `hunt plan <hyp-id>`
@@ -458,6 +474,13 @@ The validator (`finsec/validation/validator.py`) evaluates 15 deterministic chec
 | `hunt ingest-openapi` | `<file.yaml> -w <workspace> [--base-url <url>]` | Ingest OpenAPI specification document. |
 | `hunt ingest-wizard` | `-w <workspace>` | Interactive wizard to assign actor/channel to incoming captures. |
 | `hunt workflow` | `-w <workspace> [--manifest <path>] [--no-ingest]` | Run full passive offline analysis pipeline. |
+| `hunt workflows build` | `-w <workspace>` | Reconstruct deterministic workflow instances, families, states, transitions, and graphs. |
+| `hunt workflows list/show/explain` | `<WFAM-ID> -w <workspace>` | Inspect a workflow family and its evidence basis. |
+| `hunt workflows graph` | `<WFAM-ID> -w <workspace> [--format text|json|dot|mermaid]` | Render a stable workflow graph. |
+| `hunt logic analyze` | `-w <workspace>` | Infer business invariants and workflow mutations offline. |
+| `hunt logic hypotheses` | `-w <workspace> [--research-tasks]` | List business-logic hypotheses or under-evidenced tasks. |
+| `hunt logic explain/blockers` | `<BLH-ID> -w <workspace>` | Explain evidence, score, uncertainty, state requirements, and blockers. |
+| `hunt logic plan` | `<BLH-ID> -w <workspace>` | Route an active logic candidate through the canonical planner without execution. |
 | `hunt classify` | `-w <workspace>` | Display endpoint classification inventory. |
 | `hunt noise` | `-w <workspace>` | Display suppressed static, telemetry, & third-party endpoints. |
 | `hunt hypotheses` | `-w <workspace> [--priority P1] [--research-tasks]` | List active hypotheses & research tasks. |

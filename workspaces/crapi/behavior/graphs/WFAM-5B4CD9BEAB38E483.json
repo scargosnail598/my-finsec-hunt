@@ -1,0 +1,53 @@
+{
+  "edges": [
+    {
+      "action": "REQUEST_SERVICEREQUEST",
+      "actors": [
+        "mrscargo",
+        "saeedmehmandoust"
+      ],
+      "confidence": "MODERATE_EVIDENCE",
+      "count": 7,
+      "derivation": "INFERRED",
+      "destination": "NODE-F54834D200300638",
+      "id": "EDGE-9B17725B20894A2B",
+      "median_timing_seconds": 111.9210000038147,
+      "observation_ids": [
+        "OBS-000176",
+        "OBS-000256",
+        "OBS-000321",
+        "OBS-000462",
+        "OBS-000511",
+        "OBS-000575",
+        "OBS-000686"
+      ],
+      "relative_frequency": 1.0,
+      "resource_types": [
+        "servicerequest"
+      ],
+      "response_outcomes": [
+        "UNRESOLVED"
+      ],
+      "source": "NODE-F54834D200300638",
+      "workflow_instance_ids": [
+        "WFINST-1827BE484B4D541B",
+        "WFINST-1827BE484B4D541B",
+        "WFINST-1827BE484B4D541B",
+        "WFINST-D3AC70AD2AC33498",
+        "WFINST-D3AC70AD2AC33498",
+        "WFINST-D3AC70AD2AC33498",
+        "WFINST-D3AC70AD2AC33498"
+      ]
+    }
+  ],
+  "id": "GRAPH-34AB74B8A0C0E0E6",
+  "nodes": [
+    {
+      "id": "NODE-F54834D200300638",
+      "kind": "CHECKPOINT",
+      "label": "UNRESOLVED"
+    }
+  ],
+  "version": 1,
+  "workflow_family_id": "WFAM-5B4CD9BEAB38E483"
+}

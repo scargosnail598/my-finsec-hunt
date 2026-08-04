@@ -111,15 +111,22 @@ class Observation(StrictModel):
     source: ObservationSource = "HAR"
     source_reference: str
     source_fingerprint: str
+    capture_identity: str | None = None
+    session_identity: str | None = None
+    sequence_position: int | None = Field(default=None, ge=0)
     actor: str = "UNKNOWN"
     channel: ChannelType = "UNKNOWN"
     host: str
     scheme: str | None = None
     method: str
     path: str
+    concrete_url: str | None = None
     query_parameters: dict[str, list[str]] = Field(default_factory=dict)
     request_fields: list[str] = Field(default_factory=list)
     response_fields: list[str] = Field(default_factory=list)
+    relevant_header_names: list[str] = Field(default_factory=list)
+    redirect_target: str | None = None
+    redaction_metadata: list[str] = Field(default_factory=list)
     status_code: int | None = None
     content_type: str | None = None
     authentication: AuthenticationObservation

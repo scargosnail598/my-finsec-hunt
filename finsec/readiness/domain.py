@@ -220,9 +220,16 @@ class ReadinessMetrics(ReadinessModel):
     actors: int = 0
     resources: int = 0
     workflows: int = 0
+    workflow_instances: int = 0
+    workflow_families: int = 0
+    inferred_states: int = 0
+    observed_transitions: int = 0
     invariants: int = 0
+    business_invariants: int = 0
     active_hypotheses: int = 0
     research_tasks: int = 0
+    logic_hypotheses: int = 0
+    logic_research_tasks: int = 0
     plans: int = 0
     executions: int = 0
     evidence_sets: int = 0

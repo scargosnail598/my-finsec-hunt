@@ -52,8 +52,11 @@ def plan_source_fingerprint(
         if isinstance(source, dict):
             authentication["source"] = {"type": source.get("type")}
     hypothesis_payload = hypothesis.model_dump(mode="json", exclude_none=True)
-    for field in ("status", "notes", "generation"):
+    for field in ("status", "epistemic_status", "notes", "generation"):
         hypothesis_payload.pop(field, None)
+    logic_details = hypothesis_payload.get("logic_details")
+    if isinstance(logic_details, dict):
+        logic_details.pop("epistemic_status", None)
     return stable_fingerprint(
         {
             "target": target_payload,
@@ -93,7 +96,31 @@ def _steps(
     )
     jwt_algorithm_validation = hypothesis.generation_rule.get("id") == "JWT_ALGORITHM_VALIDATION"
     function_authorization = hypothesis.generation_rule.get("id") == "FUNCTION_AUTHORIZATION"
-    if jwt_algorithm_validation:
+    if hypothesis.category == "business_logic":
+        details = hypothesis.logic_details or {}
+        canonical = str(details.get("canonical_behavior", "the observed canonical workflow"))
+        mutated = str(details.get("mutated_behavior", hypothesis.hypothesis))
+        state_requirements = details.get("state_evidence_requirements", [])
+        requirements = (
+            [str(item) for item in state_requirements]
+            if isinstance(state_requirements, list)
+            else []
+        )
+        setup = [
+            "Prepare only researcher-controlled actors and resources.",
+            f"Reproduce the safe canonical baseline: {canonical}.",
+            *requirements,
+        ]
+        actions = [
+            f"After explicit approval, apply only this workflow mutation: {mutated}.",
+            "Stop at the approved request budget and do not add retries or concurrency.",
+            "Collect immediate and delayed authoritative state for every affected resource.",
+        ]
+        assertions = [
+            hypothesis.expected_secure_behavior,
+            "A response status alone is not proof; authoritative state must remain secure.",
+        ]
+    elif jwt_algorithm_validation:
         setup = [
             f"Authenticate as {actor or 'the researcher-controlled account'}.",
             f"Capture one successful signed-JWT baseline for {operation} with token material "
@@ -231,19 +258,32 @@ def _draft(
     resource_name = (
         endpoint.resource.type if endpoint is not None else hypothesis.component.split(" / ", 1)[0]
     )
-    financial = resource_name.lower() in FINANCIAL_RESOURCES and any(
-        item.state_change for item in source_endpoints
+    logic_details = hypothesis.logic_details or {}
+    logic_safety = str(logic_details.get("safety_classification", ""))
+    financial = logic_safety == "FINANCIAL_STATE_CHANGE" or (
+        resource_name.lower() in FINANCIAL_RESOURCES
+        and any(item.state_change for item in source_endpoints)
     )
-    destructive = any(
+    destructive = logic_safety == "DESTRUCTIVE" or any(
         item.method == "DELETE"
         or any(action in item.path.lower() for action in ("/cancel", "/refund", "/reverse"))
         for item in source_endpoints
     )
-    concurrency = False
-    request_budget = execution_templates.execution.request_budget or 2
+    concurrency = logic_safety == "CONCURRENT"
+    logic_budget = logic_details.get("estimated_request_budget")
+    request_budget = (
+        int(logic_budget)
+        if isinstance(logic_budget, int | float | str) and str(logic_budget).isdigit()
+        else execution_templates.execution.request_budget or 2
+    )
     function_authorization = hypothesis.generation_rule.get("id") == "FUNCTION_AUTHORIZATION"
     requires_two_accounts = hypothesis.category == "authorization" and not function_authorization
     blockers: list[str] = []
+    if hypothesis.category == "business_logic":
+        logic_blockers = logic_details.get("readiness_blockers", [])
+        if isinstance(logic_blockers, list):
+            blockers.extend(str(item) for item in logic_blockers)
+        blockers.extend(execution_templates.execution.blockers)
     endpoint_hosts = {host for item in source_endpoints for host in item.hosts}
     if not hypothesis.source.endpoints:
         blockers.append("The hypothesis has no source endpoint for scope validation.")

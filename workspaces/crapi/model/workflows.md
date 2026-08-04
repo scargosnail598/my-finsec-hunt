@@ -49,6 +49,7 @@ Operation maps are endpoint-derived. Lifecycle states and transition ordering ar
 - Identifiers: None observed
 - Owner / tenant: unknown (`ASSUMED`)
 - Operations:
+  - `read` via `GET /dashboard` (EP-068, INFERRED)
   - `read` via `GET /identity/api/v2/user/dashboard` (EP-005, INFERRED)
 - Observed states: None
 - Transition order: `NOT CONFIRMED`
@@ -98,12 +99,13 @@ Operation maps are endpoint-derived. Lifecycle states and transition ordering ar
 ## Workflow: Order
 
 - Evidence status: `INFERRED`
-- Identifiers: order_id
+- Identifiers: orderId, order_id
 - Owner / tenant: unknown (`ASSUMED`)
 - Operations:
   - `create` via `POST /workshop/api/shop/orders` (EP-020, INFERRED)
   - `all` via `GET /workshop/api/shop/orders/all` (EP-010, INFERRED)
   - `return` via `POST /workshop/api/shop/orders/return_order` (EP-021, INFERRED)
+  - `read` via `GET /workshop/api/shop/orders/{orderId}` (EP-069, INFERRED)
 - Observed states: None
 - Transition order: `NOT CONFIRMED`
 
@@ -166,7 +168,7 @@ Operation maps are endpoint-derived. Lifecycle states and transition ordering ar
 - Identifiers: serviceRequestId
 - Owner / tenant: unknown (`ASSUMED`)
 - Operations:
-  - `read` via `GET /workshop/api/merchant/service_requests/{serviceRequestId}` (EP-067, INFERRED)
+  - `request` via `GET /workshop/api/merchant/service_requests/{serviceRequestId}` (EP-067, INFERRED)
 - Observed states: None
 - Transition order: `NOT CONFIRMED`
 

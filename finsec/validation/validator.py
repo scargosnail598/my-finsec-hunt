@@ -171,8 +171,17 @@ def _artifact_checks(
                     detail=requirement,
                 )
             )
-    if any(item.state_change for item in endpoints):
+    logic_details = hypothesis.logic_details or {}
+    logic_state_requirements = logic_details.get("state_evidence_requirements", [])
+    requires_state = any(item.state_change for item in endpoints) or (
+        hypothesis.category == "business_logic"
+        and isinstance(logic_state_requirements, list)
+        and bool(logic_state_requirements)
+    )
+    if requires_state:
         state_kinds: tuple[EvidenceKind, ...] = ("before", "after")
+        if hypothesis.category == "business_logic":
+            state_kinds = (*state_kinds, "delayed_after")
         for kind in state_kinds:
             if counts[kind] >= 1:
                 checks.append(
@@ -190,6 +199,32 @@ def _artifact_checks(
                     ValidationCheck(
                         id=f"EVIDENCE-{kind.upper()}",
                         question=f"Is authoritative {kind}-state evidence present?",
+                        result="MISSING",
+                        detail=requirement,
+                    )
+                )
+        controlled_resources = logic_details.get("controlled_resources_required", [])
+        if (
+            hypothesis.category == "business_logic"
+            and isinstance(controlled_resources, list)
+            and len(controlled_resources) > 1
+        ):
+            if counts["related_state"] >= 1:
+                checks.append(
+                    ValidationCheck(
+                        id="EVIDENCE-RELATED-STATE",
+                        question="Is authoritative related-resource state evidence present?",
+                        result="PASS",
+                        detail=f"Found {counts['related_state']} artifact(s).",
+                    )
+                )
+            else:
+                requirement = "Add authoritative related-resource state evidence."
+                missing.append(requirement)
+                checks.append(
+                    ValidationCheck(
+                        id="EVIDENCE-RELATED-STATE",
+                        question="Is authoritative related-resource state evidence present?",
                         result="MISSING",
                         detail=requirement,
                     )

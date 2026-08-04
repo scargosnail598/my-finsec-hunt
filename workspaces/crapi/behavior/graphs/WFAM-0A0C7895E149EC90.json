@@ -1,0 +1,69 @@
+{
+  "edges": [
+    {
+      "action": "READ_STATE",
+      "actors": [
+        "mrscargo",
+        "saeedmehmandoust"
+      ],
+      "confidence": "MODERATE_EVIDENCE",
+      "count": 15,
+      "derivation": "INFERRED",
+      "destination": "NODE-D321E8B1C074286A",
+      "id": "EDGE-1CC01A63F534015B",
+      "median_timing_seconds": null,
+      "observation_ids": [
+        "OBS-000095",
+        "OBS-000137",
+        "OBS-000184",
+        "OBS-000197",
+        "OBS-000209",
+        "OBS-000265",
+        "OBS-000329",
+        "OBS-000352",
+        "OBS-000367",
+        "OBS-000379",
+        "OBS-000470",
+        "OBS-000520",
+        "OBS-000583",
+        "OBS-000602",
+        "OBS-000694"
+      ],
+      "relative_frequency": 1.0,
+      "resource_types": [
+        "state"
+      ],
+      "response_outcomes": [
+        "UNRESOLVED"
+      ],
+      "source": "NODE-D321E8B1C074286A",
+      "workflow_instance_ids": [
+        "WFINST-1BAFBE9F2CB7D927",
+        "WFINST-1E8D58E8D2EBFBE4",
+        "WFINST-3866D3E725DF510A",
+        "WFINST-5095B3AD0B701ED7",
+        "WFINST-56C59678A84B8E6C",
+        "WFINST-61482FBBB8BE5725",
+        "WFINST-6AAB1CB9D1B9C02D",
+        "WFINST-6BBB3BE0DEFBEFF2",
+        "WFINST-729E3BEACA4D66F8",
+        "WFINST-954859A20CECB64E",
+        "WFINST-9C7F6E8C614CD8EA",
+        "WFINST-AC97F92694DC2391",
+        "WFINST-B79165300B8DDF2F",
+        "WFINST-C10F33D6C861D651",
+        "WFINST-E3EF160405EBF013"
+      ]
+    }
+  ],
+  "id": "GRAPH-476A55B310EFCB7C",
+  "nodes": [
+    {
+      "id": "NODE-D321E8B1C074286A",
+      "kind": "CHECKPOINT",
+      "label": "UNRESOLVED"
+    }
+  ],
+  "version": 1,
+  "workflow_family_id": "WFAM-0A0C7895E149EC90"
+}

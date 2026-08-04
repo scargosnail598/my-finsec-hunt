@@ -83,8 +83,9 @@ def merge_generated_records(
         current = existing_by_key.get(key)
         candidate = copy.deepcopy(draft)
         if current is None:
-            candidate["id"] = f"{id_prefix}-{next_number:03d}"
-            next_number += 1
+            if not isinstance(candidate.get("id"), str):
+                candidate["id"] = f"{id_prefix}-{next_number:03d}"
+                next_number += 1
             added += 1
         else:
             consumed.add(key)

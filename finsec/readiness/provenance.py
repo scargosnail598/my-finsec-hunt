@@ -148,8 +148,11 @@ def validation_source_fingerprint(
     """Fingerprint validation facts while excluding hypothesis lifecycle annotations."""
 
     hypothesis_payload = hypothesis.model_dump(mode="json", exclude_none=True)
-    for field in ("status", "notes", "generation"):
+    for field in ("status", "epistemic_status", "notes", "generation"):
         hypothesis_payload.pop(field, None)
+    logic_details = hypothesis_payload.get("logic_details")
+    if isinstance(logic_details, dict):
+        logic_details.pop("epistemic_status", None)
     return stable_fingerprint(
         {
             "scope": target.scope.model_dump(mode="json"),
@@ -170,8 +173,11 @@ def report_source_fingerprint(
     """Fingerprint the complete, current report input contract."""
 
     hypothesis_payload = hypothesis.model_dump(mode="json", exclude_none=True)
-    for field in ("status", "notes", "generation"):
+    for field in ("status", "epistemic_status", "notes", "generation"):
         hypothesis_payload.pop(field, None)
+    logic_details = hypothesis_payload.get("logic_details")
+    if isinstance(logic_details, dict):
+        logic_details.pop("epistemic_status", None)
     validation_payload = validation.model_dump(mode="json", exclude_none=True)
     validation_payload.pop("generation", None)
     return stable_fingerprint(

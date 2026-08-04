@@ -11,6 +11,8 @@ HAR / Burp XML / Caido JSON / OpenAPI
   -> redacted factual observations
   -> classified endpoint inventory
   -> actors, resources, operation maps, and invariants
+  -> workflow instances, state transitions, and business invariants
+  -> minimal business-logic mutations with explicit uncertainty
   -> evidence-gated hypotheses or research tasks
   -> human-reviewed plan (DO_NOT_EXECUTE by default)
   -> optional checksum-approved bounded read-only execution
@@ -28,6 +30,10 @@ normalized route is an inference; an invariant is a property that should hold; a
 research question; evidence is researcher-supplied; and a finding is reportable only after the
 validation gates pass. See [docs/workflow-rationale.md](docs/workflow-rationale.md) for the full
 mechanism and the rationale behind every stage.
+
+Workflow-level analysis, graph inspection, mutation families, state evidence, and the synthetic
+logic fixture are documented in
+[docs/business-logic-analysis.md](docs/business-logic-analysis.md).
 
 ## Safety Boundary
 

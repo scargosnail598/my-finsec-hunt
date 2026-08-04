@@ -7,7 +7,17 @@ from pydantic import Field, model_validator
 from finsec.modeling.domain import EditableModel, GenerationMetadata
 from finsec.modeling.models import KnowledgeStatus
 
-MutationDimension = Literal["ACTOR", "OBJECT", "STATE", "TIME", "VALUE", "CHANNEL", "VERSION"]
+MutationDimension = Literal[
+    "ACTOR",
+    "OBJECT",
+    "STATE",
+    "TIME",
+    "VALUE",
+    "CHANNEL",
+    "VERSION",
+    "WORKFLOW",
+    "CONCURRENCY",
+]
 HypothesisPriority = Literal["P1", "P2", "P3"]
 HypothesisStatus = Literal[
     "NOT_TESTED",
@@ -17,6 +27,16 @@ HypothesisStatus = Literal[
     "CONFIRMED",
 ]
 ImpactLevel = Literal["none", "low", "medium", "high", "unknown"]
+BusinessEpistemicStatus = Literal[
+    "OBSERVED_FACT",
+    "INFERRED_PATTERN",
+    "RESEARCH_TASK",
+    "TEST_CANDIDATE",
+    "TEST_PLANNED",
+    "NEEDS_EVIDENCE",
+    "REJECTED_BY_BACKEND",
+    "CONFIRMED",
+]
 
 
 class HypothesisSource(EditableModel):
@@ -79,6 +99,7 @@ class HypothesisRecord(EditableModel):
         "version_parity",
         "channel_parity",
         "research",
+        "business_logic",
     ]
     component: str
     source: HypothesisSource
@@ -103,6 +124,8 @@ class HypothesisRecord(EditableModel):
     priority: HypothesisPriority
     status: HypothesisStatus = "NOT_TESTED"
     safety_notes: list[str] = Field(default_factory=list)
+    epistemic_status: BusinessEpistemicStatus | None = None
+    logic_details: dict[str, object] | None = None
     notes: str | None = None
     generation: GenerationMetadata | None = None
 

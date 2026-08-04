@@ -1,0 +1,134 @@
+{
+  "edges": [
+    {
+      "action": "VERIFY_AUTH",
+      "actors": [
+        "mrscargo",
+        "saeedmehmandoust"
+      ],
+      "confidence": "MODERATE_EVIDENCE",
+      "count": 18,
+      "derivation": "DIRECTLY_OBSERVED",
+      "destination": "NODE-355109589912B8F7",
+      "id": "EDGE-331C86C4DB3DAAF6",
+      "median_timing_seconds": null,
+      "observation_ids": [
+        "OBS-000133",
+        "OBS-000186",
+        "OBS-000203",
+        "OBS-000252",
+        "OBS-000274",
+        "OBS-000284",
+        "OBS-000348",
+        "OBS-000356",
+        "OBS-000373",
+        "OBS-000422",
+        "OBS-000479",
+        "OBS-000505",
+        "OBS-000522",
+        "OBS-000563",
+        "OBS-000569",
+        "OBS-000594",
+        "OBS-000657",
+        "OBS-000717"
+      ],
+      "relative_frequency": 0.6,
+      "resource_types": [
+        "auth"
+      ],
+      "response_outcomes": [
+        "VERIFIED"
+      ],
+      "source": "NODE-33ABF13CDF540B31",
+      "workflow_instance_ids": [
+        "WFINST-04CF07AFBAA3BED6",
+        "WFINST-04D8D98114B063D3",
+        "WFINST-299BB7EC36017DD7",
+        "WFINST-2C53FB426F99BD66",
+        "WFINST-2E75CDCA27BA3C66",
+        "WFINST-3771235E1274DE46",
+        "WFINST-4908EBBC59E740E3",
+        "WFINST-5507DD5FA293A79F",
+        "WFINST-5A7E7939BA4D629E",
+        "WFINST-60B8AD90DD639DB0",
+        "WFINST-6E3CD7CB74F97CEF",
+        "WFINST-7AA2151C30173224",
+        "WFINST-85A960450CB19DD1",
+        "WFINST-AF321013C742D759",
+        "WFINST-C39B3BB6CF4C672F",
+        "WFINST-CC53BF46A5E49D24",
+        "WFINST-DE53008118166E9C",
+        "WFINST-EC66568DF04F5C4C"
+      ]
+    },
+    {
+      "action": "VERIFY_AUTH",
+      "actors": [
+        "mrscargo",
+        "saeedmehmandoust"
+      ],
+      "confidence": "HIGH_EVIDENCE",
+      "count": 12,
+      "derivation": "DIRECTLY_OBSERVED",
+      "destination": "NODE-1BDE7AE4F11F4C78",
+      "id": "EDGE-850C4B0FF86510A3",
+      "median_timing_seconds": null,
+      "observation_ids": [
+        "OBS-000005",
+        "OBS-000017",
+        "OBS-000022",
+        "OBS-000033",
+        "OBS-000052",
+        "OBS-000069",
+        "OBS-000073",
+        "OBS-000090",
+        "OBS-000112",
+        "OBS-000124",
+        "OBS-000330",
+        "OBS-000584"
+      ],
+      "relative_frequency": 0.4,
+      "resource_types": [
+        "auth"
+      ],
+      "response_outcomes": [
+        "200"
+      ],
+      "source": "NODE-33ABF13CDF540B31",
+      "workflow_instance_ids": [
+        "WFINST-0FAF30E6348F3421",
+        "WFINST-499952EDF594589D",
+        "WFINST-52DCF909AA8149D1",
+        "WFINST-5C68A3C508542BED",
+        "WFINST-7174D619399D37CB",
+        "WFINST-74FD5E40CEE1AEDD",
+        "WFINST-86EDE3B9F99ECD54",
+        "WFINST-9EF286EE7FE6E486",
+        "WFINST-ABF000FEE7FD36C9",
+        "WFINST-CC11A1697C39E847",
+        "WFINST-D8A9358153D4D31A",
+        "WFINST-DC80DFFEDC0156EF"
+      ]
+    }
+  ],
+  "id": "GRAPH-9320982615884690",
+  "nodes": [
+    {
+      "id": "NODE-1BDE7AE4F11F4C78",
+      "kind": "TERMINAL",
+      "label": "200"
+    },
+    {
+      "id": "NODE-33ABF13CDF540B31",
+      "kind": "CHECKPOINT",
+      "label": "UNRESOLVED"
+    },
+    {
+      "id": "NODE-355109589912B8F7",
+      "kind": "TERMINAL",
+      "label": "VERIFIED"
+    }
+  ],
+  "version": 1,
+  "workflow_family_id": "WFAM-29B943758198F962"
+}

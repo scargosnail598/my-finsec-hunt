@@ -28,6 +28,12 @@ EVIDENCE_KINDS = {
     "response",
     "before",
     "after",
+    "delayed_after",
+    "related_state",
+    "ledger_state",
+    "entitlement_state",
+    "inventory_state",
+    "workflow_state",
     "screenshot",
     "ownership",
     "other",
@@ -80,7 +86,7 @@ def ensure_evidence(workspace: WorkspacePaths, hypothesis_id: str) -> EvidenceRe
 
     hypothesis = find_hypothesis(workspace, hypothesis_id)
     root = workspace.evidence_for(hypothesis.id)
-    for relative in ("requests", "responses", "screenshots", "attachments"):
+    for relative in ("requests", "responses", "state", "screenshots", "attachments"):
         (root / relative).mkdir(parents=True, exist_ok=True)
     path = _metadata_path(root)
     if not path.is_file():
@@ -136,6 +142,12 @@ def _destination(root: Path, kind: EvidenceKind, artifact_id: str, source: Path)
     directory = {
         "request": "requests",
         "response": "responses",
+        "delayed_after": "state",
+        "related_state": "state",
+        "ledger_state": "state",
+        "entitlement_state": "state",
+        "inventory_state": "state",
+        "workflow_state": "state",
         "screenshot": "screenshots",
         "ownership": "attachments",
         "other": "attachments",
@@ -179,8 +191,9 @@ def add_evidence(
     normalized_kind = kind.lower()
     if normalized_kind not in EVIDENCE_KINDS:
         raise FinsecError(
-            "Evidence kind must be request, response, before, after, screenshot, ownership, "
-            "or other."
+            "Evidence kind must be request, response, before, after, delayed_after, "
+            "related_state, ledger_state, entitlement_state, inventory_state, "
+            "workflow_state, screenshot, ownership, or other."
         )
     evidence_kind = cast(EvidenceKind, normalized_kind)
     source = source.expanduser().resolve()
@@ -212,7 +225,17 @@ def add_evidence(
         _write_redacted_text(
             source,
             destination,
-            require_json=evidence_kind in {"before", "after"},
+            require_json=evidence_kind
+            in {
+                "before",
+                "after",
+                "delayed_after",
+                "related_state",
+                "ledger_state",
+                "entitlement_state",
+                "inventory_state",
+                "workflow_state",
+            },
         )
         redaction = "AUTOMATIC"
     relative = destination.relative_to(result.root).as_posix()

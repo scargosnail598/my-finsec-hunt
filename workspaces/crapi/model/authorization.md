@@ -13,6 +13,7 @@ Authentication presence does not prove object or function authorization.
 | EP-023 | `GET /chatbot/genai/state` | State | Required (`bearer`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
 | EP-003 | `GET /community/api/v2/community/posts/recent` | Post | Required (`bearer`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
 | EP-004 | `GET /community/api/v2/community/posts/{postId}` | Post | Required (`bearer`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
+| EP-068 | `GET /dashboard` | Dashboard | Not established (INFERRED) | mrscargo | NOT CONFIRMED |
 | EP-005 | `GET /identity/api/v2/user/dashboard` | Dashboard | Required (`bearer`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
 | EP-066 | `GET /identity/api/v2/user/videos/{videoId}` | Video | Required (`bearer`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
 | EP-007 | `GET /identity/api/v2/vehicle/vehicles` | Vehicle | Required (`bearer`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
@@ -25,6 +26,7 @@ Authentication presence does not prove object or function authorization.
 | EP-054 | `GET /workshop/api/mechanic/mechanic_report` | MechanicReport | Required (`bearer`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
 | EP-067 | `GET /workshop/api/merchant/service_requests/{serviceRequestId}` | ServiceRequest | Required (`bearer`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
 | EP-010 | `GET /workshop/api/shop/orders/all` | Order | Required (`bearer`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
+| EP-069 | `GET /workshop/api/shop/orders/{orderId}` | Order | Required (`bearer`, INFERRED) | mrscargo | NOT CONFIRMED |
 | EP-011 | `GET /workshop/api/shop/products` | Product | Required (`bearer`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
 | EP-013 | `POST /community/api/v2/community/posts` | Post | Required (`bearer`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |
 | EP-014 | `POST /community/api/v2/community/posts/{postId}/comment` | Post | Required (`bearer`, INFERRED) | mrscargo, saeedmehmandoust | NOT CONFIRMED |

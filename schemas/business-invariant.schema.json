@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finsec-hunt.local/schemas/business-invariant.schema.json",
+  "title": "FinSec Hunt Business Invariant Store",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "business_invariants"],
+  "properties": {
+    "version": {"const": 1},
+    "business_invariants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "statement",
+          "invariant_type",
+          "workflow_family_id",
+          "confidence",
+          "validation_requirements",
+          "state_changing_validation",
+          "epistemic_status"
+        ],
+        "properties": {
+          "id": {"type": "string", "pattern": "^BINV-[A-F0-9]{16}$"},
+          "statement": {"type": "string", "minLength": 1},
+          "invariant_type": {
+            "enum": [
+              "ORDERING",
+              "SINGLE_EXECUTION",
+              "TERMINAL_STATE",
+              "ACTOR_BINDING",
+              "RESOURCE_BINDING",
+              "TOKEN_SCOPE",
+              "ROLLBACK_CONSISTENCY",
+              "VALUE_CONSERVATION",
+              "ROLE_SEPARATION",
+              "SERVER_CONTROLLED_FIELDS"
+            ]
+          },
+          "workflow_family_id": {"type": "string"},
+          "resource_types": {"type": "array", "items": {"type": "string"}},
+          "supporting_observations": {"type": "array", "items": {"type": "string"}},
+          "contradicting_observations": {"type": "array", "items": {"type": "string"}},
+          "source_of_inference": {"type": "array", "items": {"type": "string"}},
+          "mutable_value_fields": {"type": "array", "items": {"type": "string"}},
+          "authoritative_value_fields": {"type": "array", "items": {"type": "string"}},
+          "source_endpoint_ids": {"type": "array", "items": {"type": "string"}},
+          "candidate_methods": {"type": "array", "items": {"type": "string"}},
+          "candidate_paths": {"type": "array", "items": {"type": "string"}},
+          "candidate_fields": {"type": "array", "items": {"type": "string"}},
+          "confidence": {"enum": ["HIGH_EVIDENCE", "MODERATE_EVIDENCE", "WEAK_EVIDENCE", "SPECULATIVE"]},
+          "confidence_explanation": {"type": "array", "items": {"type": "string"}},
+          "validation_requirements": {"type": "array", "items": {"type": "string"}},
+          "state_changing_validation": {"type": "boolean"},
+          "epistemic_status": {"const": "INFERRED_PATTERN"}
+        }
+      }
+    }
+  }
+}

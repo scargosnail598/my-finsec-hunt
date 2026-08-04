@@ -1,0 +1,40 @@
+{
+  "edges": [
+    {
+      "action": "RESEND_EMAIL",
+      "actors": [
+        "saeedmehmandoust"
+      ],
+      "confidence": "WEAK_EVIDENCE",
+      "count": 1,
+      "derivation": "INFERRED",
+      "destination": "NODE-077CAC10DEAAE2DD",
+      "id": "EDGE-D0512261B99A588D",
+      "median_timing_seconds": null,
+      "observation_ids": [
+        "OBS-000353"
+      ],
+      "relative_frequency": 1.0,
+      "resource_types": [
+        "email"
+      ],
+      "response_outcomes": [
+        "UNRESOLVED"
+      ],
+      "source": "NODE-077CAC10DEAAE2DD",
+      "workflow_instance_ids": [
+        "WFINST-4168833058AE1A5E"
+      ]
+    }
+  ],
+  "id": "GRAPH-0571C21940E1B69E",
+  "nodes": [
+    {
+      "id": "NODE-077CAC10DEAAE2DD",
+      "kind": "CHECKPOINT",
+      "label": "UNRESOLVED"
+    }
+  ],
+  "version": 1,
+  "workflow_family_id": "WFAM-C219DAF4823799E9"
+}

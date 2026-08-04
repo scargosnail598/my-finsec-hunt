@@ -1605,7 +1605,7 @@ def resolve_workspace_readiness(
         )
         hypothesis_artifact = _with_provenance(hypothesis_artifact, hypothesis_state)
     hypothesis_integrity = hypotheses is not None and _generated_store_integrity(
-        list(hypotheses.hypotheses), {"status", "notes"}
+        list(hypotheses.hypotheses), {"status", "epistemic_status", "notes"}
     )
     if invariant_stage.status != LifecycleStatus.COMPLETE:
         hypothesis_status = (
@@ -2232,11 +2232,24 @@ def resolve_workspace_readiness(
             sum(item.disposition == "ACTIVE" for item in resources.resources) if resources else 0
         ),
         workflows=_safe_workflow_count(paths.root / "model" / "workflows.md"),
+        workflow_instances=_safe_yaml_list_count(paths.workflow_instances, "workflow_instances"),
+        workflow_families=_safe_yaml_list_count(paths.workflow_families, "workflow_families"),
+        inferred_states=_safe_yaml_list_count(paths.behavior_states, "states"),
+        observed_transitions=_safe_yaml_list_count(paths.behavior_transitions, "transitions"),
         invariants=(
             sum(item.disposition == "ACTIVE" for item in invariants.invariants) if invariants else 0
         ),
+        business_invariants=_safe_yaml_list_count(paths.business_invariants, "business_invariants"),
         active_hypotheses=len(active_hypotheses),
         research_tasks=research_tasks,
+        logic_hypotheses=_safe_yaml_list_count(paths.business_logic_hypotheses, "hypotheses"),
+        logic_research_tasks=sum(
+            item.kind == "RESEARCH_TASK"
+            for item in hypotheses.hypotheses
+            if item.category == "business_logic"
+        )
+        if hypotheses
+        else 0,
         plans=len(plans.plans) if plans else 0,
         executions=len(audits),
         evidence_sets=len(evidence_sets),

@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finsec-hunt.local/schemas/business-logic-hypothesis.schema.json",
+  "title": "FinSec Hunt Business Logic Hypothesis Store",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "hypotheses"],
+  "properties": {
+    "version": {"const": 1},
+    "hypotheses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "fingerprint",
+          "title",
+          "family",
+          "workflow_family_id",
+          "invariant_id",
+          "canonical_behavior",
+          "mutated_behavior",
+          "score",
+          "safety_classification",
+          "readiness_blockers",
+          "kind",
+          "epistemic_status"
+        ],
+        "properties": {
+          "id": {"type": "string", "pattern": "^BLH-[A-F0-9]{16}$"},
+          "fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "title": {"type": "string", "minLength": 1},
+          "family": {
+            "enum": [
+              "STEP_SKIPPING",
+              "OUT_OF_ORDER_EXECUTION",
+              "REPLAY",
+              "DUPLICATE_ACTION",
+              "CONCURRENT_EXECUTION",
+              "TERMINAL_STATE_BYPASS",
+              "ACTOR_SWITCH",
+              "RESOURCE_SWITCH",
+              "CROSS_WORKFLOW_TOKEN_REUSE",
+              "PARTIAL_ROLLBACK",
+              "QUANTITY_VALUE_INVARIANT",
+              "ROLE_APPROVAL_BYPASS",
+              "SHADOW_ENDPOINT"
+            ]
+          },
+          "workflow_family_id": {"type": "string"},
+          "invariant_id": {"type": "string"},
+          "canonical_behavior": {"type": "string"},
+          "mutated_behavior": {"type": "string"},
+          "score": {"type": "object"},
+          "safety_classification": {"type": "string"},
+          "readiness_blockers": {"type": "array", "items": {"type": "string"}},
+          "candidate_methods": {"type": "array", "items": {"type": "string"}},
+          "candidate_paths": {"type": "array", "items": {"type": "string"}},
+          "candidate_fields": {"type": "array", "items": {"type": "string"}},
+          "kind": {"enum": ["SECURITY_HYPOTHESIS", "RESEARCH_TASK"]},
+          "epistemic_status": {
+            "enum": [
+              "RESEARCH_TASK",
+              "TEST_CANDIDATE",
+              "TEST_PLANNED",
+              "NEEDS_EVIDENCE",
+              "REJECTED_BY_BACKEND",
+              "CONFIRMED"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
