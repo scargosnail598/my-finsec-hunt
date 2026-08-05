@@ -1,437 +1,6 @@
-version: 1
+version: 2
 workflow_families:
-- id: WFAM-15BFA7AEE57FC509
-  name: Dashboard lifecycle
-  entry_actions:
-  - READ_DASHBOARD
-  terminal_actions:
-  - READ_VIDEO
-  observed_paths:
-  - - READ_DASHBOARD
-    - READ_DASHBOARD
-    - READ_DASHBOARD
-    - READ_DASHBOARD
-    - READ_DASHBOARD
-    - READ_VIDEO
-  - - READ_DASHBOARD
-    - READ_DASHBOARD
-    - READ_VIDEO
-  - - READ_DASHBOARD
-    - READ_DASHBOARD
-    - READ_VIDEO
-    - READ_VIDEO
-  common_path:
-  - READ_DASHBOARD
-  - READ_DASHBOARD
-  - READ_VIDEO
-  optional_steps: []
-  required_looking_steps:
-  - READ_DASHBOARD
-  - READ_VIDEO
-  branch_points:
-  - READ_DASHBOARD
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  resource_types:
-  - Dashboard
-  - Video
-  - dashboard
-  - video
-  transition_frequencies:
-    READ_DASHBOARD -> READ_DASHBOARD: 7
-    READ_DASHBOARD -> READ_VIDEO: 4
-    READ_VIDEO -> READ_VIDEO: 1
-  outcome_distribution:
-    '404': 3
-    UNRESOLVED: 1
-  workflow_instance_ids:
-  - WFINST-1C51DD938A51EE9D
-  - WFINST-6D324E9530BAF4B4
-  - WFINST-B7179CAA59CDAB82
-  - WFINST-BCFF10F0D1241954
-  inference_confidence: HIGH_EVIDENCE
-  confidence_explanation:
-  - Derived from 4 workflow instance(s), including 4 with moderate-or-better segmentation
-    evidence.
-  - Required-looking steps are the intersection of at least two observed paths.
-  epistemic_status: INFERRED_PATTERN
-- id: WFAM-1BE4877B2DE40145
-  name: State lifecycle
-  entry_actions:
-  - READ_STATE
-  terminal_actions:
-  - READ_STATE
-  observed_paths:
-  - - READ_STATE
-  common_path:
-  - READ_STATE
-  optional_steps:
-  - READ_STATE
-  required_looking_steps: []
-  branch_points: []
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  resource_types:
-  - State
-  transition_frequencies: {}
-  outcome_distribution:
-    UNRESOLVED: 15
-  workflow_instance_ids:
-  - WFINST-0028F031FC543AFC
-  - WFINST-0C81C9EE958386CA
-  - WFINST-13ADD238C14A7FD0
-  - WFINST-1B22EEF011087DFB
-  - WFINST-26325429BA7BB2A3
-  - WFINST-3134AAF5DD7DF6B7
-  - WFINST-44DE35AE9CF0131E
-  - WFINST-4A5CC245FF506333
-  - WFINST-8B5E83A8E3F7BAED
-  - WFINST-9537F9A3C41489FE
-  - WFINST-A22FEF8F62EE7BB3
-  - WFINST-A3DB4337E88CA954
-  - WFINST-D145772C7E1F48F4
-  - WFINST-D32FEABEC05A1D79
-  - WFINST-DECF4A6386F0C78F
-  inference_confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - Derived from 15 workflow instance(s), including 0 with moderate-or-better segmentation
-    evidence.
-  epistemic_status: INFERRED_PATTERN
-- id: WFAM-1C7DD8E5855FE452
-  name: ServiceReport lifecycle
-  entry_actions:
-  - READ_SERVICEREPORT
-  terminal_actions:
-  - READ_SERVICEREPORT
-  observed_paths:
-  - - READ_SERVICEREPORT
-  common_path:
-  - READ_SERVICEREPORT
-  optional_steps:
-  - READ_SERVICEREPORT
-  required_looking_steps: []
-  branch_points: []
-  actors:
-  - mrscargo
-  resource_types:
-  - ServiceReport
-  - servicereport
-  transition_frequencies: {}
-  outcome_distribution:
-    UNRESOLVED: 4
-  workflow_instance_ids:
-  - WFINST-61B393C61690F2F2
-  - WFINST-6AB84CBD451FE2C9
-  - WFINST-F0FC9DDE833AD323
-  - WFINST-FD3611151E28F730
-  inference_confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - Derived from 4 workflow instance(s), including 0 with moderate-or-better segmentation
-    evidence.
-  epistemic_status: INFERRED_PATTERN
-- id: WFAM-29B943758198F962
-  name: authentication challenge
-  entry_actions:
-  - VERIFY_AUTH
-  terminal_actions:
-  - VERIFY_AUTH
-  observed_paths:
-  - - VERIFY_AUTH
-  common_path:
-  - VERIFY_AUTH
-  optional_steps:
-  - VERIFY_AUTH
-  required_looking_steps: []
-  branch_points: []
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  resource_types:
-  - Auth
-  transition_frequencies: {}
-  outcome_distribution:
-    '200': 12
-    VERIFIED: 18
-  workflow_instance_ids:
-  - WFINST-04CF07AFBAA3BED6
-  - WFINST-04D8D98114B063D3
-  - WFINST-0FAF30E6348F3421
-  - WFINST-299BB7EC36017DD7
-  - WFINST-2C53FB426F99BD66
-  - WFINST-2E75CDCA27BA3C66
-  - WFINST-3771235E1274DE46
-  - WFINST-4908EBBC59E740E3
-  - WFINST-499952EDF594589D
-  - WFINST-52DCF909AA8149D1
-  - WFINST-5507DD5FA293A79F
-  - WFINST-5A7E7939BA4D629E
-  - WFINST-5C68A3C508542BED
-  - WFINST-60B8AD90DD639DB0
-  - WFINST-6E3CD7CB74F97CEF
-  - WFINST-7174D619399D37CB
-  - WFINST-74FD5E40CEE1AEDD
-  - WFINST-7AA2151C30173224
-  - WFINST-85A960450CB19DD1
-  - WFINST-86EDE3B9F99ECD54
-  - WFINST-9EF286EE7FE6E486
-  - WFINST-ABF000FEE7FD36C9
-  - WFINST-AF321013C742D759
-  - WFINST-C39B3BB6CF4C672F
-  - WFINST-CC11A1697C39E847
-  - WFINST-CC53BF46A5E49D24
-  - WFINST-D8A9358153D4D31A
-  - WFINST-DC80DFFEDC0156EF
-  - WFINST-DE53008118166E9C
-  - WFINST-EC66568DF04F5C4C
-  inference_confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - Derived from 30 workflow instance(s), including 0 with moderate-or-better segmentation
-    evidence.
-  epistemic_status: INFERRED_PATTERN
-- id: WFAM-3FC455452D6010E7
-  name: Picture lifecycle
-  entry_actions:
-  - CREATE_PICTURE
-  terminal_actions:
-  - CREATE_PICTURE
-  observed_paths:
-  - - CREATE_PICTURE
-  common_path:
-  - CREATE_PICTURE
-  optional_steps:
-  - CREATE_PICTURE
-  required_looking_steps: []
-  branch_points: []
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  resource_types:
-  - Picture
-  - picture
-  transition_frequencies: {}
-  outcome_distribution:
-    ACTIVE: 2
-  workflow_instance_ids:
-  - WFINST-253A63B7ABF7B7A6
-  - WFINST-BB6D012EA43CE919
-  inference_confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - Derived from 2 workflow instance(s), including 0 with moderate-or-better segmentation
-    evidence.
-  epistemic_status: INFERRED_PATTERN
-- id: WFAM-470EACBE0EB04BC3
-  name: Mechanic lifecycle
-  entry_actions:
-  - CONTACT_MECHANIC
-  - READ_MECHANIC
-  terminal_actions:
-  - CONTACT_MECHANIC
-  - READ_MECHANIC
-  observed_paths:
-  - - CONTACT_MECHANIC
-  - - READ_MECHANIC
-  common_path:
-  - READ_MECHANIC
-  optional_steps:
-  - CONTACT_MECHANIC
-  - READ_MECHANIC
-  required_looking_steps: []
-  branch_points: []
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  resource_types:
-  - Mechanic
-  transition_frequencies: {}
-  outcome_distribution:
-    UNRESOLVED: 8
-  workflow_instance_ids:
-  - WFINST-12C096D8A6F08267
-  - WFINST-45D8DC419CD797C6
-  - WFINST-5937D682D782739E
-  - WFINST-74144CADFB44F0F2
-  - WFINST-8B91DE3ABF38F0E4
-  - WFINST-B8B4D4EB00B4A643
-  - WFINST-C23E0F7C094F542E
-  - WFINST-C2543635ED9CE553
-  inference_confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - Derived from 8 workflow instance(s), including 0 with moderate-or-better segmentation
-    evidence.
-  epistemic_status: INFERRED_PATTERN
-- id: WFAM-4856F5F3E07C10A8
-  name: Vehicle lifecycle
-  entry_actions:
-  - ADD_VEHICLE
-  - READ_VEHICLE
-  terminal_actions:
-  - ADD_VEHICLE
-  - READ_VEHICLE
-  observed_paths:
-  - - ADD_VEHICLE
-  - - READ_VEHICLE
-  common_path:
-  - READ_VEHICLE
-  optional_steps:
-  - ADD_VEHICLE
-  - READ_VEHICLE
-  required_looking_steps: []
-  branch_points: []
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  resource_types:
-  - Vehicle
-  transition_frequencies: {}
-  outcome_distribution:
-    UNRESOLVED: 26
-  workflow_instance_ids:
-  - WFINST-000712455096DB23
-  - WFINST-03E42E2AD6524516
-  - WFINST-057E1520BABEF01D
-  - WFINST-07A570A81076EE15
-  - WFINST-2E7850260CF63B97
-  - WFINST-3D13CBECA519A9D7
-  - WFINST-4A9E466CB3BD8E85
-  - WFINST-4FBB06539706B944
-  - WFINST-5753077AEC34D626
-  - WFINST-8CA4E775C33F110C
-  - WFINST-979394D76E7C1EE6
-  - WFINST-9E142A140100FBC4
-  - WFINST-A2815D873BEDEE96
-  - WFINST-AB39D31FEAAB9B39
-  - WFINST-ABB61DDD580DF1ED
-  - WFINST-AC9F5DC4FBF368C0
-  - WFINST-AD80F19671E2FC42
-  - WFINST-AE4B7D87260C9415
-  - WFINST-B2B0FA7598439757
-  - WFINST-BAED695A5B846C64
-  - WFINST-DB64EAB469F68A52
-  - WFINST-DB9C18280F7A4446
-  - WFINST-DEC8D475F79EFE1D
-  - WFINST-EA0098478E1E3A1F
-  - WFINST-EC6191E0B0D2EB93
-  - WFINST-FB831B2EF845AD31
-  inference_confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - Derived from 26 workflow instance(s), including 0 with moderate-or-better segmentation
-    evidence.
-  epistemic_status: INFERRED_PATTERN
-- id: WFAM-5074D2F402DD9C78
-  name: PhoneNumber lifecycle
-  entry_actions:
-  - CHANGE_PHONENUMBER
-  terminal_actions:
-  - CHANGE_PHONENUMBER
-  observed_paths:
-  - - CHANGE_PHONENUMBER
-  common_path:
-  - CHANGE_PHONENUMBER
-  optional_steps:
-  - CHANGE_PHONENUMBER
-  required_looking_steps: []
-  branch_points: []
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  resource_types:
-  - PhoneNumber
-  transition_frequencies: {}
-  outcome_distribution:
-    '200': 2
-  workflow_instance_ids:
-  - WFINST-1FD4847A8A1C64C5
-  - WFINST-212CC5CC73801244
-  inference_confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - Derived from 2 workflow instance(s), including 0 with moderate-or-better segmentation
-    evidence.
-  epistemic_status: INFERRED_PATTERN
-- id: WFAM-5D90976DD858DDCA
-  name: '%F0%9F%A4%96 lifecycle'
-  entry_actions:
-  - READ_F0_9F_A4_96
-  terminal_actions:
-  - READ_F0_9F_A4_96
-  observed_paths:
-  - - READ_F0_9F_A4_96
-  common_path:
-  - READ_F0_9F_A4_96
-  optional_steps:
-  - READ_F0_9F_A4_96
-  required_looking_steps: []
-  branch_points: []
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  resource_types:
-  - '%F0%9F%A4%96'
-  transition_frequencies: {}
-  outcome_distribution:
-    UNRESOLVED: 25
-  workflow_instance_ids:
-  - WFINST-0B2F2FD37B31061E
-  - WFINST-116F31CB564392DA
-  - WFINST-1AC3FF7990879F96
-  - WFINST-24F4AFEED27CEA51
-  - WFINST-3833E52E6576285A
-  - WFINST-39A58F0DD4777589
-  - WFINST-6DF837AF7DDC69E0
-  - WFINST-70C2D6E8F5F14748
-  - WFINST-7C5B777D0F7FD4A0
-  - WFINST-848B2DD77E228291
-  - WFINST-8B64F0A27D2D3BF3
-  - WFINST-976E5F0B7B3F5E4F
-  - WFINST-9AD2D08F1AACB910
-  - WFINST-9E0DB9EDA51D5F8F
-  - WFINST-A68CD6D8527E4716
-  - WFINST-B180F8231DA5F79B
-  - WFINST-BB0182BE88B48371
-  - WFINST-BC2021B3C742A932
-  - WFINST-BD22B5604B8BF60C
-  - WFINST-D2655F13D7F4E938
-  - WFINST-D284E5DB57F46FAA
-  - WFINST-D6030A36C4DA1C7A
-  - WFINST-EEE17A0635EAA13F
-  - WFINST-F1AFE135F3E28648
-  - WFINST-F60C1D4FD548EC42
-  inference_confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - Derived from 25 workflow instance(s), including 0 with moderate-or-better segmentation
-    evidence.
-  epistemic_status: INFERRED_PATTERN
-- id: WFAM-6681A1861C362D1E
-  name: VehicleServiceDashboard lifecycle
-  entry_actions:
-  - READ_VEHICLESERVICEDASHBOARD
-  terminal_actions:
-  - READ_VEHICLESERVICEDASHBOARD
-  observed_paths:
-  - - READ_VEHICLESERVICEDASHBOARD
-  common_path:
-  - READ_VEHICLESERVICEDASHBOARD
-  optional_steps:
-  - READ_VEHICLESERVICEDASHBOARD
-  required_looking_steps: []
-  branch_points: []
-  actors:
-  - saeedmehmandoust
-  resource_types:
-  - VehicleServiceDashboard
-  transition_frequencies: {}
-  outcome_distribution:
-    UNRESOLVED: 1
-  workflow_instance_ids:
-  - WFINST-75A7FEAF3FA48F55
-  inference_confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - Derived from 1 workflow instance(s), including 0 with moderate-or-better segmentation
-    evidence.
-  - A single instance cannot establish mandatory steps or authorization policy.
-  epistemic_status: INFERRED_PATTERN
-- id: WFAM-6C8EF51513A031EE
+- id: WFAM-0532B103197330E9
   name: application workflow
   entry_actions:
   - READ_UNKNOWN
@@ -452,90 +21,214 @@ workflow_families:
   transition_frequencies: {}
   outcome_distribution:
     UNRESOLVED: 5
+  structural_signature: 59d635c8b566303bba8156802c04a2fa460cb4b67871c4043338ef8d4065a5f9
+  ordered_step_signature:
+  - 1:GET:/:READ_UNKNOWN:PRIMARY:unknown:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
   workflow_instance_ids:
-  - WFINST-7B3DC15F8EC7CC4C
-  - WFINST-952FA8117FE58F54
-  - WFINST-99E5F72324791BE5
-  - WFINST-AE492C4043DBBB07
-  - WFINST-EE00F65C0506C891
+  - WFINST-2F2A8E98981807AE
+  - WFINST-33AAAE875BEDB616
+  - WFINST-39F0EFDD0D459C2E
+  - WFINST-49B8B923A7EDC365
+  - WFINST-782241BD97082C03
   inference_confidence: WEAK_EVIDENCE
   confidence_explanation:
   - Derived from 5 workflow instance(s), including 0 with moderate-or-better segmentation
     evidence.
   epistemic_status: INFERRED_PATTERN
-- id: WFAM-721CC64D8080F7A8
-  name: Manifest.Json lifecycle
+- id: WFAM-070E94C62CCCE75E
+  name: order lifecycle
   entry_actions:
-  - READ_MANIFEST_JSON
+  - READ_ORDER
   terminal_actions:
-  - READ_MANIFEST_JSON
+  - RETURN_ORDER
   observed_paths:
-  - - READ_MANIFEST_JSON
+  - - READ_ORDER
+    - READ_ORDER
+    - RETURN_ORDER
   common_path:
-  - READ_MANIFEST_JSON
+  - READ_ORDER
+  - READ_ORDER
+  - RETURN_ORDER
+  optional_steps: []
+  required_looking_steps:
+  - READ_ORDER
+  - RETURN_ORDER
+  branch_points:
+  - READ_ORDER
+  actors:
+  - mrscargo
+  resource_types:
+  - Order
+  - order
+  - product
+  transition_frequencies:
+    READ_ORDER -> READ_ORDER: 1
+    READ_ORDER -> RETURN_ORDER: 1
+  outcome_distribution:
+    RETURN PENDING: 1
+  structural_signature: 7f51e702651344d0661fe2323154dc78ba1a8b30efa62c91b95e3215a7a8f7c7
+  ordered_step_signature:
+  - 1:GET:/workshop/api/shop/orders/{orderId}:READ_ORDER:PRIMARY:order:READ_ONLY:UNRESOLVED->DELIVERED
+  - 2:GET:/workshop/api/shop/orders/{orderId}:READ_ORDER:PRIMARY:order:READ_ONLY:DELIVERED->DELIVERED
+  - 3:POST:/workshop/api/shop/orders/return_order:RETURN_ORDER:PRIMARY:order:MUTATING:DELIVERED->RETURN
+    PENDING
+  causal_topology:
+  - 1->2:resource:order:identifier
+  - 1->3:resource:order:identifier
+  - 2->3:resource:order:identifier
+  terminal_or_mutating_steps:
+  - 3:RETURN_ORDER:RETURN PENDING
+  causal_prerequisites:
+  - prerequisite_action: READ_ORDER
+    dependent_action: READ_ORDER
+    prerequisite_position: 1
+    dependent_position: 2
+    support_count: 1
+    comparable_instances: 1
+    support_ratio: 1.0
+    causal_link_ids:
+    - PROP-00A809EECD487DD1
+    - PROP-A53BEC8EA4D6B7A9
+    supporting_observations:
+    - OBS-000706
+    - OBS-000709
+    counterexamples: []
+    confidence: HIGH_EVIDENCE
+    reason: A typed response value from the prerequisite step is consumed by the dependent
+      request.
+  - prerequisite_action: READ_ORDER
+    dependent_action: RETURN_ORDER
+    prerequisite_position: 1
+    dependent_position: 3
+    support_count: 1
+    comparable_instances: 1
+    support_ratio: 1.0
+    causal_link_ids:
+    - PROP-A93BFB06712D853D
+    - PROP-EC7036C6BAC6D2AA
+    supporting_observations:
+    - OBS-000706
+    - OBS-000711
+    counterexamples: []
+    confidence: HIGH_EVIDENCE
+    reason: A typed response value from the prerequisite step is consumed by the dependent
+      request.
+  - prerequisite_action: READ_ORDER
+    dependent_action: RETURN_ORDER
+    prerequisite_position: 2
+    dependent_position: 3
+    support_count: 1
+    comparable_instances: 1
+    support_ratio: 1.0
+    causal_link_ids:
+    - PROP-D2E9FBA651381C3C
+    - PROP-E038BBEF6A7A10A5
+    supporting_observations:
+    - OBS-000709
+    - OBS-000711
+    counterexamples: []
+    confidence: HIGH_EVIDENCE
+    reason: A typed response value from the prerequisite step is consumed by the dependent
+      request.
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-246E1679645A3DB9
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 1 workflow instance(s), including 1 with moderate-or-better segmentation
+    evidence.
+  - A single instance cannot establish mandatory steps or authorization policy.
+  - Required-looking steps come only from typed hard producer-consumer evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-125068705321D835
+  name: Product lifecycle
+  entry_actions:
+  - READ_PRODUCT
+  terminal_actions:
+  - READ_PRODUCT
+  observed_paths:
+  - - READ_PRODUCT
+  common_path:
+  - READ_PRODUCT
   optional_steps:
-  - READ_MANIFEST_JSON
+  - READ_PRODUCT
   required_looking_steps: []
   branch_points: []
   actors:
   - mrscargo
   - saeedmehmandoust
   resource_types:
-  - Manifest.Json
+  - Product
+  - product
   transition_frequencies: {}
   outcome_distribution:
-    UNRESOLVED: 15
+    UNRESOLVED: 11
+  structural_signature: d39d321ba00e1da34c6f75c450dad8023f5a23bf35212a624ed77bc2e807c5ef
+  ordered_step_signature:
+  - 1:GET:/workshop/api/shop/products:READ_PRODUCT:PRIMARY:product:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
   workflow_instance_ids:
-  - WFINST-0D124B6497FC7D04
-  - WFINST-12ED073EDDAED7A4
-  - WFINST-280B8FE9788FA8A5
-  - WFINST-4A21278DB62C7155
-  - WFINST-4D590B380E00066E
-  - WFINST-56BAE442B80E3175
-  - WFINST-5E7368973657DA38
-  - WFINST-73484A20B5926E4F
-  - WFINST-8F06A721863C0D7D
-  - WFINST-994A520960B53668
-  - WFINST-9B80FF50138A32FB
-  - WFINST-9F48BDD8C6BDA192
-  - WFINST-CC9C7AD9AA77F865
-  - WFINST-D7BD0A67A5F7DFDE
-  - WFINST-F0E12D0C2DBC0186
+  - WFINST-1B867D62E2AF0590
+  - WFINST-230816D0CB6EF26C
+  - WFINST-31409E162C576CB8
+  - WFINST-3AD4CA0430C0FF0D
+  - WFINST-6C69F9BCB6946184
+  - WFINST-6D7B33BD4BAB7D2C
+  - WFINST-7BA92A979205E173
+  - WFINST-91B3BAD56EC059AC
+  - WFINST-AF222A6264865FC2
+  - WFINST-BE0CC454862940D9
+  - WFINST-F31447989825AEC3
   inference_confidence: WEAK_EVIDENCE
   confidence_explanation:
-  - Derived from 15 workflow instance(s), including 0 with moderate-or-better segmentation
+  - Derived from 11 workflow instance(s), including 0 with moderate-or-better segmentation
     evidence.
   epistemic_status: INFERRED_PATTERN
-- id: WFAM-782F70BF671B7874
-  name: Email lifecycle
+- id: WFAM-1B47CCD990775A2C
+  name: Vehicle lifecycle
   entry_actions:
-  - RESEND_EMAIL
+  - ADD_VEHICLE
   terminal_actions:
-  - RESEND_EMAIL
+  - ADD_VEHICLE
   observed_paths:
-  - - RESEND_EMAIL
+  - - ADD_VEHICLE
   common_path:
-  - RESEND_EMAIL
+  - ADD_VEHICLE
   optional_steps:
-  - RESEND_EMAIL
+  - ADD_VEHICLE
   required_looking_steps: []
   branch_points: []
   actors:
   - saeedmehmandoust
   resource_types:
-  - Email
+  - Vehicle
   transition_frequencies: {}
   outcome_distribution:
     UNRESOLVED: 1
+  structural_signature: 1abccce93c3c5ead9de42eeb4ff612f9a2bbb4f36097ffc26532aec4e9e3ef1e
+  ordered_step_signature:
+  - 1:POST:/identity/api/v2/vehicle/add_vehicle:ADD_VEHICLE:PRIMARY:vehicle:MUTATING:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps:
+  - 1:ADD_VEHICLE:UNRESOLVED
+  causal_prerequisites: []
+  research_clues: []
   workflow_instance_ids:
-  - WFINST-6BA2C44A5002B502
+  - WFINST-ECB621F1E4255CA7
   inference_confidence: WEAK_EVIDENCE
   confidence_explanation:
   - Derived from 1 workflow instance(s), including 0 with moderate-or-better segmentation
     evidence.
   - A single instance cannot establish mandatory steps or authorization policy.
   epistemic_status: INFERRED_PATTERN
-- id: WFAM-7CB950EDB43A733B
+- id: WFAM-250D444EC7F95DCE
   name: ServiceRequest lifecycle
   entry_actions:
   - REQUEST_SERVICEREQUEST
@@ -558,20 +251,1494 @@ workflow_families:
   transition_frequencies: {}
   outcome_distribution:
     UNRESOLVED: 7
+  structural_signature: 884bbb9db62fbc5785f6190ad90b26268d341e712dbae8d3ac33bee30876116d
+  ordered_step_signature:
+  - 1:GET:/workshop/api/merchant/service_requests/{serviceRequestId}:REQUEST_SERVICEREQUEST:PRIMARY:servicerequest:MUTATING:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps:
+  - 1:REQUEST_SERVICEREQUEST:UNRESOLVED
+  causal_prerequisites: []
+  research_clues: []
   workflow_instance_ids:
-  - WFINST-48DB663C786257EC
-  - WFINST-4DE6526D8CEBB646
-  - WFINST-AA9DFD096E2474DE
-  - WFINST-BC7C4454B6CE4F0F
-  - WFINST-BF37E94DBD1EBD94
-  - WFINST-D82C665A7FC6C9BA
-  - WFINST-F70CADD0DA5C88A5
+  - WFINST-0D40540267343319
+  - WFINST-1BF262EAD4D9B0A7
+  - WFINST-BBC9DBBB4C1C2E1B
+  - WFINST-C889EDE907D5F29E
+  - WFINST-CB72E6343C9EE1D9
+  - WFINST-CFDBC4A447F418FC
+  - WFINST-F15588ACF90B6B51
   inference_confidence: WEAK_EVIDENCE
   confidence_explanation:
   - Derived from 7 workflow instance(s), including 0 with moderate-or-better segmentation
     evidence.
   epistemic_status: INFERRED_PATTERN
-- id: WFAM-85E500425809BA81
+- id: WFAM-322A97E3D3BE16D1
+  name: order lifecycle
+  entry_actions:
+  - READ_ORDER
+  terminal_actions:
+  - READ_ORDER
+  observed_paths:
+  - - READ_ORDER
+  common_path:
+  - READ_ORDER
+  optional_steps:
+  - READ_ORDER
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  resource_types:
+  - Order
+  - order
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 2
+  structural_signature: b14a58bbf58dcdf49e39caee430693c231f349a76e2e01b7aced1adfedeebce4
+  ordered_step_signature:
+  - 1:GET:/workshop/api/shop/orders/{orderId}:READ_ORDER:PRIMARY:order:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-7C9453F527331235
+  - WFINST-FA9AB289B307825C
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 2 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-3781C668D45A5135
+  name: Shop lifecycle
+  entry_actions:
+  - READ_SHOP
+  terminal_actions:
+  - READ_SHOP
+  observed_paths:
+  - - READ_SHOP
+  common_path:
+  - READ_SHOP
+  optional_steps:
+  - READ_SHOP
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  resource_types:
+  - Shop
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 1
+  structural_signature: dc66589a738698c109e84db2402fafd509cc82c1e5e3acd53b763575c2af502d
+  ordered_step_signature:
+  - 1:GET:/shop:READ_SHOP:PRIMARY:shop:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-330D1EE27F0C88AE
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 1 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  - A single instance cannot establish mandatory steps or authorization policy.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-385EF29E1E914D0C
+  name: Video lifecycle
+  entry_actions:
+  - READ_VIDEO
+  terminal_actions:
+  - READ_VIDEO
+  observed_paths:
+  - - READ_VIDEO
+  common_path:
+  - READ_VIDEO
+  optional_steps:
+  - READ_VIDEO
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - Video
+  - video
+  transition_frequencies: {}
+  outcome_distribution:
+    '404': 5
+  structural_signature: bbe745f978dc5ff580fe873646a46f79ea4fbee02b549457dfacd2a06ac6cfb6
+  ordered_step_signature:
+  - 1:GET:/identity/api/v2/user/videos/{videoId}:READ_VIDEO:PRIMARY:video:READ_ONLY:UNRESOLVED->404
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-07871942D372674C
+  - WFINST-28928ED0CB282E8A
+  - WFINST-6EDD2AB3D663E7F5
+  - WFINST-993F7D1553328D16
+  - WFINST-E77E2462CBD6F398
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 5 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-3899C528149F1ED6
+  name: authentication challenge
+  entry_actions:
+  - VERIFY_AUTH
+  terminal_actions:
+  - VERIFY_AUTH
+  observed_paths:
+  - - VERIFY_AUTH
+  common_path:
+  - VERIFY_AUTH
+  optional_steps:
+  - VERIFY_AUTH
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - Auth
+  transition_frequencies: {}
+  outcome_distribution:
+    VERIFIED: 18
+  structural_signature: 741e83ba06d7999cc97339c86518bfa9aad89dce0bfd1891f9e8fcbe31547a4a
+  ordered_step_signature:
+  - 1:POST:/identity/api/auth/verify:VERIFY_AUTH:PRIMARY:auth:MUTATING:UNRESOLVED->VERIFIED
+  causal_topology: []
+  terminal_or_mutating_steps:
+  - 1:VERIFY_AUTH:VERIFIED
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-0D3001953251B653
+  - WFINST-25A119097A81DC33
+  - WFINST-285D9200C9F61283
+  - WFINST-2B2C62A48FDD987F
+  - WFINST-2E32FF14C159FDA8
+  - WFINST-36E5EB0C89B08C8B
+  - WFINST-3A1A29F10DE3CECD
+  - WFINST-4228B4965C918809
+  - WFINST-4571ED544FE6B1D2
+  - WFINST-5387AC7B5AF7E6C4
+  - WFINST-7486D38DD721C8AC
+  - WFINST-86662C5A28370E73
+  - WFINST-8776B3254A9E90B4
+  - WFINST-B46FBBF9AC0149FE
+  - WFINST-DB193F8FB20D0621
+  - WFINST-E56B46EF00CA911F
+  - WFINST-EEA3B090D84E3981
+  - WFINST-F9951DB8922CAD5D
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 18 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-3B281B1D8508AED3
+  name: Dashboard lifecycle
+  entry_actions:
+  - READ_DASHBOARD
+  terminal_actions:
+  - READ_DASHBOARD
+  observed_paths:
+  - - READ_DASHBOARD
+  common_path:
+  - READ_DASHBOARD
+  optional_steps:
+  - READ_DASHBOARD
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  resource_types:
+  - Dashboard
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 1
+  structural_signature: c74f77d233e4b257544221b94e5ead9f6595c7bd575cb7e7a439c33851ea81f1
+  ordered_step_signature:
+  - 1:GET:/dashboard:READ_DASHBOARD:PRIMARY:dashboard:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-4B95E94479B3F8BB
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 1 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  - A single instance cannot establish mandatory steps or authorization policy.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-3F0A127AAA933193
+  name: State lifecycle
+  entry_actions:
+  - READ_STATE
+  terminal_actions:
+  - READ_STATE
+  observed_paths:
+  - - READ_STATE
+  common_path:
+  - READ_STATE
+  optional_steps:
+  - READ_STATE
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - State
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 15
+  structural_signature: 22eea11d214cc95c67917957942d91cf913491e35d8b47f5c86f60483cbaa273
+  ordered_step_signature:
+  - 1:GET:/chatbot/genai/state:READ_STATE:PRIMARY:state:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-0A183820BE857D29
+  - WFINST-20386BFF13B7C60B
+  - WFINST-36A40E740EEA84A4
+  - WFINST-3862230E28D0E168
+  - WFINST-64A41953EA9E1DF3
+  - WFINST-67F9442A6278B134
+  - WFINST-69C0BDACE4D6CF9D
+  - WFINST-6B708A44B76B84A4
+  - WFINST-881A3B611C706D0F
+  - WFINST-968687967767CF68
+  - WFINST-A0366FDD959C282C
+  - WFINST-A56699D7999D0B7E
+  - WFINST-C3DACD53BB9147CA
+  - WFINST-CA3B0BF3B3512441
+  - WFINST-F93641D8CCDC281B
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 15 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-406B6ABEDBFE11ED
+  name: Email lifecycle
+  entry_actions:
+  - RESEND_EMAIL
+  terminal_actions:
+  - RESEND_EMAIL
+  observed_paths:
+  - - RESEND_EMAIL
+  common_path:
+  - RESEND_EMAIL
+  optional_steps:
+  - RESEND_EMAIL
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - saeedmehmandoust
+  resource_types:
+  - Email
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 1
+  structural_signature: b7fa6d7b15340ca247ed57e2e9f71ef2eb86d5dc8292fb541e603d87996ca1ae
+  ordered_step_signature:
+  - 1:POST:/identity/api/v2/vehicle/resend_email:RESEND_EMAIL:PRIMARY:email:MUTATING:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps:
+  - 1:RESEND_EMAIL:UNRESOLVED
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-FAB3F748A23D2011
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 1 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  - A single instance cannot establish mandatory steps or authorization policy.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-46B382FD6F3435F8
+  name: MechanicReport lifecycle
+  entry_actions:
+  - READ_MECHANICREPORT
+  terminal_actions:
+  - READ_MECHANICREPORT
+  observed_paths:
+  - - READ_MECHANICREPORT
+  common_path:
+  - READ_MECHANICREPORT
+  optional_steps:
+  - READ_MECHANICREPORT
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - MechanicReport
+  - report
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 4
+  structural_signature: 21315b71ee688bfc12d7f1af52e219a52ff49e0e6253691601af36e381368273
+  ordered_step_signature:
+  - 1:GET:/workshop/api/mechanic/mechanic_report:READ_MECHANICREPORT:PRIMARY:mechanicreport:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-2EE9624A4BC55869
+  - WFINST-65C4ABAEC8D217C6
+  - WFINST-9931D625E29882CD
+  - WFINST-F4147A7D03FF46CB
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 4 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-47984E6EA6A0D1FA
+  name: coupon lifecycle
+  entry_actions:
+  - VALIDATE_COUPON
+  terminal_actions:
+  - VALIDATE_COUPON
+  observed_paths:
+  - - VALIDATE_COUPON
+  common_path:
+  - VALIDATE_COUPON
+  optional_steps:
+  - VALIDATE_COUPON
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  resource_types:
+  - Coupon
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 3
+  structural_signature: 4d4672a822452b17f6b0f16b03245eda3787839a1a662cc2983a624f548d1ecb
+  ordered_step_signature:
+  - 1:POST:/community/api/v2/coupon/validate-coupon:VALIDATE_COUPON:PRIMARY:coupon:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-0177B2DED14116D3
+  - WFINST-740BE082929A3737
+  - WFINST-B01FA9B68C98CA27
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 3 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-51AD613D329592CD
+  name: Post lifecycle
+  entry_actions:
+  - CREATE_POST
+  terminal_actions:
+  - CREATE_POST
+  observed_paths:
+  - - CREATE_POST
+  common_path:
+  - CREATE_POST
+  optional_steps:
+  - CREATE_POST
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - Post
+  - author
+  - post
+  transition_frequencies: {}
+  outcome_distribution:
+    CREATED: 2
+  structural_signature: b256fe23398b312af0398b0fc5ed79c9aa118b885294d1c01b3848d0283b99e9
+  ordered_step_signature:
+  - 1:POST:/community/api/v2/community/posts:CREATE_POST:PRIMARY:post:MUTATING:UNRESOLVED->CREATED
+  causal_topology: []
+  terminal_or_mutating_steps:
+  - 1:CREATE_POST:CREATED
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-695FF934A77F7B24
+  - WFINST-92D54D8A2A4192E3
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 2 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-5256530622A826BE
+  name: order lifecycle
+  entry_actions:
+  - CREATE_ORDER
+  terminal_actions:
+  - CREATE_ORDER
+  observed_paths:
+  - - CREATE_ORDER
+  common_path:
+  - CREATE_ORDER
+  optional_steps:
+  - CREATE_ORDER
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - Order
+  - order
+  - product
+  transition_frequencies: {}
+  outcome_distribution:
+    CREATED: 6
+  structural_signature: a635b0fccb464597858feda325ad6f730be12ac3f42ad596a1e2a925728b1526
+  ordered_step_signature:
+  - 1:POST:/workshop/api/shop/orders:CREATE_ORDER:PRIMARY:order:MUTATING:UNRESOLVED->CREATED
+  causal_topology: []
+  terminal_or_mutating_steps:
+  - 1:CREATE_ORDER:CREATED
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-759C3CEA9044730C
+  - WFINST-9E47D459BA09B855
+  - WFINST-C6FD77C6E9FE2A41
+  - WFINST-CB9A40590A62EE44
+  - WFINST-D13955A36A5D0CF3
+  - WFINST-EB7EC8CF3B91C520
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 6 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-5ED94B3471F37806
+  name: order lifecycle
+  entry_actions:
+  - READ_ORDER
+  terminal_actions:
+  - READ_ORDER
+  observed_paths:
+  - - READ_ORDER
+  common_path:
+  - READ_ORDER
+  optional_steps:
+  - READ_ORDER
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  resource_types:
+  - Order
+  - order
+  - product
+  transition_frequencies: {}
+  outcome_distribution:
+    RETURN PENDING: 1
+  structural_signature: ebcc5159f8f6f931efb42524cbc0b71a890a2c650762ae83a02155d8226baa8c
+  ordered_step_signature:
+  - 1:GET:/workshop/api/shop/orders/{orderId}:READ_ORDER:PRIMARY:order:READ_ONLY:UNRESOLVED->RETURN
+    PENDING
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-050E4304FC84394E
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 1 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  - A single instance cannot establish mandatory steps or authorization policy.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-6200E8D84D1FDB2E
+  name: Manifest.Json lifecycle
+  entry_actions:
+  - READ_MANIFEST_JSON
+  terminal_actions:
+  - READ_MANIFEST_JSON
+  observed_paths:
+  - - READ_MANIFEST_JSON
+  common_path:
+  - READ_MANIFEST_JSON
+  optional_steps:
+  - READ_MANIFEST_JSON
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - Manifest.Json
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 15
+  structural_signature: ced910362618ef368051cc947e1a17e8d3def4d2362bd79436e2586834b98a36
+  ordered_step_signature:
+  - 1:GET:/manifest.json:READ_MANIFEST_JSON:PRIMARY:manifest.json:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-27C4C9FEB30E2B28
+  - WFINST-4376045D5925F949
+  - WFINST-43DA7E7C887624D7
+  - WFINST-4B473235588F1FC8
+  - WFINST-6102026136DE29AD
+  - WFINST-6C5D59AA195DA410
+  - WFINST-6E48B2194634A011
+  - WFINST-758DD9BA358493AA
+  - WFINST-886B6E2B149D7115
+  - WFINST-B938D9D1EFBBB095
+  - WFINST-CA22DD191D11BF47
+  - WFINST-E7E3431FD98343A7
+  - WFINST-EFEA12201300C41D
+  - WFINST-FDDD05CB643EBB57
+  - WFINST-FF7472B8B768DD00
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 15 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-651E1B8910D89F80
+  name: Vehicle lifecycle
+  entry_actions:
+  - READ_VEHICLE
+  terminal_actions:
+  - READ_VEHICLE
+  observed_paths:
+  - - READ_VEHICLE
+  common_path:
+  - READ_VEHICLE
+  optional_steps:
+  - READ_VEHICLE
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - Vehicle
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 25
+  structural_signature: 6c20c39aef47f0fc31a98fb11ae7ff9d7c3e5c263db06f586401a9895f9b8d91
+  ordered_step_signature:
+  - 1:GET:/identity/api/v2/vehicle/vehicles:READ_VEHICLE:PRIMARY:vehicle:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-0BD7AEDA4F99D9DA
+  - WFINST-1338D53B92DC0D1C
+  - WFINST-1CD0A8C9CD830FC7
+  - WFINST-2219AC7C2D1CDDE7
+  - WFINST-24E8E94D87AFA37C
+  - WFINST-4A2055ECEBC6BDD1
+  - WFINST-4C17357971F13812
+  - WFINST-58DAAC87BC5DE139
+  - WFINST-647AB22949573EA6
+  - WFINST-6CAE2DF094AA9D03
+  - WFINST-765057D49A638431
+  - WFINST-783F03E84EA88788
+  - WFINST-7BC4DB8458676087
+  - WFINST-8760F2AE2B0CE038
+  - WFINST-892E4F0E42625419
+  - WFINST-89627C89AA6FC264
+  - WFINST-8C66127B31A2AACA
+  - WFINST-90D3F14BE0DBD0DD
+  - WFINST-96BF9172CEC09C99
+  - WFINST-A3E06203F9C274C6
+  - WFINST-AFB095A464C51242
+  - WFINST-B4806CF704203F37
+  - WFINST-B79B6956221653E6
+  - WFINST-B9D7AE40B89EB787
+  - WFINST-CE24C49C5DF749D4
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 25 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-6A4B7A915C98B513
+  name: Post lifecycle
+  entry_actions:
+  - READ_POST
+  terminal_actions:
+  - READ_POST
+  observed_paths:
+  - - READ_POST
+  common_path:
+  - READ_POST
+  optional_steps:
+  - READ_POST
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - Post
+  - author
+  - post
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 7
+  structural_signature: 40ff7bfb13426c042bcffc12dc14055fa6e51f5c4ea83a8a0fa514b64d7b14dc
+  ordered_step_signature:
+  - 1:GET:/community/api/v2/community/posts/{postId}:READ_POST:PRIMARY:post:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-2345DAF4A91B2DA8
+  - WFINST-4FDA1936A085A483
+  - WFINST-687085C7BEB92277
+  - WFINST-B1172E9305683364
+  - WFINST-FA5440D44A81AA6D
+  - WFINST-FFEF3956BCD9ED57
+  - WFINST-FFF710CA195533AA
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 7 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-6E58B7A7406560E6
+  name: Dashboard lifecycle
+  entry_actions:
+  - READ_DASHBOARD
+  terminal_actions:
+  - READ_DASHBOARD
+  observed_paths:
+  - - READ_DASHBOARD
+  common_path:
+  - READ_DASHBOARD
+  optional_steps:
+  - READ_DASHBOARD
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - Dashboard
+  - dashboard
+  - video
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 31
+  structural_signature: 7cf6acf1ac0fedd76dff6043677fae9ba22384047a9ac87b9c96b7eeec9c3d10
+  ordered_step_signature:
+  - 1:GET:/identity/api/v2/user/dashboard:READ_DASHBOARD:PRIMARY:dashboard:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-0119CF256C019339
+  - WFINST-0546D56DF2FE9E8E
+  - WFINST-05B78078E633E915
+  - WFINST-0E7D900AEB636BCD
+  - WFINST-1160B95DEF6DD2A2
+  - WFINST-1633B755B26FC56D
+  - WFINST-29FC5328097D3DF4
+  - WFINST-35803C1105D3490A
+  - WFINST-3867E380B1B31E96
+  - WFINST-38F1A06FDFA2B013
+  - WFINST-3C277AE5278EBCA1
+  - WFINST-6158B07E8E2CCA04
+  - WFINST-6238962E35B10F81
+  - WFINST-68DF1E55B17C34F5
+  - WFINST-695F3B81AE8EA308
+  - WFINST-6DE0794D4BFCD828
+  - WFINST-75E97E880F1204AF
+  - WFINST-8A2CA339BD693E89
+  - WFINST-91F57C32EF0A8D46
+  - WFINST-963D3049CF90BE30
+  - WFINST-97F3D938AAE06873
+  - WFINST-A0A68F2233F847F5
+  - WFINST-A1B98A7611722142
+  - WFINST-BEAD6044284C710F
+  - WFINST-C300D581EFC26E1B
+  - WFINST-C7489C35463132E2
+  - WFINST-CF14AA4F2795CD65
+  - WFINST-D09F4688AF434FB3
+  - WFINST-F9C34C4E75B0D977
+  - WFINST-F9C8CCDBA31B915F
+  - WFINST-FBF472556E27E41E
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 31 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-7F1BE3F0F25A597E
+  name: VehicleServiceDashboard lifecycle
+  entry_actions:
+  - READ_VEHICLESERVICEDASHBOARD
+  terminal_actions:
+  - READ_VEHICLESERVICEDASHBOARD
+  observed_paths:
+  - - READ_VEHICLESERVICEDASHBOARD
+  common_path:
+  - READ_VEHICLESERVICEDASHBOARD
+  optional_steps:
+  - READ_VEHICLESERVICEDASHBOARD
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - saeedmehmandoust
+  resource_types:
+  - VehicleServiceDashboard
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 1
+  structural_signature: 24bbf49f5d85e9d677a7eeb523f415d5ef6976e241643a0fcc7de0fa60c326f0
+  ordered_step_signature:
+  - 1:GET:/vehicle-service-dashboard:READ_VEHICLESERVICEDASHBOARD:PRIMARY:vehicleservicedashboard:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-1DBFA56B6207D01D
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 1 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  - A single instance cannot establish mandatory steps or authorization policy.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-878D2D849FA67A36
+  name: Post lifecycle
+  entry_actions:
+  - COMMENT_POST
+  terminal_actions:
+  - COMMENT_POST
+  observed_paths:
+  - - COMMENT_POST
+  common_path:
+  - COMMENT_POST
+  optional_steps:
+  - COMMENT_POST
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - Post
+  - author
+  - post
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 6
+  structural_signature: 1304c295305c515453bad28eacdafcd0510e92dd7f6254c273f5275259fb940a
+  ordered_step_signature:
+  - 1:POST:/community/api/v2/community/posts/{postId}/comment:COMMENT_POST:PRIMARY:post:MUTATING:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps:
+  - 1:COMMENT_POST:UNRESOLVED
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-28D2F2B58E64E6C2
+  - WFINST-2A76FCCBAEEECC09
+  - WFINST-46C86AFFFFE9B1C8
+  - WFINST-9E0B0A363B975A54
+  - WFINST-DB574CCC16AB8FE5
+  - WFINST-DDAD9A9A2B0F6194
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 6 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-8E00F6949961856E
+  name: Login lifecycle
+  entry_actions:
+  - LOGIN_LOGIN
+  terminal_actions:
+  - LOGIN_LOGIN
+  observed_paths:
+  - - LOGIN_LOGIN
+  common_path:
+  - LOGIN_LOGIN
+  optional_steps:
+  - LOGIN_LOGIN
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - Login
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 6
+  structural_signature: 0c9f6613ef4badafc8da605c0406131503e31e4bd12f03fe3fd19effa2c136ee
+  ordered_step_signature:
+  - 1:POST:/identity/api/auth/login:LOGIN_LOGIN:PRIMARY:login:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-017ADBF94E4B5162
+  - WFINST-80996BB6409459C6
+  - WFINST-B9616B7B72D9893B
+  - WFINST-D046428FDC7EA270
+  - WFINST-EE65EE7B3A41B6EE
+  - WFINST-EF138C2B0008DA21
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 6 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-99B3FB004FE27101
+  name: Post lifecycle
+  entry_actions:
+  - RECENT_POST
+  terminal_actions:
+  - RECENT_POST
+  observed_paths:
+  - - RECENT_POST
+  common_path:
+  - RECENT_POST
+  optional_steps:
+  - RECENT_POST
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - Post
+  - author
+  - post
+  - vehicle
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 12
+  structural_signature: 35f2238247e54a87e6c95a43b60a80da7c1747be970d127fe72a352bef2f230b
+  ordered_step_signature:
+  - 1:GET:/community/api/v2/community/posts/recent:RECENT_POST:PRIMARY:post:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-2C8DCCC6EA402DF9
+  - WFINST-3FBFAC5D6BFC2F99
+  - WFINST-721D0A98E7F6B866
+  - WFINST-7618B23534DA94CF
+  - WFINST-81E2BF993DE3951E
+  - WFINST-84D8B43C42E57522
+  - WFINST-8922AA6177F23AFC
+  - WFINST-9D762C875F18A502
+  - WFINST-BA43457EB4A2DB92
+  - WFINST-C8BC852891B00E76
+  - WFINST-CD17519BA8C40173
+  - WFINST-D6F662B89A3166D4
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 12 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-A2057BD76CF39A2A
+  name: PhoneNumber lifecycle
+  entry_actions:
+  - CHANGE_PHONENUMBER
+  terminal_actions:
+  - CHANGE_PHONENUMBER
+  observed_paths:
+  - - CHANGE_PHONENUMBER
+  common_path:
+  - CHANGE_PHONENUMBER
+  optional_steps:
+  - CHANGE_PHONENUMBER
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - PhoneNumber
+  transition_frequencies: {}
+  outcome_distribution:
+    '200': 2
+  structural_signature: 1ab485f58908c7b34506aa20706c17155719dd2827c1bb331f140fe39e74fd3f
+  ordered_step_signature:
+  - 1:POST:/identity/api/v2/user/change-phone-number:CHANGE_PHONENUMBER:PRIMARY:phonenumber:MUTATING:UNRESOLVED->200
+  causal_topology: []
+  terminal_or_mutating_steps:
+  - 1:CHANGE_PHONENUMBER:200
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-A4B25E4E760294D0
+  - WFINST-F9082923AA975196
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 2 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-A69D98F4D4559167
+  name: '%F0%9F%A4%96 lifecycle'
+  entry_actions:
+  - READ_F0_9F_A4_96
+  terminal_actions:
+  - READ_F0_9F_A4_96
+  observed_paths:
+  - - READ_F0_9F_A4_96
+  common_path:
+  - READ_F0_9F_A4_96
+  optional_steps:
+  - READ_F0_9F_A4_96
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - '%F0%9F%A4%96'
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 25
+  structural_signature: 0c0ea2baa2a883867f077137a2597835fb812b4f58620677995d5e895ea922bc
+  ordered_step_signature:
+  - 1:GET:/%F0%9F%A4%96:READ_F0_9F_A4_96:PRIMARY:%f0%9f%a4%96:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-04111940433DBD64
+  - WFINST-067D7B1142869409
+  - WFINST-07216752DFBB67BE
+  - WFINST-086B033E7D88E0E8
+  - WFINST-10968257B95DFBDA
+  - WFINST-32B5E270B7D1EF55
+  - WFINST-3C6DCE78EB204C7B
+  - WFINST-5E25E9FFEB7422B6
+  - WFINST-5E6D911923AC0459
+  - WFINST-62EE9311EE241217
+  - WFINST-6CFFF3E68A2805D4
+  - WFINST-7A52CAD58F533243
+  - WFINST-83F7629651A3FACF
+  - WFINST-844CC656593F30C4
+  - WFINST-883DA2D68DAE1D4B
+  - WFINST-AC7D6EF3738294B7
+  - WFINST-BA27E232E8F4C40A
+  - WFINST-BB2D3A58B73BD474
+  - WFINST-C8561310BDD57861
+  - WFINST-CE7923B196C266D4
+  - WFINST-CECFE27C208076E7
+  - WFINST-E4394967BE5E61C9
+  - WFINST-E4B45EE66A28CDA2
+  - WFINST-F0F42EFE82B497FA
+  - WFINST-F59397CB1BBDBDE4
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 25 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-A8C7FB73AE0307AC
+  name: authentication challenge
+  entry_actions:
+  - VERIFY_AUTH
+  terminal_actions:
+  - VERIFY_AUTH
+  observed_paths:
+  - - VERIFY_AUTH
+  common_path:
+  - VERIFY_AUTH
+  optional_steps:
+  - VERIFY_AUTH
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - Auth
+  transition_frequencies: {}
+  outcome_distribution:
+    '200': 12
+  structural_signature: 2b500d09a2b4963aad61277e1eda3b7f89b4319eafe9d70c94c5485975e013d7
+  ordered_step_signature:
+  - 1:POST:/identity/api/auth/verify:VERIFY_AUTH:PRIMARY:auth:MUTATING:UNRESOLVED->200
+  causal_topology: []
+  terminal_or_mutating_steps:
+  - 1:VERIFY_AUTH:200
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-04A3CE7EC90AF4AC
+  - WFINST-0F9F69AF18E320D2
+  - WFINST-36DD4D3DA2266CE2
+  - WFINST-608E8574F3A5165C
+  - WFINST-719E99F933CDB8EF
+  - WFINST-8432B2D53D3EDEF6
+  - WFINST-8E23761D4F119F45
+  - WFINST-A5FDD14DBAA621F4
+  - WFINST-A9795208621B669E
+  - WFINST-C0F61A4D4F9DB5EA
+  - WFINST-CBF2739A65F12098
+  - WFINST-D33B5898D7D935E1
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 12 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-A955B9C288A08FC1
+  name: order lifecycle
+  entry_actions:
+  - RETURN_ORDER
+  terminal_actions:
+  - RETURN_ORDER
+  observed_paths:
+  - - RETURN_ORDER
+  common_path:
+  - RETURN_ORDER
+  optional_steps:
+  - RETURN_ORDER
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - Order
+  - order
+  transition_frequencies: {}
+  outcome_distribution:
+    RETURN_PENDING: 3
+  structural_signature: 0c8ce1ca1405b91d0e920ff73ca4c6ae0aacfcbb6764a2ddc5efeab4207a451a
+  ordered_step_signature:
+  - 1:POST:/workshop/api/shop/orders/return_order:RETURN_ORDER:PRIMARY:order:MUTATING:UNRESOLVED->RETURN_PENDING
+  causal_topology: []
+  terminal_or_mutating_steps:
+  - 1:RETURN_ORDER:RETURN_PENDING
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-66725E48869DC2E7
+  - WFINST-AF62C40FBBC40FDC
+  - WFINST-DCB1CA9ED24B6189
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 3 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-B09E76F6DFB7EA71
+  name: Mechanic lifecycle
+  entry_actions:
+  - READ_MECHANIC
+  terminal_actions:
+  - READ_MECHANIC
+  observed_paths:
+  - - READ_MECHANIC
+  common_path:
+  - READ_MECHANIC
+  optional_steps:
+  - READ_MECHANIC
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - Mechanic
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 3
+  structural_signature: 08f31dd110b2bad0370dd20385df78893f66e56c07a2f9c09144c00822f3f5f2
+  ordered_step_signature:
+  - 1:GET:/workshop/api/mechanic:READ_MECHANIC:PRIMARY:mechanic:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-86DBA21FE540493C
+  - WFINST-90290824F070398B
+  - WFINST-D2916AF1B47B6E7B
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 3 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-B18CAB66F33EC59A
+  name: order lifecycle
+  entry_actions:
+  - RETURN_ORDER
+  terminal_actions:
+  - RETURN_ORDER
+  observed_paths:
+  - - RETURN_ORDER
+  common_path:
+  - RETURN_ORDER
+  optional_steps:
+  - RETURN_ORDER
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - Order
+  - order
+  - product
+  transition_frequencies: {}
+  outcome_distribution:
+    RETURN PENDING: 3
+  structural_signature: 16bebf7ddc84e8d7bb2552cab4502bba176a1fa5c7d376c067e20ef287e87ea9
+  ordered_step_signature:
+  - 1:POST:/workshop/api/shop/orders/return_order:RETURN_ORDER:PRIMARY:order:MUTATING:UNRESOLVED->RETURN
+    PENDING
+  causal_topology: []
+  terminal_or_mutating_steps:
+  - 1:RETURN_ORDER:RETURN PENDING
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-3A17955119345F11
+  - WFINST-A0AE893A0BA845A8
+  - WFINST-C1B6359B9BE200DB
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 3 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-B455D1EDD5234984
+  name: Video lifecycle
+  entry_actions:
+  - READ_VIDEO
+  terminal_actions:
+  - READ_VIDEO
+  observed_paths:
+  - - READ_VIDEO
+  common_path:
+  - READ_VIDEO
+  optional_steps:
+  - READ_VIDEO
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  resource_types:
+  - Video
+  - video
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 1
+  structural_signature: af795dad8eaccdbc1b2fcd432973b85d505429a261a51ad5d6aecae299a47967
+  ordered_step_signature:
+  - 1:GET:/identity/api/v2/user/videos/{videoId}:READ_VIDEO:PRIMARY:video:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-A20965E785C3FF77
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 1 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  - A single instance cannot establish mandatory steps or authorization policy.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-BCEB162A48A61384
+  name: Mechanic lifecycle
+  entry_actions:
+  - READ_MECHANIC
+  terminal_actions:
+  - READ_MECHANIC
+  observed_paths:
+  - - READ_MECHANIC
+  common_path:
+  - READ_MECHANIC
+  optional_steps:
+  - READ_MECHANIC
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - Mechanic
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 3
+  structural_signature: 4ae3b9f91226d1118a26617e7823bb760045e06623cb79e506d9c60a8f50d9e0
+  ordered_step_signature:
+  - 1:GET:/workshop/api/mechanic/:READ_MECHANIC:PRIMARY:mechanic:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-0B17B588F79A4CC8
+  - WFINST-91A42CBA031DAF6D
+  - WFINST-B91985BB76B53C9D
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 3 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-C4737201DF61E99F
+  name: order lifecycle
+  entry_actions:
+  - ALL_ORDER
+  terminal_actions:
+  - ALL_ORDER
+  observed_paths:
+  - - ALL_ORDER
+  common_path:
+  - ALL_ORDER
+  optional_steps:
+  - ALL_ORDER
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - Order
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 5
+  structural_signature: 73435ff98001410b9bf6bfdf052c70bca659f18f2a139b7118f58be79998330a
+  ordered_step_signature:
+  - 1:GET:/workshop/api/shop/orders/all:ALL_ORDER:PRIMARY:order:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-152922EB5C02C20C
+  - WFINST-356A223917E0E8AE
+  - WFINST-3FCA2D69BE8E1905
+  - WFINST-6E5AD10B90C3192F
+  - WFINST-8AEB5AEAFA68B512
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 5 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-D0DBCD81D38E3FCF
+  name: Mechanic lifecycle
+  entry_actions:
+  - CONTACT_MECHANIC
+  terminal_actions:
+  - CONTACT_MECHANIC
+  observed_paths:
+  - - CONTACT_MECHANIC
+  common_path:
+  - CONTACT_MECHANIC
+  optional_steps:
+  - CONTACT_MECHANIC
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - Mechanic
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 2
+  structural_signature: f59769ce4fd4726072b8a1a487808ce8e9462c1ec6dc9f5958f1d449fb3233a5
+  ordered_step_signature:
+  - 1:POST:/workshop/api/merchant/contact_mechanic:CONTACT_MECHANIC:PRIMARY:mechanic:MUTATING:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps:
+  - 1:CONTACT_MECHANIC:UNRESOLVED
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-67970AA584655AEA
+  - WFINST-B2B9A240D8A074BE
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 2 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-E2303A4D5774FA77
+  name: ServiceReport lifecycle
+  entry_actions:
+  - READ_SERVICEREPORT
+  terminal_actions:
+  - READ_SERVICEREPORT
+  observed_paths:
+  - - READ_SERVICEREPORT
+  common_path:
+  - READ_SERVICEREPORT
+  optional_steps:
+  - READ_SERVICEREPORT
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  resource_types:
+  - ServiceReport
+  - servicereport
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 4
+  structural_signature: f98f1c7d4dd40192b5ba97bed2f328532ae9f79a261aa081748529d4263b2fab
+  ordered_step_signature:
+  - 1:GET:/service-report:READ_SERVICEREPORT:PRIMARY:servicereport:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-1ACFB1223C2F38AD
+  - WFINST-34043D4B904A722A
+  - WFINST-40244B4C8A9BBA47
+  - WFINST-7364A0EF6E563961
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 4 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-EB22B8E7C91F4402
+  name: order lifecycle
+  entry_actions:
+  - ALL_ORDER
+  terminal_actions:
+  - ALL_ORDER
+  observed_paths:
+  - - ALL_ORDER
+  common_path:
+  - ALL_ORDER
+  optional_steps:
+  - ALL_ORDER
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - Order
+  - order
+  - product
+  transition_frequencies: {}
+  outcome_distribution:
+    DELIVERED: 9
+  structural_signature: 7c3252fd6549404ca23bcc4424058474dd51708b2a6cb6b4453042fe8f277027
+  ordered_step_signature:
+  - 1:GET:/workshop/api/shop/orders/all:ALL_ORDER:PRIMARY:order:READ_ONLY:UNRESOLVED->DELIVERED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-0313FE53AB18950C
+  - WFINST-081CE2AA68D676E8
+  - WFINST-0857486923D0271C
+  - WFINST-20C617602A4A1E3D
+  - WFINST-4530CDD84ED475A9
+  - WFINST-914FBAE7C5D9C18D
+  - WFINST-B42E133875A90974
+  - WFINST-D166783D0DC77031
+  - WFINST-F5BB85B53A2771E7
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 9 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-EB41FABAAB565233
+  name: Picture lifecycle
+  entry_actions:
+  - CREATE_PICTURE
+  terminal_actions:
+  - CREATE_PICTURE
+  observed_paths:
+  - - CREATE_PICTURE
+  common_path:
+  - CREATE_PICTURE
+  optional_steps:
+  - CREATE_PICTURE
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - Picture
+  - picture
+  transition_frequencies: {}
+  outcome_distribution:
+    ACTIVE: 2
+  structural_signature: ecd1db9171fdf03f8d119eab4ebe2e87462748571fa49b559717f18e69823d9f
+  ordered_step_signature:
+  - 1:POST:/identity/api/v2/user/pictures:CREATE_PICTURE:PRIMARY:picture:MUTATING:UNRESOLVED->ACTIVE
+  causal_topology: []
+  terminal_or_mutating_steps:
+  - 1:CREATE_PICTURE:ACTIVE
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-476E74EB9A4541E5
+  - WFINST-C7C7C5C1F6472CF0
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 2 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-F25F0A23D2AF3E25
+  name: '%F0%9F%91%A4 lifecycle'
+  entry_actions:
+  - READ_F0_9F_91_A4
+  terminal_actions:
+  - READ_F0_9F_91_A4
+  observed_paths:
+  - - READ_F0_9F_91_A4
+  common_path:
+  - READ_F0_9F_91_A4
+  optional_steps:
+  - READ_F0_9F_91_A4
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  resource_types:
+  - '%F0%9F%91%A4'
+  transition_frequencies: {}
+  outcome_distribution:
+    UNRESOLVED: 4
+  structural_signature: 49e95143364cb79cdf89e58a1dd0491b824d32fc8e8d228e4de5aa28740cef61
+  ordered_step_signature:
+  - 1:GET:/%F0%9F%91%A4:READ_F0_9F_91_A4:PRIMARY:%f0%9f%91%a4:READ_ONLY:UNRESOLVED->UNRESOLVED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-0747DD0371A1B866
+  - WFINST-4EACFBB3180F332A
+  - WFINST-8DD479003A68E2D3
+  - WFINST-AE12DA79673CBF3C
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 4 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
+- id: WFAM-FE6F4C0E35141769
   name: MechanicReport lifecycle
   entry_actions:
   - READ_MECHANICREPORT
@@ -597,448 +1764,17 @@ workflow_families:
   transition_frequencies: {}
   outcome_distribution:
     PENDING: 3
-    UNRESOLVED: 4
+  structural_signature: c455068c81b28a05dd67558d63b1fb63fccbc5192f6881322522f02473230fbc
+  ordered_step_signature:
+  - 1:GET:/workshop/api/mechanic/mechanic_report:READ_MECHANICREPORT:PRIMARY:mechanicreport:READ_ONLY:UNRESOLVED->PENDING
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
   workflow_instance_ids:
-  - WFINST-38B9D694D3469CBE
-  - WFINST-460897547F602688
-  - WFINST-5A3648ACCF7A5D1A
-  - WFINST-9F230049FB8E565D
-  - WFINST-C77089A131975059
-  - WFINST-D3F3815904550E68
-  - WFINST-E1CB9686FFA33C7B
-  inference_confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - Derived from 7 workflow instance(s), including 0 with moderate-or-better segmentation
-    evidence.
-  epistemic_status: INFERRED_PATTERN
-- id: WFAM-95B69DE883F82103
-  name: Video lifecycle
-  entry_actions:
-  - READ_VIDEO
-  terminal_actions:
-  - READ_VIDEO
-  observed_paths:
-  - - READ_VIDEO
-  common_path:
-  - READ_VIDEO
-  optional_steps:
-  - READ_VIDEO
-  required_looking_steps: []
-  branch_points: []
-  actors:
-  - mrscargo
-  resource_types:
-  - Video
-  - video
-  transition_frequencies: {}
-  outcome_distribution:
-    '404': 1
-  workflow_instance_ids:
-  - WFINST-42235BF9E487E326
-  inference_confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - Derived from 1 workflow instance(s), including 0 with moderate-or-better segmentation
-    evidence.
-  - A single instance cannot establish mandatory steps or authorization policy.
-  epistemic_status: INFERRED_PATTERN
-- id: WFAM-A6B1AE187C8C4435
-  name: Shop lifecycle
-  entry_actions:
-  - READ_SHOP
-  terminal_actions:
-  - READ_SHOP
-  observed_paths:
-  - - READ_SHOP
-  common_path:
-  - READ_SHOP
-  optional_steps:
-  - READ_SHOP
-  required_looking_steps: []
-  branch_points: []
-  actors:
-  - mrscargo
-  resource_types:
-  - Shop
-  transition_frequencies: {}
-  outcome_distribution:
-    UNRESOLVED: 1
-  workflow_instance_ids:
-  - WFINST-F4A1759C7CA38777
-  inference_confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - Derived from 1 workflow instance(s), including 0 with moderate-or-better segmentation
-    evidence.
-  - A single instance cannot establish mandatory steps or authorization policy.
-  epistemic_status: INFERRED_PATTERN
-- id: WFAM-AACA520385FB2B06
-  name: Login lifecycle
-  entry_actions:
-  - LOGIN_LOGIN
-  terminal_actions:
-  - LOGIN_LOGIN
-  observed_paths:
-  - - LOGIN_LOGIN
-  common_path:
-  - LOGIN_LOGIN
-  optional_steps:
-  - LOGIN_LOGIN
-  required_looking_steps: []
-  branch_points: []
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  resource_types:
-  - Login
-  transition_frequencies: {}
-  outcome_distribution:
-    UNRESOLVED: 6
-  workflow_instance_ids:
-  - WFINST-26FD944E44924C1A
-  - WFINST-3F83EADB1A63680B
-  - WFINST-46919C1647C283BE
-  - WFINST-7906BB3B725F11E9
-  - WFINST-982ADCEC11432F33
-  - WFINST-E3F6B3842F78426A
-  inference_confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - Derived from 6 workflow instance(s), including 0 with moderate-or-better segmentation
-    evidence.
-  epistemic_status: INFERRED_PATTERN
-- id: WFAM-AE93C2967927E4BD
-  name: '%F0%9F%91%A4 lifecycle'
-  entry_actions:
-  - READ_F0_9F_91_A4
-  terminal_actions:
-  - READ_F0_9F_91_A4
-  observed_paths:
-  - - READ_F0_9F_91_A4
-  common_path:
-  - READ_F0_9F_91_A4
-  optional_steps:
-  - READ_F0_9F_91_A4
-  required_looking_steps: []
-  branch_points: []
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  resource_types:
-  - '%F0%9F%91%A4'
-  transition_frequencies: {}
-  outcome_distribution:
-    UNRESOLVED: 4
-  workflow_instance_ids:
-  - WFINST-2C5F79C3BBAD10B1
-  - WFINST-2FF769D8595B41D8
-  - WFINST-32182703C50456F7
-  - WFINST-BA90E9718D4E9BA7
-  inference_confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - Derived from 4 workflow instance(s), including 0 with moderate-or-better segmentation
-    evidence.
-  epistemic_status: INFERRED_PATTERN
-- id: WFAM-AF7D4D5281CAEF72
-  name: Dashboard lifecycle
-  entry_actions:
-  - READ_DASHBOARD
-  terminal_actions:
-  - READ_DASHBOARD
-  observed_paths:
-  - - READ_DASHBOARD
-  common_path:
-  - READ_DASHBOARD
-  optional_steps:
-  - READ_DASHBOARD
-  required_looking_steps: []
-  branch_points: []
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  resource_types:
-  - Dashboard
-  - dashboard
-  - video
-  transition_frequencies: {}
-  outcome_distribution:
-    UNRESOLVED: 21
-  workflow_instance_ids:
-  - WFINST-1024D83A20CA2F2C
-  - WFINST-1313A2CE328A6ACD
-  - WFINST-37A14B1B8D9E6E9A
-  - WFINST-3B67E0CBB4461AF2
-  - WFINST-6BBDE42FA158159B
-  - WFINST-6D2874D642B0E9C5
-  - WFINST-70EE8A071E009322
-  - WFINST-8EE902B1DAA8E8F5
-  - WFINST-987F0CEB02C58F1E
-  - WFINST-9F8247E85E128F12
-  - WFINST-AFB51A7B9689B6A6
-  - WFINST-B4C45AA3BB67BF85
-  - WFINST-C03BED542A839DB1
-  - WFINST-C5287E58E5ECAC9B
-  - WFINST-C9B8A3B22B87DCC3
-  - WFINST-D09A78056490D462
-  - WFINST-E2A2591EA7138DEB
-  - WFINST-E8EF27D06A23A61B
-  - WFINST-EAB6206579EFFB99
-  - WFINST-EB7BFFC9A2747BD8
-  - WFINST-FA0DCB7186DF8CB5
-  inference_confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - Derived from 21 workflow instance(s), including 0 with moderate-or-better segmentation
-    evidence.
-  epistemic_status: INFERRED_PATTERN
-- id: WFAM-D851170456D369DF
-  name: Post lifecycle
-  entry_actions:
-  - CREATE_POST
-  - RECENT_POST
-  terminal_actions:
-  - COMMENT_POST
-  - READ_POST
-  - RECENT_POST
-  observed_paths:
-  - - CREATE_POST
-    - RECENT_POST
-    - RECENT_POST
-    - RECENT_POST
-    - READ_POST
-    - COMMENT_POST
-    - RECENT_POST
-    - READ_POST
-    - COMMENT_POST
-    - RECENT_POST
-    - READ_POST
-    - COMMENT_POST
-    - READ_POST
-  - - RECENT_POST
-  - - RECENT_POST
-    - CREATE_POST
-    - RECENT_POST
-    - READ_POST
-    - COMMENT_POST
-    - RECENT_POST
-    - READ_POST
-    - COMMENT_POST
-    - RECENT_POST
-    - READ_POST
-    - COMMENT_POST
-  common_path:
-  - CREATE_POST
-  - RECENT_POST
-  - RECENT_POST
-  - RECENT_POST
-  - READ_POST
-  - COMMENT_POST
-  - RECENT_POST
-  - READ_POST
-  - COMMENT_POST
-  - RECENT_POST
-  - READ_POST
-  - COMMENT_POST
-  - READ_POST
-  optional_steps: []
-  required_looking_steps:
-  - COMMENT_POST
-  - CREATE_POST
-  - READ_POST
-  - RECENT_POST
-  branch_points:
-  - COMMENT_POST
-  - RECENT_POST
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  resource_types:
-  - Post
-  - author
-  - post
-  - vehicle
-  transition_frequencies:
-    COMMENT_POST -> READ_POST: 1
-    COMMENT_POST -> RECENT_POST: 4
-    CREATE_POST -> RECENT_POST: 2
-    READ_POST -> COMMENT_POST: 6
-    RECENT_POST -> CREATE_POST: 1
-    RECENT_POST -> READ_POST: 6
-    RECENT_POST -> RECENT_POST: 2
-  outcome_distribution:
-    CREATED: 2
-    UNRESOLVED: 3
-  workflow_instance_ids:
-  - WFINST-245D443439F827F9
-  - WFINST-2576628D45BA386E
-  - WFINST-29194FF474072FF3
-  - WFINST-8BA773C4E0E54AAC
-  - WFINST-AB94186DEC3435A8
-  inference_confidence: MODERATE_EVIDENCE
-  confidence_explanation:
-  - Derived from 5 workflow instance(s), including 2 with moderate-or-better segmentation
-    evidence.
-  - Required-looking steps are the intersection of at least two observed paths.
-  epistemic_status: INFERRED_PATTERN
-- id: WFAM-DD6641D2E966B66F
-  name: Product lifecycle
-  entry_actions:
-  - READ_PRODUCT
-  terminal_actions:
-  - READ_PRODUCT
-  observed_paths:
-  - - READ_PRODUCT
-  common_path:
-  - READ_PRODUCT
-  optional_steps:
-  - READ_PRODUCT
-  required_looking_steps: []
-  branch_points: []
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  resource_types:
-  - Product
-  - product
-  transition_frequencies: {}
-  outcome_distribution:
-    UNRESOLVED: 4
-  workflow_instance_ids:
-  - WFINST-62533C6E728D00F2
-  - WFINST-62D3CF3F268086EE
-  - WFINST-858BFC1C00A08A4F
-  - WFINST-E7B71FF6F07FDBA5
-  inference_confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - Derived from 4 workflow instance(s), including 0 with moderate-or-better segmentation
-    evidence.
-  epistemic_status: INFERRED_PATTERN
-- id: WFAM-E4995F63FE06A147
-  name: order lifecycle
-  entry_actions:
-  - ALL_ORDER
-  - CREATE_ORDER
-  - READ_ORDER
-  - READ_PRODUCT
-  - RETURN_ORDER
-  terminal_actions:
-  - ALL_ORDER
-  - READ_ORDER
-  - RETURN_ORDER
-  observed_paths:
-  - - ALL_ORDER
-  - - CREATE_ORDER
-    - ALL_ORDER
-  - - READ_ORDER
-  - - READ_PRODUCT
-    - CREATE_ORDER
-    - ALL_ORDER
-    - RETURN_ORDER
-    - READ_PRODUCT
-    - ALL_ORDER
-    - CREATE_ORDER
-    - ALL_ORDER
-  - - READ_PRODUCT
-    - CREATE_ORDER
-    - ALL_ORDER
-    - RETURN_ORDER
-    - READ_PRODUCT
-    - ALL_ORDER
-    - READ_PRODUCT
-    - READ_PRODUCT
-    - CREATE_ORDER
-    - ALL_ORDER
-    - READ_PRODUCT
-    - CREATE_ORDER
-    - ALL_ORDER
-    - ALL_ORDER
-    - RETURN_ORDER
-    - READ_ORDER
-    - ALL_ORDER
-    - READ_ORDER
-    - ALL_ORDER
-    - READ_ORDER
-    - ALL_ORDER
-    - RETURN_ORDER
-  - - RETURN_ORDER
-  common_path:
-  - CREATE_ORDER
-  - ALL_ORDER
-  optional_steps:
-  - READ_ORDER
-  - READ_PRODUCT
-  - RETURN_ORDER
-  required_looking_steps:
-  - ALL_ORDER
-  - CREATE_ORDER
-  branch_points:
-  - ALL_ORDER
-  - READ_PRODUCT
-  - RETURN_ORDER
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  resource_types:
-  - Order
-  - Product
-  - order
-  - product
-  transition_frequencies:
-    ALL_ORDER -> ALL_ORDER: 1
-    ALL_ORDER -> CREATE_ORDER: 1
-    ALL_ORDER -> READ_ORDER: 2
-    ALL_ORDER -> READ_PRODUCT: 2
-    ALL_ORDER -> RETURN_ORDER: 4
-    CREATE_ORDER -> ALL_ORDER: 6
-    READ_ORDER -> ALL_ORDER: 3
-    READ_PRODUCT -> ALL_ORDER: 2
-    READ_PRODUCT -> CREATE_ORDER: 4
-    READ_PRODUCT -> READ_PRODUCT: 1
-    RETURN_ORDER -> READ_ORDER: 1
-    RETURN_ORDER -> READ_PRODUCT: 2
-  outcome_distribution:
-    CREATED: 2
-    RETURN PENDING: 1
-    RETURN_PENDING: 3
-    UNRESOLVED: 4
-  workflow_instance_ids:
-  - WFINST-1C4C0C0CDECDFA2E
-  - WFINST-2EC8CD8AFF6560F6
-  - WFINST-701A1905AE603997
-  - WFINST-7A82511D1E85E27C
-  - WFINST-93EB5548A6745383
-  - WFINST-BA090EB6E55A7BF6
-  - WFINST-BB34BA47FBA04E04
-  - WFINST-BE40EEED65AEDD7D
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-D8A56DA093C4B48B
-  inference_confidence: HIGH_EVIDENCE
-  confidence_explanation:
-  - Derived from 10 workflow instance(s), including 3 with moderate-or-better segmentation
-    evidence.
-  - Required-looking steps are the intersection of at least two observed paths.
-  epistemic_status: INFERRED_PATTERN
-- id: WFAM-EC4E3B81653A0B8B
-  name: coupon lifecycle
-  entry_actions:
-  - VALIDATE_COUPON
-  terminal_actions:
-  - VALIDATE_COUPON
-  observed_paths:
-  - - VALIDATE_COUPON
-  common_path:
-  - VALIDATE_COUPON
-  optional_steps:
-  - VALIDATE_COUPON
-  required_looking_steps: []
-  branch_points: []
-  actors:
-  - mrscargo
-  resource_types:
-  - Coupon
-  transition_frequencies: {}
-  outcome_distribution:
-    UNRESOLVED: 3
-  workflow_instance_ids:
-  - WFINST-1321D298F033DBA1
-  - WFINST-8732EB914605648D
-  - WFINST-BE01B1B162BD529F
+  - WFINST-6EFF9201448B22D4
+  - WFINST-8EB14A8B80CB2D4D
+  - WFINST-E537CFC9F2B9258C
   inference_confidence: WEAK_EVIDENCE
   confidence_explanation:
   - Derived from 3 workflow instance(s), including 0 with moderate-or-better segmentation

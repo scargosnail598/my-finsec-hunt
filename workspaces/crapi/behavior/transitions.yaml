@@ -1,49 +1,103 @@
 version: 1
 transitions:
-- id: TRANS-097A3C0019FC2B21
-  workflow_family_id: WFAM-E4995F63FE06A147
-  source_state: RETURN PENDING
-  action_id: ACTN-675607B4373F0BCE
-  action_name: READ_ORDER
-  destination_state: RETURN PENDING
-  actors:
-  - mrscargo
-  preconditions:
-  - Resource state is RETURN PENDING
-  resource_types:
-  - order
-  frequency: 1
-  examples:
-  - WFINST-C19C2BBCD66DE6FF
-  contradictions: []
-  confidence: MODERATE_EVIDENCE
-  evidence:
-  - OBS-000702
-  epistemic_status: INFERRED_PATTERN
-- id: TRANS-0EB11BF5948C7EE4
-  workflow_family_id: WFAM-5074D2F402DD9C78
+- id: TRANS-1A3D2961BCD1B5F8
+  workflow_family_id: WFAM-385EF29E1E914D0C
   source_state: UNRESOLVED
-  action_id: ACTN-AB7AE05FC55D3AED
-  action_name: CHANGE_PHONENUMBER
-  destination_state: '200'
+  action_id: ACTN-8141DB8502F7D7EF
+  action_name: READ_VIDEO
+  destination_state: '404'
   actors:
   - mrscargo
   - saeedmehmandoust
   preconditions: []
   resource_types:
-  - phonenumber
-  frequency: 2
+  - video
+  frequency: 5
   examples:
-  - WFINST-1FD4847A8A1C64C5
-  - WFINST-212CC5CC73801244
+  - WFINST-07871942D372674C
+  - WFINST-28928ED0CB282E8A
+  - WFINST-6EDD2AB3D663E7F5
+  - WFINST-993F7D1553328D16
+  - WFINST-E77E2462CBD6F398
   contradictions: []
   confidence: HIGH_EVIDENCE
   evidence:
-  - OBS-000036
-  - OBS-000068
+  - OBS-000035
+  - OBS-000046
+  - OBS-000066
+  - OBS-000121
+  - OBS-000122
   epistemic_status: INFERRED_PATTERN
-- id: TRANS-1BD79D6B66857BA8
-  workflow_family_id: WFAM-E4995F63FE06A147
+- id: TRANS-27B7261924F042E5
+  workflow_family_id: WFAM-EB41FABAAB565233
+  source_state: UNRESOLVED
+  action_id: ACTN-6C125ED34727BAAC
+  action_name: CREATE_PICTURE
+  destination_state: ACTIVE
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  preconditions: []
+  resource_types:
+  - picture
+  frequency: 2
+  examples:
+  - WFINST-476E74EB9A4541E5
+  - WFINST-C7C7C5C1F6472CF0
+  contradictions: []
+  confidence: HIGH_EVIDENCE
+  evidence:
+  - OBS-000047
+  - OBS-000067
+  epistemic_status: INFERRED_PATTERN
+- id: TRANS-2D403B3522D0E902
+  workflow_family_id: WFAM-B18CAB66F33EC59A
+  source_state: UNRESOLVED
+  action_id: ACTN-1EE6E534FAD588CE
+  action_name: RETURN_ORDER
+  destination_state: RETURN PENDING
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  preconditions: []
+  resource_types:
+  - order
+  frequency: 3
+  examples:
+  - WFINST-3A17955119345F11
+  - WFINST-A0AE893A0BA845A8
+  - WFINST-C1B6359B9BE200DB
+  contradictions: []
+  confidence: HIGH_EVIDENCE
+  evidence:
+  - OBS-000012
+  - OBS-000059
+  - OBS-000700
+  epistemic_status: INFERRED_PATTERN
+- id: TRANS-586F9D7F4D3638CF
+  workflow_family_id: WFAM-51AD613D329592CD
+  source_state: UNRESOLVED
+  action_id: ACTN-EB1AFA240D8F1449
+  action_name: CREATE_POST
+  destination_state: CREATED
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  preconditions: []
+  resource_types:
+  - post
+  frequency: 2
+  examples:
+  - WFINST-695FF934A77F7B24
+  - WFINST-92D54D8A2A4192E3
+  contradictions: []
+  confidence: MODERATE_EVIDENCE
+  evidence:
+  - OBS-000015
+  - OBS-000062
+  epistemic_status: INFERRED_PATTERN
+- id: TRANS-669E99BC80588826
+  workflow_family_id: WFAM-EB22B8E7C91F4402
   source_state: DELIVERED
   action_id: ACTN-0C74FD39A79883B0
   action_name: ALL_ORDER
@@ -57,15 +111,15 @@ transitions:
   - order
   frequency: 9
   examples:
-  - WFINST-BE40EEED65AEDD7D
-  - WFINST-BE40EEED65AEDD7D
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
+  - WFINST-0313FE53AB18950C
+  - WFINST-081CE2AA68D676E8
+  - WFINST-0857486923D0271C
+  - WFINST-20C617602A4A1E3D
+  - WFINST-4530CDD84ED475A9
+  - WFINST-914FBAE7C5D9C18D
+  - WFINST-B42E133875A90974
+  - WFINST-D166783D0DC77031
+  - WFINST-F5BB85B53A2771E7
   contradictions: []
   confidence: HIGH_EVIDENCE
   evidence:
@@ -79,33 +133,117 @@ transitions:
   - OBS-000707
   - OBS-000710
   epistemic_status: INFERRED_PATTERN
-- id: TRANS-293D588841EC2CA9
-  workflow_family_id: WFAM-E4995F63FE06A147
-  source_state: RETURN PENDING
+- id: TRANS-69D352BA733AE319
+  workflow_family_id: WFAM-EB22B8E7C91F4402
+  source_state: UNRESOLVED
+  action_id: ACTN-0C74FD39A79883B0
+  action_name: ALL_ORDER
+  destination_state: DELIVERED
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  preconditions: []
+  resource_types:
+  - order
+  frequency: 9
+  examples:
+  - WFINST-0313FE53AB18950C
+  - WFINST-081CE2AA68D676E8
+  - WFINST-0857486923D0271C
+  - WFINST-20C617602A4A1E3D
+  - WFINST-4530CDD84ED475A9
+  - WFINST-914FBAE7C5D9C18D
+  - WFINST-B42E133875A90974
+  - WFINST-D166783D0DC77031
+  - WFINST-F5BB85B53A2771E7
+  contradictions: []
+  confidence: HIGH_EVIDENCE
+  evidence:
+  - OBS-000011
+  - OBS-000028
+  - OBS-000058
+  - OBS-000084
+  - OBS-000108
+  - OBS-000699
+  - OBS-000704
+  - OBS-000707
+  - OBS-000710
+  epistemic_status: INFERRED_PATTERN
+- id: TRANS-6CB2353DA594C139
+  workflow_family_id: WFAM-5ED94B3471F37806
+  source_state: UNRESOLVED
+  action_id: ACTN-675607B4373F0BCE
+  action_name: READ_ORDER
+  destination_state: RETURN PENDING
+  actors:
+  - mrscargo
+  preconditions: []
+  resource_types:
+  - order
+  frequency: 1
+  examples:
+  - WFINST-050E4304FC84394E
+  contradictions: []
+  confidence: MODERATE_EVIDENCE
+  evidence:
+  - OBS-000702
+  epistemic_status: INFERRED_PATTERN
+- id: TRANS-71276C6B8EF7A27A
+  workflow_family_id: WFAM-5256530622A826BE
+  source_state: UNRESOLVED
   action_id: ACTN-187817B81B8319F5
   action_name: CREATE_ORDER
   destination_state: CREATED
   actors:
   - mrscargo
   - saeedmehmandoust
-  preconditions:
-  - Resource state is RETURN PENDING
+  preconditions: []
   resource_types:
   - order
-  frequency: 3
+  frequency: 6
   examples:
-  - WFINST-BE40EEED65AEDD7D
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
+  - WFINST-759C3CEA9044730C
+  - WFINST-9E47D459BA09B855
+  - WFINST-C6FD77C6E9FE2A41
+  - WFINST-CB9A40590A62EE44
+  - WFINST-D13955A36A5D0CF3
+  - WFINST-EB7EC8CF3B91C520
   contradictions: []
   confidence: MODERATE_EVIDENCE
   evidence:
+  - OBS-000010
+  - OBS-000057
   - OBS-000107
   - OBS-000269
   - OBS-000474
+  - OBS-000642
   epistemic_status: INFERRED_PATTERN
-- id: TRANS-32F345D502F652EF
-  workflow_family_id: WFAM-E4995F63FE06A147
+- id: TRANS-750A28AE71BFB128
+  workflow_family_id: WFAM-FE6F4C0E35141769
+  source_state: UNRESOLVED
+  action_id: ACTN-62C977EC37897510
+  action_name: READ_MECHANICREPORT
+  destination_state: PENDING
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  preconditions: []
+  resource_types:
+  - mechanicreport
+  frequency: 3
+  examples:
+  - WFINST-6EFF9201448B22D4
+  - WFINST-8EB14A8B80CB2D4D
+  - WFINST-E537CFC9F2B9258C
+  contradictions: []
+  confidence: HIGH_EVIDENCE
+  evidence:
+  - OBS-000326
+  - OBS-000580
+  - OBS-000691
+  epistemic_status: INFERRED_PATTERN
+- id: TRANS-77F96212315F07F7
+  workflow_family_id: WFAM-EB22B8E7C91F4402
   source_state: RETURN PENDING
   action_id: ACTN-0C74FD39A79883B0
   action_name: ALL_ORDER
@@ -119,24 +257,24 @@ transitions:
   - order
   frequency: 18
   examples:
-  - WFINST-BE40EEED65AEDD7D
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
+  - WFINST-081CE2AA68D676E8
+  - WFINST-20C617602A4A1E3D
+  - WFINST-20C617602A4A1E3D
+  - WFINST-20C617602A4A1E3D
+  - WFINST-20C617602A4A1E3D
+  - WFINST-4530CDD84ED475A9
+  - WFINST-4530CDD84ED475A9
+  - WFINST-4530CDD84ED475A9
+  - WFINST-4530CDD84ED475A9
+  - WFINST-914FBAE7C5D9C18D
+  - WFINST-B42E133875A90974
+  - WFINST-D166783D0DC77031
+  - WFINST-D166783D0DC77031
+  - WFINST-D166783D0DC77031
+  - WFINST-D166783D0DC77031
+  - WFINST-F5BB85B53A2771E7
+  - WFINST-F5BB85B53A2771E7
+  - WFINST-F5BB85B53A2771E7
   contradictions: []
   confidence: HIGH_EVIDENCE
   evidence:
@@ -148,78 +286,32 @@ transitions:
   - OBS-000707
   - OBS-000710
   epistemic_status: INFERRED_PATTERN
-- id: TRANS-339E3A77C7DB405A
-  workflow_family_id: WFAM-95B69DE883F82103
-  source_state: UNRESOLVED
-  action_id: ACTN-8141DB8502F7D7EF
-  action_name: READ_VIDEO
-  destination_state: '404'
+- id: TRANS-B22EC0985E12942F
+  workflow_family_id: WFAM-070E94C62CCCE75E
+  source_state: DELIVERED
+  action_id: ACTN-675607B4373F0BCE
+  action_name: READ_ORDER
+  destination_state: DELIVERED
   actors:
   - mrscargo
-  preconditions: []
-  resource_types:
-  - video
-  frequency: 1
-  examples:
-  - WFINST-42235BF9E487E326
-  contradictions: []
-  confidence: MODERATE_EVIDENCE
-  evidence:
-  - OBS-000046
-  epistemic_status: INFERRED_PATTERN
-- id: TRANS-351909BA96C855C3
-  workflow_family_id: WFAM-15BFA7AEE57FC509
-  source_state: '404'
-  action_id: ACTN-8141DB8502F7D7EF
-  action_name: READ_VIDEO
-  destination_state: '404'
-  actors:
-  - saeedmehmandoust
   preconditions:
-  - Resource state is 404
-  resource_types:
-  - video
-  frequency: 1
-  examples:
-  - WFINST-BCFF10F0D1241954
-  contradictions: []
-  confidence: MODERATE_EVIDENCE
-  evidence:
-  - OBS-000122
-  epistemic_status: INFERRED_PATTERN
-- id: TRANS-385BAAAAA05B7461
-  workflow_family_id: WFAM-E4995F63FE06A147
-  source_state: RETURN PENDING
-  action_id: ACTN-1EE6E534FAD588CE
-  action_name: RETURN_ORDER
-  destination_state: RETURN PENDING
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  preconditions:
-  - Resource state is RETURN PENDING
+  - Resource state is DELIVERED
   resource_types:
   - order
-  frequency: 4
+  frequency: 1
   examples:
-  - WFINST-BE40EEED65AEDD7D
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
+  - WFINST-246E1679645A3DB9
   contradictions: []
-  confidence: HIGH_EVIDENCE
+  confidence: MODERATE_EVIDENCE
   evidence:
-  - OBS-000012
-  - OBS-000059
-  - OBS-000700
-  - OBS-000711
+  - OBS-000709
   epistemic_status: INFERRED_PATTERN
-- id: TRANS-3A56D531CFC90827
-  workflow_family_id: WFAM-E4995F63FE06A147
+- id: TRANS-B4D8D2F916D39B33
+  workflow_family_id: WFAM-A955B9C288A08FC1
   source_state: UNRESOLVED
-  action_id: ACTN-187817B81B8319F5
-  action_name: CREATE_ORDER
-  destination_state: CREATED
+  action_id: ACTN-1EE6E534FAD588CE
+  action_name: RETURN_ORDER
+  destination_state: RETURN_PENDING
   actors:
   - mrscargo
   - saeedmehmandoust
@@ -228,18 +320,159 @@ transitions:
   - order
   frequency: 3
   examples:
-  - WFINST-7A82511D1E85E27C
-  - WFINST-BE40EEED65AEDD7D
-  - WFINST-C19C2BBCD66DE6FF
+  - WFINST-66725E48869DC2E7
+  - WFINST-AF62C40FBBC40FDC
+  - WFINST-DCB1CA9ED24B6189
   contradictions: []
   confidence: MODERATE_EVIDENCE
   evidence:
-  - OBS-000010
-  - OBS-000057
-  - OBS-000642
+  - OBS-000271
+  - OBS-000476
+  - OBS-000644
   epistemic_status: INFERRED_PATTERN
-- id: TRANS-5EC9A8E91EDEFACC
-  workflow_family_id: WFAM-29B943758198F962
+- id: TRANS-D714A62496D2ECED
+  workflow_family_id: WFAM-A8C7FB73AE0307AC
+  source_state: UNRESOLVED
+  action_id: ACTN-0A4946C01F7B474A
+  action_name: VERIFY_AUTH
+  destination_state: '200'
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  preconditions: []
+  resource_types:
+  - auth
+  frequency: 12
+  examples:
+  - WFINST-04A3CE7EC90AF4AC
+  - WFINST-0F9F69AF18E320D2
+  - WFINST-36DD4D3DA2266CE2
+  - WFINST-608E8574F3A5165C
+  - WFINST-719E99F933CDB8EF
+  - WFINST-8432B2D53D3EDEF6
+  - WFINST-8E23761D4F119F45
+  - WFINST-A5FDD14DBAA621F4
+  - WFINST-A9795208621B669E
+  - WFINST-C0F61A4D4F9DB5EA
+  - WFINST-CBF2739A65F12098
+  - WFINST-D33B5898D7D935E1
+  contradictions: []
+  confidence: HIGH_EVIDENCE
+  evidence:
+  - OBS-000005
+  - OBS-000017
+  - OBS-000022
+  - OBS-000033
+  - OBS-000052
+  - OBS-000069
+  - OBS-000073
+  - OBS-000090
+  - OBS-000112
+  - OBS-000124
+  - OBS-000330
+  - OBS-000584
+  epistemic_status: INFERRED_PATTERN
+- id: TRANS-E6696DF550746B7A
+  workflow_family_id: WFAM-A2057BD76CF39A2A
+  source_state: UNRESOLVED
+  action_id: ACTN-AB7AE05FC55D3AED
+  action_name: CHANGE_PHONENUMBER
+  destination_state: '200'
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  preconditions: []
+  resource_types:
+  - phonenumber
+  frequency: 2
+  examples:
+  - WFINST-A4B25E4E760294D0
+  - WFINST-F9082923AA975196
+  contradictions: []
+  confidence: HIGH_EVIDENCE
+  evidence:
+  - OBS-000036
+  - OBS-000068
+  epistemic_status: INFERRED_PATTERN
+- id: TRANS-E714DFC7F2CABB80
+  workflow_family_id: WFAM-EB22B8E7C91F4402
+  source_state: DELIVERED
+  action_id: ACTN-0C74FD39A79883B0
+  action_name: ALL_ORDER
+  destination_state: DELIVERED
+  actors:
+  - mrscargo
+  - saeedmehmandoust
+  preconditions:
+  - Resource state is DELIVERED
+  resource_types:
+  - order
+  frequency: 12
+  examples:
+  - WFINST-0313FE53AB18950C
+  - WFINST-0857486923D0271C
+  - WFINST-20C617602A4A1E3D
+  - WFINST-20C617602A4A1E3D
+  - WFINST-4530CDD84ED475A9
+  - WFINST-4530CDD84ED475A9
+  - WFINST-914FBAE7C5D9C18D
+  - WFINST-D166783D0DC77031
+  - WFINST-D166783D0DC77031
+  - WFINST-F5BB85B53A2771E7
+  - WFINST-F5BB85B53A2771E7
+  - WFINST-F5BB85B53A2771E7
+  contradictions: []
+  confidence: HIGH_EVIDENCE
+  evidence:
+  - OBS-000011
+  - OBS-000058
+  - OBS-000108
+  - OBS-000699
+  - OBS-000704
+  - OBS-000707
+  - OBS-000710
+  epistemic_status: INFERRED_PATTERN
+- id: TRANS-FA27F9264D81E12C
+  workflow_family_id: WFAM-070E94C62CCCE75E
+  source_state: UNRESOLVED
+  action_id: ACTN-675607B4373F0BCE
+  action_name: READ_ORDER
+  destination_state: DELIVERED
+  actors:
+  - mrscargo
+  preconditions: []
+  resource_types:
+  - order
+  frequency: 1
+  examples:
+  - WFINST-246E1679645A3DB9
+  contradictions: []
+  confidence: MODERATE_EVIDENCE
+  evidence:
+  - OBS-000706
+  epistemic_status: INFERRED_PATTERN
+- id: TRANS-FC0B34E91B49B360
+  workflow_family_id: WFAM-070E94C62CCCE75E
+  source_state: DELIVERED
+  action_id: ACTN-1EE6E534FAD588CE
+  action_name: RETURN_ORDER
+  destination_state: RETURN PENDING
+  actors:
+  - mrscargo
+  preconditions:
+  - Resource state is DELIVERED
+  resource_types:
+  - order
+  frequency: 1
+  examples:
+  - WFINST-246E1679645A3DB9
+  contradictions: []
+  confidence: MODERATE_EVIDENCE
+  evidence:
+  - OBS-000711
+  epistemic_status: INFERRED_PATTERN
+- id: TRANS-FD180C103EA62BE6
+  workflow_family_id: WFAM-3899C528149F1ED6
   source_state: UNRESOLVED
   action_id: ACTN-0A4946C01F7B474A
   action_name: VERIFY_AUTH
@@ -252,24 +485,24 @@ transitions:
   - auth
   frequency: 18
   examples:
-  - WFINST-04CF07AFBAA3BED6
-  - WFINST-04D8D98114B063D3
-  - WFINST-299BB7EC36017DD7
-  - WFINST-2C53FB426F99BD66
-  - WFINST-2E75CDCA27BA3C66
-  - WFINST-3771235E1274DE46
-  - WFINST-4908EBBC59E740E3
-  - WFINST-5507DD5FA293A79F
-  - WFINST-5A7E7939BA4D629E
-  - WFINST-60B8AD90DD639DB0
-  - WFINST-6E3CD7CB74F97CEF
-  - WFINST-7AA2151C30173224
-  - WFINST-85A960450CB19DD1
-  - WFINST-AF321013C742D759
-  - WFINST-C39B3BB6CF4C672F
-  - WFINST-CC53BF46A5E49D24
-  - WFINST-DE53008118166E9C
-  - WFINST-EC66568DF04F5C4C
+  - WFINST-0D3001953251B653
+  - WFINST-25A119097A81DC33
+  - WFINST-285D9200C9F61283
+  - WFINST-2B2C62A48FDD987F
+  - WFINST-2E32FF14C159FDA8
+  - WFINST-36E5EB0C89B08C8B
+  - WFINST-3A1A29F10DE3CECD
+  - WFINST-4228B4965C918809
+  - WFINST-4571ED544FE6B1D2
+  - WFINST-5387AC7B5AF7E6C4
+  - WFINST-7486D38DD721C8AC
+  - WFINST-86662C5A28370E73
+  - WFINST-8776B3254A9E90B4
+  - WFINST-B46FBBF9AC0149FE
+  - WFINST-DB193F8FB20D0621
+  - WFINST-E56B46EF00CA911F
+  - WFINST-EEA3B090D84E3981
+  - WFINST-F9951DB8922CAD5D
   contradictions: []
   confidence: MODERATE_EVIDENCE
   evidence:
@@ -291,276 +524,4 @@ transitions:
   - OBS-000594
   - OBS-000657
   - OBS-000717
-  epistemic_status: INFERRED_PATTERN
-- id: TRANS-675DABBBAC132C81
-  workflow_family_id: WFAM-15BFA7AEE57FC509
-  source_state: UNRESOLVED
-  action_id: ACTN-8141DB8502F7D7EF
-  action_name: READ_VIDEO
-  destination_state: '404'
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  preconditions: []
-  resource_types:
-  - video
-  frequency: 3
-  examples:
-  - WFINST-1C51DD938A51EE9D
-  - WFINST-6D324E9530BAF4B4
-  - WFINST-BCFF10F0D1241954
-  contradictions: []
-  confidence: HIGH_EVIDENCE
-  evidence:
-  - OBS-000035
-  - OBS-000066
-  - OBS-000121
-  epistemic_status: INFERRED_PATTERN
-- id: TRANS-7A6B641B6C2965EB
-  workflow_family_id: WFAM-E4995F63FE06A147
-  source_state: RETURN PENDING
-  action_id: ACTN-675607B4373F0BCE
-  action_name: READ_ORDER
-  destination_state: DELIVERED
-  actors:
-  - mrscargo
-  preconditions:
-  - Resource state is RETURN PENDING
-  resource_types:
-  - order
-  frequency: 2
-  examples:
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  contradictions: []
-  confidence: HIGH_EVIDENCE
-  evidence:
-  - OBS-000706
-  - OBS-000709
-  epistemic_status: INFERRED_PATTERN
-- id: TRANS-7CFA59FAABE06E6A
-  workflow_family_id: WFAM-E4995F63FE06A147
-  source_state: CREATED
-  action_id: ACTN-0C74FD39A79883B0
-  action_name: ALL_ORDER
-  destination_state: DELIVERED
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  preconditions:
-  - Resource state is CREATED
-  resource_types:
-  - order
-  frequency: 3
-  examples:
-  - WFINST-BE40EEED65AEDD7D
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  contradictions: []
-  confidence: HIGH_EVIDENCE
-  evidence:
-  - OBS-000011
-  - OBS-000058
-  - OBS-000108
-  epistemic_status: INFERRED_PATTERN
-- id: TRANS-806DA6D9B9F7864A
-  workflow_family_id: WFAM-85E500425809BA81
-  source_state: UNRESOLVED
-  action_id: ACTN-62C977EC37897510
-  action_name: READ_MECHANICREPORT
-  destination_state: PENDING
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  preconditions: []
-  resource_types:
-  - mechanicreport
-  frequency: 3
-  examples:
-  - WFINST-38B9D694D3469CBE
-  - WFINST-9F230049FB8E565D
-  - WFINST-D3F3815904550E68
-  contradictions: []
-  confidence: HIGH_EVIDENCE
-  evidence:
-  - OBS-000326
-  - OBS-000580
-  - OBS-000691
-  epistemic_status: INFERRED_PATTERN
-- id: TRANS-8092652D7674D5F9
-  workflow_family_id: WFAM-D851170456D369DF
-  source_state: UNRESOLVED
-  action_id: ACTN-EB1AFA240D8F1449
-  action_name: CREATE_POST
-  destination_state: CREATED
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  preconditions: []
-  resource_types:
-  - post
-  frequency: 2
-  examples:
-  - WFINST-2576628D45BA386E
-  - WFINST-AB94186DEC3435A8
-  contradictions: []
-  confidence: MODERATE_EVIDENCE
-  evidence:
-  - OBS-000015
-  - OBS-000062
-  epistemic_status: INFERRED_PATTERN
-- id: TRANS-81C6BAAFEE38E258
-  workflow_family_id: WFAM-3FC455452D6010E7
-  source_state: UNRESOLVED
-  action_id: ACTN-6C125ED34727BAAC
-  action_name: CREATE_PICTURE
-  destination_state: ACTIVE
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  preconditions: []
-  resource_types:
-  - picture
-  frequency: 2
-  examples:
-  - WFINST-253A63B7ABF7B7A6
-  - WFINST-BB6D012EA43CE919
-  contradictions: []
-  confidence: HIGH_EVIDENCE
-  evidence:
-  - OBS-000047
-  - OBS-000067
-  epistemic_status: INFERRED_PATTERN
-- id: TRANS-93A071D0235295DD
-  workflow_family_id: WFAM-E4995F63FE06A147
-  source_state: UNRESOLVED
-  action_id: ACTN-1EE6E534FAD588CE
-  action_name: RETURN_ORDER
-  destination_state: RETURN_PENDING
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  preconditions: []
-  resource_types:
-  - order
-  frequency: 3
-  examples:
-  - WFINST-1C4C0C0CDECDFA2E
-  - WFINST-93EB5548A6745383
-  - WFINST-BB34BA47FBA04E04
-  contradictions: []
-  confidence: MODERATE_EVIDENCE
-  evidence:
-  - OBS-000271
-  - OBS-000476
-  - OBS-000644
-  epistemic_status: INFERRED_PATTERN
-- id: TRANS-9ABD99DDD1939CC7
-  workflow_family_id: WFAM-E4995F63FE06A147
-  source_state: DELIVERED
-  action_id: ACTN-0C74FD39A79883B0
-  action_name: ALL_ORDER
-  destination_state: DELIVERED
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  preconditions:
-  - Resource state is DELIVERED
-  resource_types:
-  - order
-  frequency: 14
-  examples:
-  - WFINST-BE40EEED65AEDD7D
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  contradictions: []
-  confidence: HIGH_EVIDENCE
-  evidence:
-  - OBS-000011
-  - OBS-000058
-  - OBS-000108
-  - OBS-000699
-  - OBS-000704
-  - OBS-000707
-  - OBS-000710
-  epistemic_status: INFERRED_PATTERN
-- id: TRANS-9CC8465C16C948C5
-  workflow_family_id: WFAM-29B943758198F962
-  source_state: UNRESOLVED
-  action_id: ACTN-0A4946C01F7B474A
-  action_name: VERIFY_AUTH
-  destination_state: '200'
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  preconditions: []
-  resource_types:
-  - auth
-  frequency: 12
-  examples:
-  - WFINST-0FAF30E6348F3421
-  - WFINST-499952EDF594589D
-  - WFINST-52DCF909AA8149D1
-  - WFINST-5C68A3C508542BED
-  - WFINST-7174D619399D37CB
-  - WFINST-74FD5E40CEE1AEDD
-  - WFINST-86EDE3B9F99ECD54
-  - WFINST-9EF286EE7FE6E486
-  - WFINST-ABF000FEE7FD36C9
-  - WFINST-CC11A1697C39E847
-  - WFINST-D8A9358153D4D31A
-  - WFINST-DC80DFFEDC0156EF
-  contradictions: []
-  confidence: HIGH_EVIDENCE
-  evidence:
-  - OBS-000005
-  - OBS-000017
-  - OBS-000022
-  - OBS-000033
-  - OBS-000052
-  - OBS-000069
-  - OBS-000073
-  - OBS-000090
-  - OBS-000112
-  - OBS-000124
-  - OBS-000330
-  - OBS-000584
-  epistemic_status: INFERRED_PATTERN
-- id: TRANS-E1038483FC790FBB
-  workflow_family_id: WFAM-E4995F63FE06A147
-  source_state: RETURN PENDING
-  action_id: ACTN-0C74FD39A79883B0
-  action_name: ALL_ORDER
-  destination_state: DELIVERED
-  actors:
-  - mrscargo
-  - saeedmehmandoust
-  preconditions:
-  - Resource state is RETURN PENDING
-  resource_types:
-  - order
-  frequency: 4
-  examples:
-  - WFINST-BE40EEED65AEDD7D
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  - WFINST-C19C2BBCD66DE6FF
-  contradictions: []
-  confidence: HIGH_EVIDENCE
-  evidence:
-  - OBS-000028
-  - OBS-000084
-  - OBS-000699
-  - OBS-000704
   epistemic_status: INFERRED_PATTERN

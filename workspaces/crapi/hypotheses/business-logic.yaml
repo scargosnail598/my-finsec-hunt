@@ -1,163 +1,26 @@
-version: 1
+version: 2
 hypotheses:
-- id: BLH-029171442E161027
-  fingerprint: 029171442e1610278e2bc754e34286c367e6b1c019fac38b5e0759f732c38be2
-  title: Comment post may succeed without read post
-  family: STEP_SKIPPING
-  workflow_family_id: WFAM-D851170456D369DF
-  affected_action: COMMENT_POST
-  affected_transition_id: null
-  invariant_id: BINV-0D31BECE2E8582AE
-  invariant_statement: COMMENT_POST appears to require READ_POST to occur first in
-    Post lifecycle.
-  canonical_behavior: RECENT_POST -> READ_POST -> COMMENT_POST
-  mutated_behavior: RECENT_POST -> COMMENT_POST
-  supporting_evidence:
-  - OBS-000014
-  - OBS-000016
-  - OBS-000031
-  - OBS-000043
-  - OBS-000044
-  - OBS-000045
-  - OBS-000061
-  - OBS-000063
-  - OBS-000064
-  - OBS-000065
-  - OBS-000096
-  - OBS-000098
-  - OBS-000100
-  - OBS-000101
-  - OBS-000102
-  - OBS-000103
-  - OBS-000114
-  - OBS-000116
-  - OBS-000117
-  - OBS-000118
-  - OBS-000119
-  - OBS-000120
-  - OBS-000278
-  - OBS-000280
-  - OBS-000653
-  contradicting_evidence: []
-  controlled_actors_required: 1
-  controlled_resources_required:
-  - Post
-  - author
-  - post
-  - vehicle
-  authentication_requirements:
-  - Use the reviewed credential profile for mrscargo.
-  state_evidence_requirements:
-  - Record authoritative state for every affected resource before the mutation.
-  - Record the immediate mutation response.
-  - Record immediate and delayed authoritative state after the mutation.
-  - Compare linked financial, entitlement, inventory, and terminal workflow state
-    where applicable.
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  expected_safe_baseline: The canonical sequence is accepted for controlled Post lifecycle
-    data.
-  expected_vulnerable_outcome: The backend accepts RECENT_POST -> COMMENT_POST and
-    authoritative state shows an unintended effect.
-  expected_secure_outcome: The backend rejects RECENT_POST -> COMMENT_POST or produces
-    no unauthorized state change.
-  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
-    or role state represented by the challenged invariant.
-  score:
-    likelihood: 3
-    impact: 2
-    test_readiness: 3
-    safety_cost: 2
-    confidence: 4
-    breakdown:
-    - reason: Three or more supporting workflows
-      points: 2
-    - reason: An authoritative baseline state and before-state query are missing.
-      points: -1
-    - reason: 'Target request budget is too low: 4 requests are estimated but only
-        3 are permitted.'
-      points: -1
-  confidence_explanation:
-  - The rule is derived from 5 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  uncertainty:
-  - Offline sequence evidence cannot prove that the backend requires the observed
-    order.
-  - Capture incompleteness or an undocumented optional branch may explain the pattern.
-  safety_classification: LOW_RISK_STATE_CHANGE
-  estimated_request_budget: 4
-  readiness_blockers:
-  - An authoritative baseline state and before-state query are missing.
-  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
-  suggested_validation_strategy:
-  - Establish a successful controlled baseline.
-  - 'Apply only this mutation: RECENT_POST -> COMMENT_POST.'
-  - Stop after the minimum approved request budget.
-  - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons: []
-  endpoint_ids:
-  - EP-003
-  - EP-004
-  - EP-014
-  observation_ids:
-  - OBS-000014
-  - OBS-000016
-  - OBS-000031
-  - OBS-000043
-  - OBS-000044
-  - OBS-000045
-  - OBS-000061
-  - OBS-000063
-  - OBS-000064
-  - OBS-000065
-  - OBS-000096
-  - OBS-000098
-  - OBS-000100
-  - OBS-000101
-  - OBS-000102
-  - OBS-000103
-  - OBS-000114
-  - OBS-000116
-  - OBS-000117
-  - OBS-000118
-  - OBS-000119
-  - OBS-000120
-  - OBS-000278
-  - OBS-000280
-  - OBS-000653
-  kind: SECURITY_HYPOTHESIS
-  epistemic_status: TEST_CANDIDATE
-- id: BLH-06BEC3FA106A9FBE
-  fingerprint: 06bec3fa106a9fbee37aacd4b0964c2136d294c7ed47eedfffb7c0196df7ab4e
-  title: Immediate duplicate return order may create two business effects
-  family: DUPLICATE_ACTION
-  workflow_family_id: WFAM-E4995F63FE06A147
+- id: BLH-042DE49D21BF40CB
+  fingerprint: 042de49d21bf40cb4adbb5c18669563ecdff820894e52372cb989824e6cfda6b
+  title: Return order may remain replayable after its first successful effect
+  family: REPLAY
+  workflow_family_id: WFAM-A955B9C288A08FC1
   affected_action: RETURN_ORDER
   affected_transition_id: null
-  invariant_id: BINV-D13B2B21CB2CD7E6
+  invariant_id: BINV-630AD25E7733C1D0
   invariant_statement: RETURN_ORDER should produce at most one successful business
     effect per logical workflow.
   canonical_behavior: RETURN_ORDER executes once
-  mutated_behavior: RETURN_ORDER -> immediate duplicate RETURN_ORDER
+  mutated_behavior: RETURN_ORDER -> replay identical logical action
   supporting_evidence:
-  - OBS-000012
-  - OBS-000059
   - OBS-000271
   - OBS-000476
   - OBS-000644
-  - OBS-000700
-  - OBS-000711
   contradicting_evidence: []
   controlled_actors_required: 1
   controlled_resources_required:
   - Order
-  - Product
   - order
-  - product
   authentication_requirements:
   - Use the reviewed credential profile for mrscargo.
   state_evidence_requirements:
@@ -173,32 +36,34 @@ hypotheses:
   candidate_fields: []
   expected_safe_baseline: The canonical sequence is accepted for controlled order
     lifecycle data.
-  expected_vulnerable_outcome: The backend accepts RETURN_ORDER -> immediate duplicate
-    RETURN_ORDER and authoritative state shows an unintended effect.
-  expected_secure_outcome: The backend rejects RETURN_ORDER -> immediate duplicate
-    RETURN_ORDER or produces no unauthorized state change.
+  expected_vulnerable_outcome: The backend accepts RETURN_ORDER -> replay identical
+    logical action and authoritative state shows an unintended effect.
+  expected_secure_outcome: The backend rejects RETURN_ORDER -> replay identical logical
+    action or produces no unauthorized state change.
   impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
     or role state represented by the challenged invariant.
   score:
-    likelihood: 4
+    likelihood: 3
     impact: 4
-    test_readiness: 3
+    test_readiness: 1
     safety_cost: 5
-    confidence: 5
+    confidence: 4
     breakdown:
     - reason: Three or more supporting workflows
       points: 2
-    - reason: High-evidence invariant
-      points: 1
     - reason: Financial operation
       points: 2
+    - reason: An authoritative baseline state and before-state query are missing.
+      points: -1
     - reason: Financial State Change requires explicit target policy permission.
       points: -1
     - reason: 'Target request budget is too low: 5 requests are estimated but only
         3 are permitted.'
       points: -1
+    - reason: Workflow segmentation remains ambiguous.
+      points: -1
   confidence_explanation:
-  - The rule is derived from 10 workflow instance(s).
+  - The rule is derived from 3 workflow instance(s).
   - Observed frequency is evidence of a pattern, not proof that the backend requires
     it.
   uncertainty:
@@ -208,1127 +73,49 @@ hypotheses:
   safety_classification: FINANCIAL_STATE_CHANGE
   estimated_request_budget: 5
   readiness_blockers:
+  - An authoritative baseline state and before-state query are missing.
   - Financial State Change requires explicit target policy permission.
   - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
   suggested_validation_strategy:
   - Establish a successful controlled baseline.
-  - 'Apply only this mutation: RETURN_ORDER -> immediate duplicate RETURN_ORDER.'
+  - 'Apply only this mutation: RETURN_ORDER -> replay identical logical action.'
   - Stop after the minimum approved request budget.
   - Classify the result from authoritative backend state, not status code alone.
   suppression_reasons: []
   endpoint_ids:
   - EP-021
   observation_ids:
-  - OBS-000012
-  - OBS-000059
   - OBS-000271
   - OBS-000476
   - OBS-000644
-  - OBS-000700
-  - OBS-000711
   kind: RESEARCH_TASK
+  readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
-- id: BLH-09615E40E0B7B066
-  fingerprint: 09615e40e0b7b066254a31827240f10b3b314fded68705cba5eacc02520c1f06
-  title: Add vehicle may not remain bound to the initiating actor
-  family: ACTOR_SWITCH
-  workflow_family_id: WFAM-4856F5F3E07C10A8
-  affected_action: ADD_VEHICLE
-  affected_transition_id: null
-  invariant_id: BINV-FD103561EFAC420D
-  invariant_statement: Each state-changing step in Vehicle lifecycle should remain
-    bound to an authorized workflow actor.
-  canonical_behavior: one authorized actor performs ADD_VEHICLE
-  mutated_behavior: switch to a second controlled actor only for ADD_VEHICLE
-  supporting_evidence:
-  - OBS-000006
-  - OBS-000023
-  - OBS-000034
-  - OBS-000053
-  - OBS-000074
-  - OBS-000093
-  - OBS-000113
-  - OBS-000125
-  - OBS-000136
-  - OBS-000187
-  - OBS-000206
-  - OBS-000254
-  - OBS-000275
-  - OBS-000286
-  - OBS-000350
-  - OBS-000354
-  - OBS-000357
-  - OBS-000376
-  - OBS-000424
-  - OBS-000480
-  - OBS-000507
-  - OBS-000523
-  - OBS-000574
-  - OBS-000598
-  - OBS-000662
-  - OBS-000718
-  contradicting_evidence: []
-  controlled_actors_required: 2
-  controlled_resources_required:
-  - Vehicle
-  authentication_requirements:
-  - Use the reviewed credential profile for mrscargo.
-  - Use the reviewed credential profile for saeedmehmandoust.
-  state_evidence_requirements:
-  - Record authoritative state for every affected resource before the mutation.
-  - Record the immediate mutation response.
-  - Record immediate and delayed authoritative state after the mutation.
-  - Compare linked financial, entitlement, inventory, and terminal workflow state
-    where applicable.
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  expected_safe_baseline: The canonical sequence is accepted for controlled Vehicle
-    lifecycle data.
-  expected_vulnerable_outcome: The backend accepts switch to a second controlled actor
-    only for ADD_VEHICLE and authoritative state shows an unintended effect.
-  expected_secure_outcome: The backend rejects switch to a second controlled actor
-    only for ADD_VEHICLE or produces no unauthorized state change.
-  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
-    or role state represented by the challenged invariant.
-  score:
-    likelihood: 3
-    impact: 2
-    test_readiness: 1
-    safety_cost: 2
-    confidence: 4
-    breakdown:
-    - reason: Three or more supporting workflows
-      points: 2
-    - reason: An authoritative baseline state and before-state query are missing.
-      points: -1
-    - reason: Controlled resource ownership baseline is missing.
-      points: -2
-    - reason: 'Target request budget is too low: 4 requests are estimated but only
-        3 are permitted.'
-      points: -1
-    - reason: Workflow segmentation remains ambiguous.
-      points: -1
-  confidence_explanation:
-  - The rule is derived from 26 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  uncertainty:
-  - Offline sequence evidence cannot prove that the backend requires the observed
-    order.
-  - Capture incompleteness or an undocumented optional branch may explain the pattern.
-  safety_classification: LOW_RISK_STATE_CHANGE
-  estimated_request_budget: 4
-  readiness_blockers:
-  - An authoritative baseline state and before-state query are missing.
-  - Controlled resource ownership baseline is missing.
-  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
-  - Workflow segmentation remains ambiguous.
-  suggested_validation_strategy:
-  - Establish a successful controlled baseline.
-  - 'Apply only this mutation: switch to a second controlled actor only for ADD_VEHICLE.'
-  - Stop after the minimum approved request budget.
-  - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons: []
-  endpoint_ids:
-  - EP-062
-  observation_ids:
-  - OBS-000006
-  - OBS-000023
-  - OBS-000034
-  - OBS-000053
-  - OBS-000074
-  - OBS-000093
-  - OBS-000113
-  - OBS-000125
-  - OBS-000136
-  - OBS-000187
-  - OBS-000206
-  - OBS-000254
-  - OBS-000275
-  - OBS-000286
-  - OBS-000350
-  - OBS-000354
-  - OBS-000357
-  - OBS-000376
-  - OBS-000424
-  - OBS-000480
-  - OBS-000507
-  - OBS-000523
-  - OBS-000574
-  - OBS-000598
-  - OBS-000662
-  - OBS-000718
-  kind: SECURITY_HYPOTHESIS
-  epistemic_status: TEST_CANDIDATE
-- id: BLH-0A004714609B4881
-  fingerprint: 0a004714609b4881e91281486171b710ab04de1a01a1c965c145b29fdd696816
-  title: Create picture may not remain bound to the initiating actor
-  family: ACTOR_SWITCH
-  workflow_family_id: WFAM-3FC455452D6010E7
-  affected_action: CREATE_PICTURE
-  affected_transition_id: null
-  invariant_id: BINV-286CD670DF7F7AB4
-  invariant_statement: Each state-changing step in Picture lifecycle should remain
-    bound to an authorized workflow actor.
-  canonical_behavior: one authorized actor performs CREATE_PICTURE
-  mutated_behavior: switch to a second controlled actor only for CREATE_PICTURE
-  supporting_evidence:
-  - OBS-000047
-  - OBS-000067
-  contradicting_evidence: []
-  controlled_actors_required: 2
-  controlled_resources_required:
-  - Picture
-  - picture
-  authentication_requirements:
-  - Use the reviewed credential profile for mrscargo.
-  - Use the reviewed credential profile for saeedmehmandoust.
-  state_evidence_requirements:
-  - Record authoritative state for every affected resource before the mutation.
-  - Record the immediate mutation response.
-  - Record immediate and delayed authoritative state after the mutation.
-  - Compare linked financial, entitlement, inventory, and terminal workflow state
-    where applicable.
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  expected_safe_baseline: The canonical sequence is accepted for controlled Picture
-    lifecycle data.
-  expected_vulnerable_outcome: The backend accepts switch to a second controlled actor
-    only for CREATE_PICTURE and authoritative state shows an unintended effect.
-  expected_secure_outcome: The backend rejects switch to a second controlled actor
-    only for CREATE_PICTURE or produces no unauthorized state change.
-  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
-    or role state represented by the challenged invariant.
-  score:
-    likelihood: 2
-    impact: 2
-    test_readiness: 1
-    safety_cost: 2
-    confidence: 4
-    breakdown:
-    - reason: Two supporting workflows
-      points: 1
-    - reason: An authoritative baseline state and before-state query are missing.
-      points: -1
-    - reason: Controlled resource ownership baseline is missing.
-      points: -2
-    - reason: 'Target request budget is too low: 4 requests are estimated but only
-        3 are permitted.'
-      points: -1
-    - reason: Workflow segmentation remains ambiguous.
-      points: -1
-  confidence_explanation:
-  - The rule is derived from 2 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  uncertainty:
-  - Offline sequence evidence cannot prove that the backend requires the observed
-    order.
-  - Capture incompleteness or an undocumented optional branch may explain the pattern.
-  safety_classification: LOW_RISK_STATE_CHANGE
-  estimated_request_budget: 4
-  readiness_blockers:
-  - An authoritative baseline state and before-state query are missing.
-  - Controlled resource ownership baseline is missing.
-  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
-  - Workflow segmentation remains ambiguous.
-  suggested_validation_strategy:
-  - Establish a successful controlled baseline.
-  - 'Apply only this mutation: switch to a second controlled actor only for CREATE_PICTURE.'
-  - Stop after the minimum approved request budget.
-  - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons: []
-  endpoint_ids:
-  - EP-019
-  observation_ids:
-  - OBS-000047
-  - OBS-000067
-  kind: SECURITY_HYPOTHESIS
-  epistemic_status: TEST_CANDIDATE
-- id: BLH-10403D51F06EAFAA
-  fingerprint: 10403d51f06eafaac91ac2e512b990f66307d5f6c76b7589b28ada92c5571755
-  title: Add vehicle may accept a resource from another controlled workflow
-  family: RESOURCE_SWITCH
-  workflow_family_id: WFAM-4856F5F3E07C10A8
-  affected_action: ADD_VEHICLE
-  affected_transition_id: null
-  invariant_id: BINV-25371BFDE1D046AC
-  invariant_statement: Identifiers used by Vehicle lifecycle should remain bound to
-    the same controlled resource lifecycle.
-  canonical_behavior: ADD_VEHICLE uses identifiers from one controlled workflow
-  mutated_behavior: replace one identifier with a second controlled workflow resource
-    for ADD_VEHICLE
-  supporting_evidence:
-  - OBS-000006
-  - OBS-000023
-  - OBS-000034
-  - OBS-000053
-  - OBS-000074
-  - OBS-000093
-  - OBS-000113
-  - OBS-000125
-  - OBS-000136
-  - OBS-000187
-  - OBS-000206
-  - OBS-000254
-  - OBS-000275
-  - OBS-000286
-  - OBS-000350
-  - OBS-000354
-  - OBS-000357
-  - OBS-000376
-  - OBS-000424
-  - OBS-000480
-  - OBS-000507
-  - OBS-000523
-  - OBS-000574
-  - OBS-000598
-  - OBS-000662
-  - OBS-000718
-  contradicting_evidence: []
-  controlled_actors_required: 2
-  controlled_resources_required:
-  - Vehicle
-  authentication_requirements:
-  - Use the reviewed credential profile for mrscargo.
-  - Use the reviewed credential profile for saeedmehmandoust.
-  state_evidence_requirements:
-  - Record authoritative state for every affected resource before the mutation.
-  - Record the immediate mutation response.
-  - Record immediate and delayed authoritative state after the mutation.
-  - Compare linked financial, entitlement, inventory, and terminal workflow state
-    where applicable.
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  expected_safe_baseline: The canonical sequence is accepted for controlled Vehicle
-    lifecycle data.
-  expected_vulnerable_outcome: The backend accepts replace one identifier with a second
-    controlled workflow resource for ADD_VEHICLE and authoritative state shows an
-    unintended effect.
-  expected_secure_outcome: The backend rejects replace one identifier with a second
-    controlled workflow resource for ADD_VEHICLE or produces no unauthorized state
-    change.
-  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
-    or role state represented by the challenged invariant.
-  score:
-    likelihood: 3
-    impact: 2
-    test_readiness: 1
-    safety_cost: 2
-    confidence: 4
-    breakdown:
-    - reason: Three or more supporting workflows
-      points: 2
-    - reason: An authoritative baseline state and before-state query are missing.
-      points: -1
-    - reason: Controlled resource ownership baseline is missing.
-      points: -2
-    - reason: 'Target request budget is too low: 4 requests are estimated but only
-        3 are permitted.'
-      points: -1
-    - reason: Workflow segmentation remains ambiguous.
-      points: -1
-  confidence_explanation:
-  - The rule is derived from 26 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  uncertainty:
-  - Offline sequence evidence cannot prove that the backend requires the observed
-    order.
-  - Capture incompleteness or an undocumented optional branch may explain the pattern.
-  safety_classification: LOW_RISK_STATE_CHANGE
-  estimated_request_budget: 4
-  readiness_blockers:
-  - An authoritative baseline state and before-state query are missing.
-  - Controlled resource ownership baseline is missing.
-  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
-  - Workflow segmentation remains ambiguous.
-  suggested_validation_strategy:
-  - Establish a successful controlled baseline.
-  - 'Apply only this mutation: replace one identifier with a second controlled workflow
-    resource for ADD_VEHICLE.'
-  - Stop after the minimum approved request budget.
-  - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons: []
-  endpoint_ids:
-  - EP-062
-  observation_ids:
-  - OBS-000006
-  - OBS-000023
-  - OBS-000034
-  - OBS-000053
-  - OBS-000074
-  - OBS-000093
-  - OBS-000113
-  - OBS-000125
-  - OBS-000136
-  - OBS-000187
-  - OBS-000206
-  - OBS-000254
-  - OBS-000275
-  - OBS-000286
-  - OBS-000350
-  - OBS-000354
-  - OBS-000357
-  - OBS-000376
-  - OBS-000424
-  - OBS-000480
-  - OBS-000507
-  - OBS-000523
-  - OBS-000574
-  - OBS-000598
-  - OBS-000662
-  - OBS-000718
-  kind: SECURITY_HYPOTHESIS
-  epistemic_status: TEST_CANDIDATE
-- id: BLH-1838F9A037F7772D
-  fingerprint: 1838f9a037f7772dd39d5cc50d16d978ae4c0b5720e9cc9ac2447cec4ae98c22
-  title: Comment post may accept an amount or quantity inconsistent with the baseline
-  family: QUANTITY_VALUE_INVARIANT
-  workflow_family_id: WFAM-D851170456D369DF
-  affected_action: COMMENT_POST
-  affected_transition_id: null
-  invariant_id: BINV-F4EC4EC350AE2B20
-  invariant_statement: Amounts, quantities, and linked financial effects in Post lifecycle
-    should remain internally consistent.
-  canonical_behavior: COMMENT_POST uses the observed internally consistent values
-  mutated_behavior: change one observed value field for COMMENT_POST while preserving
-    all other fields
-  supporting_evidence:
-  - OBS-000002
-  - OBS-000004
-  - OBS-000007
-  - OBS-000010
-  - OBS-000014
-  - OBS-000015
-  - OBS-000016
-  - OBS-000019
-  - OBS-000021
-  - OBS-000024
-  - OBS-000029
-  - OBS-000031
-  - OBS-000032
-  - OBS-000043
-  - OBS-000044
-  - OBS-000045
-  - OBS-000047
-  - OBS-000049
-  - OBS-000051
-  - OBS-000054
-  - OBS-000057
-  - OBS-000061
-  - OBS-000062
-  - OBS-000063
-  - OBS-000064
-  - OBS-000065
-  - OBS-000067
-  - OBS-000071
-  - OBS-000072
-  - OBS-000075
-  - OBS-000089
-  - OBS-000096
-  - OBS-000098
-  - OBS-000100
-  - OBS-000101
-  - OBS-000102
-  - OBS-000103
-  - OBS-000104
-  - OBS-000107
-  - OBS-000109
-  - OBS-000111
-  - OBS-000114
-  - OBS-000116
-  - OBS-000117
-  - OBS-000118
-  - OBS-000119
-  - OBS-000120
-  - OBS-000123
-  - OBS-000278
-  - OBS-000280
-  - OBS-000653
-  - OBS-000695
-  contradicting_evidence: []
-  controlled_actors_required: 1
-  controlled_resources_required:
-  - Post
-  - author
-  - post
-  - vehicle
-  authentication_requirements:
-  - Use the reviewed credential profile for mrscargo.
-  state_evidence_requirements:
-  - Record authoritative state for every affected resource before the mutation.
-  - Record the immediate mutation response.
-  - Record immediate and delayed authoritative state after the mutation.
-  - Compare linked financial, entitlement, inventory, and terminal workflow state
-    where applicable.
-  - 'Record authoritative values before and after the mutation for: $.total.'
-  mutable_value_fields: []
-  authoritative_value_fields:
-  - $.total
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  expected_safe_baseline: The canonical sequence is accepted for controlled Post lifecycle
-    data.
-  expected_vulnerable_outcome: The backend accepts change one observed value field
-    for COMMENT_POST while preserving all other fields and authoritative state shows
-    an unintended effect.
-  expected_secure_outcome: The backend rejects change one observed value field for
-    COMMENT_POST while preserving all other fields or produces no unauthorized state
-    change.
-  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
-    or role state represented by the challenged invariant.
-  score:
-    likelihood: 3
-    impact: 2
-    test_readiness: 3
-    safety_cost: 2
-    confidence: 4
-    breakdown:
-    - reason: Three or more supporting workflows
-      points: 2
-    - reason: An authoritative baseline state and before-state query are missing.
-      points: -1
-    - reason: 'Target request budget is too low: 4 requests are estimated but only
-        3 are permitted.'
-      points: -1
-  confidence_explanation:
-  - The rule is derived from 5 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  uncertainty:
-  - Offline sequence evidence cannot prove that the backend requires the observed
-    order.
-  - Capture incompleteness or an undocumented optional branch may explain the pattern.
-  safety_classification: LOW_RISK_STATE_CHANGE
-  estimated_request_budget: 4
-  readiness_blockers:
-  - An authoritative baseline state and before-state query are missing.
-  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
-  suggested_validation_strategy:
-  - Establish a successful controlled baseline.
-  - 'Apply only this mutation: change one observed value field for COMMENT_POST while
-    preserving all other fields.'
-  - Stop after the minimum approved request budget.
-  - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons: []
-  endpoint_ids:
-  - EP-014
-  observation_ids:
-  - OBS-000002
-  - OBS-000004
-  - OBS-000007
-  - OBS-000010
-  - OBS-000014
-  - OBS-000015
-  - OBS-000016
-  - OBS-000019
-  - OBS-000021
-  - OBS-000024
-  - OBS-000029
-  - OBS-000031
-  - OBS-000032
-  - OBS-000043
-  - OBS-000044
-  - OBS-000045
-  - OBS-000047
-  - OBS-000049
-  - OBS-000051
-  - OBS-000054
-  - OBS-000057
-  - OBS-000061
-  - OBS-000062
-  - OBS-000063
-  - OBS-000064
-  - OBS-000065
-  - OBS-000067
-  - OBS-000071
-  - OBS-000072
-  - OBS-000075
-  - OBS-000089
-  - OBS-000096
-  - OBS-000098
-  - OBS-000100
-  - OBS-000101
-  - OBS-000102
-  - OBS-000103
-  - OBS-000104
-  - OBS-000107
-  - OBS-000109
-  - OBS-000111
-  - OBS-000114
-  - OBS-000116
-  - OBS-000117
-  - OBS-000118
-  - OBS-000119
-  - OBS-000120
-  - OBS-000123
-  - OBS-000278
-  - OBS-000280
-  - OBS-000653
-  - OBS-000695
-  kind: SECURITY_HYPOTHESIS
-  epistemic_status: TEST_CANDIDATE
-- id: BLH-2B6BEB149833FEB0
-  fingerprint: 2b6beb149833feb0831336f87610275e09aee4086231b38fa25d0ace8ee403b4
-  title: Create picture may accept an amount or quantity inconsistent with the baseline
-  family: QUANTITY_VALUE_INVARIANT
-  workflow_family_id: WFAM-3FC455452D6010E7
-  affected_action: CREATE_PICTURE
-  affected_transition_id: null
-  invariant_id: BINV-31C792EBCDD79FAB
-  invariant_statement: Amounts, quantities, and linked financial effects in Picture
-    lifecycle should remain internally consistent.
-  canonical_behavior: CREATE_PICTURE uses the observed internally consistent values
-  mutated_behavior: change one observed value field for CREATE_PICTURE while preserving
-    all other fields
-  supporting_evidence:
-  - OBS-000002
-  - OBS-000004
-  - OBS-000007
-  - OBS-000010
-  - OBS-000019
-  - OBS-000021
-  - OBS-000024
-  - OBS-000029
-  - OBS-000032
-  - OBS-000047
-  - OBS-000049
-  - OBS-000051
-  - OBS-000054
-  - OBS-000057
-  - OBS-000067
-  - OBS-000071
-  - OBS-000072
-  - OBS-000075
-  - OBS-000089
-  - OBS-000104
-  - OBS-000107
-  - OBS-000109
-  - OBS-000111
-  - OBS-000123
-  - OBS-000695
-  contradicting_evidence: []
-  controlled_actors_required: 1
-  controlled_resources_required:
-  - Picture
-  - account
-  - picture
-  authentication_requirements:
-  - Use the reviewed credential profile for mrscargo.
-  state_evidence_requirements:
-  - Record authoritative state for every affected resource before the mutation.
-  - Record the immediate mutation response.
-  - Record immediate and delayed authoritative state after the mutation.
-  - Compare linked financial, entitlement, inventory, and terminal workflow state
-    where applicable.
-  - 'Record authoritative values before and after the mutation for: $.available_credit.'
-  mutable_value_fields: []
-  authoritative_value_fields:
-  - $.available_credit
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  expected_safe_baseline: The canonical sequence is accepted for controlled Picture
-    lifecycle data.
-  expected_vulnerable_outcome: The backend accepts change one observed value field
-    for CREATE_PICTURE while preserving all other fields and authoritative state shows
-    an unintended effect.
-  expected_secure_outcome: The backend rejects change one observed value field for
-    CREATE_PICTURE while preserving all other fields or produces no unauthorized state
-    change.
-  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
-    or role state represented by the challenged invariant.
-  score:
-    likelihood: 2
-    impact: 4
-    test_readiness: 2
-    safety_cost: 2
-    confidence: 4
-    breakdown:
-    - reason: Two supporting workflows
-      points: 1
-    - reason: Financial operation
-      points: 2
-    - reason: An authoritative baseline state and before-state query are missing.
-      points: -1
-    - reason: 'Target request budget is too low: 4 requests are estimated but only
-        3 are permitted.'
-      points: -1
-    - reason: Workflow segmentation remains ambiguous.
-      points: -1
-  confidence_explanation:
-  - The rule is derived from 2 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  uncertainty:
-  - Offline sequence evidence cannot prove that the backend requires the observed
-    order.
-  - Capture incompleteness or an undocumented optional branch may explain the pattern.
-  safety_classification: LOW_RISK_STATE_CHANGE
-  estimated_request_budget: 4
-  readiness_blockers:
-  - An authoritative baseline state and before-state query are missing.
-  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
-  - Workflow segmentation remains ambiguous.
-  suggested_validation_strategy:
-  - Establish a successful controlled baseline.
-  - 'Apply only this mutation: change one observed value field for CREATE_PICTURE
-    while preserving all other fields.'
-  - Stop after the minimum approved request budget.
-  - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons: []
-  endpoint_ids:
-  - EP-019
-  observation_ids:
-  - OBS-000002
-  - OBS-000004
-  - OBS-000007
-  - OBS-000010
-  - OBS-000019
-  - OBS-000021
-  - OBS-000024
-  - OBS-000029
-  - OBS-000032
-  - OBS-000047
-  - OBS-000049
-  - OBS-000051
-  - OBS-000054
-  - OBS-000057
-  - OBS-000067
-  - OBS-000071
-  - OBS-000072
-  - OBS-000075
-  - OBS-000089
-  - OBS-000104
-  - OBS-000107
-  - OBS-000109
-  - OBS-000111
-  - OBS-000123
-  - OBS-000695
-  kind: SECURITY_HYPOTHESIS
-  epistemic_status: TEST_CANDIDATE
-- id: BLH-2E5132F28264786C
-  fingerprint: 2e5132f28264786c6188228910f68df86d8b0046348e0fa02531d8a757eaca84
-  title: Contact mechanic may not remain bound to the initiating actor
-  family: ACTOR_SWITCH
-  workflow_family_id: WFAM-470EACBE0EB04BC3
-  affected_action: CONTACT_MECHANIC
-  affected_transition_id: null
-  invariant_id: BINV-A1432EB9F4C574B2
-  invariant_statement: Each state-changing step in Mechanic lifecycle should remain
-    bound to an authorized workflow actor.
-  canonical_behavior: one authorized actor performs CONTACT_MECHANIC
-  mutated_behavior: switch to a second controlled actor only for CONTACT_MECHANIC
-  supporting_evidence:
-  - OBS-000247
-  - OBS-000248
-  - OBS-000249
-  - OBS-000417
-  - OBS-000418
-  - OBS-000419
-  - OBS-000501
-  - OBS-000502
-  contradicting_evidence: []
-  controlled_actors_required: 2
-  controlled_resources_required:
-  - Mechanic
-  authentication_requirements:
-  - Use the reviewed credential profile for mrscargo.
-  - Use the reviewed credential profile for saeedmehmandoust.
-  state_evidence_requirements:
-  - Record authoritative state for every affected resource before the mutation.
-  - Record the immediate mutation response.
-  - Record immediate and delayed authoritative state after the mutation.
-  - Compare linked financial, entitlement, inventory, and terminal workflow state
-    where applicable.
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  expected_safe_baseline: The canonical sequence is accepted for controlled Mechanic
-    lifecycle data.
-  expected_vulnerable_outcome: The backend accepts switch to a second controlled actor
-    only for CONTACT_MECHANIC and authoritative state shows an unintended effect.
-  expected_secure_outcome: The backend rejects switch to a second controlled actor
-    only for CONTACT_MECHANIC or produces no unauthorized state change.
-  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
-    or role state represented by the challenged invariant.
-  score:
-    likelihood: 3
-    impact: 2
-    test_readiness: 1
-    safety_cost: 2
-    confidence: 4
-    breakdown:
-    - reason: Three or more supporting workflows
-      points: 2
-    - reason: An authoritative baseline state and before-state query are missing.
-      points: -1
-    - reason: Controlled resource ownership baseline is missing.
-      points: -2
-    - reason: 'Target request budget is too low: 4 requests are estimated but only
-        3 are permitted.'
-      points: -1
-    - reason: Workflow segmentation remains ambiguous.
-      points: -1
-  confidence_explanation:
-  - The rule is derived from 8 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  uncertainty:
-  - Offline sequence evidence cannot prove that the backend requires the observed
-    order.
-  - Capture incompleteness or an undocumented optional branch may explain the pattern.
-  safety_classification: LOW_RISK_STATE_CHANGE
-  estimated_request_budget: 4
-  readiness_blockers:
-  - An authoritative baseline state and before-state query are missing.
-  - Controlled resource ownership baseline is missing.
-  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
-  - Workflow segmentation remains ambiguous.
-  suggested_validation_strategy:
-  - Establish a successful controlled baseline.
-  - 'Apply only this mutation: switch to a second controlled actor only for CONTACT_MECHANIC.'
-  - Stop after the minimum approved request budget.
-  - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons: []
-  endpoint_ids:
-  - EP-065
-  observation_ids:
-  - OBS-000247
-  - OBS-000248
-  - OBS-000249
-  - OBS-000417
-  - OBS-000418
-  - OBS-000419
-  - OBS-000501
-  - OBS-000502
-  kind: SECURITY_HYPOTHESIS
-  epistemic_status: TEST_CANDIDATE
-- id: BLH-334E1D8DFF482BC2
-  fingerprint: 334e1d8dff482bc216827518b38cbe76586395f2db93fd098232bd3e566e4b6e
-  title: Verify auth may accept a resource from another controlled workflow
-  family: RESOURCE_SWITCH
-  workflow_family_id: WFAM-29B943758198F962
-  affected_action: VERIFY_AUTH
-  affected_transition_id: null
-  invariant_id: BINV-81B5CDA6A268E738
-  invariant_statement: Identifiers used by authentication challenge should remain
-    bound to the same controlled resource lifecycle.
-  canonical_behavior: VERIFY_AUTH uses identifiers from one controlled workflow
-  mutated_behavior: replace one identifier with a second controlled workflow resource
-    for VERIFY_AUTH
-  supporting_evidence:
-  - OBS-000005
-  - OBS-000017
-  - OBS-000022
-  - OBS-000033
-  - OBS-000052
-  - OBS-000069
-  - OBS-000073
-  - OBS-000090
-  - OBS-000112
-  - OBS-000124
-  - OBS-000133
-  - OBS-000186
-  - OBS-000203
-  - OBS-000252
-  - OBS-000274
-  - OBS-000284
-  - OBS-000330
-  - OBS-000348
-  - OBS-000356
-  - OBS-000373
-  - OBS-000422
-  - OBS-000479
-  - OBS-000505
-  - OBS-000522
-  - OBS-000563
-  - OBS-000569
-  - OBS-000584
-  - OBS-000594
-  - OBS-000657
-  - OBS-000717
-  contradicting_evidence: []
-  controlled_actors_required: 2
-  controlled_resources_required:
-  - Auth
-  authentication_requirements:
-  - Use the reviewed credential profile for mrscargo.
-  - Use the reviewed credential profile for saeedmehmandoust.
-  state_evidence_requirements:
-  - Record authoritative state for every affected resource before the mutation.
-  - Record the immediate mutation response.
-  - Record immediate and delayed authoritative state after the mutation.
-  - Compare linked financial, entitlement, inventory, and terminal workflow state
-    where applicable.
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  expected_safe_baseline: The canonical sequence is accepted for controlled authentication
-    challenge data.
-  expected_vulnerable_outcome: The backend accepts replace one identifier with a second
-    controlled workflow resource for VERIFY_AUTH and authoritative state shows an
-    unintended effect.
-  expected_secure_outcome: The backend rejects replace one identifier with a second
-    controlled workflow resource for VERIFY_AUTH or produces no unauthorized state
-    change.
-  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
-    or role state represented by the challenged invariant.
-  score:
-    likelihood: 3
-    impact: 2
-    test_readiness: 1
-    safety_cost: 2
-    confidence: 4
-    breakdown:
-    - reason: Three or more supporting workflows
-      points: 2
-    - reason: An authoritative baseline state and before-state query are missing.
-      points: -1
-    - reason: Controlled resource ownership baseline is missing.
-      points: -2
-    - reason: 'Target request budget is too low: 4 requests are estimated but only
-        3 are permitted.'
-      points: -1
-    - reason: Workflow segmentation remains ambiguous.
-      points: -1
-  confidence_explanation:
-  - The rule is derived from 30 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  uncertainty:
-  - Offline sequence evidence cannot prove that the backend requires the observed
-    order.
-  - Capture incompleteness or an undocumented optional branch may explain the pattern.
-  safety_classification: LOW_RISK_STATE_CHANGE
-  estimated_request_budget: 4
-  readiness_blockers:
-  - An authoritative baseline state and before-state query are missing.
-  - Controlled resource ownership baseline is missing.
-  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
-  - Workflow segmentation remains ambiguous.
-  suggested_validation_strategy:
-  - Establish a successful controlled baseline.
-  - 'Apply only this mutation: replace one identifier with a second controlled workflow
-    resource for VERIFY_AUTH.'
-  - Stop after the minimum approved request budget.
-  - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons: []
-  endpoint_ids:
-  - EP-017
-  observation_ids:
-  - OBS-000005
-  - OBS-000017
-  - OBS-000022
-  - OBS-000033
-  - OBS-000052
-  - OBS-000069
-  - OBS-000073
-  - OBS-000090
-  - OBS-000112
-  - OBS-000124
-  - OBS-000133
-  - OBS-000186
-  - OBS-000203
-  - OBS-000252
-  - OBS-000274
-  - OBS-000284
-  - OBS-000330
-  - OBS-000348
-  - OBS-000356
-  - OBS-000373
-  - OBS-000422
-  - OBS-000479
-  - OBS-000505
-  - OBS-000522
-  - OBS-000563
-  - OBS-000569
-  - OBS-000584
-  - OBS-000594
-  - OBS-000657
-  - OBS-000717
-  kind: SECURITY_HYPOTHESIS
-  epistemic_status: TEST_CANDIDATE
-- id: BLH-46ED2794B2690407
-  fingerprint: 46ed2794b269040796dfecbe19e3c4cbc690f30eca6e9416cae2496921189407
-  title: Contact mechanic may accept a resource from another controlled workflow
-  family: RESOURCE_SWITCH
-  workflow_family_id: WFAM-470EACBE0EB04BC3
-  affected_action: CONTACT_MECHANIC
-  affected_transition_id: null
-  invariant_id: BINV-78C1AA48DDA1755B
-  invariant_statement: Identifiers used by Mechanic lifecycle should remain bound
-    to the same controlled resource lifecycle.
-  canonical_behavior: CONTACT_MECHANIC uses identifiers from one controlled workflow
-  mutated_behavior: replace one identifier with a second controlled workflow resource
-    for CONTACT_MECHANIC
-  supporting_evidence:
-  - OBS-000247
-  - OBS-000248
-  - OBS-000249
-  - OBS-000417
-  - OBS-000418
-  - OBS-000419
-  - OBS-000501
-  - OBS-000502
-  contradicting_evidence: []
-  controlled_actors_required: 2
-  controlled_resources_required:
-  - Mechanic
-  authentication_requirements:
-  - Use the reviewed credential profile for mrscargo.
-  - Use the reviewed credential profile for saeedmehmandoust.
-  state_evidence_requirements:
-  - Record authoritative state for every affected resource before the mutation.
-  - Record the immediate mutation response.
-  - Record immediate and delayed authoritative state after the mutation.
-  - Compare linked financial, entitlement, inventory, and terminal workflow state
-    where applicable.
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  expected_safe_baseline: The canonical sequence is accepted for controlled Mechanic
-    lifecycle data.
-  expected_vulnerable_outcome: The backend accepts replace one identifier with a second
-    controlled workflow resource for CONTACT_MECHANIC and authoritative state shows
-    an unintended effect.
-  expected_secure_outcome: The backend rejects replace one identifier with a second
-    controlled workflow resource for CONTACT_MECHANIC or produces no unauthorized
-    state change.
-  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
-    or role state represented by the challenged invariant.
-  score:
-    likelihood: 3
-    impact: 2
-    test_readiness: 1
-    safety_cost: 2
-    confidence: 4
-    breakdown:
-    - reason: Three or more supporting workflows
-      points: 2
-    - reason: An authoritative baseline state and before-state query are missing.
-      points: -1
-    - reason: Controlled resource ownership baseline is missing.
-      points: -2
-    - reason: 'Target request budget is too low: 4 requests are estimated but only
-        3 are permitted.'
-      points: -1
-    - reason: Workflow segmentation remains ambiguous.
-      points: -1
-  confidence_explanation:
-  - The rule is derived from 8 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  uncertainty:
-  - Offline sequence evidence cannot prove that the backend requires the observed
-    order.
-  - Capture incompleteness or an undocumented optional branch may explain the pattern.
-  safety_classification: LOW_RISK_STATE_CHANGE
-  estimated_request_budget: 4
-  readiness_blockers:
-  - An authoritative baseline state and before-state query are missing.
-  - Controlled resource ownership baseline is missing.
-  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
-  - Workflow segmentation remains ambiguous.
-  suggested_validation_strategy:
-  - Establish a successful controlled baseline.
-  - 'Apply only this mutation: replace one identifier with a second controlled workflow
-    resource for CONTACT_MECHANIC.'
-  - Stop after the minimum approved request budget.
-  - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons: []
-  endpoint_ids:
-  - EP-065
-  observation_ids:
-  - OBS-000247
-  - OBS-000248
-  - OBS-000249
-  - OBS-000417
-  - OBS-000418
-  - OBS-000419
-  - OBS-000501
-  - OBS-000502
-  kind: SECURITY_HYPOTHESIS
-  epistemic_status: TEST_CANDIDATE
-- id: BLH-56903C11EDCC5077
-  fingerprint: 56903c11edcc5077bb03961ec0f6a8993f97cff53849c8d54e8dfd1bd596c52d
-  title: Return order may not remain bound to the initiating actor
-  family: ACTOR_SWITCH
-  workflow_family_id: WFAM-E4995F63FE06A147
+- id: BLH-1C9987F3CF1E6DBB
+  fingerprint: 1c9987f3cf1e6dbb9c7fc944b51dd511cfdf3452e722e364c4ea1f184c26bd98
+  title: Concurrent return order may bypass single-execution protection
+  family: CONCURRENT_EXECUTION
+  workflow_family_id: WFAM-B18CAB66F33EC59A
   affected_action: RETURN_ORDER
   affected_transition_id: null
-  invariant_id: BINV-66BE6908E41BD87B
-  invariant_statement: Each state-changing step in order lifecycle should remain bound
-    to an authorized workflow actor.
-  canonical_behavior: one authorized actor performs RETURN_ORDER
-  mutated_behavior: switch to a second controlled actor only for RETURN_ORDER
+  invariant_id: BINV-94BD310DD5984A4A
+  invariant_statement: RETURN_ORDER should produce at most one successful business
+    effect per logical workflow.
+  canonical_behavior: RETURN_ORDER executes serially once
+  mutated_behavior: two bounded RETURN_ORDER requests execute concurrently
   supporting_evidence:
-  - OBS-000007
-  - OBS-000010
-  - OBS-000011
   - OBS-000012
-  - OBS-000024
-  - OBS-000028
-  - OBS-000029
-  - OBS-000054
-  - OBS-000057
-  - OBS-000058
   - OBS-000059
-  - OBS-000075
-  - OBS-000084
-  - OBS-000104
-  - OBS-000107
-  - OBS-000108
-  - OBS-000109
-  - OBS-000269
-  - OBS-000270
-  - OBS-000271
-  - OBS-000474
-  - OBS-000475
-  - OBS-000476
-  - OBS-000642
-  - OBS-000643
-  - OBS-000644
-  - OBS-000646
-  - OBS-000648
-  - OBS-000650
-  - OBS-000651
-  - OBS-000699
   - OBS-000700
-  - OBS-000702
-  - OBS-000704
-  - OBS-000706
-  - OBS-000707
-  - OBS-000709
-  - OBS-000710
-  - OBS-000711
   contradicting_evidence: []
-  controlled_actors_required: 2
+  controlled_actors_required: 1
   controlled_resources_required:
   - Order
-  - Product
   - order
   - product
   authentication_requirements:
   - Use the reviewed credential profile for mrscargo.
-  - Use the reviewed credential profile for saeedmehmandoust.
   state_evidence_requirements:
   - Record authoritative state for every affected resource before the mutation.
   - Record the immediate mutation response.
@@ -1342,34 +129,239 @@ hypotheses:
   candidate_fields: []
   expected_safe_baseline: The canonical sequence is accepted for controlled order
     lifecycle data.
-  expected_vulnerable_outcome: The backend accepts switch to a second controlled actor
-    only for RETURN_ORDER and authoritative state shows an unintended effect.
-  expected_secure_outcome: The backend rejects switch to a second controlled actor
-    only for RETURN_ORDER or produces no unauthorized state change.
+  expected_vulnerable_outcome: The backend accepts two bounded RETURN_ORDER requests
+    execute concurrently and authoritative state shows an unintended effect.
+  expected_secure_outcome: The backend rejects two bounded RETURN_ORDER requests execute
+    concurrently or produces no unauthorized state change.
   impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
     or role state represented by the challenged invariant.
   score:
-    likelihood: 4
+    likelihood: 3
     impact: 4
     test_readiness: 1
     safety_cost: 5
-    confidence: 5
+    confidence: 4
     breakdown:
     - reason: Three or more supporting workflows
       points: 2
-    - reason: High-evidence invariant
-      points: 1
     - reason: Financial operation
       points: 2
-    - reason: Controlled resource ownership baseline is missing.
-      points: -2
+    - reason: An authoritative baseline state and before-state query are missing.
+      points: -1
+    - reason: Concurrency testing is not permitted by the offline engine.
+      points: -1
+    - reason: 'Target request budget is too low: 5 requests are estimated but only
+        3 are permitted.'
+      points: -1
+    - reason: Workflow segmentation remains ambiguous.
+      points: -1
+  confidence_explanation:
+  - The rule is derived from 3 workflow instance(s).
+  - Observed frequency is evidence of a pattern, not proof that the backend requires
+    it.
+  uncertainty:
+  - Offline sequence evidence cannot prove that the backend requires the observed
+    order.
+  - Capture incompleteness or an undocumented optional branch may explain the pattern.
+  safety_classification: CONCURRENT
+  estimated_request_budget: 5
+  readiness_blockers:
+  - An authoritative baseline state and before-state query are missing.
+  - Concurrency testing is not permitted by the offline engine.
+  - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
+  suggested_validation_strategy:
+  - Establish a successful controlled baseline.
+  - 'Apply only this mutation: two bounded RETURN_ORDER requests execute concurrently.'
+  - Stop after the minimum approved request budget.
+  - Classify the result from authoritative backend state, not status code alone.
+  suppression_reasons: []
+  endpoint_ids:
+  - EP-021
+  observation_ids:
+  - OBS-000012
+  - OBS-000059
+  - OBS-000700
+  kind: RESEARCH_TASK
+  readiness: RESEARCH_ONLY
+  epistemic_status: RESEARCH_TASK
+- id: BLH-2F40AB26AF496347
+  fingerprint: 2f40ab26af496347a5b8cce5ad0fc5f61b92bdf84a8c9c331b5aa782ea715b87
+  title: Return order may remain replayable after its first successful effect
+  family: REPLAY
+  workflow_family_id: WFAM-B18CAB66F33EC59A
+  affected_action: RETURN_ORDER
+  affected_transition_id: null
+  invariant_id: BINV-94BD310DD5984A4A
+  invariant_statement: RETURN_ORDER should produce at most one successful business
+    effect per logical workflow.
+  canonical_behavior: RETURN_ORDER executes once
+  mutated_behavior: RETURN_ORDER -> replay identical logical action
+  supporting_evidence:
+  - OBS-000012
+  - OBS-000059
+  - OBS-000700
+  contradicting_evidence: []
+  controlled_actors_required: 1
+  controlled_resources_required:
+  - Order
+  - order
+  - product
+  authentication_requirements:
+  - Use the reviewed credential profile for mrscargo.
+  state_evidence_requirements:
+  - Record authoritative state for every affected resource before the mutation.
+  - Record the immediate mutation response.
+  - Record immediate and delayed authoritative state after the mutation.
+  - Compare linked financial, entitlement, inventory, and terminal workflow state
+    where applicable.
+  mutable_value_fields: []
+  authoritative_value_fields: []
+  candidate_methods: []
+  candidate_paths: []
+  candidate_fields: []
+  expected_safe_baseline: The canonical sequence is accepted for controlled order
+    lifecycle data.
+  expected_vulnerable_outcome: The backend accepts RETURN_ORDER -> replay identical
+    logical action and authoritative state shows an unintended effect.
+  expected_secure_outcome: The backend rejects RETURN_ORDER -> replay identical logical
+    action or produces no unauthorized state change.
+  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
+    or role state represented by the challenged invariant.
+  score:
+    likelihood: 3
+    impact: 4
+    test_readiness: 1
+    safety_cost: 5
+    confidence: 4
+    breakdown:
+    - reason: Three or more supporting workflows
+      points: 2
+    - reason: Financial operation
+      points: 2
+    - reason: An authoritative baseline state and before-state query are missing.
+      points: -1
+    - reason: Financial State Change requires explicit target policy permission.
+      points: -1
+    - reason: 'Target request budget is too low: 5 requests are estimated but only
+        3 are permitted.'
+      points: -1
+    - reason: Workflow segmentation remains ambiguous.
+      points: -1
+  confidence_explanation:
+  - The rule is derived from 3 workflow instance(s).
+  - Observed frequency is evidence of a pattern, not proof that the backend requires
+    it.
+  uncertainty:
+  - Offline sequence evidence cannot prove that the backend requires the observed
+    order.
+  - Capture incompleteness or an undocumented optional branch may explain the pattern.
+  safety_classification: FINANCIAL_STATE_CHANGE
+  estimated_request_budget: 5
+  readiness_blockers:
+  - An authoritative baseline state and before-state query are missing.
+  - Financial State Change requires explicit target policy permission.
+  - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
+  suggested_validation_strategy:
+  - Establish a successful controlled baseline.
+  - 'Apply only this mutation: RETURN_ORDER -> replay identical logical action.'
+  - Stop after the minimum approved request budget.
+  - Classify the result from authoritative backend state, not status code alone.
+  suppression_reasons: []
+  endpoint_ids:
+  - EP-021
+  observation_ids:
+  - OBS-000012
+  - OBS-000059
+  - OBS-000700
+  kind: RESEARCH_TASK
+  readiness: RESEARCH_ONLY
+  epistemic_status: RESEARCH_TASK
+- id: BLH-303421BEF52FEFA6
+  fingerprint: 303421bef52fefa619411af02002d721a8c0e7546921bbe673a473a44dac3181
+  title: Undocumented update order method may expose server-controlled fields
+  family: SHADOW_ENDPOINT
+  workflow_family_id: WFAM-EB22B8E7C91F4402
+  affected_action: UPDATE_ORDER
+  affected_transition_id: null
+  invariant_id: BINV-8D71BC860E90B5BB
+  invariant_statement: Server-controlled Order lifecycle and value fields should not
+    become writable through an undocumented REST method.
+  canonical_behavior: only observed methods can change server-controlled fields
+  mutated_behavior: 'research whether PATCH/PUT /workshop/api/shop/orders/{orderId}
+    accepts one of: amount, currency, price, quantity, status'
+  supporting_evidence:
+  - OBS-000646
+  - OBS-000650
+  - OBS-000702
+  - OBS-000706
+  - OBS-000709
+  contradicting_evidence: []
+  controlled_actors_required: 1
+  controlled_resources_required:
+  - Order
+  authentication_requirements:
+  - Use the reviewed credential profile for mrscargo.
+  state_evidence_requirements:
+  - Record authoritative state for every affected resource before the mutation.
+  - Record the immediate mutation response.
+  - Record immediate and delayed authoritative state after the mutation.
+  - Compare linked financial, entitlement, inventory, and terminal workflow state
+    where applicable.
+  - 'Record authoritative values before and after the mutation for: $.order.product.price,
+    $.order.quantity, $.payment.amount, $.payment.currency.'
+  mutable_value_fields: []
+  authoritative_value_fields:
+  - $.order.product.price
+  - $.order.quantity
+  - $.payment.amount
+  - $.payment.currency
+  candidate_methods:
+  - PATCH
+  - PUT
+  candidate_paths:
+  - /workshop/api/shop/orders/{orderId}
+  candidate_fields:
+  - amount
+  - currency
+  - price
+  - quantity
+  - status
+  expected_safe_baseline: The canonical sequence is accepted for controlled order
+    lifecycle data.
+  expected_vulnerable_outcome: 'The backend accepts research whether PATCH/PUT /workshop/api/shop/orders/{orderId}
+    accepts one of: amount, currency, price, quantity, status and authoritative state
+    shows an unintended effect.'
+  expected_secure_outcome: 'The backend rejects research whether PATCH/PUT /workshop/api/shop/orders/{orderId}
+    accepts one of: amount, currency, price, quantity, status or produces no unauthorized
+    state change.'
+  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
+    or role state represented by the challenged invariant.
+  score:
+    likelihood: 3
+    impact: 4
+    test_readiness: 1
+    safety_cost: 5
+    confidence: 4
+    breakdown:
+    - reason: Three or more supporting workflows
+      points: 2
+    - reason: Financial operation
+      points: 2
+    - reason: Collect passive route evidence or obtain explicit approval before validation.
+      points: -1
     - reason: Financial State Change requires explicit target policy permission.
       points: -1
     - reason: 'Target request budget is too low: 4 requests are estimated but only
         3 are permitted.'
       points: -1
+    - reason: The candidate method has not been observed at runtime.
+      points: -1
+    - reason: Workflow segmentation remains ambiguous.
+      points: -1
   confidence_explanation:
-  - The rule is derived from 10 workflow instance(s).
+  - The rule is derived from 9 workflow instance(s).
   - Observed frequency is evidence of a pattern, not proof that the backend requires
     it.
   uncertainty:
@@ -1379,347 +371,38 @@ hypotheses:
   safety_classification: FINANCIAL_STATE_CHANGE
   estimated_request_budget: 4
   readiness_blockers:
-  - Controlled resource ownership baseline is missing.
+  - Collect passive route evidence or obtain explicit approval before validation.
   - Financial State Change requires explicit target policy permission.
   - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
+  - The candidate method has not been observed at runtime.
+  - Workflow segmentation remains ambiguous.
   suggested_validation_strategy:
   - Establish a successful controlled baseline.
-  - 'Apply only this mutation: switch to a second controlled actor only for RETURN_ORDER.'
-  - Stop after the minimum approved request budget.
-  - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons: []
-  endpoint_ids:
-  - EP-021
-  observation_ids:
-  - OBS-000007
-  - OBS-000010
-  - OBS-000011
-  - OBS-000012
-  - OBS-000024
-  - OBS-000028
-  - OBS-000029
-  - OBS-000054
-  - OBS-000057
-  - OBS-000058
-  - OBS-000059
-  - OBS-000075
-  - OBS-000084
-  - OBS-000104
-  - OBS-000107
-  - OBS-000108
-  - OBS-000109
-  - OBS-000269
-  - OBS-000270
-  - OBS-000271
-  - OBS-000474
-  - OBS-000475
-  - OBS-000476
-  - OBS-000642
-  - OBS-000643
-  - OBS-000644
-  - OBS-000646
-  - OBS-000648
-  - OBS-000650
-  - OBS-000651
-  - OBS-000699
-  - OBS-000700
-  - OBS-000702
-  - OBS-000704
-  - OBS-000706
-  - OBS-000707
-  - OBS-000709
-  - OBS-000710
-  - OBS-000711
-  kind: RESEARCH_TASK
-  epistemic_status: RESEARCH_TASK
-- id: BLH-57F13B775DC32F74
-  fingerprint: 57f13b775dc32f743af79464f7e94029a6130ac1d9e99b896ac8500aba22871a
-  title: Comment post may not remain bound to the initiating actor
-  family: ACTOR_SWITCH
-  workflow_family_id: WFAM-D851170456D369DF
-  affected_action: COMMENT_POST
-  affected_transition_id: null
-  invariant_id: BINV-D37F4AE6121BEF1A
-  invariant_statement: Each state-changing step in Post lifecycle should remain bound
-    to an authorized workflow actor.
-  canonical_behavior: one authorized actor performs COMMENT_POST
-  mutated_behavior: switch to a second controlled actor only for COMMENT_POST
-  supporting_evidence:
-  - OBS-000014
-  - OBS-000015
-  - OBS-000016
-  - OBS-000031
-  - OBS-000043
-  - OBS-000044
-  - OBS-000045
-  - OBS-000061
-  - OBS-000062
-  - OBS-000063
-  - OBS-000064
-  - OBS-000065
-  - OBS-000096
-  - OBS-000098
-  - OBS-000100
-  - OBS-000101
-  - OBS-000102
-  - OBS-000103
-  - OBS-000114
-  - OBS-000116
-  - OBS-000117
-  - OBS-000118
-  - OBS-000119
-  - OBS-000120
-  - OBS-000278
-  - OBS-000280
-  - OBS-000653
-  contradicting_evidence: []
-  controlled_actors_required: 2
-  controlled_resources_required:
-  - Post
-  - author
-  - post
-  - vehicle
-  authentication_requirements:
-  - Use the reviewed credential profile for mrscargo.
-  - Use the reviewed credential profile for saeedmehmandoust.
-  state_evidence_requirements:
-  - Record authoritative state for every affected resource before the mutation.
-  - Record the immediate mutation response.
-  - Record immediate and delayed authoritative state after the mutation.
-  - Compare linked financial, entitlement, inventory, and terminal workflow state
-    where applicable.
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  expected_safe_baseline: The canonical sequence is accepted for controlled Post lifecycle
-    data.
-  expected_vulnerable_outcome: The backend accepts switch to a second controlled actor
-    only for COMMENT_POST and authoritative state shows an unintended effect.
-  expected_secure_outcome: The backend rejects switch to a second controlled actor
-    only for COMMENT_POST or produces no unauthorized state change.
-  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
-    or role state represented by the challenged invariant.
-  score:
-    likelihood: 3
-    impact: 2
-    test_readiness: 1
-    safety_cost: 2
-    confidence: 4
-    breakdown:
-    - reason: Three or more supporting workflows
-      points: 2
-    - reason: An authoritative baseline state and before-state query are missing.
-      points: -1
-    - reason: Controlled resource ownership baseline is missing.
-      points: -2
-    - reason: 'Target request budget is too low: 4 requests are estimated but only
-        3 are permitted.'
-      points: -1
-  confidence_explanation:
-  - The rule is derived from 5 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  uncertainty:
-  - Offline sequence evidence cannot prove that the backend requires the observed
-    order.
-  - Capture incompleteness or an undocumented optional branch may explain the pattern.
-  safety_classification: LOW_RISK_STATE_CHANGE
-  estimated_request_budget: 4
-  readiness_blockers:
-  - An authoritative baseline state and before-state query are missing.
-  - Controlled resource ownership baseline is missing.
-  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
-  suggested_validation_strategy:
-  - Establish a successful controlled baseline.
-  - 'Apply only this mutation: switch to a second controlled actor only for COMMENT_POST.'
-  - Stop after the minimum approved request budget.
-  - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons: []
-  endpoint_ids:
-  - EP-014
-  observation_ids:
-  - OBS-000014
-  - OBS-000015
-  - OBS-000016
-  - OBS-000031
-  - OBS-000043
-  - OBS-000044
-  - OBS-000045
-  - OBS-000061
-  - OBS-000062
-  - OBS-000063
-  - OBS-000064
-  - OBS-000065
-  - OBS-000096
-  - OBS-000098
-  - OBS-000100
-  - OBS-000101
-  - OBS-000102
-  - OBS-000103
-  - OBS-000114
-  - OBS-000116
-  - OBS-000117
-  - OBS-000118
-  - OBS-000119
-  - OBS-000120
-  - OBS-000278
-  - OBS-000280
-  - OBS-000653
-  kind: SECURITY_HYPOTHESIS
-  epistemic_status: TEST_CANDIDATE
-- id: BLH-5DE29282B8FA1F2D
-  fingerprint: 5de29282b8fa1f2d1be35115294a872f3eb64c4fbeebebd5e7d611a43f5f8a0a
-  title: Comment post may accept a resource from another controlled workflow
-  family: RESOURCE_SWITCH
-  workflow_family_id: WFAM-D851170456D369DF
-  affected_action: COMMENT_POST
-  affected_transition_id: null
-  invariant_id: BINV-070BBCB6BD3EB5EB
-  invariant_statement: Identifiers used by Post lifecycle should remain bound to the
-    same controlled resource lifecycle.
-  canonical_behavior: COMMENT_POST uses identifiers from one controlled workflow
-  mutated_behavior: replace one identifier with a second controlled workflow resource
-    for COMMENT_POST
-  supporting_evidence:
-  - OBS-000014
-  - OBS-000015
-  - OBS-000016
-  - OBS-000031
-  - OBS-000043
-  - OBS-000044
-  - OBS-000045
-  - OBS-000061
-  - OBS-000062
-  - OBS-000063
-  - OBS-000064
-  - OBS-000065
-  - OBS-000096
-  - OBS-000098
-  - OBS-000100
-  - OBS-000101
-  - OBS-000102
-  - OBS-000103
-  - OBS-000114
-  - OBS-000116
-  - OBS-000117
-  - OBS-000118
-  - OBS-000119
-  - OBS-000120
-  - OBS-000278
-  - OBS-000280
-  - OBS-000653
-  contradicting_evidence: []
-  controlled_actors_required: 2
-  controlled_resources_required:
-  - Post
-  - author
-  - post
-  - vehicle
-  authentication_requirements:
-  - Use the reviewed credential profile for mrscargo.
-  - Use the reviewed credential profile for saeedmehmandoust.
-  state_evidence_requirements:
-  - Record authoritative state for every affected resource before the mutation.
-  - Record the immediate mutation response.
-  - Record immediate and delayed authoritative state after the mutation.
-  - Compare linked financial, entitlement, inventory, and terminal workflow state
-    where applicable.
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  expected_safe_baseline: The canonical sequence is accepted for controlled Post lifecycle
-    data.
-  expected_vulnerable_outcome: The backend accepts replace one identifier with a second
-    controlled workflow resource for COMMENT_POST and authoritative state shows an
-    unintended effect.
-  expected_secure_outcome: The backend rejects replace one identifier with a second
-    controlled workflow resource for COMMENT_POST or produces no unauthorized state
-    change.
-  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
-    or role state represented by the challenged invariant.
-  score:
-    likelihood: 3
-    impact: 2
-    test_readiness: 1
-    safety_cost: 2
-    confidence: 4
-    breakdown:
-    - reason: Three or more supporting workflows
-      points: 2
-    - reason: An authoritative baseline state and before-state query are missing.
-      points: -1
-    - reason: Controlled resource ownership baseline is missing.
-      points: -2
-    - reason: 'Target request budget is too low: 4 requests are estimated but only
-        3 are permitted.'
-      points: -1
-  confidence_explanation:
-  - The rule is derived from 5 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  uncertainty:
-  - Offline sequence evidence cannot prove that the backend requires the observed
-    order.
-  - Capture incompleteness or an undocumented optional branch may explain the pattern.
-  safety_classification: LOW_RISK_STATE_CHANGE
-  estimated_request_budget: 4
-  readiness_blockers:
-  - An authoritative baseline state and before-state query are missing.
-  - Controlled resource ownership baseline is missing.
-  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
-  suggested_validation_strategy:
-  - Establish a successful controlled baseline.
-  - 'Apply only this mutation: replace one identifier with a second controlled workflow
-    resource for COMMENT_POST.'
+  - 'Apply only this mutation: research whether PATCH/PUT /workshop/api/shop/orders/{orderId}
+    accepts one of: amount, currency, price, quantity, status.'
   - Stop after the minimum approved request budget.
   - Classify the result from authoritative backend state, not status code alone.
   suppression_reasons:
-  - A stronger endpoint-level object-authorization hypothesis already covers this
-    mutation.
+  - An unobserved REST method remains a research lead, not a test candidate.
   endpoint_ids:
-  - EP-014
+  - EP-069
   observation_ids:
-  - OBS-000014
-  - OBS-000015
-  - OBS-000016
-  - OBS-000031
-  - OBS-000043
-  - OBS-000044
-  - OBS-000045
-  - OBS-000061
-  - OBS-000062
-  - OBS-000063
-  - OBS-000064
-  - OBS-000065
-  - OBS-000096
-  - OBS-000098
-  - OBS-000100
-  - OBS-000101
-  - OBS-000102
-  - OBS-000103
-  - OBS-000114
-  - OBS-000116
-  - OBS-000117
-  - OBS-000118
-  - OBS-000119
-  - OBS-000120
-  - OBS-000278
-  - OBS-000280
-  - OBS-000653
+  - OBS-000646
+  - OBS-000650
+  - OBS-000702
+  - OBS-000706
+  - OBS-000709
   kind: RESEARCH_TASK
+  readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
-- id: BLH-5F931D30A35390DB
-  fingerprint: 5f931d30a35390db4b82875acfff1f245a56feb525b140351efc858288eb2b6d
+- id: BLH-3D79F0659754E611
+  fingerprint: 3d79f0659754e6116da484cd175e4ee26c7a93b77a6daaa30eda3cd1e82600cf
   title: Request servicerequest may not remain bound to the initiating actor
   family: ACTOR_SWITCH
-  workflow_family_id: WFAM-7CB950EDB43A733B
+  workflow_family_id: WFAM-250D444EC7F95DCE
   affected_action: REQUEST_SERVICEREQUEST
   affected_transition_id: null
-  invariant_id: BINV-D08211FFA685202E
+  invariant_id: BINV-0DB798612BAFAB6C
   invariant_statement: Each state-changing step in ServiceRequest lifecycle should
     remain bound to an authorized workflow actor.
   canonical_behavior: one authorized actor performs REQUEST_SERVICEREQUEST
@@ -1809,65 +492,273 @@ hypotheses:
   - OBS-000575
   - OBS-000686
   kind: SECURITY_HYPOTHESIS
+  readiness: REVIEW_REQUIRED
   epistemic_status: TEST_CANDIDATE
-- id: BLH-716060039F7D87AE
-  fingerprint: 716060039f7d87aeb81b2027c2f17229993d80eb6dcf061e6cf8107bf9b19433
-  title: Return order may accept a resource from another controlled workflow
-  family: RESOURCE_SWITCH
-  workflow_family_id: WFAM-E4995F63FE06A147
+- id: BLH-3DB93FA96F337326
+  fingerprint: 3db93fa96f337326714329ee75968081eb4d57a1f8aef6fe3b42f2368466d9d0
+  title: Return order may succeed without read order
+  family: STEP_SKIPPING
+  workflow_family_id: WFAM-070E94C62CCCE75E
   affected_action: RETURN_ORDER
-  affected_transition_id: null
-  invariant_id: BINV-061D626D929186ED
-  invariant_statement: Identifiers used by order lifecycle should remain bound to
-    the same controlled resource lifecycle.
-  canonical_behavior: RETURN_ORDER uses identifiers from one controlled workflow
-  mutated_behavior: replace one identifier with a second controlled workflow resource
-    for RETURN_ORDER
+  affected_transition_id: TRANS-FC0B34E91B49B360
+  invariant_id: BINV-3EE8BD7278E77A9D
+  invariant_statement: RETURN_ORDER appears to require READ_ORDER to occur first in
+    order lifecycle.
+  canonical_behavior: READ_ORDER -> RETURN_ORDER
+  mutated_behavior: omit READ_ORDER and invoke RETURN_ORDER
   supporting_evidence:
+  - OBS-000706
+  - OBS-000709
+  - OBS-000711
+  contradicting_evidence: []
+  controlled_actors_required: 1
+  controlled_resources_required:
+  - Order
+  - order
+  - product
+  authentication_requirements:
+  - Use the reviewed credential profile for mrscargo.
+  state_evidence_requirements:
+  - Record authoritative state for every affected resource before the mutation.
+  - Record the immediate mutation response.
+  - Record immediate and delayed authoritative state after the mutation.
+  - Compare linked financial, entitlement, inventory, and terminal workflow state
+    where applicable.
+  mutable_value_fields: []
+  authoritative_value_fields: []
+  candidate_methods: []
+  candidate_paths: []
+  candidate_fields: []
+  expected_safe_baseline: The canonical sequence is accepted for controlled order
+    lifecycle data.
+  expected_vulnerable_outcome: The backend accepts omit READ_ORDER and invoke RETURN_ORDER
+    and authoritative state shows an unintended effect.
+  expected_secure_outcome: The backend rejects omit READ_ORDER and invoke RETURN_ORDER
+    or produces no unauthorized state change.
+  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
+    or role state represented by the challenged invariant.
+  score:
+    likelihood: 1
+    impact: 4
+    test_readiness: 1
+    safety_cost: 5
+    confidence: 2
+    breakdown:
+    - reason: Financial operation
+      points: 2
+    - reason: Financial State Change requires explicit target policy permission.
+      points: -1
+    - reason: Insufficient workflow observations to treat the pattern as mandatory.
+      points: -1
+    - reason: 'Target request budget is too low: 4 requests are estimated but only
+        3 are permitted.'
+      points: -1
+    - reason: Workflow segmentation remains ambiguous.
+      points: -1
+  confidence_explanation:
+  - The rule is derived from 1 workflow instance(s).
+  - Observed frequency is evidence of a pattern, not proof that the backend requires
+    it.
+  - One workflow instance cannot establish a mandatory business rule.
+  uncertainty:
+  - Offline sequence evidence cannot prove that the backend requires the observed
+    order.
+  - Capture incompleteness or an undocumented optional branch may explain the pattern.
+  safety_classification: FINANCIAL_STATE_CHANGE
+  estimated_request_budget: 4
+  readiness_blockers:
+  - Financial State Change requires explicit target policy permission.
+  - Insufficient workflow observations to treat the pattern as mandatory.
+  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
+  suggested_validation_strategy:
+  - Establish a successful controlled baseline.
+  - 'Apply only this mutation: omit READ_ORDER and invoke RETURN_ORDER.'
+  - Stop after the minimum approved request budget.
+  - Classify the result from authoritative backend state, not status code alone.
+  suppression_reasons: []
+  endpoint_ids:
+  - EP-021
+  - EP-069
+  observation_ids:
+  - OBS-000706
+  - OBS-000709
+  - OBS-000711
+  kind: RESEARCH_TASK
+  readiness: RESEARCH_ONLY
+  epistemic_status: RESEARCH_TASK
+- id: BLH-64B37A2600729089
+  fingerprint: 64b37a260072908965c0e76477b0a056b697b7084a317dfe422389690f97d52b
+  title: Create order may accept an amount or quantity inconsistent with the baseline
+  family: QUANTITY_VALUE_INVARIANT
+  workflow_family_id: WFAM-5256530622A826BE
+  affected_action: CREATE_ORDER
+  affected_transition_id: null
+  invariant_id: BINV-54E79FE7DE2BD63A
+  invariant_statement: Amounts, quantities, and linked financial effects in order
+    lifecycle should remain internally consistent.
+  canonical_behavior: CREATE_ORDER uses the observed internally consistent values
+  mutated_behavior: change one observed value field for CREATE_ORDER while preserving
+    all other fields
+  supporting_evidence:
+  - OBS-000002
+  - OBS-000004
   - OBS-000007
   - OBS-000010
-  - OBS-000011
-  - OBS-000012
+  - OBS-000019
+  - OBS-000021
   - OBS-000024
-  - OBS-000028
   - OBS-000029
+  - OBS-000032
+  - OBS-000047
+  - OBS-000049
+  - OBS-000051
   - OBS-000054
   - OBS-000057
-  - OBS-000058
-  - OBS-000059
+  - OBS-000067
+  - OBS-000071
+  - OBS-000072
   - OBS-000075
-  - OBS-000084
+  - OBS-000089
   - OBS-000104
   - OBS-000107
-  - OBS-000108
   - OBS-000109
+  - OBS-000111
+  - OBS-000123
   - OBS-000269
-  - OBS-000270
-  - OBS-000271
   - OBS-000474
-  - OBS-000475
-  - OBS-000476
   - OBS-000642
-  - OBS-000643
-  - OBS-000644
-  - OBS-000646
-  - OBS-000648
-  - OBS-000650
-  - OBS-000651
-  - OBS-000699
-  - OBS-000700
-  - OBS-000702
-  - OBS-000704
-  - OBS-000706
-  - OBS-000707
-  - OBS-000709
-  - OBS-000710
-  - OBS-000711
+  - OBS-000695
+  contradicting_evidence: []
+  controlled_actors_required: 1
+  controlled_resources_required:
+  - Order
+  - account
+  - order
+  - product
+  authentication_requirements:
+  - Use the reviewed credential profile for mrscargo.
+  state_evidence_requirements:
+  - Record authoritative state for every affected resource before the mutation.
+  - Record the immediate mutation response.
+  - Record immediate and delayed authoritative state after the mutation.
+  - Compare linked financial, entitlement, inventory, and terminal workflow state
+    where applicable.
+  - 'Record authoritative values before and after the mutation for: $.credit.'
+  mutable_value_fields:
+  - $.quantity
+  authoritative_value_fields:
+  - $.credit
+  candidate_methods: []
+  candidate_paths: []
+  candidate_fields: []
+  expected_safe_baseline: The canonical sequence is accepted for controlled order
+    lifecycle data.
+  expected_vulnerable_outcome: The backend accepts change one observed value field
+    for CREATE_ORDER while preserving all other fields and authoritative state shows
+    an unintended effect.
+  expected_secure_outcome: The backend rejects change one observed value field for
+    CREATE_ORDER while preserving all other fields or produces no unauthorized state
+    change.
+  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
+    or role state represented by the challenged invariant.
+  score:
+    likelihood: 3
+    impact: 4
+    test_readiness: 2
+    safety_cost: 2
+    confidence: 4
+    breakdown:
+    - reason: Three or more supporting workflows
+      points: 2
+    - reason: Financial operation
+      points: 2
+    - reason: An authoritative baseline state and before-state query are missing.
+      points: -1
+    - reason: 'Target request budget is too low: 4 requests are estimated but only
+        3 are permitted.'
+      points: -1
+    - reason: Workflow segmentation remains ambiguous.
+      points: -1
+  confidence_explanation:
+  - The rule is derived from 6 workflow instance(s).
+  - Observed frequency is evidence of a pattern, not proof that the backend requires
+    it.
+  uncertainty:
+  - Offline sequence evidence cannot prove that the backend requires the observed
+    order.
+  - Capture incompleteness or an undocumented optional branch may explain the pattern.
+  safety_classification: LOW_RISK_STATE_CHANGE
+  estimated_request_budget: 4
+  readiness_blockers:
+  - An authoritative baseline state and before-state query are missing.
+  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
+  suggested_validation_strategy:
+  - Establish a successful controlled baseline.
+  - 'Apply only this mutation: change one observed value field for CREATE_ORDER while
+    preserving all other fields.'
+  - Stop after the minimum approved request budget.
+  - Classify the result from authoritative backend state, not status code alone.
+  suppression_reasons: []
+  endpoint_ids:
+  - EP-020
+  observation_ids:
+  - OBS-000002
+  - OBS-000004
+  - OBS-000007
+  - OBS-000010
+  - OBS-000019
+  - OBS-000021
+  - OBS-000024
+  - OBS-000029
+  - OBS-000032
+  - OBS-000047
+  - OBS-000049
+  - OBS-000051
+  - OBS-000054
+  - OBS-000057
+  - OBS-000067
+  - OBS-000071
+  - OBS-000072
+  - OBS-000075
+  - OBS-000089
+  - OBS-000104
+  - OBS-000107
+  - OBS-000109
+  - OBS-000111
+  - OBS-000123
+  - OBS-000269
+  - OBS-000474
+  - OBS-000642
+  - OBS-000695
+  kind: SECURITY_HYPOTHESIS
+  readiness: REVIEW_REQUIRED
+  epistemic_status: TEST_CANDIDATE
+- id: BLH-6E78992C4C726EA3
+  fingerprint: 6e78992c4c726ea38dde83d04674dcc387734002f3ea5a105841d5161e837fc0
+  title: Create order may accept a resource from another controlled workflow
+  family: RESOURCE_SWITCH
+  workflow_family_id: WFAM-5256530622A826BE
+  affected_action: CREATE_ORDER
+  affected_transition_id: null
+  invariant_id: BINV-09B2FD1613CBF80C
+  invariant_statement: Identifiers used by order lifecycle should remain bound to
+    the same controlled resource lifecycle.
+  canonical_behavior: CREATE_ORDER uses identifiers from one controlled workflow
+  mutated_behavior: replace one identifier with a second controlled workflow resource
+    for CREATE_ORDER
+  supporting_evidence:
+  - OBS-000010
+  - OBS-000057
+  - OBS-000107
+  - OBS-000269
+  - OBS-000474
+  - OBS-000642
   contradicting_evidence: []
   controlled_actors_required: 2
   controlled_resources_required:
   - Order
-  - Product
   - order
   - product
   authentication_requirements:
@@ -1887,150 +778,22 @@ hypotheses:
   expected_safe_baseline: The canonical sequence is accepted for controlled order
     lifecycle data.
   expected_vulnerable_outcome: The backend accepts replace one identifier with a second
-    controlled workflow resource for RETURN_ORDER and authoritative state shows an
+    controlled workflow resource for CREATE_ORDER and authoritative state shows an
     unintended effect.
   expected_secure_outcome: The backend rejects replace one identifier with a second
-    controlled workflow resource for RETURN_ORDER or produces no unauthorized state
+    controlled workflow resource for CREATE_ORDER or produces no unauthorized state
     change.
   impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
     or role state represented by the challenged invariant.
   score:
-    likelihood: 4
-    impact: 4
-    test_readiness: 1
-    safety_cost: 5
-    confidence: 5
-    breakdown:
-    - reason: Three or more supporting workflows
-      points: 2
-    - reason: High-evidence invariant
-      points: 1
-    - reason: Financial operation
-      points: 2
-    - reason: Controlled resource ownership baseline is missing.
-      points: -2
-    - reason: Financial State Change requires explicit target policy permission.
-      points: -1
-    - reason: 'Target request budget is too low: 4 requests are estimated but only
-        3 are permitted.'
-      points: -1
-  confidence_explanation:
-  - The rule is derived from 10 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  uncertainty:
-  - Offline sequence evidence cannot prove that the backend requires the observed
-    order.
-  - Capture incompleteness or an undocumented optional branch may explain the pattern.
-  safety_classification: FINANCIAL_STATE_CHANGE
-  estimated_request_budget: 4
-  readiness_blockers:
-  - Controlled resource ownership baseline is missing.
-  - Financial State Change requires explicit target policy permission.
-  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
-  suggested_validation_strategy:
-  - Establish a successful controlled baseline.
-  - 'Apply only this mutation: replace one identifier with a second controlled workflow
-    resource for RETURN_ORDER.'
-  - Stop after the minimum approved request budget.
-  - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons:
-  - A stronger endpoint-level object-authorization hypothesis already covers this
-    mutation.
-  endpoint_ids:
-  - EP-021
-  observation_ids:
-  - OBS-000007
-  - OBS-000010
-  - OBS-000011
-  - OBS-000012
-  - OBS-000024
-  - OBS-000028
-  - OBS-000029
-  - OBS-000054
-  - OBS-000057
-  - OBS-000058
-  - OBS-000059
-  - OBS-000075
-  - OBS-000084
-  - OBS-000104
-  - OBS-000107
-  - OBS-000108
-  - OBS-000109
-  - OBS-000269
-  - OBS-000270
-  - OBS-000271
-  - OBS-000474
-  - OBS-000475
-  - OBS-000476
-  - OBS-000642
-  - OBS-000643
-  - OBS-000644
-  - OBS-000646
-  - OBS-000648
-  - OBS-000650
-  - OBS-000651
-  - OBS-000699
-  - OBS-000700
-  - OBS-000702
-  - OBS-000704
-  - OBS-000706
-  - OBS-000707
-  - OBS-000709
-  - OBS-000710
-  - OBS-000711
-  kind: RESEARCH_TASK
-  epistemic_status: RESEARCH_TASK
-- id: BLH-77FAD8F1725CB504
-  fingerprint: 77fad8f1725cb50454d320e23ad4e2f42238b578615501761d92c2527bca11db
-  title: Change phonenumber may not remain bound to the initiating actor
-  family: ACTOR_SWITCH
-  workflow_family_id: WFAM-5074D2F402DD9C78
-  affected_action: CHANGE_PHONENUMBER
-  affected_transition_id: null
-  invariant_id: BINV-FFC1E620B3D11F77
-  invariant_statement: Each state-changing step in PhoneNumber lifecycle should remain
-    bound to an authorized workflow actor.
-  canonical_behavior: one authorized actor performs CHANGE_PHONENUMBER
-  mutated_behavior: switch to a second controlled actor only for CHANGE_PHONENUMBER
-  supporting_evidence:
-  - OBS-000036
-  - OBS-000068
-  contradicting_evidence: []
-  controlled_actors_required: 2
-  controlled_resources_required:
-  - PhoneNumber
-  authentication_requirements:
-  - Use the reviewed credential profile for mrscargo.
-  - Use the reviewed credential profile for saeedmehmandoust.
-  state_evidence_requirements:
-  - Record authoritative state for every affected resource before the mutation.
-  - Record the immediate mutation response.
-  - Record immediate and delayed authoritative state after the mutation.
-  - Compare linked financial, entitlement, inventory, and terminal workflow state
-    where applicable.
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  expected_safe_baseline: The canonical sequence is accepted for controlled PhoneNumber
-    lifecycle data.
-  expected_vulnerable_outcome: The backend accepts switch to a second controlled actor
-    only for CHANGE_PHONENUMBER and authoritative state shows an unintended effect.
-  expected_secure_outcome: The backend rejects switch to a second controlled actor
-    only for CHANGE_PHONENUMBER or produces no unauthorized state change.
-  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
-    or role state represented by the challenged invariant.
-  score:
-    likelihood: 2
+    likelihood: 3
     impact: 2
     test_readiness: 1
     safety_cost: 2
     confidence: 4
     breakdown:
-    - reason: Two supporting workflows
-      points: 1
+    - reason: Three or more supporting workflows
+      points: 2
     - reason: An authoritative baseline state and before-state query are missing.
       points: -1
     - reason: Controlled resource ownership baseline is missing.
@@ -2041,7 +804,7 @@ hypotheses:
     - reason: Workflow segmentation remains ambiguous.
       points: -1
   confidence_explanation:
-  - The rule is derived from 2 workflow instance(s).
+  - The rule is derived from 6 workflow instance(s).
   - Observed frequency is evidence of a pattern, not proof that the backend requires
     it.
   uncertainty:
@@ -2057,40 +820,43 @@ hypotheses:
   - Workflow segmentation remains ambiguous.
   suggested_validation_strategy:
   - Establish a successful controlled baseline.
-  - 'Apply only this mutation: switch to a second controlled actor only for CHANGE_PHONENUMBER.'
+  - 'Apply only this mutation: replace one identifier with a second controlled workflow
+    resource for CREATE_ORDER.'
   - Stop after the minimum approved request budget.
   - Classify the result from authoritative backend state, not status code alone.
   suppression_reasons: []
   endpoint_ids:
-  - EP-018
+  - EP-020
   observation_ids:
-  - OBS-000036
-  - OBS-000068
+  - OBS-000010
+  - OBS-000057
+  - OBS-000107
+  - OBS-000269
+  - OBS-000474
+  - OBS-000642
   kind: SECURITY_HYPOTHESIS
+  readiness: REVIEW_REQUIRED
   epistemic_status: TEST_CANDIDATE
-- id: BLH-8066D93E043EFB16
-  fingerprint: 8066d93e043efb1643239d6cdb29fea77b01b8737117338bc57719f5882be18a
-  title: Undocumented update order method may expose server-controlled fields
-  family: SHADOW_ENDPOINT
-  workflow_family_id: WFAM-E4995F63FE06A147
-  affected_action: UPDATE_ORDER
+- id: BLH-7CF7481519EDDFC0
+  fingerprint: 7cf7481519eddfc0d1a552363f10d2a6a404ce696d40addead69150dc611bbdd
+  title: Return order may remain replayable after its first successful effect
+  family: REPLAY
+  workflow_family_id: WFAM-070E94C62CCCE75E
+  affected_action: RETURN_ORDER
   affected_transition_id: null
-  invariant_id: BINV-9BC48FA7F27AB707
-  invariant_statement: Server-controlled Order lifecycle and value fields should not
-    become writable through an undocumented REST method.
-  canonical_behavior: only observed methods can change server-controlled fields
-  mutated_behavior: 'research whether PATCH/PUT /workshop/api/shop/orders/{orderId}
-    accepts one of: amount, currency, price, quantity, status'
+  invariant_id: BINV-D5F6B38226CE8BCD
+  invariant_statement: RETURN_ORDER should produce at most one successful business
+    effect per logical workflow.
+  canonical_behavior: RETURN_ORDER executes once
+  mutated_behavior: RETURN_ORDER -> replay identical logical action
   supporting_evidence:
-  - OBS-000646
-  - OBS-000650
-  - OBS-000702
-  - OBS-000706
-  - OBS-000709
+  - OBS-000711
   contradicting_evidence: []
   controlled_actors_required: 1
   controlled_resources_required:
   - Order
+  - order
+  - product
   authentication_requirements:
   - Use the reviewed credential profile for mrscargo.
   state_evidence_requirements:
@@ -2099,110 +865,91 @@ hypotheses:
   - Record immediate and delayed authoritative state after the mutation.
   - Compare linked financial, entitlement, inventory, and terminal workflow state
     where applicable.
-  - 'Record authoritative values before and after the mutation for: $.order.product.price,
-    $.order.quantity, $.payment.amount, $.payment.currency.'
   mutable_value_fields: []
-  authoritative_value_fields:
-  - $.order.product.price
-  - $.order.quantity
-  - $.payment.amount
-  - $.payment.currency
-  candidate_methods:
-  - PATCH
-  - PUT
-  candidate_paths:
-  - /workshop/api/shop/orders/{orderId}
-  candidate_fields:
-  - amount
-  - currency
-  - price
-  - quantity
-  - status
+  authoritative_value_fields: []
+  candidate_methods: []
+  candidate_paths: []
+  candidate_fields: []
   expected_safe_baseline: The canonical sequence is accepted for controlled order
     lifecycle data.
-  expected_vulnerable_outcome: 'The backend accepts research whether PATCH/PUT /workshop/api/shop/orders/{orderId}
-    accepts one of: amount, currency, price, quantity, status and authoritative state
-    shows an unintended effect.'
-  expected_secure_outcome: 'The backend rejects research whether PATCH/PUT /workshop/api/shop/orders/{orderId}
-    accepts one of: amount, currency, price, quantity, status or produces no unauthorized
-    state change.'
+  expected_vulnerable_outcome: The backend accepts RETURN_ORDER -> replay identical
+    logical action and authoritative state shows an unintended effect.
+  expected_secure_outcome: The backend rejects RETURN_ORDER -> replay identical logical
+    action or produces no unauthorized state change.
   impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
     or role state represented by the challenged invariant.
   score:
-    likelihood: 4
+    likelihood: 1
     impact: 4
     test_readiness: 1
     safety_cost: 5
-    confidence: 5
+    confidence: 2
     breakdown:
-    - reason: Three or more supporting workflows
-      points: 2
-    - reason: High-evidence invariant
-      points: 1
     - reason: Financial operation
       points: 2
-    - reason: Collect passive route evidence or obtain explicit approval before validation.
-      points: -1
     - reason: Financial State Change requires explicit target policy permission.
       points: -1
-    - reason: 'Target request budget is too low: 4 requests are estimated but only
+    - reason: Insufficient workflow observations to treat the pattern as mandatory.
+      points: -1
+    - reason: 'Target request budget is too low: 5 requests are estimated but only
         3 are permitted.'
       points: -1
-    - reason: The candidate method has not been observed at runtime.
+    - reason: Workflow segmentation remains ambiguous.
       points: -1
   confidence_explanation:
-  - The rule is derived from 10 workflow instance(s).
+  - The rule is derived from 1 workflow instance(s).
   - Observed frequency is evidence of a pattern, not proof that the backend requires
     it.
+  - One workflow instance cannot establish a mandatory business rule.
   uncertainty:
   - Offline sequence evidence cannot prove that the backend requires the observed
     order.
   - Capture incompleteness or an undocumented optional branch may explain the pattern.
   safety_classification: FINANCIAL_STATE_CHANGE
-  estimated_request_budget: 4
+  estimated_request_budget: 5
   readiness_blockers:
-  - Collect passive route evidence or obtain explicit approval before validation.
   - Financial State Change requires explicit target policy permission.
-  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
-  - The candidate method has not been observed at runtime.
+  - Insufficient workflow observations to treat the pattern as mandatory.
+  - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
   suggested_validation_strategy:
   - Establish a successful controlled baseline.
-  - 'Apply only this mutation: research whether PATCH/PUT /workshop/api/shop/orders/{orderId}
-    accepts one of: amount, currency, price, quantity, status.'
+  - 'Apply only this mutation: RETURN_ORDER -> replay identical logical action.'
   - Stop after the minimum approved request budget.
   - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons:
-  - An unobserved REST method remains a research lead, not a test candidate.
+  suppression_reasons: []
   endpoint_ids:
-  - EP-069
+  - EP-021
   observation_ids:
-  - OBS-000646
-  - OBS-000650
-  - OBS-000702
-  - OBS-000706
-  - OBS-000709
+  - OBS-000711
   kind: RESEARCH_TASK
+  readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
-- id: BLH-86C8F8DA57A681A3
-  fingerprint: 86c8f8da57a681a32668423766d6b2fba052cc8b613679a1f73063a483318b78
-  title: Change phonenumber may accept a resource from another controlled workflow
-  family: RESOURCE_SWITCH
-  workflow_family_id: WFAM-5074D2F402DD9C78
-  affected_action: CHANGE_PHONENUMBER
+- id: BLH-8CCAE7927D22AA29
+  fingerprint: 8ccae7927d22aa29e284ee01ecfa282530bcd79bec56ab8ef965945b288ee7dc
+  title: Comment post may not remain bound to the initiating actor
+  family: ACTOR_SWITCH
+  workflow_family_id: WFAM-878D2D849FA67A36
+  affected_action: COMMENT_POST
   affected_transition_id: null
-  invariant_id: BINV-77C082134B97AD28
-  invariant_statement: Identifiers used by PhoneNumber lifecycle should remain bound
-    to the same controlled resource lifecycle.
-  canonical_behavior: CHANGE_PHONENUMBER uses identifiers from one controlled workflow
-  mutated_behavior: replace one identifier with a second controlled workflow resource
-    for CHANGE_PHONENUMBER
+  invariant_id: BINV-B546DB67A573DBC7
+  invariant_statement: Each state-changing step in Post lifecycle should remain bound
+    to an authorized workflow actor.
+  canonical_behavior: one authorized actor performs COMMENT_POST
+  mutated_behavior: switch to a second controlled actor only for COMMENT_POST
   supporting_evidence:
-  - OBS-000036
-  - OBS-000068
+  - OBS-000045
+  - OBS-000065
+  - OBS-000100
+  - OBS-000103
+  - OBS-000117
+  - OBS-000120
   contradicting_evidence: []
   controlled_actors_required: 2
   controlled_resources_required:
-  - PhoneNumber
+  - Post
+  - author
+  - post
   authentication_requirements:
   - Use the reviewed credential profile for mrscargo.
   - Use the reviewed credential profile for saeedmehmandoust.
@@ -2217,25 +964,23 @@ hypotheses:
   candidate_methods: []
   candidate_paths: []
   candidate_fields: []
-  expected_safe_baseline: The canonical sequence is accepted for controlled PhoneNumber
-    lifecycle data.
-  expected_vulnerable_outcome: The backend accepts replace one identifier with a second
-    controlled workflow resource for CHANGE_PHONENUMBER and authoritative state shows
-    an unintended effect.
-  expected_secure_outcome: The backend rejects replace one identifier with a second
-    controlled workflow resource for CHANGE_PHONENUMBER or produces no unauthorized
-    state change.
+  expected_safe_baseline: The canonical sequence is accepted for controlled Post lifecycle
+    data.
+  expected_vulnerable_outcome: The backend accepts switch to a second controlled actor
+    only for COMMENT_POST and authoritative state shows an unintended effect.
+  expected_secure_outcome: The backend rejects switch to a second controlled actor
+    only for COMMENT_POST or produces no unauthorized state change.
   impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
     or role state represented by the challenged invariant.
   score:
-    likelihood: 2
+    likelihood: 3
     impact: 2
     test_readiness: 1
     safety_cost: 2
     confidence: 4
     breakdown:
-    - reason: Two supporting workflows
-      points: 1
+    - reason: Three or more supporting workflows
+      points: 2
     - reason: An authoritative baseline state and before-state query are missing.
       points: -1
     - reason: Controlled resource ownership baseline is missing.
@@ -2246,7 +991,7 @@ hypotheses:
     - reason: Workflow segmentation remains ambiguous.
       points: -1
   confidence_explanation:
-  - The rule is derived from 2 workflow instance(s).
+  - The rule is derived from 6 workflow instance(s).
   - Observed frequency is evidence of a pattern, not proof that the backend requires
     it.
   uncertainty:
@@ -2262,26 +1007,585 @@ hypotheses:
   - Workflow segmentation remains ambiguous.
   suggested_validation_strategy:
   - Establish a successful controlled baseline.
-  - 'Apply only this mutation: replace one identifier with a second controlled workflow
-    resource for CHANGE_PHONENUMBER.'
+  - 'Apply only this mutation: switch to a second controlled actor only for COMMENT_POST.'
   - Stop after the minimum approved request budget.
   - Classify the result from authoritative backend state, not status code alone.
   suppression_reasons: []
   endpoint_ids:
-  - EP-018
+  - EP-014
   observation_ids:
-  - OBS-000036
-  - OBS-000068
+  - OBS-000045
+  - OBS-000065
+  - OBS-000100
+  - OBS-000103
+  - OBS-000117
+  - OBS-000120
   kind: SECURITY_HYPOTHESIS
+  readiness: REVIEW_REQUIRED
   epistemic_status: TEST_CANDIDATE
-- id: BLH-88E9F4BF4229166D
-  fingerprint: 88e9f4bf4229166d33e3e025955ce4fd41f04ff5c6919323600713f36352dd46
+- id: BLH-941002D8A1B1475A
+  fingerprint: 941002d8a1b1475a01a1068b4a326e8cf1393266128f1b26f77f03bb51010571
+  title: Immediate duplicate return order may create two business effects
+  family: DUPLICATE_ACTION
+  workflow_family_id: WFAM-A955B9C288A08FC1
+  affected_action: RETURN_ORDER
+  affected_transition_id: null
+  invariant_id: BINV-630AD25E7733C1D0
+  invariant_statement: RETURN_ORDER should produce at most one successful business
+    effect per logical workflow.
+  canonical_behavior: RETURN_ORDER executes once
+  mutated_behavior: RETURN_ORDER -> immediate duplicate RETURN_ORDER
+  supporting_evidence:
+  - OBS-000271
+  - OBS-000476
+  - OBS-000644
+  contradicting_evidence: []
+  controlled_actors_required: 1
+  controlled_resources_required:
+  - Order
+  - order
+  authentication_requirements:
+  - Use the reviewed credential profile for mrscargo.
+  state_evidence_requirements:
+  - Record authoritative state for every affected resource before the mutation.
+  - Record the immediate mutation response.
+  - Record immediate and delayed authoritative state after the mutation.
+  - Compare linked financial, entitlement, inventory, and terminal workflow state
+    where applicable.
+  mutable_value_fields: []
+  authoritative_value_fields: []
+  candidate_methods: []
+  candidate_paths: []
+  candidate_fields: []
+  expected_safe_baseline: The canonical sequence is accepted for controlled order
+    lifecycle data.
+  expected_vulnerable_outcome: The backend accepts RETURN_ORDER -> immediate duplicate
+    RETURN_ORDER and authoritative state shows an unintended effect.
+  expected_secure_outcome: The backend rejects RETURN_ORDER -> immediate duplicate
+    RETURN_ORDER or produces no unauthorized state change.
+  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
+    or role state represented by the challenged invariant.
+  score:
+    likelihood: 3
+    impact: 4
+    test_readiness: 1
+    safety_cost: 5
+    confidence: 4
+    breakdown:
+    - reason: Three or more supporting workflows
+      points: 2
+    - reason: Financial operation
+      points: 2
+    - reason: An authoritative baseline state and before-state query are missing.
+      points: -1
+    - reason: Financial State Change requires explicit target policy permission.
+      points: -1
+    - reason: 'Target request budget is too low: 5 requests are estimated but only
+        3 are permitted.'
+      points: -1
+    - reason: Workflow segmentation remains ambiguous.
+      points: -1
+  confidence_explanation:
+  - The rule is derived from 3 workflow instance(s).
+  - Observed frequency is evidence of a pattern, not proof that the backend requires
+    it.
+  uncertainty:
+  - Offline sequence evidence cannot prove that the backend requires the observed
+    order.
+  - Capture incompleteness or an undocumented optional branch may explain the pattern.
+  safety_classification: FINANCIAL_STATE_CHANGE
+  estimated_request_budget: 5
+  readiness_blockers:
+  - An authoritative baseline state and before-state query are missing.
+  - Financial State Change requires explicit target policy permission.
+  - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
+  suggested_validation_strategy:
+  - Establish a successful controlled baseline.
+  - 'Apply only this mutation: RETURN_ORDER -> immediate duplicate RETURN_ORDER.'
+  - Stop after the minimum approved request budget.
+  - Classify the result from authoritative backend state, not status code alone.
+  suppression_reasons: []
+  endpoint_ids:
+  - EP-021
+  observation_ids:
+  - OBS-000271
+  - OBS-000476
+  - OBS-000644
+  kind: RESEARCH_TASK
+  readiness: RESEARCH_ONLY
+  epistemic_status: RESEARCH_TASK
+- id: BLH-988370C7548FF739
+  fingerprint: 988370c7548ff739047c8c36fe798e099a1c76e9706960abf17f9468dd525a04
+  title: Return order may be accepted before read order
+  family: OUT_OF_ORDER_EXECUTION
+  workflow_family_id: WFAM-070E94C62CCCE75E
+  affected_action: RETURN_ORDER
+  affected_transition_id: TRANS-FC0B34E91B49B360
+  invariant_id: BINV-3EE8BD7278E77A9D
+  invariant_statement: RETURN_ORDER appears to require READ_ORDER to occur first in
+    order lifecycle.
+  canonical_behavior: READ_ORDER -> RETURN_ORDER
+  mutated_behavior: RETURN_ORDER -> READ_ORDER
+  supporting_evidence:
+  - OBS-000706
+  - OBS-000709
+  - OBS-000711
+  contradicting_evidence: []
+  controlled_actors_required: 1
+  controlled_resources_required:
+  - Order
+  - order
+  - product
+  authentication_requirements:
+  - Use the reviewed credential profile for mrscargo.
+  state_evidence_requirements:
+  - Record authoritative state for every affected resource before the mutation.
+  - Record the immediate mutation response.
+  - Record immediate and delayed authoritative state after the mutation.
+  - Compare linked financial, entitlement, inventory, and terminal workflow state
+    where applicable.
+  mutable_value_fields: []
+  authoritative_value_fields: []
+  candidate_methods: []
+  candidate_paths: []
+  candidate_fields: []
+  expected_safe_baseline: The canonical sequence is accepted for controlled order
+    lifecycle data.
+  expected_vulnerable_outcome: The backend accepts RETURN_ORDER -> READ_ORDER and
+    authoritative state shows an unintended effect.
+  expected_secure_outcome: The backend rejects RETURN_ORDER -> READ_ORDER or produces
+    no unauthorized state change.
+  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
+    or role state represented by the challenged invariant.
+  score:
+    likelihood: 1
+    impact: 4
+    test_readiness: 1
+    safety_cost: 5
+    confidence: 2
+    breakdown:
+    - reason: Financial operation
+      points: 2
+    - reason: Financial State Change requires explicit target policy permission.
+      points: -1
+    - reason: Insufficient workflow observations to treat the pattern as mandatory.
+      points: -1
+    - reason: 'Target request budget is too low: 4 requests are estimated but only
+        3 are permitted.'
+      points: -1
+    - reason: Workflow segmentation remains ambiguous.
+      points: -1
+  confidence_explanation:
+  - The rule is derived from 1 workflow instance(s).
+  - Observed frequency is evidence of a pattern, not proof that the backend requires
+    it.
+  - One workflow instance cannot establish a mandatory business rule.
+  uncertainty:
+  - Offline sequence evidence cannot prove that the backend requires the observed
+    order.
+  - Capture incompleteness or an undocumented optional branch may explain the pattern.
+  safety_classification: FINANCIAL_STATE_CHANGE
+  estimated_request_budget: 4
+  readiness_blockers:
+  - Financial State Change requires explicit target policy permission.
+  - Insufficient workflow observations to treat the pattern as mandatory.
+  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
+  suggested_validation_strategy:
+  - Establish a successful controlled baseline.
+  - 'Apply only this mutation: RETURN_ORDER -> READ_ORDER.'
+  - Stop after the minimum approved request budget.
+  - Classify the result from authoritative backend state, not status code alone.
+  suppression_reasons: []
+  endpoint_ids:
+  - EP-021
+  - EP-069
+  observation_ids:
+  - OBS-000706
+  - OBS-000709
+  - OBS-000711
+  kind: RESEARCH_TASK
+  readiness: RESEARCH_ONLY
+  epistemic_status: RESEARCH_TASK
+- id: BLH-B4A0E455E00D49BD
+  fingerprint: b4a0e455e00d49bd6b54c178cc8e32df41938b61265849529c86c7522747cc42
+  title: Concurrent return order may bypass single-execution protection
+  family: CONCURRENT_EXECUTION
+  workflow_family_id: WFAM-070E94C62CCCE75E
+  affected_action: RETURN_ORDER
+  affected_transition_id: null
+  invariant_id: BINV-D5F6B38226CE8BCD
+  invariant_statement: RETURN_ORDER should produce at most one successful business
+    effect per logical workflow.
+  canonical_behavior: RETURN_ORDER executes serially once
+  mutated_behavior: two bounded RETURN_ORDER requests execute concurrently
+  supporting_evidence:
+  - OBS-000711
+  contradicting_evidence: []
+  controlled_actors_required: 1
+  controlled_resources_required:
+  - Order
+  - order
+  - product
+  authentication_requirements:
+  - Use the reviewed credential profile for mrscargo.
+  state_evidence_requirements:
+  - Record authoritative state for every affected resource before the mutation.
+  - Record the immediate mutation response.
+  - Record immediate and delayed authoritative state after the mutation.
+  - Compare linked financial, entitlement, inventory, and terminal workflow state
+    where applicable.
+  mutable_value_fields: []
+  authoritative_value_fields: []
+  candidate_methods: []
+  candidate_paths: []
+  candidate_fields: []
+  expected_safe_baseline: The canonical sequence is accepted for controlled order
+    lifecycle data.
+  expected_vulnerable_outcome: The backend accepts two bounded RETURN_ORDER requests
+    execute concurrently and authoritative state shows an unintended effect.
+  expected_secure_outcome: The backend rejects two bounded RETURN_ORDER requests execute
+    concurrently or produces no unauthorized state change.
+  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
+    or role state represented by the challenged invariant.
+  score:
+    likelihood: 1
+    impact: 4
+    test_readiness: 1
+    safety_cost: 5
+    confidence: 2
+    breakdown:
+    - reason: Financial operation
+      points: 2
+    - reason: Concurrency testing is not permitted by the offline engine.
+      points: -1
+    - reason: Insufficient workflow observations to treat the pattern as mandatory.
+      points: -1
+    - reason: 'Target request budget is too low: 5 requests are estimated but only
+        3 are permitted.'
+      points: -1
+    - reason: Workflow segmentation remains ambiguous.
+      points: -1
+  confidence_explanation:
+  - The rule is derived from 1 workflow instance(s).
+  - Observed frequency is evidence of a pattern, not proof that the backend requires
+    it.
+  - One workflow instance cannot establish a mandatory business rule.
+  uncertainty:
+  - Offline sequence evidence cannot prove that the backend requires the observed
+    order.
+  - Capture incompleteness or an undocumented optional branch may explain the pattern.
+  safety_classification: CONCURRENT
+  estimated_request_budget: 5
+  readiness_blockers:
+  - Concurrency testing is not permitted by the offline engine.
+  - Insufficient workflow observations to treat the pattern as mandatory.
+  - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
+  suggested_validation_strategy:
+  - Establish a successful controlled baseline.
+  - 'Apply only this mutation: two bounded RETURN_ORDER requests execute concurrently.'
+  - Stop after the minimum approved request budget.
+  - Classify the result from authoritative backend state, not status code alone.
+  suppression_reasons: []
+  endpoint_ids:
+  - EP-021
+  observation_ids:
+  - OBS-000711
+  kind: RESEARCH_TASK
+  readiness: RESEARCH_ONLY
+  epistemic_status: RESEARCH_TASK
+- id: BLH-B5B37FA111A42EEF
+  fingerprint: b5b37fa111a42eefb34eeb948cdcc60392a8ff365f73c112dac06e9a51f6328c
+  title: Immediate duplicate return order may create two business effects
+  family: DUPLICATE_ACTION
+  workflow_family_id: WFAM-B18CAB66F33EC59A
+  affected_action: RETURN_ORDER
+  affected_transition_id: null
+  invariant_id: BINV-94BD310DD5984A4A
+  invariant_statement: RETURN_ORDER should produce at most one successful business
+    effect per logical workflow.
+  canonical_behavior: RETURN_ORDER executes once
+  mutated_behavior: RETURN_ORDER -> immediate duplicate RETURN_ORDER
+  supporting_evidence:
+  - OBS-000012
+  - OBS-000059
+  - OBS-000700
+  contradicting_evidence: []
+  controlled_actors_required: 1
+  controlled_resources_required:
+  - Order
+  - order
+  - product
+  authentication_requirements:
+  - Use the reviewed credential profile for mrscargo.
+  state_evidence_requirements:
+  - Record authoritative state for every affected resource before the mutation.
+  - Record the immediate mutation response.
+  - Record immediate and delayed authoritative state after the mutation.
+  - Compare linked financial, entitlement, inventory, and terminal workflow state
+    where applicable.
+  mutable_value_fields: []
+  authoritative_value_fields: []
+  candidate_methods: []
+  candidate_paths: []
+  candidate_fields: []
+  expected_safe_baseline: The canonical sequence is accepted for controlled order
+    lifecycle data.
+  expected_vulnerable_outcome: The backend accepts RETURN_ORDER -> immediate duplicate
+    RETURN_ORDER and authoritative state shows an unintended effect.
+  expected_secure_outcome: The backend rejects RETURN_ORDER -> immediate duplicate
+    RETURN_ORDER or produces no unauthorized state change.
+  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
+    or role state represented by the challenged invariant.
+  score:
+    likelihood: 3
+    impact: 4
+    test_readiness: 1
+    safety_cost: 5
+    confidence: 4
+    breakdown:
+    - reason: Three or more supporting workflows
+      points: 2
+    - reason: Financial operation
+      points: 2
+    - reason: An authoritative baseline state and before-state query are missing.
+      points: -1
+    - reason: Financial State Change requires explicit target policy permission.
+      points: -1
+    - reason: 'Target request budget is too low: 5 requests are estimated but only
+        3 are permitted.'
+      points: -1
+    - reason: Workflow segmentation remains ambiguous.
+      points: -1
+  confidence_explanation:
+  - The rule is derived from 3 workflow instance(s).
+  - Observed frequency is evidence of a pattern, not proof that the backend requires
+    it.
+  uncertainty:
+  - Offline sequence evidence cannot prove that the backend requires the observed
+    order.
+  - Capture incompleteness or an undocumented optional branch may explain the pattern.
+  safety_classification: FINANCIAL_STATE_CHANGE
+  estimated_request_budget: 5
+  readiness_blockers:
+  - An authoritative baseline state and before-state query are missing.
+  - Financial State Change requires explicit target policy permission.
+  - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
+  suggested_validation_strategy:
+  - Establish a successful controlled baseline.
+  - 'Apply only this mutation: RETURN_ORDER -> immediate duplicate RETURN_ORDER.'
+  - Stop after the minimum approved request budget.
+  - Classify the result from authoritative backend state, not status code alone.
+  suppression_reasons: []
+  endpoint_ids:
+  - EP-021
+  observation_ids:
+  - OBS-000012
+  - OBS-000059
+  - OBS-000700
+  kind: RESEARCH_TASK
+  readiness: RESEARCH_ONLY
+  epistemic_status: RESEARCH_TASK
+- id: BLH-B89B2AF18B43FAD3
+  fingerprint: b89b2af18b43fad3d0be53081d9d1bb077bdaf0fef365f2b2ee67a19c392635a
+  title: Return order may not remain bound to the initiating actor
+  family: ACTOR_SWITCH
+  workflow_family_id: WFAM-B18CAB66F33EC59A
+  affected_action: RETURN_ORDER
+  affected_transition_id: null
+  invariant_id: BINV-2739DAE058615E69
+  invariant_statement: Each state-changing step in order lifecycle should remain bound
+    to an authorized workflow actor.
+  canonical_behavior: one authorized actor performs RETURN_ORDER
+  mutated_behavior: switch to a second controlled actor only for RETURN_ORDER
+  supporting_evidence:
+  - OBS-000012
+  - OBS-000059
+  - OBS-000700
+  contradicting_evidence: []
+  controlled_actors_required: 2
+  controlled_resources_required:
+  - Order
+  - order
+  - product
+  authentication_requirements:
+  - Use the reviewed credential profile for mrscargo.
+  - Use the reviewed credential profile for saeedmehmandoust.
+  state_evidence_requirements:
+  - Record authoritative state for every affected resource before the mutation.
+  - Record the immediate mutation response.
+  - Record immediate and delayed authoritative state after the mutation.
+  - Compare linked financial, entitlement, inventory, and terminal workflow state
+    where applicable.
+  mutable_value_fields: []
+  authoritative_value_fields: []
+  candidate_methods: []
+  candidate_paths: []
+  candidate_fields: []
+  expected_safe_baseline: The canonical sequence is accepted for controlled order
+    lifecycle data.
+  expected_vulnerable_outcome: The backend accepts switch to a second controlled actor
+    only for RETURN_ORDER and authoritative state shows an unintended effect.
+  expected_secure_outcome: The backend rejects switch to a second controlled actor
+    only for RETURN_ORDER or produces no unauthorized state change.
+  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
+    or role state represented by the challenged invariant.
+  score:
+    likelihood: 3
+    impact: 4
+    test_readiness: 1
+    safety_cost: 5
+    confidence: 4
+    breakdown:
+    - reason: Three or more supporting workflows
+      points: 2
+    - reason: Financial operation
+      points: 2
+    - reason: An authoritative baseline state and before-state query are missing.
+      points: -1
+    - reason: Controlled resource ownership baseline is missing.
+      points: -2
+    - reason: Financial State Change requires explicit target policy permission.
+      points: -1
+    - reason: 'Target request budget is too low: 4 requests are estimated but only
+        3 are permitted.'
+      points: -1
+    - reason: Workflow segmentation remains ambiguous.
+      points: -1
+  confidence_explanation:
+  - The rule is derived from 3 workflow instance(s).
+  - Observed frequency is evidence of a pattern, not proof that the backend requires
+    it.
+  uncertainty:
+  - Offline sequence evidence cannot prove that the backend requires the observed
+    order.
+  - Capture incompleteness or an undocumented optional branch may explain the pattern.
+  safety_classification: FINANCIAL_STATE_CHANGE
+  estimated_request_budget: 4
+  readiness_blockers:
+  - An authoritative baseline state and before-state query are missing.
+  - Controlled resource ownership baseline is missing.
+  - Financial State Change requires explicit target policy permission.
+  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
+  suggested_validation_strategy:
+  - Establish a successful controlled baseline.
+  - 'Apply only this mutation: switch to a second controlled actor only for RETURN_ORDER.'
+  - Stop after the minimum approved request budget.
+  - Classify the result from authoritative backend state, not status code alone.
+  suppression_reasons: []
+  endpoint_ids:
+  - EP-021
+  observation_ids:
+  - OBS-000012
+  - OBS-000059
+  - OBS-000700
+  kind: RESEARCH_TASK
+  readiness: RESEARCH_ONLY
+  epistemic_status: RESEARCH_TASK
+- id: BLH-C0F3E74D5DF01440
+  fingerprint: c0f3e74d5df014408944847d0e9417b1020061710bc94e4687fdde568837f44b
+  title: Concurrent return order may bypass single-execution protection
+  family: CONCURRENT_EXECUTION
+  workflow_family_id: WFAM-A955B9C288A08FC1
+  affected_action: RETURN_ORDER
+  affected_transition_id: null
+  invariant_id: BINV-630AD25E7733C1D0
+  invariant_statement: RETURN_ORDER should produce at most one successful business
+    effect per logical workflow.
+  canonical_behavior: RETURN_ORDER executes serially once
+  mutated_behavior: two bounded RETURN_ORDER requests execute concurrently
+  supporting_evidence:
+  - OBS-000271
+  - OBS-000476
+  - OBS-000644
+  contradicting_evidence: []
+  controlled_actors_required: 1
+  controlled_resources_required:
+  - Order
+  - order
+  authentication_requirements:
+  - Use the reviewed credential profile for mrscargo.
+  state_evidence_requirements:
+  - Record authoritative state for every affected resource before the mutation.
+  - Record the immediate mutation response.
+  - Record immediate and delayed authoritative state after the mutation.
+  - Compare linked financial, entitlement, inventory, and terminal workflow state
+    where applicable.
+  mutable_value_fields: []
+  authoritative_value_fields: []
+  candidate_methods: []
+  candidate_paths: []
+  candidate_fields: []
+  expected_safe_baseline: The canonical sequence is accepted for controlled order
+    lifecycle data.
+  expected_vulnerable_outcome: The backend accepts two bounded RETURN_ORDER requests
+    execute concurrently and authoritative state shows an unintended effect.
+  expected_secure_outcome: The backend rejects two bounded RETURN_ORDER requests execute
+    concurrently or produces no unauthorized state change.
+  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
+    or role state represented by the challenged invariant.
+  score:
+    likelihood: 3
+    impact: 4
+    test_readiness: 1
+    safety_cost: 5
+    confidence: 4
+    breakdown:
+    - reason: Three or more supporting workflows
+      points: 2
+    - reason: Financial operation
+      points: 2
+    - reason: An authoritative baseline state and before-state query are missing.
+      points: -1
+    - reason: Concurrency testing is not permitted by the offline engine.
+      points: -1
+    - reason: 'Target request budget is too low: 5 requests are estimated but only
+        3 are permitted.'
+      points: -1
+    - reason: Workflow segmentation remains ambiguous.
+      points: -1
+  confidence_explanation:
+  - The rule is derived from 3 workflow instance(s).
+  - Observed frequency is evidence of a pattern, not proof that the backend requires
+    it.
+  uncertainty:
+  - Offline sequence evidence cannot prove that the backend requires the observed
+    order.
+  - Capture incompleteness or an undocumented optional branch may explain the pattern.
+  safety_classification: CONCURRENT
+  estimated_request_budget: 5
+  readiness_blockers:
+  - An authoritative baseline state and before-state query are missing.
+  - Concurrency testing is not permitted by the offline engine.
+  - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
+  suggested_validation_strategy:
+  - Establish a successful controlled baseline.
+  - 'Apply only this mutation: two bounded RETURN_ORDER requests execute concurrently.'
+  - Stop after the minimum approved request budget.
+  - Classify the result from authoritative backend state, not status code alone.
+  suppression_reasons: []
+  endpoint_ids:
+  - EP-021
+  observation_ids:
+  - OBS-000271
+  - OBS-000476
+  - OBS-000644
+  kind: RESEARCH_TASK
+  readiness: RESEARCH_ONLY
+  epistemic_status: RESEARCH_TASK
+- id: BLH-C55F6BEC1A75A779
+  fingerprint: c55f6bec1a75a779a7116a94609dff1e603d9c3a5325317d7bdb5e9bf6cf8a37
   title: Request servicerequest may accept a resource from another controlled workflow
   family: RESOURCE_SWITCH
-  workflow_family_id: WFAM-7CB950EDB43A733B
+  workflow_family_id: WFAM-250D444EC7F95DCE
   affected_action: REQUEST_SERVICEREQUEST
   affected_transition_id: null
-  invariant_id: BINV-34EE48BCEAD6D058
+  invariant_id: BINV-7F5E2F6223F789E8
   invariant_statement: Identifiers used by ServiceRequest lifecycle should remain
     bound to the same controlled resource lifecycle.
   canonical_behavior: REQUEST_SERVICEREQUEST uses identifiers from one controlled
@@ -2378,42 +1682,125 @@ hypotheses:
   - OBS-000575
   - OBS-000686
   kind: RESEARCH_TASK
+  readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
-- id: BLH-B05A450949956550
-  fingerprint: b05a450949956550922abfc1eeb7191c9e17d86dcae2c65c68dce328a768a576
-  title: Comment post may be accepted before read post
-  family: OUT_OF_ORDER_EXECUTION
-  workflow_family_id: WFAM-D851170456D369DF
-  affected_action: COMMENT_POST
+- id: BLH-C7EAC19BCD35A534
+  fingerprint: c7eac19bcd35a5342ee52acf7375e45684bbf208aca5377d04af0d23f4137060
+  title: Immediate duplicate return order may create two business effects
+  family: DUPLICATE_ACTION
+  workflow_family_id: WFAM-070E94C62CCCE75E
+  affected_action: RETURN_ORDER
   affected_transition_id: null
-  invariant_id: BINV-0D31BECE2E8582AE
-  invariant_statement: COMMENT_POST appears to require READ_POST to occur first in
-    Post lifecycle.
-  canonical_behavior: READ_POST -> COMMENT_POST
-  mutated_behavior: COMMENT_POST -> READ_POST
+  invariant_id: BINV-D5F6B38226CE8BCD
+  invariant_statement: RETURN_ORDER should produce at most one successful business
+    effect per logical workflow.
+  canonical_behavior: RETURN_ORDER executes once
+  mutated_behavior: RETURN_ORDER -> immediate duplicate RETURN_ORDER
   supporting_evidence:
-  - OBS-000044
-  - OBS-000045
-  - OBS-000064
-  - OBS-000065
-  - OBS-000098
-  - OBS-000100
-  - OBS-000102
-  - OBS-000103
-  - OBS-000116
-  - OBS-000117
-  - OBS-000119
-  - OBS-000120
-  - OBS-000280
+  - OBS-000711
   contradicting_evidence: []
   controlled_actors_required: 1
+  controlled_resources_required:
+  - Order
+  - order
+  - product
+  authentication_requirements:
+  - Use the reviewed credential profile for mrscargo.
+  state_evidence_requirements:
+  - Record authoritative state for every affected resource before the mutation.
+  - Record the immediate mutation response.
+  - Record immediate and delayed authoritative state after the mutation.
+  - Compare linked financial, entitlement, inventory, and terminal workflow state
+    where applicable.
+  mutable_value_fields: []
+  authoritative_value_fields: []
+  candidate_methods: []
+  candidate_paths: []
+  candidate_fields: []
+  expected_safe_baseline: The canonical sequence is accepted for controlled order
+    lifecycle data.
+  expected_vulnerable_outcome: The backend accepts RETURN_ORDER -> immediate duplicate
+    RETURN_ORDER and authoritative state shows an unintended effect.
+  expected_secure_outcome: The backend rejects RETURN_ORDER -> immediate duplicate
+    RETURN_ORDER or produces no unauthorized state change.
+  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
+    or role state represented by the challenged invariant.
+  score:
+    likelihood: 1
+    impact: 4
+    test_readiness: 1
+    safety_cost: 5
+    confidence: 2
+    breakdown:
+    - reason: Financial operation
+      points: 2
+    - reason: Financial State Change requires explicit target policy permission.
+      points: -1
+    - reason: Insufficient workflow observations to treat the pattern as mandatory.
+      points: -1
+    - reason: 'Target request budget is too low: 5 requests are estimated but only
+        3 are permitted.'
+      points: -1
+    - reason: Workflow segmentation remains ambiguous.
+      points: -1
+  confidence_explanation:
+  - The rule is derived from 1 workflow instance(s).
+  - Observed frequency is evidence of a pattern, not proof that the backend requires
+    it.
+  - One workflow instance cannot establish a mandatory business rule.
+  uncertainty:
+  - Offline sequence evidence cannot prove that the backend requires the observed
+    order.
+  - Capture incompleteness or an undocumented optional branch may explain the pattern.
+  safety_classification: FINANCIAL_STATE_CHANGE
+  estimated_request_budget: 5
+  readiness_blockers:
+  - Financial State Change requires explicit target policy permission.
+  - Insufficient workflow observations to treat the pattern as mandatory.
+  - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
+  suggested_validation_strategy:
+  - Establish a successful controlled baseline.
+  - 'Apply only this mutation: RETURN_ORDER -> immediate duplicate RETURN_ORDER.'
+  - Stop after the minimum approved request budget.
+  - Classify the result from authoritative backend state, not status code alone.
+  suppression_reasons: []
+  endpoint_ids:
+  - EP-021
+  observation_ids:
+  - OBS-000711
+  kind: RESEARCH_TASK
+  readiness: RESEARCH_ONLY
+  epistemic_status: RESEARCH_TASK
+- id: BLH-DECB6317F13498FA
+  fingerprint: decb6317f13498fa103235bf666dc386b14a0091f1e7532d9fcee0be39752029
+  title: Comment post may accept a resource from another controlled workflow
+  family: RESOURCE_SWITCH
+  workflow_family_id: WFAM-878D2D849FA67A36
+  affected_action: COMMENT_POST
+  affected_transition_id: null
+  invariant_id: BINV-1CA50C392D621F86
+  invariant_statement: Identifiers used by Post lifecycle should remain bound to the
+    same controlled resource lifecycle.
+  canonical_behavior: COMMENT_POST uses identifiers from one controlled workflow
+  mutated_behavior: replace one identifier with a second controlled workflow resource
+    for COMMENT_POST
+  supporting_evidence:
+  - OBS-000045
+  - OBS-000065
+  - OBS-000100
+  - OBS-000103
+  - OBS-000117
+  - OBS-000120
+  contradicting_evidence: []
+  controlled_actors_required: 2
   controlled_resources_required:
   - Post
   - author
   - post
-  - vehicle
   authentication_requirements:
   - Use the reviewed credential profile for mrscargo.
+  - Use the reviewed credential profile for saeedmehmandoust.
   state_evidence_requirements:
   - Record authoritative state for every affected resource before the mutation.
   - Record the immediate mutation response.
@@ -2427,225 +1814,12 @@ hypotheses:
   candidate_fields: []
   expected_safe_baseline: The canonical sequence is accepted for controlled Post lifecycle
     data.
-  expected_vulnerable_outcome: The backend accepts COMMENT_POST -> READ_POST and authoritative
-    state shows an unintended effect.
-  expected_secure_outcome: The backend rejects COMMENT_POST -> READ_POST or produces
-    no unauthorized state change.
-  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
-    or role state represented by the challenged invariant.
-  score:
-    likelihood: 3
-    impact: 2
-    test_readiness: 3
-    safety_cost: 2
-    confidence: 4
-    breakdown:
-    - reason: Three or more supporting workflows
-      points: 2
-    - reason: An authoritative baseline state and before-state query are missing.
-      points: -1
-    - reason: 'Target request budget is too low: 4 requests are estimated but only
-        3 are permitted.'
-      points: -1
-  confidence_explanation:
-  - The rule is derived from 5 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  uncertainty:
-  - Offline sequence evidence cannot prove that the backend requires the observed
-    order.
-  - Capture incompleteness or an undocumented optional branch may explain the pattern.
-  safety_classification: LOW_RISK_STATE_CHANGE
-  estimated_request_budget: 4
-  readiness_blockers:
-  - An authoritative baseline state and before-state query are missing.
-  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
-  suggested_validation_strategy:
-  - Establish a successful controlled baseline.
-  - 'Apply only this mutation: COMMENT_POST -> READ_POST.'
-  - Stop after the minimum approved request budget.
-  - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons: []
-  endpoint_ids:
-  - EP-004
-  - EP-014
-  observation_ids:
-  - OBS-000044
-  - OBS-000045
-  - OBS-000064
-  - OBS-000065
-  - OBS-000098
-  - OBS-000100
-  - OBS-000102
-  - OBS-000103
-  - OBS-000116
-  - OBS-000117
-  - OBS-000119
-  - OBS-000120
-  - OBS-000280
-  kind: SECURITY_HYPOTHESIS
-  epistemic_status: TEST_CANDIDATE
-- id: BLH-C04F046C363E2F85
-  fingerprint: c04f046c363e2f852dbbbdc78dd0f252ec7b392e4cff407ac8e806d099a8af36
-  title: Resend email may accept a resource from another controlled workflow
-  family: RESOURCE_SWITCH
-  workflow_family_id: WFAM-782F70BF671B7874
-  affected_action: RESEND_EMAIL
-  affected_transition_id: null
-  invariant_id: BINV-23470FEBB6054861
-  invariant_statement: Identifiers used by Email lifecycle should remain bound to
-    the same controlled resource lifecycle.
-  canonical_behavior: RESEND_EMAIL uses identifiers from one controlled workflow
-  mutated_behavior: replace one identifier with a second controlled workflow resource
-    for RESEND_EMAIL
-  supporting_evidence:
-  - OBS-000353
-  contradicting_evidence: []
-  controlled_actors_required: 2
-  controlled_resources_required:
-  - Email
-  authentication_requirements:
-  - Use the reviewed credential profile for mrscargo.
-  - Use the reviewed credential profile for saeedmehmandoust.
-  state_evidence_requirements:
-  - Record authoritative state for every affected resource before the mutation.
-  - Record the immediate mutation response.
-  - Record immediate and delayed authoritative state after the mutation.
-  - Compare linked financial, entitlement, inventory, and terminal workflow state
-    where applicable.
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  expected_safe_baseline: The canonical sequence is accepted for controlled Email
-    lifecycle data.
   expected_vulnerable_outcome: The backend accepts replace one identifier with a second
-    controlled workflow resource for RESEND_EMAIL and authoritative state shows an
+    controlled workflow resource for COMMENT_POST and authoritative state shows an
     unintended effect.
   expected_secure_outcome: The backend rejects replace one identifier with a second
-    controlled workflow resource for RESEND_EMAIL or produces no unauthorized state
+    controlled workflow resource for COMMENT_POST or produces no unauthorized state
     change.
-  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
-    or role state represented by the challenged invariant.
-  score:
-    likelihood: 1
-    impact: 2
-    test_readiness: 1
-    safety_cost: 5
-    confidence: 2
-    breakdown:
-    - reason: An authoritative baseline state and before-state query are missing.
-      points: -1
-    - reason: Controlled resource ownership baseline is missing.
-      points: -2
-    - reason: External Side Effect requires explicit target policy permission.
-      points: -1
-    - reason: Insufficient workflow observations to treat the pattern as mandatory.
-      points: -1
-    - reason: 'Target request budget is too low: 4 requests are estimated but only
-        3 are permitted.'
-      points: -1
-    - reason: Workflow segmentation remains ambiguous.
-      points: -1
-  confidence_explanation:
-  - The rule is derived from 1 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  - One workflow instance cannot establish a mandatory business rule.
-  uncertainty:
-  - Offline sequence evidence cannot prove that the backend requires the observed
-    order.
-  - Capture incompleteness or an undocumented optional branch may explain the pattern.
-  safety_classification: EXTERNAL_SIDE_EFFECT
-  estimated_request_budget: 4
-  readiness_blockers:
-  - An authoritative baseline state and before-state query are missing.
-  - Controlled resource ownership baseline is missing.
-  - External Side Effect requires explicit target policy permission.
-  - Insufficient workflow observations to treat the pattern as mandatory.
-  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
-  - Workflow segmentation remains ambiguous.
-  suggested_validation_strategy:
-  - Establish a successful controlled baseline.
-  - 'Apply only this mutation: replace one identifier with a second controlled workflow
-    resource for RESEND_EMAIL.'
-  - Stop after the minimum approved request budget.
-  - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons: []
-  endpoint_ids:
-  - EP-063
-  observation_ids:
-  - OBS-000353
-  kind: RESEARCH_TASK
-  epistemic_status: RESEARCH_TASK
-- id: BLH-D82A5D7604BEF324
-  fingerprint: d82a5d7604bef3240f4ae6eb99478a92f528e432ea2e7754c999076ac6dcb110
-  title: Verify auth may not remain bound to the initiating actor
-  family: ACTOR_SWITCH
-  workflow_family_id: WFAM-29B943758198F962
-  affected_action: VERIFY_AUTH
-  affected_transition_id: null
-  invariant_id: BINV-EB85700DF4B4A883
-  invariant_statement: Each state-changing step in authentication challenge should
-    remain bound to an authorized workflow actor.
-  canonical_behavior: one authorized actor performs VERIFY_AUTH
-  mutated_behavior: switch to a second controlled actor only for VERIFY_AUTH
-  supporting_evidence:
-  - OBS-000005
-  - OBS-000017
-  - OBS-000022
-  - OBS-000033
-  - OBS-000052
-  - OBS-000069
-  - OBS-000073
-  - OBS-000090
-  - OBS-000112
-  - OBS-000124
-  - OBS-000133
-  - OBS-000186
-  - OBS-000203
-  - OBS-000252
-  - OBS-000274
-  - OBS-000284
-  - OBS-000330
-  - OBS-000348
-  - OBS-000356
-  - OBS-000373
-  - OBS-000422
-  - OBS-000479
-  - OBS-000505
-  - OBS-000522
-  - OBS-000563
-  - OBS-000569
-  - OBS-000584
-  - OBS-000594
-  - OBS-000657
-  - OBS-000717
-  contradicting_evidence: []
-  controlled_actors_required: 2
-  controlled_resources_required:
-  - Auth
-  authentication_requirements:
-  - Use the reviewed credential profile for mrscargo.
-  - Use the reviewed credential profile for saeedmehmandoust.
-  state_evidence_requirements:
-  - Record authoritative state for every affected resource before the mutation.
-  - Record the immediate mutation response.
-  - Record immediate and delayed authoritative state after the mutation.
-  - Compare linked financial, entitlement, inventory, and terminal workflow state
-    where applicable.
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  expected_safe_baseline: The canonical sequence is accepted for controlled authentication
-    challenge data.
-  expected_vulnerable_outcome: The backend accepts switch to a second controlled actor
-    only for VERIFY_AUTH and authoritative state shows an unintended effect.
-  expected_secure_outcome: The backend rejects switch to a second controlled actor
-    only for VERIFY_AUTH or produces no unauthorized state change.
   impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
     or role state represented by the challenged invariant.
   score:
@@ -2667,313 +1841,7 @@ hypotheses:
     - reason: Workflow segmentation remains ambiguous.
       points: -1
   confidence_explanation:
-  - The rule is derived from 30 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  uncertainty:
-  - Offline sequence evidence cannot prove that the backend requires the observed
-    order.
-  - Capture incompleteness or an undocumented optional branch may explain the pattern.
-  safety_classification: LOW_RISK_STATE_CHANGE
-  estimated_request_budget: 4
-  readiness_blockers:
-  - An authoritative baseline state and before-state query are missing.
-  - Controlled resource ownership baseline is missing.
-  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
-  - Workflow segmentation remains ambiguous.
-  suggested_validation_strategy:
-  - Establish a successful controlled baseline.
-  - 'Apply only this mutation: switch to a second controlled actor only for VERIFY_AUTH.'
-  - Stop after the minimum approved request budget.
-  - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons: []
-  endpoint_ids:
-  - EP-017
-  observation_ids:
-  - OBS-000005
-  - OBS-000017
-  - OBS-000022
-  - OBS-000033
-  - OBS-000052
-  - OBS-000069
-  - OBS-000073
-  - OBS-000090
-  - OBS-000112
-  - OBS-000124
-  - OBS-000133
-  - OBS-000186
-  - OBS-000203
-  - OBS-000252
-  - OBS-000274
-  - OBS-000284
-  - OBS-000330
-  - OBS-000348
-  - OBS-000356
-  - OBS-000373
-  - OBS-000422
-  - OBS-000479
-  - OBS-000505
-  - OBS-000522
-  - OBS-000563
-  - OBS-000569
-  - OBS-000584
-  - OBS-000594
-  - OBS-000657
-  - OBS-000717
-  kind: SECURITY_HYPOTHESIS
-  epistemic_status: TEST_CANDIDATE
-- id: BLH-E37EAD44F00600F7
-  fingerprint: e37ead44f00600f792d02fe1ea97001a50564e4db4972eb2b23eb820408468e9
-  title: Resend email may not remain bound to the initiating actor
-  family: ACTOR_SWITCH
-  workflow_family_id: WFAM-782F70BF671B7874
-  affected_action: RESEND_EMAIL
-  affected_transition_id: null
-  invariant_id: BINV-C152DBD2A0064787
-  invariant_statement: Each state-changing step in Email lifecycle should remain bound
-    to an authorized workflow actor.
-  canonical_behavior: one authorized actor performs RESEND_EMAIL
-  mutated_behavior: switch to a second controlled actor only for RESEND_EMAIL
-  supporting_evidence:
-  - OBS-000353
-  contradicting_evidence: []
-  controlled_actors_required: 2
-  controlled_resources_required:
-  - Email
-  authentication_requirements:
-  - Use the reviewed credential profile for mrscargo.
-  - Use the reviewed credential profile for saeedmehmandoust.
-  state_evidence_requirements:
-  - Record authoritative state for every affected resource before the mutation.
-  - Record the immediate mutation response.
-  - Record immediate and delayed authoritative state after the mutation.
-  - Compare linked financial, entitlement, inventory, and terminal workflow state
-    where applicable.
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  expected_safe_baseline: The canonical sequence is accepted for controlled Email
-    lifecycle data.
-  expected_vulnerable_outcome: The backend accepts switch to a second controlled actor
-    only for RESEND_EMAIL and authoritative state shows an unintended effect.
-  expected_secure_outcome: The backend rejects switch to a second controlled actor
-    only for RESEND_EMAIL or produces no unauthorized state change.
-  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
-    or role state represented by the challenged invariant.
-  score:
-    likelihood: 1
-    impact: 2
-    test_readiness: 1
-    safety_cost: 5
-    confidence: 2
-    breakdown:
-    - reason: An authoritative baseline state and before-state query are missing.
-      points: -1
-    - reason: Controlled resource ownership baseline is missing.
-      points: -2
-    - reason: External Side Effect requires explicit target policy permission.
-      points: -1
-    - reason: Insufficient workflow observations to treat the pattern as mandatory.
-      points: -1
-    - reason: 'Target request budget is too low: 4 requests are estimated but only
-        3 are permitted.'
-      points: -1
-    - reason: Workflow segmentation remains ambiguous.
-      points: -1
-  confidence_explanation:
-  - The rule is derived from 1 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  - One workflow instance cannot establish a mandatory business rule.
-  uncertainty:
-  - Offline sequence evidence cannot prove that the backend requires the observed
-    order.
-  - Capture incompleteness or an undocumented optional branch may explain the pattern.
-  safety_classification: EXTERNAL_SIDE_EFFECT
-  estimated_request_budget: 4
-  readiness_blockers:
-  - An authoritative baseline state and before-state query are missing.
-  - Controlled resource ownership baseline is missing.
-  - External Side Effect requires explicit target policy permission.
-  - Insufficient workflow observations to treat the pattern as mandatory.
-  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
-  - Workflow segmentation remains ambiguous.
-  suggested_validation_strategy:
-  - Establish a successful controlled baseline.
-  - 'Apply only this mutation: switch to a second controlled actor only for RESEND_EMAIL.'
-  - Stop after the minimum approved request budget.
-  - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons: []
-  endpoint_ids:
-  - EP-063
-  observation_ids:
-  - OBS-000353
-  kind: RESEARCH_TASK
-  epistemic_status: RESEARCH_TASK
-- id: BLH-EBFF3C44BFE83614
-  fingerprint: ebff3c44bfe836145d07a6d50bb80cdaadd8811453aed281e2aa13f55bf6c0d5
-  title: Return order may remain replayable after its first successful effect
-  family: REPLAY
-  workflow_family_id: WFAM-E4995F63FE06A147
-  affected_action: RETURN_ORDER
-  affected_transition_id: null
-  invariant_id: BINV-D13B2B21CB2CD7E6
-  invariant_statement: RETURN_ORDER should produce at most one successful business
-    effect per logical workflow.
-  canonical_behavior: RETURN_ORDER executes once
-  mutated_behavior: RETURN_ORDER -> replay identical logical action
-  supporting_evidence:
-  - OBS-000012
-  - OBS-000059
-  - OBS-000271
-  - OBS-000476
-  - OBS-000644
-  - OBS-000700
-  - OBS-000711
-  contradicting_evidence: []
-  controlled_actors_required: 1
-  controlled_resources_required:
-  - Order
-  - Product
-  - order
-  - product
-  authentication_requirements:
-  - Use the reviewed credential profile for mrscargo.
-  state_evidence_requirements:
-  - Record authoritative state for every affected resource before the mutation.
-  - Record the immediate mutation response.
-  - Record immediate and delayed authoritative state after the mutation.
-  - Compare linked financial, entitlement, inventory, and terminal workflow state
-    where applicable.
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  expected_safe_baseline: The canonical sequence is accepted for controlled order
-    lifecycle data.
-  expected_vulnerable_outcome: The backend accepts RETURN_ORDER -> replay identical
-    logical action and authoritative state shows an unintended effect.
-  expected_secure_outcome: The backend rejects RETURN_ORDER -> replay identical logical
-    action or produces no unauthorized state change.
-  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
-    or role state represented by the challenged invariant.
-  score:
-    likelihood: 4
-    impact: 4
-    test_readiness: 3
-    safety_cost: 5
-    confidence: 5
-    breakdown:
-    - reason: Three or more supporting workflows
-      points: 2
-    - reason: High-evidence invariant
-      points: 1
-    - reason: Financial operation
-      points: 2
-    - reason: Financial State Change requires explicit target policy permission.
-      points: -1
-    - reason: 'Target request budget is too low: 5 requests are estimated but only
-        3 are permitted.'
-      points: -1
-  confidence_explanation:
-  - The rule is derived from 10 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  uncertainty:
-  - Offline sequence evidence cannot prove that the backend requires the observed
-    order.
-  - Capture incompleteness or an undocumented optional branch may explain the pattern.
-  safety_classification: FINANCIAL_STATE_CHANGE
-  estimated_request_budget: 5
-  readiness_blockers:
-  - Financial State Change requires explicit target policy permission.
-  - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
-  suggested_validation_strategy:
-  - Establish a successful controlled baseline.
-  - 'Apply only this mutation: RETURN_ORDER -> replay identical logical action.'
-  - Stop after the minimum approved request budget.
-  - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons: []
-  endpoint_ids:
-  - EP-021
-  observation_ids:
-  - OBS-000012
-  - OBS-000059
-  - OBS-000271
-  - OBS-000476
-  - OBS-000644
-  - OBS-000700
-  - OBS-000711
-  kind: RESEARCH_TASK
-  epistemic_status: RESEARCH_TASK
-- id: BLH-EC5F1017A232FE6E
-  fingerprint: ec5f1017a232fe6ee68933184cf542af1cb312e76f8ed221af500b516ea7ffc7
-  title: Create picture may accept a resource from another controlled workflow
-  family: RESOURCE_SWITCH
-  workflow_family_id: WFAM-3FC455452D6010E7
-  affected_action: CREATE_PICTURE
-  affected_transition_id: null
-  invariant_id: BINV-A167B87B29260D91
-  invariant_statement: Identifiers used by Picture lifecycle should remain bound to
-    the same controlled resource lifecycle.
-  canonical_behavior: CREATE_PICTURE uses identifiers from one controlled workflow
-  mutated_behavior: replace one identifier with a second controlled workflow resource
-    for CREATE_PICTURE
-  supporting_evidence:
-  - OBS-000047
-  - OBS-000067
-  contradicting_evidence: []
-  controlled_actors_required: 2
-  controlled_resources_required:
-  - Picture
-  - picture
-  authentication_requirements:
-  - Use the reviewed credential profile for mrscargo.
-  - Use the reviewed credential profile for saeedmehmandoust.
-  state_evidence_requirements:
-  - Record authoritative state for every affected resource before the mutation.
-  - Record the immediate mutation response.
-  - Record immediate and delayed authoritative state after the mutation.
-  - Compare linked financial, entitlement, inventory, and terminal workflow state
-    where applicable.
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  expected_safe_baseline: The canonical sequence is accepted for controlled Picture
-    lifecycle data.
-  expected_vulnerable_outcome: The backend accepts replace one identifier with a second
-    controlled workflow resource for CREATE_PICTURE and authoritative state shows
-    an unintended effect.
-  expected_secure_outcome: The backend rejects replace one identifier with a second
-    controlled workflow resource for CREATE_PICTURE or produces no unauthorized state
-    change.
-  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
-    or role state represented by the challenged invariant.
-  score:
-    likelihood: 2
-    impact: 2
-    test_readiness: 1
-    safety_cost: 2
-    confidence: 4
-    breakdown:
-    - reason: Two supporting workflows
-      points: 1
-    - reason: An authoritative baseline state and before-state query are missing.
-      points: -1
-    - reason: Controlled resource ownership baseline is missing.
-      points: -2
-    - reason: 'Target request budget is too low: 4 requests are estimated but only
-        3 are permitted.'
-      points: -1
-    - reason: Workflow segmentation remains ambiguous.
-      points: -1
-  confidence_explanation:
-  - The rule is derived from 2 workflow instance(s).
+  - The rule is derived from 6 workflow instance(s).
   - Observed frequency is evidence of a pattern, not proof that the backend requires
     it.
   uncertainty:
@@ -2990,144 +1858,50 @@ hypotheses:
   suggested_validation_strategy:
   - Establish a successful controlled baseline.
   - 'Apply only this mutation: replace one identifier with a second controlled workflow
-    resource for CREATE_PICTURE.'
+    resource for COMMENT_POST.'
   - Stop after the minimum approved request budget.
   - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons: []
+  suppression_reasons:
+  - A stronger endpoint-level object-authorization hypothesis already covers this
+    mutation.
   endpoint_ids:
-  - EP-019
+  - EP-014
   observation_ids:
-  - OBS-000047
-  - OBS-000067
-  kind: SECURITY_HYPOTHESIS
-  epistemic_status: TEST_CANDIDATE
-- id: BLH-F0855120F84989D1
-  fingerprint: f0855120f84989d19b65db45e41447a98c9c82c763c1da5a41cc8de639191180
-  title: Concurrent return order may bypass single-execution protection
-  family: CONCURRENT_EXECUTION
-  workflow_family_id: WFAM-E4995F63FE06A147
-  affected_action: RETURN_ORDER
-  affected_transition_id: null
-  invariant_id: BINV-D13B2B21CB2CD7E6
-  invariant_statement: RETURN_ORDER should produce at most one successful business
-    effect per logical workflow.
-  canonical_behavior: RETURN_ORDER executes serially once
-  mutated_behavior: two bounded RETURN_ORDER requests execute concurrently
-  supporting_evidence:
-  - OBS-000012
-  - OBS-000059
-  - OBS-000271
-  - OBS-000476
-  - OBS-000644
-  - OBS-000700
-  - OBS-000711
-  contradicting_evidence: []
-  controlled_actors_required: 1
-  controlled_resources_required:
-  - Order
-  - Product
-  - order
-  - product
-  authentication_requirements:
-  - Use the reviewed credential profile for mrscargo.
-  state_evidence_requirements:
-  - Record authoritative state for every affected resource before the mutation.
-  - Record the immediate mutation response.
-  - Record immediate and delayed authoritative state after the mutation.
-  - Compare linked financial, entitlement, inventory, and terminal workflow state
-    where applicable.
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  expected_safe_baseline: The canonical sequence is accepted for controlled order
-    lifecycle data.
-  expected_vulnerable_outcome: The backend accepts two bounded RETURN_ORDER requests
-    execute concurrently and authoritative state shows an unintended effect.
-  expected_secure_outcome: The backend rejects two bounded RETURN_ORDER requests execute
-    concurrently or produces no unauthorized state change.
-  impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
-    or role state represented by the challenged invariant.
-  score:
-    likelihood: 4
-    impact: 4
-    test_readiness: 3
-    safety_cost: 5
-    confidence: 5
-    breakdown:
-    - reason: Three or more supporting workflows
-      points: 2
-    - reason: High-evidence invariant
-      points: 1
-    - reason: Financial operation
-      points: 2
-    - reason: Concurrency testing is not permitted by the offline engine.
-      points: -1
-    - reason: 'Target request budget is too low: 5 requests are estimated but only
-        3 are permitted.'
-      points: -1
-  confidence_explanation:
-  - The rule is derived from 10 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  uncertainty:
-  - Offline sequence evidence cannot prove that the backend requires the observed
-    order.
-  - Capture incompleteness or an undocumented optional branch may explain the pattern.
-  safety_classification: CONCURRENT
-  estimated_request_budget: 5
-  readiness_blockers:
-  - Concurrency testing is not permitted by the offline engine.
-  - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
-  suggested_validation_strategy:
-  - Establish a successful controlled baseline.
-  - 'Apply only this mutation: two bounded RETURN_ORDER requests execute concurrently.'
-  - Stop after the minimum approved request budget.
-  - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons: []
-  endpoint_ids:
-  - EP-021
-  observation_ids:
-  - OBS-000012
-  - OBS-000059
-  - OBS-000271
-  - OBS-000476
-  - OBS-000644
-  - OBS-000700
-  - OBS-000711
+  - OBS-000045
+  - OBS-000065
+  - OBS-000100
+  - OBS-000103
+  - OBS-000117
+  - OBS-000120
   kind: RESEARCH_TASK
+  readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
-- id: BLH-F1D91BB4141E122E
-  fingerprint: f1d91bb4141e122e8795c2284592c33708e7cb7a57c59869aa5313462b51875a
-  title: Return order may leave linked resource state partially active
-  family: PARTIAL_ROLLBACK
-  workflow_family_id: WFAM-E4995F63FE06A147
+- id: BLH-E6FECFDB34ED47E6
+  fingerprint: e6fecfdb34ed47e6fa05aa8d9cd58a07a3b1f2507f0194be50dea4af38d81ca0
+  title: Return order may accept a resource from another controlled workflow
+  family: RESOURCE_SWITCH
+  workflow_family_id: WFAM-B18CAB66F33EC59A
   affected_action: RETURN_ORDER
   affected_transition_id: null
-  invariant_id: BINV-F73DE7F92111CDF1
-  invariant_statement: RETURN_ORDER in order lifecycle should leave all linked resource
-    states mutually consistent.
-  canonical_behavior: RETURN_ORDER reverses every linked resource effect
-  mutated_behavior: perform RETURN_ORDER and compare each linked resource for incomplete
-    compensation
+  invariant_id: BINV-8A4E0C10BC17F9EE
+  invariant_statement: Identifiers used by order lifecycle should remain bound to
+    the same controlled resource lifecycle.
+  canonical_behavior: RETURN_ORDER uses identifiers from one controlled workflow
+  mutated_behavior: replace one identifier with a second controlled workflow resource
+    for RETURN_ORDER
   supporting_evidence:
   - OBS-000012
   - OBS-000059
-  - OBS-000271
-  - OBS-000476
-  - OBS-000644
   - OBS-000700
-  - OBS-000711
   contradicting_evidence: []
-  controlled_actors_required: 1
+  controlled_actors_required: 2
   controlled_resources_required:
   - Order
-  - Product
   - order
   - product
   authentication_requirements:
   - Use the reviewed credential profile for mrscargo.
+  - Use the reviewed credential profile for saeedmehmandoust.
   state_evidence_requirements:
   - Record authoritative state for every affected resource before the mutation.
   - Record the immediate mutation response.
@@ -3141,34 +1915,38 @@ hypotheses:
   candidate_fields: []
   expected_safe_baseline: The canonical sequence is accepted for controlled order
     lifecycle data.
-  expected_vulnerable_outcome: The backend accepts perform RETURN_ORDER and compare
-    each linked resource for incomplete compensation and authoritative state shows
-    an unintended effect.
-  expected_secure_outcome: The backend rejects perform RETURN_ORDER and compare each
-    linked resource for incomplete compensation or produces no unauthorized state
+  expected_vulnerable_outcome: The backend accepts replace one identifier with a second
+    controlled workflow resource for RETURN_ORDER and authoritative state shows an
+    unintended effect.
+  expected_secure_outcome: The backend rejects replace one identifier with a second
+    controlled workflow resource for RETURN_ORDER or produces no unauthorized state
     change.
   impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
     or role state represented by the challenged invariant.
   score:
-    likelihood: 4
+    likelihood: 3
     impact: 4
-    test_readiness: 3
+    test_readiness: 1
     safety_cost: 5
-    confidence: 5
+    confidence: 4
     breakdown:
     - reason: Three or more supporting workflows
       points: 2
-    - reason: High-evidence invariant
-      points: 1
     - reason: Financial operation
       points: 2
+    - reason: An authoritative baseline state and before-state query are missing.
+      points: -1
+    - reason: Controlled resource ownership baseline is missing.
+      points: -2
     - reason: Financial State Change requires explicit target policy permission.
       points: -1
     - reason: 'Target request budget is too low: 4 requests are estimated but only
         3 are permitted.'
       points: -1
+    - reason: Workflow segmentation remains ambiguous.
+      points: -1
   confidence_explanation:
-  - The rule is derived from 10 workflow instance(s).
+  - The rule is derived from 3 workflow instance(s).
   - Observed frequency is evidence of a pattern, not proof that the backend requires
     it.
   uncertainty:
@@ -3178,232 +1956,1076 @@ hypotheses:
   safety_classification: FINANCIAL_STATE_CHANGE
   estimated_request_budget: 4
   readiness_blockers:
+  - An authoritative baseline state and before-state query are missing.
+  - Controlled resource ownership baseline is missing.
   - Financial State Change requires explicit target policy permission.
   - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
   suggested_validation_strategy:
   - Establish a successful controlled baseline.
-  - 'Apply only this mutation: perform RETURN_ORDER and compare each linked resource
-    for incomplete compensation.'
+  - 'Apply only this mutation: replace one identifier with a second controlled workflow
+    resource for RETURN_ORDER.'
   - Stop after the minimum approved request budget.
   - Classify the result from authoritative backend state, not status code alone.
-  suppression_reasons: []
+  suppression_reasons:
+  - A stronger endpoint-level object-authorization hypothesis already covers this
+    mutation.
   endpoint_ids:
   - EP-021
   observation_ids:
   - OBS-000012
   - OBS-000059
-  - OBS-000271
-  - OBS-000476
-  - OBS-000644
   - OBS-000700
-  - OBS-000711
   kind: RESEARCH_TASK
+  readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
-- id: BLH-F5AA2156A8BD161F
-  fingerprint: f5aa2156a8bd161f0c0de9217c97adba6139114ea91b9a7b32f0256d8a944d60
-  title: Refund credit for return order may exceed the immutable order value
-  family: QUANTITY_VALUE_INVARIANT
-  workflow_family_id: WFAM-E4995F63FE06A147
-  affected_action: RETURN_ORDER
+- id: BLH-ED7AFE8DC06CBBAC
+  fingerprint: ed7afe8dc06cbbac493638001ad03e1a48feca4d14dcb69987561e763a7b483d
+  title: Create order may not remain bound to the initiating actor
+  family: ACTOR_SWITCH
+  workflow_family_id: WFAM-5256530622A826BE
+  affected_action: CREATE_ORDER
   affected_transition_id: null
-  invariant_id: BINV-D50171563222B1CE
-  invariant_statement: Amounts, quantities, and linked financial effects in order
-    lifecycle should remain internally consistent.
-  canonical_behavior: RETURN_ORDER credits no more than the immutable purchase value
-  mutated_behavior: change one order value through an observed or separately researched
-    update before RETURN_ORDER, then compare the credited balance
+  invariant_id: BINV-D8C763384D371458
+  invariant_statement: Each state-changing step in order lifecycle should remain bound
+    to an authorized workflow actor.
+  canonical_behavior: one authorized actor performs CREATE_ORDER
+  mutated_behavior: switch to a second controlled actor only for CREATE_ORDER
   supporting_evidence:
-  - OBS-000002
-  - OBS-000004
-  - OBS-000007
   - OBS-000010
-  - OBS-000011
-  - OBS-000012
-  - OBS-000019
-  - OBS-000021
-  - OBS-000024
-  - OBS-000028
-  - OBS-000029
-  - OBS-000032
-  - OBS-000047
-  - OBS-000049
-  - OBS-000051
-  - OBS-000054
   - OBS-000057
-  - OBS-000058
-  - OBS-000059
-  - OBS-000067
-  - OBS-000071
-  - OBS-000072
-  - OBS-000075
-  - OBS-000084
-  - OBS-000089
-  - OBS-000104
   - OBS-000107
-  - OBS-000108
-  - OBS-000109
-  - OBS-000111
-  - OBS-000123
   - OBS-000269
-  - OBS-000270
-  - OBS-000271
   - OBS-000474
-  - OBS-000475
-  - OBS-000476
   - OBS-000642
-  - OBS-000643
-  - OBS-000644
-  - OBS-000646
-  - OBS-000648
-  - OBS-000650
-  - OBS-000651
-  - OBS-000695
-  - OBS-000699
-  - OBS-000700
-  - OBS-000702
-  - OBS-000704
-  - OBS-000706
-  - OBS-000707
-  - OBS-000709
-  - OBS-000710
-  - OBS-000711
   contradicting_evidence: []
-  controlled_actors_required: 1
+  controlled_actors_required: 2
   controlled_resources_required:
   - Order
-  - Product
-  - account
   - order
   - product
   authentication_requirements:
   - Use the reviewed credential profile for mrscargo.
+  - Use the reviewed credential profile for saeedmehmandoust.
   state_evidence_requirements:
   - Record authoritative state for every affected resource before the mutation.
   - Record the immediate mutation response.
   - Record immediate and delayed authoritative state after the mutation.
   - Compare linked financial, entitlement, inventory, and terminal workflow state
     where applicable.
-  - 'Record authoritative values before and after the mutation for: $.available_credit,
-    $.credit, $.order.product.price, $.order.quantity, $.orders[].product.price, $.orders[].quantity,
-    $.payment.amount, $.products[].price.'
-  mutable_value_fields:
-  - $.quantity
-  authoritative_value_fields:
-  - $.available_credit
-  - $.credit
-  - $.order.product.price
-  - $.order.quantity
-  - $.orders[].product.price
-  - $.orders[].quantity
-  - $.payment.amount
-  - $.products[].price
+  mutable_value_fields: []
+  authoritative_value_fields: []
   candidate_methods: []
   candidate_paths: []
   candidate_fields: []
   expected_safe_baseline: The canonical sequence is accepted for controlled order
     lifecycle data.
-  expected_vulnerable_outcome: The backend accepts change one order value through
-    an observed or separately researched update before RETURN_ORDER, then compare
-    the credited balance and authoritative state shows an unintended effect.
-  expected_secure_outcome: The backend rejects change one order value through an observed
-    or separately researched update before RETURN_ORDER, then compare the credited
-    balance or produces no unauthorized state change.
+  expected_vulnerable_outcome: The backend accepts switch to a second controlled actor
+    only for CREATE_ORDER and authoritative state shows an unintended effect.
+  expected_secure_outcome: The backend rejects switch to a second controlled actor
+    only for CREATE_ORDER or produces no unauthorized state change.
   impact_rationale: Acceptance could violate lifecycle, financial, ownership, entitlement,
     or role state represented by the challenged invariant.
   score:
-    likelihood: 4
-    impact: 4
-    test_readiness: 3
-    safety_cost: 5
-    confidence: 5
+    likelihood: 3
+    impact: 2
+    test_readiness: 1
+    safety_cost: 2
+    confidence: 4
     breakdown:
     - reason: Three or more supporting workflows
       points: 2
-    - reason: High-evidence invariant
-      points: 1
-    - reason: Financial operation
-      points: 2
-    - reason: Financial State Change requires explicit target policy permission.
+    - reason: An authoritative baseline state and before-state query are missing.
       points: -1
+    - reason: Controlled resource ownership baseline is missing.
+      points: -2
     - reason: 'Target request budget is too low: 4 requests are estimated but only
         3 are permitted.'
       points: -1
+    - reason: Workflow segmentation remains ambiguous.
+      points: -1
   confidence_explanation:
-  - The rule is derived from 10 workflow instance(s).
+  - The rule is derived from 6 workflow instance(s).
   - Observed frequency is evidence of a pattern, not proof that the backend requires
     it.
   uncertainty:
   - Offline sequence evidence cannot prove that the backend requires the observed
     order.
   - Capture incompleteness or an undocumented optional branch may explain the pattern.
-  safety_classification: FINANCIAL_STATE_CHANGE
+  safety_classification: LOW_RISK_STATE_CHANGE
   estimated_request_budget: 4
   readiness_blockers:
-  - Financial State Change requires explicit target policy permission.
+  - An authoritative baseline state and before-state query are missing.
+  - Controlled resource ownership baseline is missing.
   - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
   suggested_validation_strategy:
   - Establish a successful controlled baseline.
-  - 'Apply only this mutation: change one order value through an observed or separately
-    researched update before RETURN_ORDER, then compare the credited balance.'
+  - 'Apply only this mutation: switch to a second controlled actor only for CREATE_ORDER.'
   - Stop after the minimum approved request budget.
   - Classify the result from authoritative backend state, not status code alone.
   suppression_reasons: []
   endpoint_ids:
-  - EP-021
+  - EP-020
   observation_ids:
-  - OBS-000002
-  - OBS-000004
-  - OBS-000007
   - OBS-000010
-  - OBS-000011
-  - OBS-000012
-  - OBS-000019
-  - OBS-000021
-  - OBS-000024
-  - OBS-000028
-  - OBS-000029
-  - OBS-000032
-  - OBS-000047
-  - OBS-000049
-  - OBS-000051
-  - OBS-000054
   - OBS-000057
-  - OBS-000058
-  - OBS-000059
-  - OBS-000067
-  - OBS-000071
-  - OBS-000072
-  - OBS-000075
-  - OBS-000084
-  - OBS-000089
-  - OBS-000104
   - OBS-000107
-  - OBS-000108
-  - OBS-000109
-  - OBS-000111
-  - OBS-000123
   - OBS-000269
-  - OBS-000270
-  - OBS-000271
   - OBS-000474
-  - OBS-000475
-  - OBS-000476
   - OBS-000642
-  - OBS-000643
+  kind: SECURITY_HYPOTHESIS
+  readiness: REVIEW_REQUIRED
+  epistemic_status: TEST_CANDIDATE
+rejections:
+- id: MREJ-002767CF5AAC508C
+  workflow_family_id: WFAM-A2057BD76CF39A2A
+  mutation_family: CONCURRENT_EXECUTION
+  affected_action: CHANGE_PHONENUMBER
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000036
+  - OBS-000068
+- id: MREJ-012F9A5DD6EB26AC
+  workflow_family_id: WFAM-406B6ABEDBFE11ED
+  mutation_family: DUPLICATE_ACTION
+  affected_action: RESEND_EMAIL
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000353
+- id: MREJ-0388CF44ACC1557F
+  workflow_family_id: WFAM-1B47CCD990775A2C
+  mutation_family: QUANTITY_VALUE_INVARIANT
+  affected_action: ADD_VEHICLE
+  invariant_id: null
+  reasons:
+  - No client-controlled request field has a recognized amount, price, quantity, balance,
+    credit, refund, limit, fee, or cumulative-value role.
+  evidence:
+  - OBS-000354
+- id: MREJ-08BB1295EC88584F
+  workflow_family_id: WFAM-D0DBCD81D38E3FCF
+  mutation_family: QUANTITY_VALUE_INVARIANT
+  affected_action: CONTACT_MECHANIC
+  invariant_id: null
+  reasons:
+  - No client-controlled request field has a recognized amount, price, quantity, balance,
+    credit, refund, limit, fee, or cumulative-value role.
+  evidence:
+  - OBS-000249
+  - OBS-000419
+- id: MREJ-0DED5DF09BDB13D9
+  workflow_family_id: WFAM-3899C528149F1ED6
+  mutation_family: REPLAY
+  affected_action: VERIFY_AUTH
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000133
+  - OBS-000186
+  - OBS-000203
+  - OBS-000252
+  - OBS-000274
+  - OBS-000284
+  - OBS-000348
+  - OBS-000356
+  - OBS-000373
+  - OBS-000422
+  - OBS-000479
+  - OBS-000505
+  - OBS-000522
+  - OBS-000563
+  - OBS-000569
+  - OBS-000594
+  - OBS-000657
+  - OBS-000717
+- id: MREJ-1417E24B9FFBC307
+  workflow_family_id: WFAM-A2057BD76CF39A2A
+  mutation_family: DUPLICATE_ACTION
+  affected_action: CHANGE_PHONENUMBER
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000036
+  - OBS-000068
+- id: MREJ-1E1A825EFA20C820
+  workflow_family_id: WFAM-D0DBCD81D38E3FCF
+  mutation_family: REPLAY
+  affected_action: CONTACT_MECHANIC
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000249
+  - OBS-000419
+- id: MREJ-1F7CB7CA81709D66
+  workflow_family_id: WFAM-51AD613D329592CD
+  mutation_family: ACTOR_SWITCH
+  affected_action: CREATE_POST
+  invariant_id: null
+  reasons:
+  - The action has no typed client-controlled resource identifier.
+  evidence:
+  - OBS-000015
+  - OBS-000062
+- id: MREJ-210A5427476EDF9E
+  workflow_family_id: WFAM-51AD613D329592CD
+  mutation_family: REPLAY
+  affected_action: CREATE_POST
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000015
+  - OBS-000062
+- id: MREJ-2329CFCCC8C5489B
+  workflow_family_id: WFAM-1B47CCD990775A2C
+  mutation_family: RESOURCE_SWITCH
+  affected_action: ADD_VEHICLE
+  invariant_id: null
+  reasons:
+  - No separate controlled-actor/object baseline is available for comparison.
+  - The action has no typed client-controlled resource identifier.
+  evidence:
+  - OBS-000354
+- id: MREJ-275AD712DB89851D
+  workflow_family_id: WFAM-A955B9C288A08FC1
+  mutation_family: RESOURCE_SWITCH
+  affected_action: RETURN_ORDER
+  invariant_id: null
+  reasons:
+  - No separate controlled-actor/object baseline is available for comparison.
+  evidence:
+  - OBS-000271
+  - OBS-000476
   - OBS-000644
-  - OBS-000646
-  - OBS-000648
-  - OBS-000650
-  - OBS-000651
-  - OBS-000695
-  - OBS-000699
+- id: MREJ-28E220DBEA77E98F
+  workflow_family_id: WFAM-B18CAB66F33EC59A
+  mutation_family: QUANTITY_VALUE_INVARIANT
+  affected_action: RETURN_ORDER
+  invariant_id: null
+  reasons:
+  - No client-controlled request field has a recognized amount, price, quantity, balance,
+    credit, refund, limit, fee, or cumulative-value role.
+  evidence:
+  - OBS-000012
+  - OBS-000059
   - OBS-000700
-  - OBS-000702
-  - OBS-000704
+- id: MREJ-2B66204FE0FD46E8
+  workflow_family_id: WFAM-250D444EC7F95DCE
+  mutation_family: CONCURRENT_EXECUTION
+  affected_action: REQUEST_SERVICEREQUEST
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000176
+  - OBS-000256
+  - OBS-000321
+  - OBS-000462
+  - OBS-000511
+  - OBS-000575
+  - OBS-000686
+- id: MREJ-32B28990BD702ADD
+  workflow_family_id: WFAM-878D2D849FA67A36
+  mutation_family: DUPLICATE_ACTION
+  affected_action: COMMENT_POST
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000045
+  - OBS-000065
+  - OBS-000100
+  - OBS-000103
+  - OBS-000117
+  - OBS-000120
+- id: MREJ-3409EFC7EAAD59A9
+  workflow_family_id: WFAM-5256530622A826BE
+  mutation_family: CONCURRENT_EXECUTION
+  affected_action: CREATE_ORDER
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000010
+  - OBS-000057
+  - OBS-000107
+  - OBS-000269
+  - OBS-000474
+  - OBS-000642
+- id: MREJ-3CD9340AC5510D19
+  workflow_family_id: WFAM-250D444EC7F95DCE
+  mutation_family: REPLAY
+  affected_action: REQUEST_SERVICEREQUEST
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000176
+  - OBS-000256
+  - OBS-000321
+  - OBS-000462
+  - OBS-000511
+  - OBS-000575
+  - OBS-000686
+- id: MREJ-3FB07D9FED4C129E
+  workflow_family_id: WFAM-1B47CCD990775A2C
+  mutation_family: DUPLICATE_ACTION
+  affected_action: ADD_VEHICLE
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000354
+- id: MREJ-3FEF26BDB40C7BBC
+  workflow_family_id: WFAM-406B6ABEDBFE11ED
+  mutation_family: ACTOR_SWITCH
+  affected_action: RESEND_EMAIL
+  invariant_id: null
+  reasons:
+  - No separate controlled-actor/object baseline is available for comparison.
+  - The action has no typed client-controlled resource identifier.
+  evidence:
+  - OBS-000353
+- id: MREJ-44FBFAF69300D48D
+  workflow_family_id: WFAM-A955B9C288A08FC1
+  mutation_family: PARTIAL_ROLLBACK
+  affected_action: RETURN_ORDER
+  invariant_id: null
+  reasons:
+  - Partial rollback requires at least two linked resource or state effects that can
+    be compared.
+  evidence:
+  - OBS-000271
+  - OBS-000476
+  - OBS-000644
+- id: MREJ-4B246897B6D5A8C5
+  workflow_family_id: WFAM-A8C7FB73AE0307AC
+  mutation_family: DUPLICATE_ACTION
+  affected_action: VERIFY_AUTH
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000005
+  - OBS-000017
+  - OBS-000022
+  - OBS-000033
+  - OBS-000052
+  - OBS-000069
+  - OBS-000073
+  - OBS-000090
+  - OBS-000112
+  - OBS-000124
+  - OBS-000330
+  - OBS-000584
+- id: MREJ-4CC4B84E8AC853AA
+  workflow_family_id: WFAM-5256530622A826BE
+  mutation_family: DUPLICATE_ACTION
+  affected_action: CREATE_ORDER
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000010
+  - OBS-000057
+  - OBS-000107
+  - OBS-000269
+  - OBS-000474
+  - OBS-000642
+- id: MREJ-592C24CDD9B34A3B
+  workflow_family_id: WFAM-EB41FABAAB565233
+  mutation_family: ACTOR_SWITCH
+  affected_action: CREATE_PICTURE
+  invariant_id: null
+  reasons:
+  - No separate controlled-actor/object baseline is available for comparison.
+  - The action has no typed client-controlled resource identifier.
+  evidence:
+  - OBS-000047
+  - OBS-000067
+- id: MREJ-5946826DEE86D681
+  workflow_family_id: WFAM-406B6ABEDBFE11ED
+  mutation_family: CONCURRENT_EXECUTION
+  affected_action: RESEND_EMAIL
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000353
+- id: MREJ-5B9A408810A0112D
+  workflow_family_id: WFAM-070E94C62CCCE75E
+  mutation_family: ACTOR_SWITCH
+  affected_action: RETURN_ORDER
+  invariant_id: null
+  reasons:
+  - No separate controlled-actor/object baseline is available for comparison.
+  evidence:
   - OBS-000706
-  - OBS-000707
   - OBS-000709
-  - OBS-000710
   - OBS-000711
-  kind: RESEARCH_TASK
-  epistemic_status: RESEARCH_TASK
+- id: MREJ-5C85B4E2C41BAE96
+  workflow_family_id: WFAM-070E94C62CCCE75E
+  mutation_family: RESOURCE_SWITCH
+  affected_action: RETURN_ORDER
+  invariant_id: null
+  reasons:
+  - No separate controlled-actor/object baseline is available for comparison.
+  evidence:
+  - OBS-000706
+  - OBS-000709
+  - OBS-000711
+- id: MREJ-5CC9BB64C41E81F9
+  workflow_family_id: WFAM-1B47CCD990775A2C
+  mutation_family: CONCURRENT_EXECUTION
+  affected_action: ADD_VEHICLE
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000354
+- id: MREJ-63800B962916AB36
+  workflow_family_id: WFAM-D0DBCD81D38E3FCF
+  mutation_family: CONCURRENT_EXECUTION
+  affected_action: CONTACT_MECHANIC
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000249
+  - OBS-000419
+- id: MREJ-6466E33D661D489E
+  workflow_family_id: WFAM-3899C528149F1ED6
+  mutation_family: DUPLICATE_ACTION
+  affected_action: VERIFY_AUTH
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000133
+  - OBS-000186
+  - OBS-000203
+  - OBS-000252
+  - OBS-000274
+  - OBS-000284
+  - OBS-000348
+  - OBS-000356
+  - OBS-000373
+  - OBS-000422
+  - OBS-000479
+  - OBS-000505
+  - OBS-000522
+  - OBS-000563
+  - OBS-000569
+  - OBS-000594
+  - OBS-000657
+  - OBS-000717
+- id: MREJ-6CA9CBABB59B3A6D
+  workflow_family_id: WFAM-878D2D849FA67A36
+  mutation_family: QUANTITY_VALUE_INVARIANT
+  affected_action: COMMENT_POST
+  invariant_id: null
+  reasons:
+  - No client-controlled request field has a recognized amount, price, quantity, balance,
+    credit, refund, limit, fee, or cumulative-value role.
+  evidence:
+  - OBS-000045
+  - OBS-000065
+  - OBS-000100
+  - OBS-000103
+  - OBS-000117
+  - OBS-000120
+- id: MREJ-70454479F47297EB
+  workflow_family_id: WFAM-878D2D849FA67A36
+  mutation_family: REPLAY
+  affected_action: COMMENT_POST
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000045
+  - OBS-000065
+  - OBS-000100
+  - OBS-000103
+  - OBS-000117
+  - OBS-000120
+- id: MREJ-71C96B9F95A3C499
+  workflow_family_id: WFAM-EB41FABAAB565233
+  mutation_family: QUANTITY_VALUE_INVARIANT
+  affected_action: CREATE_PICTURE
+  invariant_id: null
+  reasons:
+  - No client-controlled request field has a recognized amount, price, quantity, balance,
+    credit, refund, limit, fee, or cumulative-value role.
+  evidence:
+  - OBS-000047
+  - OBS-000067
+- id: MREJ-76283D5B6742FBB6
+  workflow_family_id: WFAM-250D444EC7F95DCE
+  mutation_family: QUANTITY_VALUE_INVARIANT
+  affected_action: REQUEST_SERVICEREQUEST
+  invariant_id: null
+  reasons:
+  - No client-controlled request field has a recognized amount, price, quantity, balance,
+    credit, refund, limit, fee, or cumulative-value role.
+  evidence:
+  - OBS-000176
+  - OBS-000256
+  - OBS-000321
+  - OBS-000462
+  - OBS-000511
+  - OBS-000575
+  - OBS-000686
+- id: MREJ-77B29B8FB521FE80
+  workflow_family_id: WFAM-070E94C62CCCE75E
+  mutation_family: QUANTITY_VALUE_INVARIANT
+  affected_action: RETURN_ORDER
+  invariant_id: null
+  reasons:
+  - No client-controlled request field has a recognized amount, price, quantity, balance,
+    credit, refund, limit, fee, or cumulative-value role.
+  evidence:
+  - OBS-000711
+- id: MREJ-795036F4C2F86EFA
+  workflow_family_id: WFAM-51AD613D329592CD
+  mutation_family: QUANTITY_VALUE_INVARIANT
+  affected_action: CREATE_POST
+  invariant_id: null
+  reasons:
+  - No client-controlled request field has a recognized amount, price, quantity, balance,
+    credit, refund, limit, fee, or cumulative-value role.
+  evidence:
+  - OBS-000015
+  - OBS-000062
+- id: MREJ-7E0B08EEFFC98C02
+  workflow_family_id: WFAM-A8C7FB73AE0307AC
+  mutation_family: CONCURRENT_EXECUTION
+  affected_action: VERIFY_AUTH
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000005
+  - OBS-000017
+  - OBS-000022
+  - OBS-000033
+  - OBS-000052
+  - OBS-000069
+  - OBS-000073
+  - OBS-000090
+  - OBS-000112
+  - OBS-000124
+  - OBS-000330
+  - OBS-000584
+- id: MREJ-813FAD7A3CC03C97
+  workflow_family_id: WFAM-A955B9C288A08FC1
+  mutation_family: QUANTITY_VALUE_INVARIANT
+  affected_action: RETURN_ORDER
+  invariant_id: null
+  reasons:
+  - No client-controlled request field has a recognized amount, price, quantity, balance,
+    credit, refund, limit, fee, or cumulative-value role.
+  evidence:
+  - OBS-000271
+  - OBS-000476
+  - OBS-000644
+- id: MREJ-825E6BBCDA923D98
+  workflow_family_id: WFAM-A8C7FB73AE0307AC
+  mutation_family: RESOURCE_SWITCH
+  affected_action: VERIFY_AUTH
+  invariant_id: null
+  reasons:
+  - No separate controlled-actor/object baseline is available for comparison.
+  - The action has no typed client-controlled resource identifier.
+  evidence:
+  - OBS-000005
+  - OBS-000017
+  - OBS-000022
+  - OBS-000033
+  - OBS-000052
+  - OBS-000069
+  - OBS-000073
+  - OBS-000090
+  - OBS-000112
+  - OBS-000124
+  - OBS-000330
+  - OBS-000584
+- id: MREJ-899B62345174283A
+  workflow_family_id: WFAM-51AD613D329592CD
+  mutation_family: CONCURRENT_EXECUTION
+  affected_action: CREATE_POST
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000015
+  - OBS-000062
+- id: MREJ-91FF599B74755985
+  workflow_family_id: WFAM-3899C528149F1ED6
+  mutation_family: ACTOR_SWITCH
+  affected_action: VERIFY_AUTH
+  invariant_id: null
+  reasons:
+  - No separate controlled-actor/object baseline is available for comparison.
+  - The action has no typed client-controlled resource identifier.
+  evidence:
+  - OBS-000133
+  - OBS-000186
+  - OBS-000203
+  - OBS-000252
+  - OBS-000274
+  - OBS-000284
+  - OBS-000348
+  - OBS-000356
+  - OBS-000373
+  - OBS-000422
+  - OBS-000479
+  - OBS-000505
+  - OBS-000522
+  - OBS-000563
+  - OBS-000569
+  - OBS-000594
+  - OBS-000657
+  - OBS-000717
+- id: MREJ-950D81A4F1B291DE
+  workflow_family_id: WFAM-EB41FABAAB565233
+  mutation_family: REPLAY
+  affected_action: CREATE_PICTURE
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000047
+  - OBS-000067
+- id: MREJ-95B7A87BD11DAD8B
+  workflow_family_id: WFAM-1B47CCD990775A2C
+  mutation_family: ACTOR_SWITCH
+  affected_action: ADD_VEHICLE
+  invariant_id: null
+  reasons:
+  - No separate controlled-actor/object baseline is available for comparison.
+  - The action has no typed client-controlled resource identifier.
+  evidence:
+  - OBS-000354
+- id: MREJ-9DDE48740C16AB88
+  workflow_family_id: WFAM-51AD613D329592CD
+  mutation_family: DUPLICATE_ACTION
+  affected_action: CREATE_POST
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000015
+  - OBS-000062
+- id: MREJ-A726D11A105D5875
+  workflow_family_id: WFAM-3899C528149F1ED6
+  mutation_family: RESOURCE_SWITCH
+  affected_action: VERIFY_AUTH
+  invariant_id: null
+  reasons:
+  - No separate controlled-actor/object baseline is available for comparison.
+  - The action has no typed client-controlled resource identifier.
+  evidence:
+  - OBS-000133
+  - OBS-000186
+  - OBS-000203
+  - OBS-000252
+  - OBS-000274
+  - OBS-000284
+  - OBS-000348
+  - OBS-000356
+  - OBS-000373
+  - OBS-000422
+  - OBS-000479
+  - OBS-000505
+  - OBS-000522
+  - OBS-000563
+  - OBS-000569
+  - OBS-000594
+  - OBS-000657
+  - OBS-000717
+- id: MREJ-A7BF87E23DE88147
+  workflow_family_id: WFAM-51AD613D329592CD
+  mutation_family: RESOURCE_SWITCH
+  affected_action: CREATE_POST
+  invariant_id: null
+  reasons:
+  - The action has no typed client-controlled resource identifier.
+  evidence:
+  - OBS-000015
+  - OBS-000062
+- id: MREJ-AA16EB74BCA2E50C
+  workflow_family_id: WFAM-250D444EC7F95DCE
+  mutation_family: DUPLICATE_ACTION
+  affected_action: REQUEST_SERVICEREQUEST
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000176
+  - OBS-000256
+  - OBS-000321
+  - OBS-000462
+  - OBS-000511
+  - OBS-000575
+  - OBS-000686
+- id: MREJ-ADCB67EB49B38E5C
+  workflow_family_id: WFAM-406B6ABEDBFE11ED
+  mutation_family: QUANTITY_VALUE_INVARIANT
+  affected_action: RESEND_EMAIL
+  invariant_id: null
+  reasons:
+  - No client-controlled request field has a recognized amount, price, quantity, balance,
+    credit, refund, limit, fee, or cumulative-value role.
+  evidence:
+  - OBS-000353
+- id: MREJ-B09654FCB88BB764
+  workflow_family_id: WFAM-A8C7FB73AE0307AC
+  mutation_family: REPLAY
+  affected_action: VERIFY_AUTH
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000005
+  - OBS-000017
+  - OBS-000022
+  - OBS-000033
+  - OBS-000052
+  - OBS-000069
+  - OBS-000073
+  - OBS-000090
+  - OBS-000112
+  - OBS-000124
+  - OBS-000330
+  - OBS-000584
+- id: MREJ-B40B5F5D97E42B23
+  workflow_family_id: WFAM-D0DBCD81D38E3FCF
+  mutation_family: RESOURCE_SWITCH
+  affected_action: CONTACT_MECHANIC
+  invariant_id: null
+  reasons:
+  - No separate controlled-actor/object baseline is available for comparison.
+  - The action has no typed client-controlled resource identifier.
+  evidence:
+  - OBS-000249
+  - OBS-000419
+- id: MREJ-B74E13D04E9BDE77
+  workflow_family_id: WFAM-D0DBCD81D38E3FCF
+  mutation_family: ACTOR_SWITCH
+  affected_action: CONTACT_MECHANIC
+  invariant_id: null
+  reasons:
+  - No separate controlled-actor/object baseline is available for comparison.
+  - The action has no typed client-controlled resource identifier.
+  evidence:
+  - OBS-000249
+  - OBS-000419
+- id: MREJ-B84435D121B714E3
+  workflow_family_id: WFAM-A2057BD76CF39A2A
+  mutation_family: REPLAY
+  affected_action: CHANGE_PHONENUMBER
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000036
+  - OBS-000068
+- id: MREJ-C1F527239C6BA71D
+  workflow_family_id: WFAM-A8C7FB73AE0307AC
+  mutation_family: ACTOR_SWITCH
+  affected_action: VERIFY_AUTH
+  invariant_id: null
+  reasons:
+  - No separate controlled-actor/object baseline is available for comparison.
+  - The action has no typed client-controlled resource identifier.
+  evidence:
+  - OBS-000005
+  - OBS-000017
+  - OBS-000022
+  - OBS-000033
+  - OBS-000052
+  - OBS-000069
+  - OBS-000073
+  - OBS-000090
+  - OBS-000112
+  - OBS-000124
+  - OBS-000330
+  - OBS-000584
+- id: MREJ-C38AB12E5BEC4D25
+  workflow_family_id: WFAM-EB41FABAAB565233
+  mutation_family: DUPLICATE_ACTION
+  affected_action: CREATE_PICTURE
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000047
+  - OBS-000067
+- id: MREJ-C4F8B98ADEA8F547
+  workflow_family_id: WFAM-A8C7FB73AE0307AC
+  mutation_family: QUANTITY_VALUE_INVARIANT
+  affected_action: VERIFY_AUTH
+  invariant_id: null
+  reasons:
+  - No client-controlled request field has a recognized amount, price, quantity, balance,
+    credit, refund, limit, fee, or cumulative-value role.
+  evidence:
+  - OBS-000005
+  - OBS-000017
+  - OBS-000022
+  - OBS-000033
+  - OBS-000052
+  - OBS-000069
+  - OBS-000073
+  - OBS-000090
+  - OBS-000112
+  - OBS-000124
+  - OBS-000330
+  - OBS-000584
+- id: MREJ-C8001F6A8C6723BF
+  workflow_family_id: WFAM-070E94C62CCCE75E
+  mutation_family: PARTIAL_ROLLBACK
+  affected_action: RETURN_ORDER
+  invariant_id: null
+  reasons:
+  - Partial rollback requires at least two linked resource or state effects that can
+    be compared.
+  evidence:
+  - OBS-000711
+- id: MREJ-CB923C6A7A18271D
+  workflow_family_id: WFAM-1B47CCD990775A2C
+  mutation_family: REPLAY
+  affected_action: ADD_VEHICLE
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000354
+- id: MREJ-CDD117CAD26425EB
+  workflow_family_id: WFAM-878D2D849FA67A36
+  mutation_family: CONCURRENT_EXECUTION
+  affected_action: COMMENT_POST
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000045
+  - OBS-000065
+  - OBS-000100
+  - OBS-000103
+  - OBS-000117
+  - OBS-000120
+- id: MREJ-CDFC9E0BCFD9145D
+  workflow_family_id: WFAM-D0DBCD81D38E3FCF
+  mutation_family: DUPLICATE_ACTION
+  affected_action: CONTACT_MECHANIC
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000249
+  - OBS-000419
+- id: MREJ-CFA2993774160854
+  workflow_family_id: WFAM-5256530622A826BE
+  mutation_family: REPLAY
+  affected_action: CREATE_ORDER
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000010
+  - OBS-000057
+  - OBS-000107
+  - OBS-000269
+  - OBS-000474
+  - OBS-000642
+- id: MREJ-D1031BA8F473B07A
+  workflow_family_id: WFAM-A2057BD76CF39A2A
+  mutation_family: QUANTITY_VALUE_INVARIANT
+  affected_action: CHANGE_PHONENUMBER
+  invariant_id: null
+  reasons:
+  - No client-controlled request field has a recognized amount, price, quantity, balance,
+    credit, refund, limit, fee, or cumulative-value role.
+  evidence:
+  - OBS-000036
+  - OBS-000068
+- id: MREJ-D21C7314B1BFD741
+  workflow_family_id: WFAM-3899C528149F1ED6
+  mutation_family: QUANTITY_VALUE_INVARIANT
+  affected_action: VERIFY_AUTH
+  invariant_id: null
+  reasons:
+  - No client-controlled request field has a recognized amount, price, quantity, balance,
+    credit, refund, limit, fee, or cumulative-value role.
+  evidence:
+  - OBS-000133
+  - OBS-000186
+  - OBS-000203
+  - OBS-000252
+  - OBS-000274
+  - OBS-000284
+  - OBS-000348
+  - OBS-000356
+  - OBS-000373
+  - OBS-000422
+  - OBS-000479
+  - OBS-000505
+  - OBS-000522
+  - OBS-000563
+  - OBS-000569
+  - OBS-000594
+  - OBS-000657
+  - OBS-000717
+- id: MREJ-D6DFA4126B297546
+  workflow_family_id: WFAM-EB41FABAAB565233
+  mutation_family: CONCURRENT_EXECUTION
+  affected_action: CREATE_PICTURE
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000047
+  - OBS-000067
+- id: MREJ-D7CF17B4D3D5DEE1
+  workflow_family_id: WFAM-3899C528149F1ED6
+  mutation_family: CONCURRENT_EXECUTION
+  affected_action: VERIFY_AUTH
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000133
+  - OBS-000186
+  - OBS-000203
+  - OBS-000252
+  - OBS-000274
+  - OBS-000284
+  - OBS-000348
+  - OBS-000356
+  - OBS-000373
+  - OBS-000422
+  - OBS-000479
+  - OBS-000505
+  - OBS-000522
+  - OBS-000563
+  - OBS-000569
+  - OBS-000594
+  - OBS-000657
+  - OBS-000717
+- id: MREJ-E4A9E9D9493A2514
+  workflow_family_id: WFAM-B18CAB66F33EC59A
+  mutation_family: PARTIAL_ROLLBACK
+  affected_action: RETURN_ORDER
+  invariant_id: null
+  reasons:
+  - Partial rollback requires at least two linked resource or state effects that can
+    be compared.
+  evidence:
+  - OBS-000012
+  - OBS-000059
+  - OBS-000700
+- id: MREJ-EAE050062E835CB1
+  workflow_family_id: WFAM-406B6ABEDBFE11ED
+  mutation_family: RESOURCE_SWITCH
+  affected_action: RESEND_EMAIL
+  invariant_id: null
+  reasons:
+  - No separate controlled-actor/object baseline is available for comparison.
+  - The action has no typed client-controlled resource identifier.
+  evidence:
+  - OBS-000353
+- id: MREJ-EAE7B54B05E3B624
+  workflow_family_id: WFAM-406B6ABEDBFE11ED
+  mutation_family: REPLAY
+  affected_action: RESEND_EMAIL
+  invariant_id: null
+  reasons:
+  - The action lacks one-time, irreversible, or duplicate-business-effect semantics
+    required for replay and concurrency mutations.
+  evidence:
+  - OBS-000353
+- id: MREJ-F2733E325FCA6769
+  workflow_family_id: WFAM-EB41FABAAB565233
+  mutation_family: RESOURCE_SWITCH
+  affected_action: CREATE_PICTURE
+  invariant_id: null
+  reasons:
+  - No separate controlled-actor/object baseline is available for comparison.
+  - The action has no typed client-controlled resource identifier.
+  evidence:
+  - OBS-000047
+  - OBS-000067
+- id: MREJ-F3DA3CFB0D38E49E
+  workflow_family_id: WFAM-A955B9C288A08FC1
+  mutation_family: ACTOR_SWITCH
+  affected_action: RETURN_ORDER
+  invariant_id: null
+  reasons:
+  - No separate controlled-actor/object baseline is available for comparison.
+  evidence:
+  - OBS-000271
+  - OBS-000476
+  - OBS-000644
+- id: MREJ-F4315D7FC549DFAD
+  workflow_family_id: WFAM-A2057BD76CF39A2A
+  mutation_family: RESOURCE_SWITCH
+  affected_action: CHANGE_PHONENUMBER
+  invariant_id: null
+  reasons:
+  - No separate controlled-actor/object baseline is available for comparison.
+  - The action has no typed client-controlled resource identifier.
+  evidence:
+  - OBS-000036
+  - OBS-000068
+- id: MREJ-FD703FBD65C9D5B6
+  workflow_family_id: WFAM-A2057BD76CF39A2A
+  mutation_family: ACTOR_SWITCH
+  affected_action: CHANGE_PHONENUMBER
+  invariant_id: null
+  reasons:
+  - No separate controlled-actor/object baseline is available for comparison.
+  - The action has no typed client-controlled resource identifier.
+  evidence:
+  - OBS-000036
+  - OBS-000068
