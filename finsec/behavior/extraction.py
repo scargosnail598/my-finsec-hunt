@@ -22,6 +22,8 @@ SignalKind = Literal[
     "IDEMPOTENCY_KEY",
     "BUSINESS_VALUE",
 ]
+PrimitiveType = Literal["STRING", "INTEGER", "FLOAT", "BOOLEAN", "NULL"]
+ResourceRole = Literal["PRIMARY", "RELATED", "SCOPE", "UNKNOWN"]
 
 STATE_FIELDS = {
     "status",
@@ -37,13 +39,17 @@ STATE_FIELDS = {
 VALUE_FIELDS = {
     "amount",
     "balance",
+    "cumulativeamount",
+    "cumulativevalue",
     "credit",
     "debit",
     "discount",
     "fee",
     "inventory",
+    "limit",
     "price",
     "quantity",
+    "refundamount",
     "subtotal",
     "total",
 }
@@ -70,6 +76,12 @@ class ScalarSignal:
     fingerprint: str
     kind: SignalKind
     resource_type: str | None = None
+    semantic_role: str = "unknown"
+    resource_role: ResourceRole = "UNKNOWN"
+    location: str = "BODY"
+    primitive_type: PrimitiveType = "STRING"
+    distinctive: bool = False
+    suppression_reason: str | None = None
     direction: Literal["REQUEST", "RESPONSE"] = "REQUEST"
 
 
@@ -101,6 +113,18 @@ class ExchangeFacts:
 
 def _normalized_name(value: str) -> str:
     return re.sub(r"[^a-z0-9]", "", value.lower())
+
+
+def _primitive_type(value: Any) -> PrimitiveType:
+    if value is None:
+        return "NULL"
+    if isinstance(value, bool):
+        return "BOOLEAN"
+    if isinstance(value, int):
+        return "INTEGER"
+    if isinstance(value, float):
+        return "FLOAT"
+    return "STRING"
 
 
 def _terminal_field(path: str) -> str:
@@ -299,8 +323,110 @@ def _value_resource_type(field_path: str, endpoint: Endpoint | None) -> str:
     return endpoint.resource.type.lower() if endpoint is not None else "resource"
 
 
+def _resource_role(resource_type: str | None, endpoint: Endpoint | None) -> ResourceRole:
+    if resource_type is None:
+        return "UNKNOWN"
+    lowered = resource_type.lower()
+    if lowered in {"account", "actor", "owner", "tenant", "user", "userid"}:
+        return "SCOPE"
+    if endpoint is not None and lowered == endpoint.resource.type.lower():
+        return "PRIMARY"
+    return "RELATED"
+
+
+def _business_role(field_name: str) -> str:
+    normalized = _normalized_name(field_name)
+    aliases = (
+        ("refundamount", "refund-amount"),
+        ("cumulativeamount", "cumulative-amount"),
+        ("cumulativevalue", "cumulative-value"),
+        ("quantity", "quantity"),
+        ("amount", "amount"),
+        ("balance", "balance"),
+        ("credit", "credit"),
+        ("debit", "debit"),
+        ("discount", "discount"),
+        ("subtotal", "subtotal"),
+        ("total", "total"),
+        ("price", "price"),
+        ("limit", "limit"),
+        ("fee", "fee"),
+        ("inventory", "inventory"),
+    )
+    for suffix, role in aliases:
+        if normalized == suffix or normalized.endswith(suffix):
+            return role
+    return normalized or "value"
+
+
+def _semantic_role(
+    field_name: str,
+    kind: SignalKind,
+    resource_type: str | None,
+) -> str:
+    normalized = _normalized_name(field_name)
+    if kind == "RESOURCE_IDENTIFIER":
+        return f"resource:{resource_type or 'unknown'}:identifier"
+    if kind == "BUSINESS_VALUE":
+        return f"business:{_business_role(field_name)}"
+    if kind == "IDEMPOTENCY_KEY":
+        return "protocol:idempotency-key"
+    if kind == "CORRELATION_ID":
+        return f"protocol:{normalized.replace('id', '-id')}"
+    stem = re.sub(r"(?:workflow)?(?:token|reference|challenge|code|nonce|ticket)$", "", normalized)
+    return f"token:{stem or 'workflow'}"
+
+
+def _timestamp_like(field_name: str, value: str) -> bool:
+    normalized = _normalized_name(field_name)
+    if normalized.endswith(("at", "date", "time", "timestamp")):
+        return True
+    return bool(
+        re.fullmatch(
+            r"\d{4}-\d{2}-\d{2}[Tt ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?",
+            value,
+        )
+    )
+
+
+def _distinctive_value(field_name: str, value: str, kind: SignalKind) -> tuple[bool, str | None]:
+    lowered = value.strip().lower()
+    if _timestamp_like(field_name, value):
+        return False, "Timestamp-like values are not causal identifiers."
+    if lowered in {
+        "0",
+        "1",
+        "active",
+        "cancelled",
+        "closed",
+        "complete",
+        "completed",
+        "created",
+        "false",
+        "failed",
+        "none",
+        "null",
+        "ok",
+        "paid",
+        "pending",
+        "published",
+        "refunded",
+        "success",
+        "true",
+        "unknown",
+    }:
+        return False, "Low-entropy or common protocol value."
+    if kind in {"WORKFLOW_TOKEN", "CORRELATION_ID", "IDEMPOTENCY_KEY"} and len(value) < 8:
+        return False, "Token-like value is too short to establish distinctive continuity."
+    return True, None
+
+
 def _signal_kind(field_name: str, location: str) -> SignalKind | None:
     normalized = _normalized_name(field_name)
+    if normalized in {"page", "pagenumber", "pagesize", "offset", "cursor"} or (
+        normalized == "limit" and location == "QUERY_PARAMETER"
+    ):
+        return None
     if normalized == "idempotencykey":
         return "IDEMPOTENCY_KEY"
     if normalized in {"correlationid", "requestid", "traceid", "transactionid"}:
@@ -338,12 +464,19 @@ def _signal(
         if kind == "BUSINESS_VALUE"
         else None
     )
+    distinctive, suppression_reason = _distinctive_value(field_name, value, kind)
     return ScalarSignal(
         field=field_path,
         value=value,
         fingerprint=stable_fingerprint({"value": value}),
         kind=kind,
         resource_type=resource_type,
+        semantic_role=_semantic_role(field_name, kind, resource_type),
+        resource_role=_resource_role(resource_type, endpoint),
+        location=location,
+        primitive_type=_primitive_type(raw_value),
+        distinctive=distinctive,
+        suppression_reason=suppression_reason,
         direction=direction,
     )
 
@@ -356,10 +489,21 @@ def _path_signals(observation: Observation, endpoint: Endpoint | None) -> list[S
     if len(observed) != len(template):
         return []
     signals: list[ScalarSignal] = []
-    for concrete, segment in zip(observed, template, strict=True):
-        if not segment.startswith("{") or not segment.endswith("}"):
-            continue
-        parameter = segment[1:-1]
+    endpoint_resource = re.sub(r"[^a-z0-9]", "", endpoint.resource.type.lower())
+    for index, (concrete, segment) in enumerate(zip(observed, template, strict=True)):
+        if segment.startswith("{") and segment.endswith("}"):
+            parameter = segment[1:-1]
+        else:
+            previous = observed[index - 1].lower() if index else ""
+            previous_resource = _singular(re.sub(r"[^a-z0-9]", "", previous))
+            literal_resource_identifier = (
+                previous.endswith("s")
+                and previous_resource == endpoint_resource
+                and any(character.isdigit() for character in concrete)
+            )
+            if not literal_resource_identifier:
+                continue
+            parameter = f"{previous_resource}Id"
         item = _signal(
             f"path.{parameter}",
             concrete,
@@ -424,15 +568,17 @@ def extract_exchange_facts(
         request_signals = _path_signals(observation, endpoint)
         for name in sorted(observation.query_parameters):
             for value in observation.query_parameters[name]:
-                item = _signal(f"query.{name}", value, "REQUEST", endpoint)
+                item = _signal(
+                    f"query.{name}", value, "REQUEST", endpoint, location="QUERY_PARAMETER"
+                )
                 if item is not None:
                     request_signals.append(item)
         for path, value in _flatten(request_body):
-            item = _signal(path, value, "REQUEST", endpoint)
+            item = _signal(path, value, "REQUEST", endpoint, location="BODY")
             if item is not None:
                 request_signals.append(item)
         for name, value in sorted(request_headers.items()):
-            item = _signal(f"header.{name}", value, "REQUEST", endpoint)
+            item = _signal(f"header.{name}", value, "REQUEST", endpoint, location="HEADER")
             if item is not None:
                 request_signals.append(item)
 
@@ -452,11 +598,11 @@ def extract_exchange_facts(
                         resource_type=_state_resource_type(path, endpoint),
                     )
                 )
-            item = _signal(path, value, "RESPONSE", endpoint)
+            item = _signal(path, value, "RESPONSE", endpoint, location="BODY")
             if item is not None:
                 response_signals.append(item)
         for name, value in sorted(response_headers.items()):
-            item = _signal(f"header.{name}", value, "RESPONSE", endpoint)
+            item = _signal(f"header.{name}", value, "RESPONSE", endpoint, location="HEADER")
             if item is not None:
                 response_signals.append(item)
         results.append(

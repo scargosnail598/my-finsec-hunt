@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from statistics import median
-from typing import Any, Literal, cast
+from typing import Any, Literal
 
 from pydantic import ValidationError
 
@@ -22,6 +22,7 @@ from finsec.behavior.domain import (
     InferenceConfidence,
     PropagationLink,
     PropagationStore,
+    RelationshipType,
     ResourceInstance,
     ResourceInstanceStore,
     ResourceRelationship,
@@ -35,6 +36,7 @@ from finsec.behavior.domain import (
     WorkflowGraph,
     WorkflowInstance,
     WorkflowInstanceStore,
+    WorkflowPrerequisite,
     WorkflowStateObservation,
     WorkflowStep,
 )
@@ -118,6 +120,15 @@ def _capture_scope(facts: ExchangeFacts) -> str:
         or observation.capture_identity
         or observation.source_reference.split("#", 1)[0]
     )
+
+
+def _capture_identity(facts: ExchangeFacts) -> str:
+    observation = facts.observation
+    return observation.capture_identity or observation.source_reference.split("#", 1)[0]
+
+
+def _session_identity(facts: ExchangeFacts) -> str | None:
+    return facts.observation.session_identity
 
 
 def _is_read(facts: ExchangeFacts) -> bool:
@@ -228,21 +239,44 @@ def _primary_resource_identifiers(facts: ExchangeFacts) -> set[tuple[str | None,
     }
 
 
+def _request_primary_resource_identifiers(
+    facts: ExchangeFacts,
+) -> set[tuple[str | None, str]]:
+    if facts.endpoint is None:
+        return set()
+    primary_type = facts.endpoint.resource.type.lower()
+    return {
+        (signal.resource_type, signal.fingerprint)
+        for signal in facts.request_signals
+        if signal.kind == "RESOURCE_IDENTIFIER"
+        and (signal.resource_type or "").lower() == primary_type
+    }
+
+
 def _resources(
     facts: list[ExchangeFacts],
-) -> tuple[list[ResourceInstance], dict[str, list[str]], dict[tuple[str, str], str]]:
-    grouped: dict[tuple[str, str], list[tuple[ExchangeFacts, ScalarSignal]]] = defaultdict(list)
+) -> tuple[list[ResourceInstance], dict[str, list[str]], dict[tuple[str, str, str], str]]:
+    grouped: dict[tuple[str, str, str], list[tuple[ExchangeFacts, ScalarSignal]]] = defaultdict(
+        list
+    )
     for item in facts:
         for signal in _resource_signals(item):
             resource_type = signal.resource_type or "resource"
-            grouped[(resource_type, signal.fingerprint)].append((item, signal))
+            actor_scope = (
+                item.observation.actor
+                if item.observation.actor != "UNKNOWN"
+                else f"UNKNOWN:{_capture_identity(item)}"
+            )
+            grouped[(resource_type, signal.fingerprint, actor_scope)].append((item, signal))
     observation_resources: dict[str, list[str]] = defaultdict(list)
-    fingerprint_resources: dict[tuple[str, str], str] = {}
+    fingerprint_resources: dict[tuple[str, str, str], str] = {}
     resources: list[ResourceInstance] = []
     raw_relationships: dict[str, list[ResourceRelationship]] = defaultdict(list)
-    for (resource_type, fingerprint), items in sorted(grouped.items()):
-        resource_id = _identifier("RINST", {"type": resource_type, "value": fingerprint})
-        fingerprint_resources[(resource_type, fingerprint)] = resource_id
+    for (resource_type, fingerprint, actor_scope), items in sorted(grouped.items()):
+        resource_id = _identifier(
+            "RINST", {"type": resource_type, "value": fingerprint, "scope": actor_scope}
+        )
+        fingerprint_resources[(resource_type, fingerprint, actor_scope)] = resource_id
         observations = sorted({item.observation.id for item, _signal in items})
         actors = sorted({item.observation.actor for item, _signal in items})
         for observation_id in observations:
@@ -306,70 +340,335 @@ def _resources(
     )
 
 
+def _temporal_order_known(source: ExchangeFacts, destination: ExchangeFacts) -> bool:
+    source_time = _timestamp(source.observation.timestamp)
+    destination_time = _timestamp(destination.observation.timestamp)
+    if source_time is not None and destination_time is not None:
+        return destination_time >= source_time
+    if _capture_identity(source) != _capture_identity(destination):
+        return False
+    source_position = source.observation.sequence_position
+    destination_position = destination.observation.sequence_position
+    return (
+        source_position is not None
+        and destination_position is not None
+        and destination_position > source_position
+    )
+
+
+def _relationship_type(
+    source: ExchangeFacts,
+    destination: ExchangeFacts,
+    signal: ScalarSignal,
+    destination_signal: ScalarSignal,
+) -> tuple[RelationshipType, bool, str]:
+    same_actor = (
+        source.observation.actor != "UNKNOWN"
+        and source.observation.actor == destination.observation.actor
+    )
+    same_session = _session_identity(source) is not None and _session_identity(
+        source
+    ) == _session_identity(destination)
+    same_capture = _capture_identity(source) == _capture_identity(destination)
+    explicit_workflow_continuity = (
+        signal.kind == "WORKFLOW_TOKEN"
+        and signal.distinctive
+        and signal.semantic_role == destination_signal.semantic_role
+    )
+    temporal_known = _temporal_order_known(source, destination)
+    same_action_replay = (
+        source.action_name == destination.action_name
+        and source.endpoint is not None
+        and source.endpoint.state_change
+    )
+    if not same_actor:
+        return (
+            RelationshipType.CROSS_ACTOR_COMPARISON,
+            False,
+            "Typed values cross actor boundaries and are retained only for controlled comparison.",
+        )
+    if same_action_replay or signal.kind == "IDEMPOTENCY_KEY":
+        return (
+            RelationshipType.REPLAY_RELATED,
+            same_capture,
+            "Repeated action or idempotency evidence is replay-related, not a prerequisite edge.",
+        )
+    if signal.kind == "CORRELATION_ID":
+        return (
+            RelationshipType.CONTEXT_SOFT,
+            same_capture,
+            "Correlation identifiers provide context but do not prove producer-consumer causality.",
+        )
+    if "[]" in signal.field:
+        return (
+            RelationshipType.CONTEXT_SOFT,
+            same_capture,
+            "An identifier observed inside a response collection is selection context and does "
+            "not prove one workflow boundary.",
+        )
+    if not signal.distinctive or not destination_signal.distinctive:
+        return (
+            RelationshipType.CONTEXT_SOFT,
+            same_capture,
+            signal.suppression_reason
+            or destination_signal.suppression_reason
+            or "The matched value is not distinctive enough for causal use.",
+        )
+    if not temporal_known:
+        return (
+            RelationshipType.CONTEXT_SOFT,
+            same_capture,
+            "Temporal direction is not established by timestamps or capture sequence.",
+        )
+    if not same_session and not explicit_workflow_continuity:
+        return (
+            RelationshipType.CONTEXT_SOFT,
+            same_capture,
+            "Session continuity is absent and missing session data is not treated as a wildcard.",
+        )
+    if not same_capture and not explicit_workflow_continuity:
+        return (
+            RelationshipType.CONTEXT_SOFT,
+            False,
+            "Capture continuity is absent and a matching scalar cannot bridge captures.",
+        )
+    if source.observation.host != destination.observation.host and not explicit_workflow_continuity:
+        return (
+            RelationshipType.CONTEXT_SOFT,
+            same_capture,
+            "Cross-service correlation requires an explicit distinctive workflow token.",
+        )
+    return (
+        RelationshipType.CAUSAL_HARD,
+        same_capture or explicit_workflow_continuity,
+        "Earlier response produced a distinctive typed value consumed by a compatible later "
+        "request.",
+    )
+
+
+def _relationship_link(
+    source: ExchangeFacts,
+    destination: ExchangeFacts,
+    signal: ScalarSignal,
+    destination_signal: ScalarSignal,
+    relationship_type: RelationshipType,
+    capture_continuity: bool,
+    reason: str,
+) -> PropagationLink:
+    payload = {
+        "relationship": relationship_type,
+        "value": signal.fingerprint,
+        "source": source.observation.id,
+        "source_field": signal.field,
+        "destination": destination.observation.id,
+        "destination_field": destination_signal.field,
+    }
+    return PropagationLink(
+        id=_identifier("PROP", payload),
+        relationship_type=relationship_type,
+        value_fingerprint=signal.fingerprint,
+        value_kind=signal.kind,
+        destination_value_kind=destination_signal.kind,
+        source_resource_type=signal.resource_type,
+        destination_resource_type=destination_signal.resource_type,
+        source_semantic_role=signal.semantic_role,
+        destination_semantic_role=destination_signal.semantic_role,
+        source_resource_role=signal.resource_role,
+        destination_resource_role=destination_signal.resource_role,
+        source_location=signal.location,
+        destination_location=destination_signal.location,
+        source_primitive_type=signal.primitive_type,
+        destination_primitive_type=destination_signal.primitive_type,
+        source_observation_id=source.observation.id,
+        source_field=signal.field,
+        source_actor=source.observation.actor,
+        source_session=_session_identity(source),
+        source_capture=_capture_identity(source),
+        source_host=source.observation.host,
+        destination_observation_id=destination.observation.id,
+        destination_field=destination_signal.field,
+        destination_actor=destination.observation.actor,
+        destination_session=_session_identity(destination),
+        destination_capture=_capture_identity(destination),
+        destination_host=destination.observation.host,
+        temporal_order_known=_temporal_order_known(source, destination),
+        capture_continuity=capture_continuity,
+        distinctive_value=signal.distinctive and destination_signal.distinctive,
+        evidence_reason=reason,
+        evidence=[source.observation.id, destination.observation.id],
+        confidence=(
+            InferenceConfidence.HIGH_EVIDENCE
+            if relationship_type == RelationshipType.CAUSAL_HARD and signal.kind == "WORKFLOW_TOKEN"
+            else InferenceConfidence.MODERATE_EVIDENCE
+            if relationship_type == RelationshipType.CAUSAL_HARD
+            else InferenceConfidence.WEAK_EVIDENCE
+        ),
+    )
+
+
+def _replay_relationships(facts: list[ExchangeFacts]) -> list[PropagationLink]:
+    grouped: dict[tuple[str, str, str, tuple[tuple[str | None, str], ...]], list[ExchangeFacts]] = (
+        defaultdict(list)
+    )
+    for item in facts:
+        if item.endpoint is None or not item.endpoint.state_change:
+            continue
+        identifiers = tuple(sorted(_request_primary_resource_identifiers(item)))
+        if not identifiers:
+            continue
+        grouped[
+            (
+                item.observation.actor,
+                _capture_scope(item),
+                item.action_name,
+                identifiers,
+            )
+        ].append(item)
+    links: list[PropagationLink] = []
+    for items in grouped.values():
+        ordered = sorted(items, key=_order_key)
+        for source, destination in zip(ordered, ordered[1:], strict=False):
+            source_signal = next(
+                signal
+                for signal in source.request_signals
+                if (signal.resource_type, signal.fingerprint)
+                in _request_primary_resource_identifiers(source)
+            )
+            destination_signal = next(
+                signal
+                for signal in destination.request_signals
+                if (signal.resource_type, signal.fingerprint)
+                in _request_primary_resource_identifiers(destination)
+            )
+            links.append(
+                _relationship_link(
+                    source,
+                    destination,
+                    source_signal,
+                    destination_signal,
+                    RelationshipType.REPLAY_RELATED,
+                    _capture_identity(source) == _capture_identity(destination),
+                    "The same state-changing action reused the same typed primary resource.",
+                )
+            )
+    return links
+
+
+def _cross_actor_relationships(facts: list[ExchangeFacts]) -> list[PropagationLink]:
+    grouped: dict[
+        tuple[str, str, str, str | None], dict[str, list[tuple[ExchangeFacts, ScalarSignal]]]
+    ] = defaultdict(lambda: defaultdict(list))
+    for item in facts:
+        if item.endpoint is None or item.observation.actor == "UNKNOWN":
+            continue
+        primary_resource_types = {
+            (signal.resource_type or "").lower()
+            for signal in item.request_signals
+            if signal.kind == "RESOURCE_IDENTIFIER" and signal.resource_role == "PRIMARY"
+        }
+        typed_path_values = {
+            signal.value
+            for signal in item.request_signals
+            if signal.kind == "RESOURCE_IDENTIFIER" and signal.location == "PATH_PARAMETER"
+        }
+        route_segments = item.observation.path.split("/")
+        normalized_segments: list[str] = []
+        for index, segment in enumerate(route_segments):
+            previous = route_segments[index - 1].lower() if index else ""
+            previous_resource = previous[:-1] if previous.endswith("s") else previous
+            typed_resource_position = (
+                segment.isdigit()
+                and previous.endswith("s")
+                and previous_resource in primary_resource_types
+            )
+            normalized_segments.append(
+                "{typed-identifier}"
+                if segment in typed_path_values or typed_resource_position
+                else segment
+            )
+        comparison_route = "/".join(normalized_segments)
+        for signal in item.request_signals:
+            if signal.kind != "RESOURCE_IDENTIFIER" or signal.resource_role == "SCOPE":
+                continue
+            grouped[
+                (
+                    f"{item.observation.method}:{comparison_route}",
+                    item.action_name,
+                    signal.semantic_role,
+                    signal.resource_type,
+                )
+            ][item.observation.actor].append((item, signal))
+    links: list[PropagationLink] = []
+    for actors in grouped.values():
+        representatives = [
+            sorted(items, key=lambda value: _order_key(value[0]))[0]
+            for _actor, items in sorted(actors.items())
+        ]
+        for index, (left_facts, left_signal) in enumerate(representatives):
+            for right_facts, right_signal in representatives[index + 1 :]:
+                source, source_signal, destination, destination_signal = (
+                    (left_facts, left_signal, right_facts, right_signal)
+                    if _order_key(left_facts) <= _order_key(right_facts)
+                    else (right_facts, right_signal, left_facts, left_signal)
+                )
+                links.append(
+                    _relationship_link(
+                        source,
+                        destination,
+                        source_signal,
+                        destination_signal,
+                        RelationshipType.CROSS_ACTOR_COMPARISON,
+                        False,
+                        "Different controlled actors supplied compatible typed resource fields on "
+                        "the same normalized action; journeys remain separate.",
+                    )
+                )
+    return links
+
+
 def _propagation(facts: list[ExchangeFacts]) -> list[PropagationLink]:
     ordered = sorted(facts, key=_order_key)
     request_by_value: dict[
-        tuple[str, str | None, str], list[tuple[int, ExchangeFacts, ScalarSignal]]
+        tuple[str, str, str | None, str], list[tuple[int, ExchangeFacts, ScalarSignal]]
     ] = defaultdict(list)
     for index, item in enumerate(ordered):
         for signal in item.request_signals:
             if signal.kind == "BUSINESS_VALUE":
                 continue
-            request_by_value[(signal.kind, signal.resource_type, signal.fingerprint)].append(
-                (index, item, signal)
-            )
+            request_by_value[
+                (signal.kind, signal.semantic_role, signal.resource_type, signal.fingerprint)
+            ].append((index, item, signal))
     links: list[PropagationLink] = []
     for source_index, source in enumerate(ordered):
         for signal in source.response_signals:
             if signal.kind == "BUSINESS_VALUE":
                 continue
-            compatible: list[tuple[int, ExchangeFacts, ScalarSignal]] = []
             for destination_index, destination, destination_signal in request_by_value.get(
-                (signal.kind, signal.resource_type, signal.fingerprint), []
+                (signal.kind, signal.semantic_role, signal.resource_type, signal.fingerprint), []
             ):
                 if destination_index <= source_index:
                     continue
                 elapsed = _elapsed(source, destination)
                 if elapsed is not None and elapsed < 0:
                     continue
-                if signal.kind == "RESOURCE_IDENTIFIER" and (
-                    source.observation.actor != destination.observation.actor
-                    or (elapsed is not None and elapsed > 86400)
-                ):
+                if elapsed is not None and elapsed > 86400:
                     continue
-                compatible.append((destination_index, destination, destination_signal))
-            if not compatible:
-                continue
-            destination_index, destination, destination_signal = min(
-                compatible, key=lambda item: item[0]
-            )
-            payload = {
-                "value": signal.fingerprint,
-                "source": source.observation.id,
-                "source_field": signal.field,
-                "destination": destination.observation.id,
-                "destination_field": destination_signal.field,
-            }
-            links.append(
-                PropagationLink(
-                    id=_identifier("PROP", payload),
-                    value_fingerprint=signal.fingerprint,
-                    value_kind=signal.kind,
-                    destination_value_kind=destination_signal.kind,
-                    source_resource_type=signal.resource_type,
-                    destination_resource_type=destination_signal.resource_type,
-                    source_observation_id=source.observation.id,
-                    source_field=signal.field,
-                    destination_observation_id=destination.observation.id,
-                    destination_field=destination_signal.field,
-                    evidence=[source.observation.id, destination.observation.id],
-                    confidence=(
-                        InferenceConfidence.HIGH_EVIDENCE
-                        if signal.kind in {"WORKFLOW_TOKEN", "CORRELATION_ID", "IDEMPOTENCY_KEY"}
-                        else InferenceConfidence.MODERATE_EVIDENCE
-                    ),
+                relationship_type, continuity, reason = _relationship_type(
+                    source, destination, signal, destination_signal
                 )
-            )
+                links.append(
+                    _relationship_link(
+                        source,
+                        destination,
+                        signal,
+                        destination_signal,
+                        relationship_type,
+                        continuity,
+                        reason,
+                    )
+                )
+    links.extend(_replay_relationships(facts))
+    links.extend(_cross_actor_relationships(facts))
     return sorted({item.id: item for item in links}.values(), key=lambda item: item.id)
 
 
@@ -387,49 +686,19 @@ def _components(
     ordered = sorted(facts, key=_order_key)
     index_by_observation = {item.observation.id: index for index, item in enumerate(ordered)}
     union = _UnionFind(len(ordered))
-    shared: dict[tuple[str, str | None, str, str | None], list[int]] = defaultdict(list)
-    for index, item in enumerate(ordered):
-        for signal in item.signals:
-            if (
-                signal.kind == "RESOURCE_IDENTIFIER"
-                and (signal.resource_type or "") in SCOPE_RESOURCE_TYPES
-            ):
-                continue
-            if signal.kind in {"CORRELATION_ID", "IDEMPOTENCY_KEY"}:
-                actor_scope = None
-                shared[(signal.kind, signal.resource_type, signal.fingerprint, actor_scope)].append(
-                    index
-                )
-    for indexes in shared.values():
-        for left_shared, right_shared in zip(indexes, indexes[1:], strict=False):
-            union.union(left_shared, right_shared)
     for link in propagation:
+        if link.relationship_type != RelationshipType.CAUSAL_HARD:
+            continue
         source_index = index_by_observation.get(link.source_observation_id)
         destination_index = index_by_observation.get(link.destination_observation_id)
-        if source_index is not None and destination_index is not None:
+        if (
+            source_index is not None
+            and destination_index is not None
+            and link.source_actor is not None
+            and link.source_actor != "UNKNOWN"
+            and link.source_actor == link.destination_actor
+        ):
             union.union(source_index, destination_index)
-    for left_index, right_index in zip(range(len(ordered)), range(1, len(ordered)), strict=False):
-        left_facts = ordered[left_index]
-        right_facts = ordered[right_index]
-        same_session = (
-            left_facts.observation.actor == right_facts.observation.actor
-            and _capture_scope(left_facts) == _capture_scope(right_facts)
-        )
-        elapsed = _elapsed(left_facts, right_facts)
-        close = elapsed is None or 0 <= elapsed <= 300
-        left_identifiers = _primary_resource_identifiers(left_facts)
-        right_identifiers = _primary_resource_identifiers(right_facts)
-        shared_identifier = bool(left_identifiers & right_identifiers)
-        direct_sequence = (
-            left_facts.endpoint is not None
-            and right_facts.endpoint is not None
-            and left_facts.endpoint.resource.type == right_facts.endpoint.resource.type
-            and (left_facts.endpoint.state_change or right_facts.endpoint.state_change)
-            and not left_identifiers
-            and not right_identifiers
-        )
-        if same_session and close and (shared_identifier or direct_sequence):
-            union.union(left_index, right_index)
     grouped: dict[int, list[ExchangeFacts]] = defaultdict(list)
     for index, item in enumerate(ordered):
         grouped[union.find(index)].append(item)
@@ -487,15 +756,58 @@ def _state_from_action(action: str) -> str | None:
     }.get(verb)
 
 
+def _structural_signature(
+    steps: list[WorkflowStep], propagation: list[PropagationLink]
+) -> tuple[str, list[str], list[str], list[str]]:
+    position_by_observation = {step.observation_id: step.position for step in steps}
+    ordered = [
+        ":".join(
+            [
+                str(step.position),
+                step.method,
+                step.route,
+                step.action_name,
+                step.resource_role,
+                "MUTATING" if step.state_changing else "READ_ONLY",
+                f"{step.state_before or 'UNRESOLVED'}->{step.state_after or 'UNRESOLVED'}",
+            ]
+        )
+        for step in steps
+    ]
+    topology = sorted(
+        {
+            f"{position_by_observation[link.source_observation_id]}->"
+            f"{position_by_observation[link.destination_observation_id]}:"
+            f"{link.source_semantic_role or 'unknown'}"
+            for link in propagation
+            if link.relationship_type == RelationshipType.CAUSAL_HARD
+            and link.source_observation_id in position_by_observation
+            and link.destination_observation_id in position_by_observation
+        }
+    )
+    terminal_or_mutating = [
+        f"{step.position}:{step.action_name}:{step.state_after or 'UNRESOLVED'}"
+        for step in steps
+        if step.state_changing or step.state_after in TERMINAL_STATES
+    ]
+    payload = {
+        "ordered_steps": ordered,
+        "causal_topology": topology,
+        "terminal_or_mutating": terminal_or_mutating,
+    }
+    return stable_fingerprint(payload), ordered, topology, terminal_or_mutating
+
+
 def _workflow_instances(
     components: list[list[ExchangeFacts]],
     observation_actions: dict[str, str],
     observation_resources: dict[str, list[str]],
     resources: list[ResourceInstance],
+    propagation: list[PropagationLink],
 ) -> list[WorkflowInstance]:
-    drafts: list[tuple[str, dict[str, Any], list[ExchangeFacts]]] = []
-    for items in components:
-        action_names = [item.action_name for item in items]
+    resource_types_by_id = {item.id: item.resource_type.lower() for item in resources}
+    instances: list[WorkflowInstance] = []
+    for items in sorted(components, key=lambda value: [_order_key(item) for item in value]):
         resource_types = sorted(
             {
                 item.endpoint.resource.type
@@ -509,25 +821,6 @@ def _workflow_instances(
                 if signal.resource_type is not None
             }
         )
-        family_name = _family_name(action_names, resource_types)
-        endpoint_resources = sorted(
-            {
-                item.endpoint.resource.type.lower()
-                for item in items
-                if item.endpoint is not None and item.endpoint.resource.type != "Unknown"
-            }
-        )
-        mutation_resources = sorted(
-            {
-                item.endpoint.resource.type.lower()
-                for item in items
-                if item.endpoint is not None
-                and item.endpoint.resource.type != "Unknown"
-                and item.endpoint.state_change
-            }
-        )
-        family_resources = mutation_resources or endpoint_resources
-        family_id = _identifier("WFAM", {"name": family_name, "resources": family_resources})
         resource_ids = sorted(
             {
                 resource_id
@@ -536,27 +829,6 @@ def _workflow_instances(
             }
         )
         actors = sorted({item.observation.actor for item in items})
-        signature = {
-            "family": family_id,
-            "actors": actors,
-            "resources": resource_ids,
-            "resource_types": resource_types,
-            "actions": action_names,
-            "start": items[0].observation.timestamp.isoformat()
-            if items[0].observation.timestamp
-            else None,
-        }
-        drafts.append((stable_fingerprint(signature), signature, items))
-
-    duplicate_numbers: dict[str, int] = defaultdict(int)
-    resource_types_by_id = {item.id: item.resource_type.lower() for item in resources}
-    instances: list[WorkflowInstance] = []
-    for signature_hash, signature, items in sorted(drafts, key=lambda item: item[0]):
-        duplicate_numbers[signature_hash] += 1
-        workflow_id = _identifier(
-            "WFINST",
-            {"signature": signature, "duplicate": duplicate_numbers[signature_hash]},
-        )
         current_states: dict[str, str] = {}
         current_type_states: dict[str, str] = {}
         steps: list[WorkflowStep] = []
@@ -648,6 +920,10 @@ def _workflow_instances(
                         if resource_types_by_id.get(resource_id)
                         == (signal.resource_type or endpoint_resource or "resource").lower()
                     ),
+                    semantic_role=signal.semantic_role,
+                    location=signal.location,
+                    primitive_type=signal.primitive_type,
+                    client_controlled=signal.direction == "REQUEST",
                 )
                 for signal in item.signals
                 if signal.kind == "BUSINESS_VALUE"
@@ -660,10 +936,28 @@ def _workflow_instances(
                     observation_id=observation_id,
                     endpoint_ids=[item.endpoint.id] if item.endpoint is not None else [],
                     actor=item.observation.actor,
+                    method=item.observation.method,
+                    route=item.endpoint.path
+                    if item.endpoint is not None
+                    else item.observation.path,
+                    resource_role=(
+                        f"PRIMARY:{item.endpoint.resource.type.lower()}"
+                        if item.endpoint is not None
+                        else "UNKNOWN"
+                    ),
+                    state_changing=bool(item.endpoint and item.endpoint.state_change),
                     timestamp=item.observation.timestamp.isoformat()
                     if item.observation.timestamp
                     else None,
                     resource_instance_ids=resource_ids,
+                    client_controlled_resource_fields=sorted(
+                        {
+                            signal.field
+                            for signal in item.request_signals
+                            if signal.kind == "RESOURCE_IDENTIFIER"
+                            and signal.resource_role != "SCOPE"
+                        }
+                    ),
                     state_observations=state_observations,
                     business_values=business_values,
                     state_before=representative.state_before if representative else None,
@@ -673,18 +967,48 @@ def _workflow_instances(
                     ),
                 )
             )
+        structural_hash, _ordered, _topology, _terminal_steps = _structural_signature(
+            steps, propagation
+        )
+        family_id = _identifier("WFAM", {"structural_signature": structural_hash})
+        workflow_id = _identifier(
+            "WFINST",
+            {
+                "family": family_id,
+                "actors": actors,
+                "resources": resource_ids,
+                "evidence": [step.observation_id for step in steps],
+            },
+        )
+        internal_hard_links = [
+            link
+            for link in propagation
+            if link.relationship_type == RelationshipType.CAUSAL_HARD
+            and link.source_observation_id in {step.observation_id for step in steps}
+            and link.destination_observation_id in {step.observation_id for step in steps}
+        ]
         ambiguities: list[str] = []
         if len(items) == 1:
             ambiguities.append("Only one meaningful observation was available for this journey.")
+        if len(items) > 1 and not internal_hard_links:
+            ambiguities.append("No hard producer-consumer edge links the observations.")
         if not any(observation_resources.get(item.observation.id) for item in items):
             ambiguities.append("No concrete resource identifier linked the observations.")
-        if any(item.observation.timestamp is None for item in items):
-            ambiguities.append("At least one observation had no timestamp; capture order was used.")
+        if any(
+            item.observation.timestamp is None and item.observation.sequence_position is None
+            for item in items
+        ):
+            ambiguities.append("Temporal order is unavailable for at least one observation.")
+        if any(item.observation.actor == "UNKNOWN" for item in items):
+            ambiguities.append("Missing actor identity prevents strong workflow segmentation.")
         confidence = (
             InferenceConfidence.HIGH_EVIDENCE
-            if len(items) >= 3 and not ambiguities and explicit_states >= 1
+            if len(items) >= 3
+            and len(internal_hard_links) >= len(items) - 1
+            and not ambiguities
+            and explicit_states >= 1
             else InferenceConfidence.MODERATE_EVIDENCE
-            if len(items) >= 2 and (explicit_states or not ambiguities)
+            if len(items) >= 2 and internal_hard_links
             else InferenceConfidence.WEAK_EVIDENCE
             if len(items) >= 1
             else InferenceConfidence.SPECULATIVE
@@ -696,18 +1020,17 @@ def _workflow_instances(
         instances.append(
             WorkflowInstance(
                 id=workflow_id,
-                family_id=str(signature["family"]),
-                actors=cast(list[str], signature["actors"]),
+                family_id=family_id,
+                actors=actors,
                 sessions=sorted(
                     {
-                        item.observation.session_identity
-                        or item.observation.capture_identity
-                        or item.observation.source_reference.split("#", 1)[0]
+                        item.observation.session_identity or f"MISSING:{_capture_identity(item)}"
                         for item in items
                     }
                 ),
-                resource_instance_ids=cast(list[str], signature["resources"]),
-                resource_types=cast(list[str], signature["resource_types"]),
+                captures=sorted({_capture_identity(item) for item in items}),
+                resource_instance_ids=resource_ids,
+                resource_types=resource_types,
                 steps=steps,
                 started_at=steps[0].timestamp if steps else None,
                 ended_at=steps[-1].timestamp if steps else None,
@@ -720,7 +1043,9 @@ def _workflow_instances(
     return sorted(instances, key=lambda item: item.id)
 
 
-def _workflow_families(instances: list[WorkflowInstance]) -> list[WorkflowFamily]:
+def _workflow_families(
+    instances: list[WorkflowInstance], propagation: list[PropagationLink]
+) -> list[WorkflowFamily]:
     grouped: dict[str, list[WorkflowInstance]] = defaultdict(list)
     for item in instances:
         grouped[item.family_id].append(item)
@@ -738,11 +1063,77 @@ def _workflow_families(instances: list[WorkflowInstance]) -> list[WorkflowFamily
         path_counts = Counter(canonical_paths)
         common_path = list(sorted(path_counts, key=lambda path: (-path_counts[path], path))[0])
         union_actions = set().union(*(set(path) for path in paths)) if paths else set()
-        required = (
-            set.intersection(*(set(path) for path in evidence_paths))
-            if len(evidence_paths) >= 2
-            else set()
+        observation_steps = {
+            step.observation_id: (instance, step) for instance in items for step in instance.steps
+        }
+        prerequisite_evidence: dict[tuple[str, str, int, int], dict[str, set[str]]] = defaultdict(
+            lambda: {"instances": set(), "links": set(), "observations": set()}
         )
+        for link in propagation:
+            if link.relationship_type != RelationshipType.CAUSAL_HARD:
+                continue
+            source = observation_steps.get(link.source_observation_id)
+            destination = observation_steps.get(link.destination_observation_id)
+            if source is None or destination is None or source[0].id != destination[0].id:
+                continue
+            source_instance, source_step = source
+            _destination_instance, destination_step = destination
+            if source_step.position >= destination_step.position:
+                continue
+            key = (
+                source_step.action_name,
+                destination_step.action_name,
+                source_step.position,
+                destination_step.position,
+            )
+            prerequisite_evidence[key]["instances"].add(source_instance.id)
+            prerequisite_evidence[key]["links"].add(link.id)
+            prerequisite_evidence[key]["observations"].update(link.evidence)
+        prerequisites: list[WorkflowPrerequisite] = []
+        for key, evidence in sorted(prerequisite_evidence.items()):
+            prerequisite_action, dependent_action, prerequisite_position, dependent_position = key
+            comparable = [
+                instance
+                for instance in items
+                if len(instance.steps) >= dependent_position
+                and instance.steps[prerequisite_position - 1].action_name == prerequisite_action
+                and instance.steps[dependent_position - 1].action_name == dependent_action
+            ]
+            support_count = len(evidence["instances"])
+            comparable_count = max(len(comparable), support_count, 1)
+            counterexamples = sorted(
+                instance.id for instance in comparable if instance.id not in evidence["instances"]
+            )
+            support_ratio = support_count / comparable_count
+            prerequisites.append(
+                WorkflowPrerequisite(
+                    prerequisite_action=prerequisite_action,
+                    dependent_action=dependent_action,
+                    prerequisite_position=prerequisite_position,
+                    dependent_position=dependent_position,
+                    support_count=support_count,
+                    comparable_instances=comparable_count,
+                    support_ratio=support_ratio,
+                    causal_link_ids=sorted(evidence["links"]),
+                    supporting_observations=sorted(evidence["observations"]),
+                    counterexamples=counterexamples,
+                    confidence=(
+                        InferenceConfidence.HIGH_EVIDENCE
+                        if support_ratio == 1.0 and not counterexamples
+                        else InferenceConfidence.MODERATE_EVIDENCE
+                    ),
+                    reason=(
+                        "A typed response value from the prerequisite step is consumed by the "
+                        "dependent request."
+                    ),
+                )
+            )
+        required = {
+            action
+            for prerequisite in prerequisites
+            if prerequisite.support_ratio == 1.0
+            for action in (prerequisite.prerequisite_action, prerequisite.dependent_action)
+        }
         optional = sorted(union_actions - required)
         branch_points: set[str] = set()
         next_actions: dict[str, set[str]] = defaultdict(set)
@@ -769,6 +1160,18 @@ def _workflow_families(instances: list[WorkflowInstance]) -> list[WorkflowFamily
             else InferenceConfidence.WEAK_EVIDENCE
         )
         family_name = _family_name(common_path, resource_types)
+        structural_hash, ordered_signature, causal_topology, terminal_steps = _structural_signature(
+            items[0].steps, propagation
+        )
+        supported_position_pairs = {
+            (item.prerequisite_position, item.dependent_position) for item in prerequisites
+        }
+        research_clues = [
+            f"Adjacent positions {left.position}->{right.position} "
+            f"({left.action_name} -> {right.action_name}) lack hard causal evidence."
+            for left, right in zip(items[0].steps, items[0].steps[1:], strict=False)
+            if (left.position, right.position) not in supported_position_pairs
+        ]
         explanation = [
             f"Derived from {len(items)} workflow instance(s), including "
             f"{evidence_instances} with moderate-or-better segmentation evidence."
@@ -777,9 +1180,9 @@ def _workflow_families(instances: list[WorkflowInstance]) -> list[WorkflowFamily
             explanation.append(
                 "A single instance cannot establish mandatory steps or authorization policy."
             )
-        if required:
+        if prerequisites:
             explanation.append(
-                "Required-looking steps are the intersection of at least two observed paths."
+                "Required-looking steps come only from typed hard producer-consumer evidence."
             )
         families.append(
             WorkflowFamily(
@@ -796,6 +1199,12 @@ def _workflow_families(instances: list[WorkflowInstance]) -> list[WorkflowFamily
                 resource_types=resource_types,
                 transition_frequencies=dict(sorted(transitions.items())),
                 outcome_distribution=dict(sorted(outcomes.items())),
+                structural_signature=structural_hash,
+                ordered_step_signature=ordered_signature,
+                causal_topology=causal_topology,
+                terminal_or_mutating_steps=terminal_steps,
+                causal_prerequisites=prerequisites,
+                research_clues=research_clues,
                 workflow_instance_ids=sorted(item.id for item in items),
                 inference_confidence=confidence,
                 confidence_explanation=explanation,
@@ -1029,9 +1438,9 @@ def build_behavior_model(workspace: WorkspacePaths) -> BehaviorBuildResult:
     propagation = _propagation(facts)
     components = _components(facts, propagation)
     instances = _workflow_instances(
-        components, observation_actions, observation_resources, resources
+        components, observation_actions, observation_resources, resources, propagation
     )
-    families = _workflow_families(instances)
+    families = _workflow_families(instances, propagation)
     states, transitions = _states_and_transitions(instances, families)
     graphs = _graphs(families, transitions, instances)
 

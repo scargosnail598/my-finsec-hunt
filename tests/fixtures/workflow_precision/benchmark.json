@@ -1,0 +1,744 @@
+{
+  "version": 1,
+  "datasets": [
+    {
+      "id": "boundary_noise",
+      "host": "api.precision.test",
+      "notes": [
+        "Covers actor, session, and capture boundaries plus low-entropy and incompatible scalars.",
+        "Includes adjacent GET/POST controls and unrelated numeric POST fields."
+      ],
+      "captures": [
+        {
+          "name": "account-a-primary",
+          "actor": "ACCOUNT_A",
+          "entries": [
+            {
+              "label": "a_order_create",
+              "offset_seconds": 0,
+              "method": "POST",
+              "path": "/api/orders/1001/create",
+              "response": {
+                "active": true,
+                "challengeCode": "1",
+                "createdAt": "2026-08-05T10:00:00Z",
+                "orderId": "ORDER-A",
+                "page": 1,
+                "requestId": "1",
+                "status": "created",
+                "total": 77,
+                "transactionId": "2026-08-05T10:00:00Z",
+                "workflowToken": "pending"
+              }
+            },
+            {
+              "label": "a_order_confirm",
+              "offset_seconds": 10,
+              "method": "POST",
+              "path": "/api/orders/1001/confirm",
+              "request": {"orderId": "ORDER-A"},
+              "response": {"orderId": "ORDER-A", "status": "confirmed"}
+            },
+            {
+              "label": "post_details",
+              "offset_seconds": 18,
+              "method": "GET",
+              "path": "/api/posts/77/details",
+              "response": {
+                "active": true,
+                "page": 1,
+                "postId": 77,
+                "status": "published",
+                "total": 77
+              }
+            },
+            {
+              "label": "payment_for_comment",
+              "offset_seconds": 20,
+              "method": "POST",
+              "path": "/api/payments/8101/pay",
+              "request": {"amount": 10, "paymentId": "PAYMENT-8101"},
+              "response": {
+                "paymentId": "PAYMENT-8101",
+                "requestId": "COMMENT-LINK",
+                "status": "paid"
+              }
+            },
+            {
+              "label": "comment_create",
+              "offset_seconds": 21,
+              "method": "POST",
+              "path": "/api/comments/create",
+              "request": {
+                "enabled": false,
+                "height": 0,
+                "report_id": 77,
+                "requestId": "COMMENT-LINK",
+                "width": 1
+              },
+              "response": {"commentId": "COMMENT-A", "status": "created"}
+            },
+            {
+              "label": "payment_for_picture",
+              "offset_seconds": 29,
+              "method": "POST",
+              "path": "/api/payments/8201/pay",
+              "request": {"amount": 10, "paymentId": "PAYMENT-8201"},
+              "response": {
+                "paymentId": "PAYMENT-8201",
+                "requestId": "PICTURE-LINK",
+                "status": "paid"
+              }
+            },
+            {
+              "label": "picture_create",
+              "offset_seconds": 30,
+              "method": "POST",
+              "path": "/api/pictures/create",
+              "request": {
+                "height": 0,
+                "report_id": 77,
+                "requestId": "PICTURE-LINK",
+                "width": 1
+              },
+              "response": {"pictureId": "PICTURE-A", "status": "created"}
+            },
+            {
+              "label": "unknown_probe",
+              "offset_seconds": 40,
+              "method": "GET",
+              "path": "/api/experiments/alpha/details",
+              "response": {"experimentId": "EXP-A", "status": "unknown"}
+            }
+          ]
+        },
+        {
+          "name": "account-b-primary",
+          "actor": "ACCOUNT_B",
+          "entries": [
+            {
+              "label": "b_order_create",
+              "offset_seconds": 5,
+              "method": "POST",
+              "path": "/api/orders/2001/create",
+              "request": {
+                "challengeCode": "1",
+                "requestId": "1",
+                "transactionId": "2026-08-05T10:00:00Z",
+                "workflowToken": "pending"
+              },
+              "response": {"orderId": "ORDER-B", "status": "created"}
+            },
+            {
+              "label": "b_order_confirm",
+              "offset_seconds": 15,
+              "method": "POST",
+              "path": "/api/orders/2001/confirm",
+              "request": {"orderId": "ORDER-B"},
+              "response": {"orderId": "ORDER-B", "status": "confirmed"}
+            }
+          ]
+        },
+        {
+          "name": "account-a-capture-one",
+          "actor": "ACCOUNT_A",
+          "entries": [
+            {
+              "label": "capture_one_order",
+              "offset_seconds": 60,
+              "method": "POST",
+              "path": "/api/orders/3001/create",
+              "response": {"orderId": "CAPTURE-SHARED", "status": "created"}
+            }
+          ]
+        },
+        {
+          "name": "account-a-capture-two",
+          "actor": "ACCOUNT_A",
+          "entries": [
+            {
+              "label": "capture_two_payment",
+              "offset_seconds": 70,
+              "method": "POST",
+              "path": "/api/orders/3001/pay",
+              "request": {"amount": 50, "orderId": "CAPTURE-SHARED"},
+              "response": {"orderId": "CAPTURE-SHARED", "status": "paid"}
+            }
+          ]
+        }
+      ],
+      "labels": {
+        "same_workflow": [
+          ["a_order_create", "a_order_confirm"],
+          ["b_order_create", "b_order_confirm"]
+        ],
+        "different_workflow": [
+          ["a_order_create", "b_order_create"],
+          ["a_order_confirm", "b_order_confirm"],
+          ["capture_one_order", "capture_two_payment"],
+          ["post_details", "comment_create"],
+          ["payment_for_comment", "comment_create"],
+          ["payment_for_picture", "picture_create"],
+          ["comment_create", "picture_create"]
+        ],
+        "unknown_workflow": [["picture_create", "unknown_probe"]],
+        "expected_causal_edges": [
+          ["a_order_create", "a_order_confirm"],
+          ["b_order_create", "b_order_confirm"]
+        ],
+        "forbidden_edges": [
+          ["a_order_create", "b_order_create"],
+          ["capture_one_order", "capture_two_payment"],
+          ["post_details", "comment_create"],
+          ["payment_for_comment", "comment_create"],
+          ["payment_for_picture", "picture_create"]
+        ],
+        "unknown_edges": [["picture_create", "unknown_probe"]],
+        "same_family": [
+          ["a_order_create", "a_order_confirm"],
+          ["b_order_create", "b_order_confirm"]
+        ],
+        "different_family": [
+          ["post_details", "comment_create"],
+          ["payment_for_comment", "comment_create"],
+          ["payment_for_picture", "picture_create"],
+          ["comment_create", "picture_create"]
+        ],
+        "expected_relationships": [
+          {
+            "left": "a_order_confirm",
+            "right": "b_order_confirm",
+            "relationship_type": "CROSS_ACTOR_COMPARISON"
+          }
+        ],
+        "true_prerequisites": [],
+        "false_adjacency": [
+          ["DETAILS_POST", "CREATE_COMMENT"],
+          ["PAY_PAYMENT", "CREATE_COMMENT"],
+          ["PAY_PAYMENT", "CREATE_PICTURE"]
+        ],
+        "unknown_prerequisites": [],
+        "expected_hypotheses": [],
+        "forbidden_hypotheses": [
+          {
+            "key": "comment_numeric_value",
+            "family": "QUANTITY_VALUE_INVARIANT",
+            "affected_action": "CREATE_COMMENT",
+            "evidence_any": ["comment_create"]
+          },
+          {
+            "key": "picture_numeric_value",
+            "family": "QUANTITY_VALUE_INVARIANT",
+            "affected_action": "CREATE_PICTURE",
+            "evidence_any": ["picture_create"]
+          },
+          {
+            "key": "comment_skip_read",
+            "family": "STEP_SKIPPING",
+            "affected_action": "CREATE_COMMENT",
+            "evidence_any": ["post_details", "comment_create"]
+          }
+        ],
+        "unknown_hypotheses": []
+      }
+    },
+    {
+      "id": "irrelevant_numeric_mutations",
+      "host": "api.precision.test",
+      "notes": [
+        "Generic request IDs must not attach unrelated payment values to comment or picture creation."
+      ],
+      "captures": [
+        {
+          "name": "numeric-controls",
+          "actor": "ACCOUNT_A",
+          "entries": [
+            {
+              "label": "numeric_payment_comment",
+              "offset_seconds": 0,
+              "method": "POST",
+              "path": "/api/payments/9101/pay",
+              "request": {"amount": 10, "paymentId": "PAYMENT-9101"},
+              "response": {
+                "paymentId": "PAYMENT-9101",
+                "requestId": "NUMERIC-COMMENT-LINK",
+                "status": "paid"
+              }
+            },
+            {
+              "label": "numeric_comment_create",
+              "offset_seconds": 10,
+              "method": "POST",
+              "path": "/api/comments/create",
+              "request": {
+                "height": 0,
+                "report_id": 9101,
+                "requestId": "NUMERIC-COMMENT-LINK",
+                "width": 1
+              },
+              "response": {"commentId": "COMMENT-9101", "status": "created"}
+            },
+            {
+              "label": "numeric_payment_picture",
+              "offset_seconds": 20,
+              "method": "POST",
+              "path": "/api/payments/9201/pay",
+              "request": {"amount": 10, "paymentId": "PAYMENT-9201"},
+              "response": {
+                "paymentId": "PAYMENT-9201",
+                "requestId": "NUMERIC-PICTURE-LINK",
+                "status": "paid"
+              }
+            },
+            {
+              "label": "numeric_picture_create",
+              "offset_seconds": 30,
+              "method": "POST",
+              "path": "/api/pictures/create",
+              "request": {
+                "height": 0,
+                "report_id": 9201,
+                "requestId": "NUMERIC-PICTURE-LINK",
+                "width": 1
+              },
+              "response": {"pictureId": "PICTURE-9201", "status": "created"}
+            }
+          ]
+        }
+      ],
+      "labels": {
+        "same_workflow": [],
+        "different_workflow": [
+          ["numeric_payment_comment", "numeric_comment_create"],
+          ["numeric_payment_picture", "numeric_picture_create"]
+        ],
+        "unknown_workflow": [],
+        "expected_causal_edges": [],
+        "forbidden_edges": [
+          ["numeric_payment_comment", "numeric_comment_create"],
+          ["numeric_payment_picture", "numeric_picture_create"]
+        ],
+        "unknown_edges": [],
+        "same_family": [],
+        "different_family": [
+          ["numeric_payment_comment", "numeric_comment_create"],
+          ["numeric_payment_picture", "numeric_picture_create"]
+        ],
+        "expected_relationships": [],
+        "true_prerequisites": [],
+        "false_adjacency": [
+          ["PAY_PAYMENT", "CREATE_COMMENT"],
+          ["PAY_PAYMENT", "CREATE_PICTURE"]
+        ],
+        "unknown_prerequisites": [],
+        "expected_hypotheses": [],
+        "forbidden_hypotheses": [
+          {
+            "key": "numeric_comment_value",
+            "family": "QUANTITY_VALUE_INVARIANT",
+            "affected_action": "CREATE_COMMENT",
+            "evidence_any": ["numeric_comment_create"]
+          },
+          {
+            "key": "numeric_picture_value",
+            "family": "QUANTITY_VALUE_INVARIANT",
+            "affected_action": "CREATE_PICTURE",
+            "evidence_any": ["numeric_picture_create"]
+          }
+        ],
+        "unknown_hypotheses": []
+      }
+    },
+    {
+      "id": "actor_resource_switch",
+      "host": "api.precision.test",
+      "notes": [
+        "Two controlled actors use their own objects without merging journeys.",
+        "Typed cross-actor comparison evidence must retain actor and resource switch hypotheses."
+      ],
+      "captures": [
+        {
+          "name": "actor-a-object",
+          "actor": "ACCOUNT_A",
+          "entries": [
+            {
+              "label": "actor_a_create",
+              "offset_seconds": 0,
+              "method": "POST",
+              "path": "/api/orders/6101/create",
+              "response": {"orderId": "ACTOR-A-ORDER", "status": "created"}
+            },
+            {
+              "label": "actor_a_confirm",
+              "offset_seconds": 10,
+              "method": "POST",
+              "path": "/api/orders/6101/confirm",
+              "request": {"orderId": "ACTOR-A-ORDER"},
+              "response": {"orderId": "ACTOR-A-ORDER", "status": "confirmed"}
+            }
+          ]
+        },
+        {
+          "name": "actor-b-object",
+          "actor": "ACCOUNT_B",
+          "entries": [
+            {
+              "label": "actor_b_create",
+              "offset_seconds": 5,
+              "method": "POST",
+              "path": "/api/orders/6201/create",
+              "response": {"orderId": "ACTOR-B-ORDER", "status": "created"}
+            },
+            {
+              "label": "actor_b_confirm",
+              "offset_seconds": 15,
+              "method": "POST",
+              "path": "/api/orders/6201/confirm",
+              "request": {"orderId": "ACTOR-B-ORDER"},
+              "response": {"orderId": "ACTOR-B-ORDER", "status": "confirmed"}
+            }
+          ]
+        }
+      ],
+      "labels": {
+        "same_workflow": [
+          ["actor_a_create", "actor_a_confirm"],
+          ["actor_b_create", "actor_b_confirm"]
+        ],
+        "different_workflow": [
+          ["actor_a_create", "actor_b_create"],
+          ["actor_a_confirm", "actor_b_confirm"]
+        ],
+        "unknown_workflow": [],
+        "expected_causal_edges": [
+          ["actor_a_create", "actor_a_confirm"],
+          ["actor_b_create", "actor_b_confirm"]
+        ],
+        "forbidden_edges": [],
+        "unknown_edges": [],
+        "same_family": [
+          ["actor_a_create", "actor_a_confirm"],
+          ["actor_b_create", "actor_b_confirm"]
+        ],
+        "different_family": [],
+        "expected_relationships": [
+          {
+            "left": "actor_a_confirm",
+            "right": "actor_b_confirm",
+            "relationship_type": "CROSS_ACTOR_COMPARISON"
+          }
+        ],
+        "true_prerequisites": [["CREATE_ORDER", "CONFIRM_ORDER"]],
+        "false_adjacency": [],
+        "unknown_prerequisites": [],
+        "expected_hypotheses": [
+          {
+            "key": "confirm_actor_switch",
+            "family": "ACTOR_SWITCH",
+            "affected_action": "CONFIRM_ORDER",
+            "evidence_any": ["actor_a_confirm", "actor_b_confirm"]
+          },
+          {
+            "key": "confirm_resource_switch",
+            "family": "RESOURCE_SWITCH",
+            "affected_action": "CONFIRM_ORDER",
+            "evidence_any": ["actor_a_confirm", "actor_b_confirm"]
+          }
+        ],
+        "forbidden_hypotheses": [],
+        "unknown_hypotheses": []
+      }
+    },
+    {
+      "id": "typed_causality",
+      "host": "api.precision.test",
+      "notes": [
+        "Covers a server-issued workflow token and a typed response-to-request resource identifier."
+      ],
+      "captures": [
+        {
+          "name": "checkout-session",
+          "actor": "ACCOUNT_A",
+          "entries": [
+            {
+              "label": "checkout_create",
+              "offset_seconds": 0,
+              "method": "POST",
+              "path": "/api/checkouts/9001/create",
+              "response": {
+                "checkoutToken": "CHK-9F2A-UNIQUE",
+                "orderId": "ORDER-9001",
+                "status": "created"
+              }
+            },
+            {
+              "label": "checkout_pay",
+              "offset_seconds": 10,
+              "method": "POST",
+              "path": "/api/checkouts/9001/pay",
+              "request": {
+                "amount": 120,
+                "checkoutToken": "CHK-9F2A-UNIQUE",
+                "orderId": "ORDER-9001"
+              },
+              "response": {"paymentId": "PAY-82F1", "status": "paid"}
+            },
+            {
+              "label": "checkout_ship",
+              "offset_seconds": 20,
+              "method": "POST",
+              "path": "/api/checkouts/9001/ship",
+              "request": {"paymentId": "PAY-82F1"},
+              "response": {"status": "shipped"}
+            }
+          ]
+        }
+      ],
+      "labels": {
+        "same_workflow": [
+          ["checkout_create", "checkout_pay"],
+          ["checkout_pay", "checkout_ship"],
+          ["checkout_create", "checkout_ship"]
+        ],
+        "different_workflow": [],
+        "unknown_workflow": [],
+        "expected_causal_edges": [
+          ["checkout_create", "checkout_pay"],
+          ["checkout_pay", "checkout_ship"]
+        ],
+        "forbidden_edges": [],
+        "unknown_edges": [],
+        "same_family": [
+          ["checkout_create", "checkout_pay"],
+          ["checkout_pay", "checkout_ship"]
+        ],
+        "different_family": [],
+        "expected_relationships": [],
+        "true_prerequisites": [
+          ["CREATE_CHECKOUT", "PAY_CHECKOUT"],
+          ["PAY_CHECKOUT", "SHIP_CHECKOUT"]
+        ],
+        "false_adjacency": [],
+        "unknown_prerequisites": [],
+        "expected_hypotheses": [
+          {
+            "key": "checkout_token_scope",
+            "family": "CROSS_WORKFLOW_TOKEN_REUSE",
+            "affected_action": "SHIP_CHECKOUT",
+            "evidence_any": ["checkout_create", "checkout_pay"]
+          }
+        ],
+        "forbidden_hypotheses": [],
+        "unknown_hypotheses": []
+      }
+    },
+    {
+      "id": "financial_mutations",
+      "host": "api.precision.test",
+      "notes": [
+        "Covers replay, duplicate effect, client-controlled refund value, and multi-resource rollback.",
+        "The plausible financial hypotheses are intentionally blocked and must not be test-ready."
+      ],
+      "captures": [
+        {
+          "name": "return-session",
+          "actor": "ACCOUNT_A",
+          "entries": [
+            {
+              "label": "purchase_create",
+              "offset_seconds": 0,
+              "method": "POST",
+              "path": "/api/orders/3001/create",
+              "response": {
+                "orderId": "ORDER-3001",
+                "quantity": 1,
+                "status": "created",
+                "total": 40
+              }
+            },
+            {
+              "label": "return_order",
+              "offset_seconds": 10,
+              "method": "POST",
+              "path": "/api/orders/3001/return",
+              "request": {
+                "orderId": "ORDER-3001",
+                "quantity": 1,
+                "refundAmount": 40
+              },
+              "response": {
+                "accountCredit": 40,
+                "creditId": "CREDIT-3001",
+                "entitlementStatus": "revoked",
+                "orderId": "ORDER-3001",
+                "orderStatus": "returned",
+                "paymentId": "PAYMENT-3001",
+                "paymentStatus": "refunded",
+                "refundAmount": 40,
+                "refundId": "REFUND-3001"
+              }
+            },
+            {
+              "label": "return_order_replay",
+              "offset_seconds": 20,
+              "method": "POST",
+              "path": "/api/orders/3001/return",
+              "request": {
+                "orderId": "ORDER-3001",
+                "quantity": 1,
+                "refundAmount": 40
+              },
+              "response": {
+                "accountCredit": 40,
+                "creditId": "CREDIT-3001",
+                "entitlementStatus": "revoked",
+                "orderId": "ORDER-3001",
+                "orderStatus": "returned",
+                "paymentId": "PAYMENT-3001",
+                "paymentStatus": "refunded",
+                "refundAmount": 40,
+                "refundId": "REFUND-3001"
+              }
+            }
+          ]
+        }
+      ],
+      "labels": {
+        "same_workflow": [
+          ["purchase_create", "return_order"],
+          ["return_order", "return_order_replay"],
+          ["purchase_create", "return_order_replay"]
+        ],
+        "different_workflow": [],
+        "unknown_workflow": [],
+        "expected_causal_edges": [["purchase_create", "return_order"]],
+        "forbidden_edges": [["return_order", "return_order_replay"]],
+        "unknown_edges": [],
+        "same_family": [
+          ["purchase_create", "return_order"],
+          ["return_order", "return_order_replay"]
+        ],
+        "different_family": [],
+        "expected_relationships": [
+          {
+            "left": "return_order",
+            "right": "return_order_replay",
+            "relationship_type": "REPLAY_RELATED"
+          }
+        ],
+        "true_prerequisites": [["CREATE_ORDER", "RETURN_ORDER"]],
+        "false_adjacency": [],
+        "unknown_prerequisites": [],
+        "expected_hypotheses": [
+          {
+            "key": "return_replay",
+            "family": "REPLAY",
+            "affected_action": "RETURN_ORDER",
+            "evidence_any": ["return_order"]
+          },
+          {
+            "key": "return_duplicate",
+            "family": "DUPLICATE_ACTION",
+            "affected_action": "RETURN_ORDER",
+            "evidence_any": ["return_order"]
+          },
+          {
+            "key": "return_value_conservation",
+            "family": "QUANTITY_VALUE_INVARIANT",
+            "affected_action": "RETURN_ORDER",
+            "evidence_any": ["return_order"]
+          },
+          {
+            "key": "return_partial_rollback",
+            "family": "PARTIAL_ROLLBACK",
+            "affected_action": "RETURN_ORDER",
+            "evidence_any": ["return_order"]
+          }
+        ],
+        "forbidden_hypotheses": [],
+        "unknown_hypotheses": []
+      }
+    },
+    {
+      "id": "family_structure",
+      "host": "api.precision.test",
+      "notes": [
+        "Covers two materially different journeys using the same resource type.",
+        "Ordered and repeated actions are part of the structural family signature."
+      ],
+      "captures": [
+        {
+          "name": "order-journeys",
+          "actor": "ACCOUNT_A",
+          "entries": [
+            {
+              "label": "paid_order_create",
+              "offset_seconds": 0,
+              "method": "POST",
+              "path": "/api/orders/4001/create",
+              "response": {"orderId": "ORDER-4001", "status": "created"}
+            },
+            {
+              "label": "paid_order_pay",
+              "offset_seconds": 10,
+              "method": "POST",
+              "path": "/api/orders/4001/pay",
+              "request": {"amount": 20, "orderId": "ORDER-4001"},
+              "response": {"orderId": "ORDER-4001", "status": "paid"}
+            },
+            {
+              "label": "cancelled_order_create",
+              "offset_seconds": 20,
+              "method": "POST",
+              "path": "/api/orders/5001/create",
+              "response": {"orderId": "ORDER-5001", "status": "created"}
+            },
+            {
+              "label": "cancelled_order_cancel",
+              "offset_seconds": 30,
+              "method": "POST",
+              "path": "/api/orders/5001/cancel",
+              "request": {"orderId": "ORDER-5001"},
+              "response": {"orderId": "ORDER-5001", "status": "cancelled"}
+            }
+          ]
+        }
+      ],
+      "labels": {
+        "same_workflow": [
+          ["paid_order_create", "paid_order_pay"],
+          ["cancelled_order_create", "cancelled_order_cancel"]
+        ],
+        "different_workflow": [
+          ["paid_order_create", "cancelled_order_create"],
+          ["paid_order_pay", "cancelled_order_cancel"]
+        ],
+        "unknown_workflow": [],
+        "expected_causal_edges": [
+          ["paid_order_create", "paid_order_pay"],
+          ["cancelled_order_create", "cancelled_order_cancel"]
+        ],
+        "forbidden_edges": [],
+        "unknown_edges": [],
+        "same_family": [
+          ["paid_order_create", "paid_order_pay"],
+          ["cancelled_order_create", "cancelled_order_cancel"]
+        ],
+        "different_family": [
+          ["paid_order_create", "cancelled_order_create"],
+          ["paid_order_pay", "cancelled_order_cancel"]
+        ],
+        "expected_relationships": [],
+        "true_prerequisites": [
+          ["CREATE_ORDER", "PAY_ORDER"],
+          ["CREATE_ORDER", "CANCEL_ORDER"]
+        ],
+        "false_adjacency": [],
+        "unknown_prerequisites": [],
+        "expected_hypotheses": [],
+        "forbidden_hypotheses": [],
+        "unknown_hypotheses": []
+      }
+    }
+  ]
+}

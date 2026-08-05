@@ -584,7 +584,12 @@ class FinsecMcpService:
         return self._load_versioned(self.workspace.invariants, InvariantStore, "Invariant store")
 
     def _hypotheses(self) -> HypothesisStore:
-        return self._load_versioned(self.workspace.hypotheses, HypothesisStore, "Hypothesis store")
+        return self._load_versioned(
+            self.workspace.hypotheses,
+            HypothesisStore,
+            "Hypothesis store",
+            supported_versions=frozenset({1, 2}),
+        )
 
     def _plans(self) -> TestPlanStore:
         if not self._safe_is_file(self.workspace.test_plans):
@@ -596,12 +601,20 @@ class FinsecMcpService:
             return ValidationStore()
         return self._load_versioned(self.workspace.validations, ValidationStore, "Validation store")
 
-    def _load_versioned(self, path: Path, model: type[MODEL_T], label: str) -> MODEL_T:
+    def _load_versioned(
+        self,
+        path: Path,
+        model: type[MODEL_T],
+        label: str,
+        *,
+        supported_versions: frozenset[int] = frozenset({SUPPORTED_STORE_VERSION}),
+    ) -> MODEL_T:
         result = self._load_model(path, model, label)
         version = getattr(result, "version", None)
-        if version != SUPPORTED_STORE_VERSION:
+        if version not in supported_versions:
+            expected = ", ".join(str(item) for item in sorted(supported_versions))
             raise FinsecMcpError(
-                f"{label} schema version {version!r} is unsupported; expected version 1."
+                f"{label} schema version {version!r} is unsupported; expected {expected}."
             )
         return result
 

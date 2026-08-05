@@ -29,6 +29,7 @@ Three constraints shape the architecture:
 | Modeling | Endpoints plus configured labels | Actors, resources, operation maps, trust-boundary views | Converts route structure into reviewable domain language while marking ownership and roles unconfirmed. |
 | Invariants | Endpoints and resources | Authentication, authorization, state, and single-execution properties | States what should hold without claiming the property is implemented. |
 | Hypotheses | Runtime evidence, invariants, resources, gates | Active hypotheses, research tasks, suppressed candidates | Promotes only specific, testable questions and routes missing evidence into research tasks. |
+| Workflow behavior | Redacted runtime exchanges | Typed relationships, boundary-aware instances, structural families, causal prerequisites, mutation rejections | Prevents scalar similarity or route adjacency from becoming invented business logic. |
 | Planning | One active hypothesis plus target policy | `BLOCKED` or `READY_FOR_REVIEW` structured plan | Separates research validity from template availability and applies scope, ownership-baseline, destructive, financial, lifecycle, and bounded-execution checks before approval. |
 | Bounded execution | One checksum-approved structured plan | Redacted comparison evidence plus immutable audit revision | Sends only the reviewed sequential read-only requests; it cannot invent payloads or confirm a vulnerability. |
 | Evidence | Researcher-supplied files | Redacted artifacts, checksums, assessment, narrative | Keeps proof separate from predictions and records integrity metadata. |
@@ -43,6 +44,25 @@ explicit add-and-rescan or skip decision instead of silently advancing. Setup th
 authentication as the next independent step only for actors that remain incomplete. When ingestion
 makes every authenticated actor `READY`, setup reports that state and suppresses the redundant
 prompt. Non-interactive setup skips both prompts and does not import captures.
+
+## Precision-First Workflow Evidence
+
+Workflow reconstruction treats actor, session, capture, host, semantic role, resource role,
+location, primitive type, and temporal direction as part of the evidence contract. Only an
+explainable `CAUSAL_HARD` producer-consumer link may join components. `CONTEXT_SOFT`,
+`REPLAY_RELATED`, and `CROSS_ACTOR_COMPARISON` relationships remain available for research and
+scoring but never merge journeys.
+
+Families are keyed by exact ordered route/action/state/topology signatures rather than display
+name or resource type. Prerequisites are persisted with positions, support counts and ratios,
+causal link IDs, counterexamples, confidence, and a human-readable reason. This intentionally
+prefers false separation when evidence is incomplete.
+
+Mutation generation has semantic gates per mutation family. Rejections are first-class derived
+records, and readiness (`RESEARCH_ONLY`, `REVIEW_REQUIRED`, `TEST_READY`) is separate from
+plausibility. The compact evaluator in `scripts/evaluate_workflow_precision.py` measures boundaries,
+causal edges, prerequisites, hypotheses, relationship recall, unsupported output, and blocker/readiness
+consistency without network access.
 
 ## Canonical Readiness Contract
 

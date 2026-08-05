@@ -8,7 +8,8 @@ Key stages (implemented):
 - Modeling: derive actors, resources, workflows, and invariants.
 - Hypothesis generation: rule-based generation requiring runtime observations for active hypotheses.
 - Business-logic analysis: offline workflow reconstruction, state/transition inference, business
-  invariants, and minimal mutation candidates synchronized into the canonical backlog.
+  invariants, semantic mutation gates, rejection reasons, and readiness synchronized into the
+  canonical backlog. Only typed `CAUSAL_HARD` relationships merge workflow components.
 - Planning: test plans generated with `DO_NOT_EXECUTE` default and `human_approval_required: true`.
 - Execution: bounded runner enforces policy and approval checks (`finsec/execution/runner.py`, `policy.py`).
 
@@ -18,6 +19,7 @@ Safety gates:
 - Burp exports refuse unsafe requests and require checksum-bound approval.
 - Business-logic state changes and concurrency remain manual-only and unsupported by the bounded
   runner; planning does not weaken execution or approval checks.
+- A plausible record with blockers is `REVIEW_REQUIRED` or `RESEARCH_ONLY`, never `TEST_READY`.
 
 Behavior on refusals:
 - The system prints actionable refusal messages (e.g., missing approval, unsafe headers, invalid destination). Do not bypass; recommend smallest corrective step.

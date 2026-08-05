@@ -153,7 +153,7 @@ def _hypothesis_table(hypotheses: list[HypothesisRecord]) -> Table:
     table.add_column("ID", style="cyan", no_wrap=True)
     table.add_column("Priority", no_wrap=True)
     table.add_column("Score", justify="right", no_wrap=True)
-    table.add_column("Status", no_wrap=True)
+    table.add_column("Readiness", no_wrap=True)
     table.add_column("Title")
     priority_style = {"P1": "bold red", "P2": "yellow", "P3": "dim"}
     for hypothesis in hypotheses:
@@ -161,7 +161,7 @@ def _hypothesis_table(hypotheses: list[HypothesisRecord]) -> Table:
             hypothesis.id,
             f"[{priority_style[hypothesis.priority]}]{hypothesis.priority}[/]",
             str(hypothesis.scores.total),
-            hypothesis.status,
+            hypothesis.readiness,
             hypothesis.title,
         )
     return table
@@ -1799,10 +1799,11 @@ def logic_analyze_command(workspace: WorkspaceOption = None) -> None:
         _abort(error)
     console.print(
         f"[green]Generated {result.business_invariants} business invariants, "
-        f"{result.hypotheses} active logic hypotheses, and "
+        f"{result.hypotheses} plausible logic hypotheses, and "
         f"{result.research_tasks} research tasks.[/green]"
     )
     console.print(f"Ready for planning without current blockers: {result.ready_for_planning}")
+    console.print(f"Rejected by semantic eligibility gates: {result.rejected_mutations}")
     console.print("Offline analysis did not confirm any vulnerability or send any request.")
     if result.conflicts:
         console.print(
@@ -1833,7 +1834,7 @@ def logic_hypotheses_command(
             item.id,
             item.family,
             item.epistemic_status,
-            str(item.score.test_readiness),
+            item.readiness,
             item.safety_classification,
             item.title,
         )
@@ -1845,6 +1846,7 @@ def _logic_panel(paths: WorkspacePaths, hypothesis_id: str) -> Panel:
     score = item.score
     lines = [
         f"[bold]Epistemic status:[/bold] {item.epistemic_status}",
+        f"[bold]Readiness:[/bold] {item.readiness}",
         f"[bold]Family:[/bold] {item.family}",
         f"[bold]Workflow:[/bold] {item.workflow_family_id}",
         f"[bold]Invariant:[/bold] {item.invariant_statement}",
@@ -1903,6 +1905,7 @@ def logic_blockers_command(
     except FinsecError as error:
         _abort(error)
     console.print(f"[bold]{item.id}: {item.title}[/bold]")
+    console.print(f"[bold]Readiness:[/bold] {item.readiness}")
     console.print("\n[bold]Readiness blockers[/bold]")
     for blocker in item.readiness_blockers or ["None recorded."]:
         console.print(f"- {blocker}")
@@ -2058,6 +2061,7 @@ def show_command(
     score = hypothesis.scores
     details = [
         f"[bold]Kind / Disposition:[/bold] {hypothesis.kind} / {hypothesis.disposition}",
+        f"[bold]Readiness:[/bold] {hypothesis.readiness}",
         f"[bold]Category:[/bold] {hypothesis.category}",
         f"[bold]Component:[/bold] {hypothesis.component}",
         f"[bold]Priority / Score:[/bold] {hypothesis.priority} / {score.total} "

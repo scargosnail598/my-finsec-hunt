@@ -321,8 +321,11 @@ KnowledgeStatus = Literal["OBSERVED", "INFERRED", "ASSUMED"]
 - **Modules**: `finsec/behavior/`, with integration in `finsec/workflow.py`
 - **CLI**: `hunt workflows ...`, `hunt logic ...`, and the main `hunt workflow`
 - **Operation**: Reconstructs conservative workflow instances and families from already-redacted
-  observations, derives states, transitions, propagation links, and business invariants, then
-  generates minimal workflow mutations as `BLH-*` hypotheses or research tasks.
+  observations. Typed relationships are persisted as `CAUSAL_HARD`, `CONTEXT_SOFT`,
+  `REPLAY_RELATED`, or `CROSS_ACTOR_COMPARISON`; only hard producer-consumer evidence can merge
+  journeys. Families use exact ordered route/action/state/topology signatures, and prerequisites
+  require causal evidence rather than adjacency. Mutation rejections and readiness
+  (`RESEARCH_ONLY`, `REVIEW_REQUIRED`, `TEST_READY`) are persisted with each analysis.
 - **Safety boundary**: Offline analysis never confirms a vulnerability. Business-logic plans use
   the canonical planner, remain `DO_NOT_EXECUTE`, and are manual-only in the current bounded runner.
   State-changing validation requires request, response, before, after, delayed-after, and related
@@ -480,7 +483,7 @@ The validator (`finsec/validation/validator.py`) evaluates 15 deterministic chec
 | `hunt logic analyze` | `-w <workspace>` | Infer business invariants and workflow mutations offline. |
 | `hunt logic hypotheses` | `-w <workspace> [--research-tasks]` | List business-logic hypotheses or under-evidenced tasks. |
 | `hunt logic explain/blockers` | `<BLH-ID> -w <workspace>` | Explain evidence, score, uncertainty, state requirements, and blockers. |
-| `hunt logic plan` | `<BLH-ID> -w <workspace>` | Route an active logic candidate through the canonical planner without execution. |
+| `hunt logic plan` | `<BLH-ID> -w <workspace>` | Route a blocker-free `TEST_READY` logic hypothesis through the canonical planner without execution. |
 | `hunt classify` | `-w <workspace>` | Display endpoint classification inventory. |
 | `hunt noise` | `-w <workspace>` | Display suppressed static, telemetry, & third-party endpoints. |
 | `hunt hypotheses` | `-w <workspace> [--priority P1] [--research-tasks]` | List active hypotheses & research tasks. |

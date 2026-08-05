@@ -1801,6 +1801,10 @@ def _drafts(
     for draft in drafts:
         draft.setdefault("kind", "SECURITY_HYPOTHESIS")
         draft.setdefault("disposition", "ACTIVE")
+        draft.setdefault(
+            "readiness",
+            "RESEARCH_ONLY" if draft["kind"] == "RESEARCH_TASK" else "TEST_READY",
+        )
         endpoint_ids = draft.get("source", {}).get("endpoints", [])
         related = [endpoint_by_id[item] for item in endpoint_ids if item in endpoint_by_id]
         reasons = sorted({reason for item in related for reason in item.relevance_reasons})

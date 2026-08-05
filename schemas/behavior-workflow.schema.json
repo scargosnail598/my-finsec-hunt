@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["version", "workflow_families"],
   "properties": {
-    "version": {"const": 1},
+    "version": {"enum": [1, 2]},
     "workflow_families": {
       "type": "array",
       "items": {"$ref": "#/$defs/workflowFamily"}
@@ -42,6 +42,28 @@
         "resource_types": {"type": "array", "items": {"type": "string"}},
         "transition_frequencies": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 1}},
         "outcome_distribution": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 1}},
+        "structural_signature": {"type": "string"},
+        "ordered_step_signature": {"type": "array", "items": {"type": "string"}},
+        "causal_topology": {"type": "array", "items": {"type": "string"}},
+        "terminal_or_mutating_steps": {"type": "array", "items": {"type": "string"}},
+        "causal_prerequisites": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "prerequisite_action",
+              "dependent_action",
+              "prerequisite_position",
+              "dependent_position",
+              "support_count",
+              "comparable_instances",
+              "support_ratio",
+              "confidence",
+              "reason"
+            ]
+          }
+        },
+        "research_clues": {"type": "array", "items": {"type": "string"}},
         "workflow_instance_ids": {"type": "array", "items": {"type": "string"}},
         "inference_confidence": {"enum": ["HIGH_EVIDENCE", "MODERATE_EVIDENCE", "WEAK_EVIDENCE", "SPECULATIVE"]},
         "confidence_explanation": {"type": "array", "items": {"type": "string"}},

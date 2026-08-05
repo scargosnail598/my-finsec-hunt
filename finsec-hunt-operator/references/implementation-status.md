@@ -12,9 +12,10 @@ Summary table (family: status — evidence):
 - Approval and execution gates: Implemented — `finsec/execution/policy.py`, approvals are checksum-bound.
 - Automatic evidence collection and before/after scaffolding: Partial — evidence manager exists, but state snapshots require actual execution to produce.
 - Offline Business Logic Analysis Engine: Implemented — deterministic workflow reconstruction,
-  graphs, states, business invariants, 12 mutation families, blockers, canonical planning adapter,
-  and skeptical state-evidence validation are available. Automated state-changing execution is
-  intentionally unsupported.
+  typed hard/soft/replay/cross-actor relationships, boundary-aware structural families, causal
+  prerequisites, mutation rejection reasons, readiness, compact precision benchmark, graphs,
+  states, business invariants, canonical planning adapter, and skeptical state-evidence validation
+  are available. Automated state-changing execution is intentionally unsupported.
 - MCP tools: Implemented (readonly tools listed in `finsec/mcp/` and `finsec/mcp_server.py`).
 
 For full provenance, see file headers and tests referenced above.

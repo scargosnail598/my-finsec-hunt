@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections import Counter, defaultdict
+from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Any
@@ -15,11 +15,14 @@ from finsec.behavior.domain import (
     BusinessInvariantStore,
     EpistemicStatus,
     HypothesisFamily,
+    HypothesisReadiness,
     InferenceConfidence,
     LogicHypothesis,
     LogicHypothesisStore,
     LogicScore,
+    MutationRejection,
     PropagationStore,
+    RelationshipType,
     SafetyClassification,
     ScoreContribution,
     TransitionRecord,
@@ -29,7 +32,7 @@ from finsec.behavior.domain import (
     WorkflowInstance,
     WorkflowInstanceStore,
 )
-from finsec.behavior.reconstruction import build_behavior_model
+from finsec.behavior.reconstruction import TERMINAL_STATES, build_behavior_model
 from finsec.config.models import TargetDocument
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
@@ -91,6 +94,7 @@ class LogicAnalysisResult:
     hypotheses: int
     research_tasks: int
     ready_for_planning: int
+    rejected_mutations: int
     conflicts: tuple[str, ...]
 
 
@@ -184,6 +188,14 @@ def _invariant(
     candidate_methods: list[str] | None = None,
     candidate_paths: list[str] | None = None,
     candidate_fields: list[str] | None = None,
+    prerequisite_action: str | None = None,
+    dependent_action: str | None = None,
+    prerequisite_position: int | None = None,
+    dependent_position: int | None = None,
+    support_count: int = 0,
+    support_ratio: float = 0,
+    causal_evidence: list[str] | None = None,
+    counterexamples: list[str] | None = None,
 ) -> BusinessInvariant:
     confidence = _confidence_for_family(family)
     contradiction_list = sorted(contradictions or [])
@@ -225,6 +237,14 @@ def _invariant(
         candidate_methods=sorted(set(candidate_methods or [])),
         candidate_paths=sorted(set(candidate_paths or [])),
         candidate_fields=sorted(set(candidate_fields or [])),
+        prerequisite_action=prerequisite_action,
+        dependent_action=dependent_action,
+        prerequisite_position=prerequisite_position,
+        dependent_position=dependent_position,
+        support_count=support_count,
+        support_ratio=support_ratio,
+        causal_evidence=sorted(set(causal_evidence or [])),
+        counterexamples=sorted(set(counterexamples or [])),
         confidence=confidence,
         confidence_explanation=explanation,
         validation_requirements=validation
@@ -266,6 +286,28 @@ def _preferred_mutation_action(
     return actions[-1] if actions else None
 
 
+def _value_mutation_action(inputs: _Inputs, family: WorkflowFamily) -> str | None:
+    instances = _family_instances(inputs).get(family.id, [])
+    eligible = {
+        step.action_name
+        for instance in instances
+        for step in instance.steps
+        if step.state_changing and any(value.client_controlled for value in step.business_values)
+    }
+    ordered = [action for action in family.common_path if action in eligible]
+    remaining = sorted(eligible - set(ordered))
+    candidates = [*ordered, *remaining]
+    rollback = next(
+        (
+            action
+            for action in candidates
+            if _verb(action) in {"CANCEL", "REFUND", "RETURN", "REVERSE"}
+        ),
+        None,
+    )
+    return rollback or (candidates[-1] if candidates else None)
+
+
 def infer_business_invariants(inputs: _Inputs) -> list[BusinessInvariant]:
     """Infer conservative business rules while retaining contradictions and uncertainty."""
 
@@ -305,36 +347,35 @@ def infer_business_invariants(inputs: _Inputs) -> list[BusinessInvariant]:
         paths = [tuple(step.action_name for step in item.steps) for item in instances]
         observed_actions = sorted({action for path in paths for action in path})
         state_changing_actions = set(_state_changing_actions(inputs, family))
-        if len(family.common_path) >= 2:
-            for left, right in zip(family.common_path, family.common_path[1:], strict=False):
-                if right not in state_changing_actions:
-                    continue
-                contradictions = _observations_for_actions(
-                    (
-                        item
-                        for item in instances
-                        if right in [step.action_name for step in item.steps]
-                        and left not in [step.action_name for step in item.steps]
-                    ),
-                    {right},
+        for prerequisite in family.causal_prerequisites:
+            if prerequisite.dependent_action not in state_changing_actions:
+                continue
+            invariants.append(
+                _invariant(
+                    family,
+                    "ORDERING",
+                    f"{prerequisite.dependent_action} appears to require "
+                    f"{prerequisite.prerequisite_action} to occur first in {family.name}.",
+                    prerequisite.supporting_observations,
+                    [
+                        prerequisite.reason,
+                        f"Support: {prerequisite.support_count}/"
+                        f"{prerequisite.comparable_instances} comparable workflow instances.",
+                    ],
+                    contradictions=prerequisite.counterexamples,
+                    prerequisite_action=prerequisite.prerequisite_action,
+                    dependent_action=prerequisite.dependent_action,
+                    prerequisite_position=prerequisite.prerequisite_position,
+                    dependent_position=prerequisite.dependent_position,
+                    support_count=prerequisite.support_count,
+                    support_ratio=prerequisite.support_ratio,
+                    causal_evidence=prerequisite.causal_link_ids,
+                    counterexamples=prerequisite.counterexamples,
                 )
-                invariants.append(
-                    _invariant(
-                        family,
-                        "ORDERING",
-                        f"{right} appears to require {left} to occur first in {family.name}.",
-                        _observations_for_actions(instances, {left, right}),
-                        [
-                            f"{left} precedes {right} in the canonical observed path.",
-                            "Observed path frequency: "
-                            f"{Counter(paths)[tuple(family.common_path)]}.",
-                        ],
-                        contradictions=contradictions,
-                    )
-                )
+            )
 
         for action in observed_actions:
-            if _verb(action) in ONE_TIME_VERBS:
+            if _verb(action) in ONE_TIME_VERBS and action in state_changing_actions:
                 invariants.append(
                     _invariant(
                         family,
@@ -345,7 +386,16 @@ def infer_business_invariants(inputs: _Inputs) -> list[BusinessInvariant]:
                         [f"{action} has one-time or irreversible action semantics."],
                     )
                 )
-            if _verb(action) in TERMINAL_VERBS:
+            explicit_terminal = any(
+                step.action_name == action
+                and any(
+                    state.derivation == "EXPLICIT_FIELD" and state.state_after in TERMINAL_STATES
+                    for state in step.state_observations
+                )
+                for instance in instances
+                for step in instance.steps
+            )
+            if _verb(action) in TERMINAL_VERBS and explicit_terminal:
                 invariants.append(
                     _invariant(
                         family,
@@ -357,7 +407,22 @@ def infer_business_invariants(inputs: _Inputs) -> list[BusinessInvariant]:
                     )
                 )
 
-        if family.actors and family.resource_types and state_changing_actions:
+        family_observations = set(_observations_for_actions(instances))
+        comparison_links = [
+            item
+            for item in inputs.propagation.propagation_links
+            if item.relationship_type == RelationshipType.CROSS_ACTOR_COMPARISON
+            and family_observations.intersection(item.evidence)
+        ]
+        client_resource_fields = sorted(
+            {
+                field
+                for instance in instances
+                for step in instance.steps
+                for field in step.client_controlled_resource_fields
+            }
+        )
+        if comparison_links and client_resource_fields and state_changing_actions:
             invariants.append(
                 _invariant(
                     family,
@@ -365,7 +430,10 @@ def infer_business_invariants(inputs: _Inputs) -> list[BusinessInvariant]:
                     f"Each state-changing step in {family.name} should remain bound to an "
                     "authorized workflow actor.",
                     _observations_for_actions(instances),
-                    [f"Observed actors: {', '.join(family.actors)}."],
+                    [
+                        f"Observed actors: {', '.join(family.actors)}.",
+                        f"Cross-actor comparison links: {len(comparison_links)}.",
+                    ],
                 )
             )
             invariants.append(
@@ -375,15 +443,18 @@ def infer_business_invariants(inputs: _Inputs) -> list[BusinessInvariant]:
                     f"Identifiers used by {family.name} should remain bound to the same "
                     "controlled resource lifecycle.",
                     _observations_for_actions(instances),
-                    [f"Observed resource types: {', '.join(family.resource_types)}."],
+                    [
+                        f"Observed typed client-controlled identifier fields: "
+                        f"{', '.join(client_resource_fields)}."
+                    ],
                 )
             )
 
-        family_observations = set(_observations_for_actions(instances))
         token_links = [
             item
             for item in inputs.propagation.propagation_links
             if item.value_kind == "WORKFLOW_TOKEN"
+            and item.relationship_type == RelationshipType.CAUSAL_HARD
             and item.source_observation_id in family_observations
         ]
         if token_links:
@@ -405,11 +476,19 @@ def infer_business_invariants(inputs: _Inputs) -> list[BusinessInvariant]:
         rollback_actions = {
             item for item in actions if _verb(item) in {"CANCEL", "REFUND", "RETURN", "REVERSE"}
         }
-        if rollback_actions and (
-            len(family.resource_types) >= 2
-            or any(_verb(action) in {"REFUND", "RETURN"} for action in rollback_actions)
-        ):
+        if rollback_actions:
             for rollback_action in sorted(rollback_actions):
+                rollback_resource_types = sorted(
+                    {
+                        state.resource_type
+                        for instance in instances
+                        for step in instance.steps
+                        if step.action_name == rollback_action
+                        for state in step.state_observations
+                    }
+                )
+                if len(rollback_resource_types) < 2:
+                    continue
                 invariants.append(
                     _invariant(
                         family,
@@ -419,8 +498,9 @@ def infer_business_invariants(inputs: _Inputs) -> list[BusinessInvariant]:
                         _observations_for_actions(instances, {rollback_action}),
                         [
                             f"Rollback action: {rollback_action}.",
-                            f"Linked resource types: {', '.join(family.resource_types)}.",
+                            f"Linked resource states: {', '.join(rollback_resource_types)}.",
                         ],
+                        resource_types=rollback_resource_types,
                     )
                 )
 
@@ -463,11 +543,7 @@ def infer_business_invariants(inputs: _Inputs) -> list[BusinessInvariant]:
                 }
             )
         value_fields = sorted(set(mutable_value_fields) | set(authoritative_value_fields))
-        financial = any(
-            term in " ".join([family.name, *family.resource_types, *family.common_path]).lower()
-            for term in FINANCIAL_TERMS
-        )
-        if (value_fields or financial) and state_changing_actions:
+        if mutable_value_fields and state_changing_actions:
             balance_observations = [step.observation_id for step in balance_steps]
             value_resource_types = list(family.resource_types)
             if any(
@@ -850,6 +926,13 @@ def _hypothesis(
         InferenceConfidence.SPECULATIVE,
     }
     kind = "RESEARCH_TASK" if unsafe or weak or suppression else "SECURITY_HYPOTHESIS"
+    readiness = (
+        HypothesisReadiness.RESEARCH_ONLY
+        if kind == "RESEARCH_TASK"
+        else HypothesisReadiness.REVIEW_REQUIRED
+        if blockers
+        else HypothesisReadiness.TEST_READY
+    )
     status = (
         EpistemicStatus.RESEARCH_TASK if kind == "RESEARCH_TASK" else EpistemicStatus.TEST_CANDIDATE
     )
@@ -950,6 +1033,7 @@ def _hypothesis(
         endpoint_ids=endpoint_ids,
         observation_ids=evidence,
         kind=kind,  # type: ignore[arg-type]
+        readiness=readiness,
         epistemic_status=status,
     )
 
@@ -980,21 +1064,20 @@ def generate_logic_hypotheses(
         common = family.common_path
         observed = sorted({action for path in family.observed_paths for action in path})
         if invariant.invariant_type == "ORDERING":
-            target_action = invariant.statement.split(" appears", 1)[0]
-            for index in range(1, len(common)):
-                if common[index] != target_action:
-                    continue
-                predecessor = common[index - 1]
-                action = common[index]
-                transition = next(
-                    (
-                        item
-                        for item in transitions_by_family.get(family.id, [])
-                        if item.action_name == action
-                    ),
-                    None,
-                )
-                hypotheses.append(
+            predecessor = invariant.prerequisite_action
+            action = invariant.dependent_action
+            if predecessor is None or action is None:
+                continue
+            transition = next(
+                (
+                    item
+                    for item in transitions_by_family.get(family.id, [])
+                    if item.action_name == action
+                ),
+                None,
+            )
+            hypotheses.extend(
+                [
                     _hypothesis(
                         inputs,
                         family,
@@ -1006,25 +1089,21 @@ def generate_logic_hypotheses(
                         f"{action} -> {predecessor}",
                         {predecessor, action},
                         transition_id=transition.id if transition else None,
-                    )
-                )
-                if index >= 2:
-                    prior = common[index - 2]
-                    hypotheses.append(
-                        _hypothesis(
-                            inputs,
-                            family,
-                            invariant,
-                            "STEP_SKIPPING",
-                            action,
-                            _human_action(predecessor),
-                            f"{prior} -> {predecessor} -> {action}",
-                            f"{prior} -> {action}",
-                            {prior, predecessor, action},
-                            transition_id=transition.id if transition else None,
-                        )
-                    )
-                break
+                    ),
+                    _hypothesis(
+                        inputs,
+                        family,
+                        invariant,
+                        "STEP_SKIPPING",
+                        action,
+                        _human_action(predecessor),
+                        f"{predecessor} -> {action}",
+                        f"omit {predecessor} and invoke {action}",
+                        {predecessor, action},
+                        transition_id=transition.id if transition else None,
+                    ),
+                ]
+            )
         elif invariant.invariant_type == "SINGLE_EXECUTION":
             action = next((item for item in observed if item in invariant.statement), common[-1])
             hypotheses.extend(
@@ -1165,7 +1244,9 @@ def generate_logic_hypotheses(
                 )
             )
         elif invariant.invariant_type == "VALUE_CONSERVATION":
-            mutation_action = _preferred_mutation_action(inputs, family, prefer_rollback=True)
+            if not invariant.mutable_value_fields:
+                continue
+            mutation_action = _value_mutation_action(inputs, family)
             if mutation_action is None:
                 continue
             refund_like = _verb(mutation_action) in {"REFUND", "RETURN"}
@@ -1247,6 +1328,171 @@ def generate_logic_hypotheses(
     return sorted(deduplicated.values(), key=lambda item: item.id)
 
 
+def generate_mutation_rejections(
+    inputs: _Inputs,
+    invariants: list[BusinessInvariant],
+    hypotheses: list[LogicHypothesis],
+) -> list[MutationRejection]:
+    """Persist semantic gate failures without promoting them to research hypotheses."""
+
+    accepted = {(item.workflow_family_id, item.family, item.affected_action) for item in hypotheses}
+    instances_by_family = _family_instances(inputs)
+    invariant_by_type = {
+        (item.workflow_family_id, item.invariant_type): item for item in invariants
+    }
+    rejections: dict[tuple[str, str, str], MutationRejection] = {}
+
+    def add(
+        family: WorkflowFamily,
+        mutation: HypothesisFamily,
+        action: str,
+        reasons: list[str],
+        evidence: list[str],
+        invariant: BusinessInvariant | None = None,
+    ) -> None:
+        if (family.id, mutation, action) in accepted:
+            return
+        key = (family.id, mutation, action)
+        rejection_id = (
+            "MREJ-"
+            + stable_fingerprint({"family": family.id, "mutation": mutation, "action": action})[
+                :16
+            ].upper()
+        )
+        rejections[key] = MutationRejection(
+            id=rejection_id,
+            workflow_family_id=family.id,
+            mutation_family=mutation,
+            affected_action=action,
+            invariant_id=invariant.id if invariant is not None else None,
+            reasons=sorted(set(reasons)),
+            evidence=sorted(set(evidence)),
+        )
+
+    for family in inputs.families.workflow_families:
+        instances = instances_by_family.get(family.id, [])
+        observations = _observations_for_actions(instances)
+        changing_actions = _state_changing_actions(inputs, family)
+        prerequisites = {
+            (
+                item.prerequisite_action,
+                item.dependent_action,
+                item.prerequisite_position,
+                item.dependent_position,
+            )
+            for item in family.causal_prerequisites
+        }
+        if instances:
+            for left, right in zip(instances[0].steps, instances[0].steps[1:], strict=False):
+                key = (left.action_name, right.action_name, left.position, right.position)
+                if right.state_changing and key not in prerequisites:
+                    reason = [
+                        "Adjacent route order has no typed producer-consumer or required-state "
+                        "evidence; adjacency alone is not a prerequisite."
+                    ]
+                    add(family, "STEP_SKIPPING", right.action_name, reason, observations)
+                    add(family, "OUT_OF_ORDER_EXECUTION", right.action_name, reason, observations)
+
+        mutation_action = _preferred_mutation_action(inputs, family)
+        if mutation_action is not None:
+            action_steps = [
+                step
+                for instance in instances
+                for step in instance.steps
+                if step.action_name == mutation_action
+            ]
+            mutable_values = [
+                value
+                for step in action_steps
+                for value in step.business_values
+                if value.client_controlled
+            ]
+            value_invariant = invariant_by_type.get((family.id, "VALUE_CONSERVATION"))
+            if not mutable_values:
+                add(
+                    family,
+                    "QUANTITY_VALUE_INVARIANT",
+                    mutation_action,
+                    [
+                        "No client-controlled request field has a recognized amount, price, "
+                        "quantity, balance, credit, refund, limit, fee, or cumulative-value role."
+                    ],
+                    [step.observation_id for step in action_steps],
+                    value_invariant,
+                )
+
+            comparison_links = [
+                link
+                for link in inputs.propagation.propagation_links
+                if link.relationship_type == RelationshipType.CROSS_ACTOR_COMPARISON
+                and set(link.evidence).intersection(observations)
+            ]
+            client_fields = sorted(
+                {field for step in action_steps for field in step.client_controlled_resource_fields}
+            )
+            if not comparison_links or not client_fields:
+                reasons = []
+                if not client_fields:
+                    reasons.append("The action has no typed client-controlled resource identifier.")
+                if not comparison_links:
+                    reasons.append(
+                        "No separate controlled-actor/object baseline is available for comparison."
+                    )
+                add(family, "ACTOR_SWITCH", mutation_action, reasons, observations)
+                add(family, "RESOURCE_SWITCH", mutation_action, reasons, observations)
+
+        for action in changing_actions:
+            action_observations = _observations_for_actions(instances, {action})
+            if _verb(action) not in ONE_TIME_VERBS:
+                reason = [
+                    "The action lacks one-time, irreversible, or duplicate-business-effect "
+                    "semantics required for replay and concurrency mutations."
+                ]
+                add(family, "REPLAY", action, reason, action_observations)
+                add(family, "DUPLICATE_ACTION", action, reason, action_observations)
+                add(family, "CONCURRENT_EXECUTION", action, reason, action_observations)
+            if _verb(action) in TERMINAL_VERBS:
+                explicit_terminal = any(
+                    step.action_name == action
+                    and any(
+                        state.derivation == "EXPLICIT_FIELD"
+                        and state.state_after in TERMINAL_STATES
+                        for state in step.state_observations
+                    )
+                    for instance in instances
+                    for step in instance.steps
+                )
+                if not explicit_terminal:
+                    add(
+                        family,
+                        "TERMINAL_STATE_BYPASS",
+                        action,
+                        ["No explicit terminal response state was observed for this action."],
+                        action_observations,
+                    )
+            if _verb(action) in {"CANCEL", "REFUND", "RETURN", "REVERSE"}:
+                rollback_resources = {
+                    state.resource_type
+                    for instance in instances
+                    for step in instance.steps
+                    if step.action_name == action
+                    for state in step.state_observations
+                }
+                if len(rollback_resources) < 2:
+                    add(
+                        family,
+                        "PARTIAL_ROLLBACK",
+                        action,
+                        [
+                            "Partial rollback requires at least two linked resource or state "
+                            "effects that can be compared."
+                        ],
+                        action_observations,
+                    )
+
+    return sorted(rejections.values(), key=lambda item: item.id)
+
+
 def _priority(score: LogicScore) -> str:
     total = score.impact + score.likelihood + score.confidence + score.test_readiness
     return "P1" if total >= 16 else "P2" if total >= 11 else "P3"
@@ -1270,6 +1516,7 @@ def _backlog_draft(item: LogicHypothesis) -> dict[str, Any]:
         "title": item.title,
         "kind": item.kind,
         "disposition": "ACTIVE" if item.kind == "SECURITY_HYPOTHESIS" else "NEEDS_RESEARCH",
+        "readiness": item.readiness,
         "category": "business_logic",
         "component": item.workflow_family_id,
         "source": {
@@ -1307,7 +1554,7 @@ def _backlog_draft(item: LogicHypothesis) -> dict[str, Any]:
         "evidence_to_collect": item.state_evidence_requirements,
         "eligibility_evidence": item.supporting_evidence,
         "missing_evidence": item.readiness_blockers,
-        "generation_rule": {"id": f"BUSINESS_LOGIC_{item.family}", "version": "1"},
+        "generation_rule": {"id": f"BUSINESS_LOGIC_{item.family}", "version": "2"},
         "priority_rationale": [
             contribution.reason for contribution in item.score.breakdown if contribution.points > 0
         ],
@@ -1343,6 +1590,7 @@ def _sync_backlog(workspace: WorkspacePaths, hypotheses: list[LogicHypothesis]) 
         drafts,
         preserved_fields=("status", "epistemic_status", "notes"),
     )
+    merge.document["version"] = 2
     active_keys = {str(item["key"]) for item in drafts}
     records = merge.document.get("hypotheses", [])
     if isinstance(records, list):
@@ -1357,6 +1605,7 @@ def _sync_backlog(workspace: WorkspacePaths, hypotheses: list[LogicHypothesis]) 
                 continue
             record["kind"] = "RESEARCH_TASK"
             record["disposition"] = "SUPPRESSED_INSUFFICIENT_EVIDENCE"
+            record["readiness"] = "RESEARCH_ONLY"
             record["epistemic_status"] = "RESEARCH_TASK"
             record["missing_evidence"] = [
                 "The workflow pattern no longer exists in the current passive evidence."
@@ -1391,6 +1640,7 @@ def analyze_business_logic(
     inputs = _load_inputs(workspace)
     invariants = infer_business_invariants(inputs)
     hypotheses = generate_logic_hypotheses(inputs, invariants)
+    rejections = generate_mutation_rejections(inputs, invariants, hypotheses)
     previous_statuses: dict[str, EpistemicStatus] = {}
     if workspace.business_logic_hypotheses.is_file():
         try:
@@ -1418,7 +1668,7 @@ def analyze_business_logic(
     )
     write_yaml(
         workspace.business_logic_hypotheses,
-        LogicHypothesisStore(hypotheses=hypotheses).model_dump(mode="json"),
+        LogicHypothesisStore(hypotheses=hypotheses, rejections=rejections).model_dump(mode="json"),
     )
     conflicts = _sync_backlog(workspace, hypotheses)
     return LogicAnalysisResult(
@@ -1426,9 +1676,9 @@ def analyze_business_logic(
         hypotheses=sum(item.kind == "SECURITY_HYPOTHESIS" for item in hypotheses),
         research_tasks=sum(item.kind == "RESEARCH_TASK" for item in hypotheses),
         ready_for_planning=sum(
-            item.kind == "SECURITY_HYPOTHESIS" and not item.readiness_blockers
-            for item in hypotheses
+            item.readiness == HypothesisReadiness.TEST_READY for item in hypotheses
         ),
+        rejected_mutations=len(rejections),
         conflicts=conflicts,
     )
 

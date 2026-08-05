@@ -158,6 +158,7 @@ def _load_artifact[MODEL_T: BaseModel](
     name: str,
     *,
     versioned: bool = True,
+    supported_versions: frozenset[int] = frozenset({SUPPORTED_STORE_VERSION}),
 ) -> _LoadedArtifact[MODEL_T]:
     relative = _relative_path(workspace, path)
     if not path.is_file():
@@ -187,7 +188,7 @@ def _load_artifact[MODEL_T: BaseModel](
             BlockerCode.ARTIFACT_MALFORMED,
         )
     version = document.get("version") if isinstance(document, dict) else None
-    if versioned and version != SUPPORTED_STORE_VERSION:
+    if versioned and version not in supported_versions:
         return _LoadedArtifact(
             ArtifactReadiness(
                 name=name,
@@ -1127,7 +1128,11 @@ def resolve_workspace_readiness(
     resources_loaded = _load_artifact(paths, paths.resources, ResourceStore, "Resource model")
     invariants_loaded = _load_artifact(paths, paths.invariants, InvariantStore, "Invariant store")
     hypotheses_loaded = _load_artifact(
-        paths, paths.hypotheses, HypothesisStore, "Hypothesis backlog"
+        paths,
+        paths.hypotheses,
+        HypothesisStore,
+        "Hypothesis backlog",
+        supported_versions=frozenset({1, 2}),
     )
     plans_loaded = _load_artifact(paths, paths.test_plans, TestPlanStore, "Test plan store")
     validations_loaded = _load_artifact(

@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["version", "hypotheses"],
   "properties": {
-    "version": {"const": 1},
+    "version": {"enum": [1, 2]},
     "hypotheses": {
       "type": "array",
       "items": {
@@ -58,6 +58,7 @@
           "candidate_paths": {"type": "array", "items": {"type": "string"}},
           "candidate_fields": {"type": "array", "items": {"type": "string"}},
           "kind": {"enum": ["SECURITY_HYPOTHESIS", "RESEARCH_TASK"]},
+          "readiness": {"enum": ["RESEARCH_ONLY", "REVIEW_REQUIRED", "TEST_READY"]},
           "epistemic_status": {
             "enum": [
               "RESEARCH_TASK",
@@ -69,6 +70,20 @@
             ]
           }
         }
+      }
+    },
+    "rejections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "workflow_family_id",
+          "mutation_family",
+          "affected_action",
+          "reasons",
+          "evidence"
+        ]
       }
     }
   }

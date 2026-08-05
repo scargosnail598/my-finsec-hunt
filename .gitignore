@@ -12,6 +12,15 @@ dist/
 .finsec-secrets/
 workspaces/.finsec-secrets/
 
+# Workspaces are researcher data. Existing tracked examples remain tracked, but new roots stay local.
+workspaces/*
+!workspaces/.gitkeep
+
+# Precision benchmark reports are generated; compact labels/goldens live under tests/fixtures.
+benchmark-results/
+workflow-precision-report.json
+workflow-precision-report.md
+
 # Keep potentially sensitive captures and raw evidence out of Git.
 captures/
 *.har

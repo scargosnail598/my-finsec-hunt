@@ -47,6 +47,23 @@ class SafetyClassification(StrEnum):
     UNSAFE_OR_UNBOUNDED = "UNSAFE_OR_UNBOUNDED"
 
 
+class RelationshipType(StrEnum):
+    """Typed relationships with explicit component-merging semantics."""
+
+    CAUSAL_HARD = "CAUSAL_HARD"
+    CONTEXT_SOFT = "CONTEXT_SOFT"
+    REPLAY_RELATED = "REPLAY_RELATED"
+    CROSS_ACTOR_COMPARISON = "CROSS_ACTOR_COMPARISON"
+
+
+class HypothesisReadiness(StrEnum):
+    """Separate plausibility from whether unresolved blockers remain."""
+
+    RESEARCH_ONLY = "RESEARCH_ONLY"
+    REVIEW_REQUIRED = "REVIEW_REQUIRED"
+    TEST_READY = "TEST_READY"
+
+
 HypothesisFamily = Literal[
     "STEP_SKIPPING",
     "OUT_OF_ORDER_EXECUTION",
@@ -114,9 +131,10 @@ class ResourceInstance(BehaviorModel):
 
 
 class PropagationLink(BehaviorModel):
-    """A redacted value created or observed once and consumed by a later request."""
+    """An explainable typed relationship between two passive observations."""
 
     id: str
+    relationship_type: RelationshipType = RelationshipType.CAUSAL_HARD
     value_fingerprint: str
     value_kind: Literal[
         "RESOURCE_IDENTIFIER",
@@ -137,10 +155,30 @@ class PropagationLink(BehaviorModel):
     ) = None
     source_resource_type: str | None = None
     destination_resource_type: str | None = None
+    source_semantic_role: str | None = None
+    destination_semantic_role: str | None = None
+    source_resource_role: str | None = None
+    destination_resource_role: str | None = None
+    source_location: str | None = None
+    destination_location: str | None = None
+    source_primitive_type: str | None = None
+    destination_primitive_type: str | None = None
     source_observation_id: str
     source_field: str
+    source_actor: str | None = None
+    source_session: str | None = None
+    source_capture: str | None = None
+    source_host: str | None = None
     destination_observation_id: str
     destination_field: str
+    destination_actor: str | None = None
+    destination_session: str | None = None
+    destination_capture: str | None = None
+    destination_host: str | None = None
+    temporal_order_known: bool = False
+    capture_continuity: bool = False
+    distinctive_value: bool = False
+    evidence_reason: str = "Legacy propagation link without a persisted relationship reason."
     evidence: list[str] = Field(default_factory=list)
     confidence: InferenceConfidence
     epistemic_status: Literal[EpistemicStatus.OBSERVED_FACT] = EpistemicStatus.OBSERVED_FACT
@@ -165,6 +203,10 @@ class WorkflowBusinessValue(BehaviorModel):
     direction: Literal["REQUEST", "RESPONSE"]
     resource_type: str
     resource_instance_ids: list[str] = Field(default_factory=list)
+    semantic_role: str = "business:value"
+    location: str = "BODY"
+    primitive_type: str = "string"
+    client_controlled: bool = False
 
 
 class WorkflowStep(BehaviorModel):
@@ -176,8 +218,13 @@ class WorkflowStep(BehaviorModel):
     observation_id: str
     endpoint_ids: list[str] = Field(default_factory=list)
     actor: str
+    method: str = "UNKNOWN"
+    route: str = ""
+    resource_role: str = "UNKNOWN"
+    state_changing: bool = False
     timestamp: str | None = None
     resource_instance_ids: list[str] = Field(default_factory=list)
+    client_controlled_resource_fields: list[str] = Field(default_factory=list)
     state_observations: list[WorkflowStateObservation] = Field(default_factory=list)
     business_values: list[WorkflowBusinessValue] = Field(default_factory=list)
     state_before: str | None = None
@@ -194,6 +241,7 @@ class WorkflowInstance(BehaviorModel):
     family_id: str
     actors: list[str] = Field(default_factory=list)
     sessions: list[str] = Field(default_factory=list)
+    captures: list[str] = Field(default_factory=list)
     resource_instance_ids: list[str] = Field(default_factory=list)
     resource_types: list[str] = Field(default_factory=list)
     steps: list[WorkflowStep] = Field(default_factory=list)
@@ -238,6 +286,23 @@ class TransitionRecord(BehaviorModel):
     epistemic_status: Literal[EpistemicStatus.INFERRED_PATTERN] = EpistemicStatus.INFERRED_PATTERN
 
 
+class WorkflowPrerequisite(BehaviorModel):
+    """A producer-consumer prerequisite retained with support and counterexamples."""
+
+    prerequisite_action: str
+    dependent_action: str
+    prerequisite_position: int = Field(ge=1)
+    dependent_position: int = Field(ge=1)
+    support_count: int = Field(ge=1)
+    comparable_instances: int = Field(ge=1)
+    support_ratio: float = Field(ge=0, le=1)
+    causal_link_ids: list[str] = Field(default_factory=list)
+    supporting_observations: list[str] = Field(default_factory=list)
+    counterexamples: list[str] = Field(default_factory=list)
+    confidence: InferenceConfidence
+    reason: str
+
+
 class WorkflowFamily(BehaviorModel):
     """A canonical abstraction over similar observed workflow instances."""
 
@@ -254,6 +319,12 @@ class WorkflowFamily(BehaviorModel):
     resource_types: list[str] = Field(default_factory=list)
     transition_frequencies: dict[str, int] = Field(default_factory=dict)
     outcome_distribution: dict[str, int] = Field(default_factory=dict)
+    structural_signature: str = ""
+    ordered_step_signature: list[str] = Field(default_factory=list)
+    causal_topology: list[str] = Field(default_factory=list)
+    terminal_or_mutating_steps: list[str] = Field(default_factory=list)
+    causal_prerequisites: list[WorkflowPrerequisite] = Field(default_factory=list)
+    research_clues: list[str] = Field(default_factory=list)
     workflow_instance_ids: list[str] = Field(default_factory=list)
     inference_confidence: InferenceConfidence
     confidence_explanation: list[str] = Field(default_factory=list)
@@ -325,6 +396,14 @@ class BusinessInvariant(BehaviorModel):
     candidate_methods: list[str] = Field(default_factory=list)
     candidate_paths: list[str] = Field(default_factory=list)
     candidate_fields: list[str] = Field(default_factory=list)
+    prerequisite_action: str | None = None
+    dependent_action: str | None = None
+    prerequisite_position: int | None = Field(default=None, ge=1)
+    dependent_position: int | None = Field(default=None, ge=1)
+    support_count: int = Field(default=0, ge=0)
+    support_ratio: float = Field(default=0, ge=0, le=1)
+    causal_evidence: list[str] = Field(default_factory=list)
+    counterexamples: list[str] = Field(default_factory=list)
     confidence: InferenceConfidence
     confidence_explanation: list[str] = Field(default_factory=list)
     validation_requirements: list[str] = Field(default_factory=list)
@@ -390,7 +469,20 @@ class LogicHypothesis(BehaviorModel):
     endpoint_ids: list[str] = Field(default_factory=list)
     observation_ids: list[str] = Field(default_factory=list)
     kind: Literal["SECURITY_HYPOTHESIS", "RESEARCH_TASK"]
+    readiness: HypothesisReadiness = HypothesisReadiness.REVIEW_REQUIRED
     epistemic_status: EpistemicStatus
+
+
+class MutationRejection(BehaviorModel):
+    """A mutation considered by the engine but rejected by semantic eligibility gates."""
+
+    id: str
+    workflow_family_id: str
+    mutation_family: HypothesisFamily
+    affected_action: str
+    invariant_id: str | None = None
+    reasons: list[str] = Field(default_factory=list)
+    evidence: list[str] = Field(default_factory=list)
 
 
 class ActionStore(BehaviorModel):
@@ -404,17 +496,17 @@ class ResourceInstanceStore(BehaviorModel):
 
 
 class PropagationStore(BehaviorModel):
-    version: Literal[1] = 1
+    version: Literal[1, 2] = 2
     propagation_links: list[PropagationLink] = Field(default_factory=list)
 
 
 class WorkflowInstanceStore(BehaviorModel):
-    version: Literal[1] = 1
+    version: Literal[1, 2] = 2
     workflow_instances: list[WorkflowInstance] = Field(default_factory=list)
 
 
 class WorkflowFamilyStore(BehaviorModel):
-    version: Literal[1] = 1
+    version: Literal[1, 2] = 2
     workflow_families: list[WorkflowFamily] = Field(default_factory=list)
 
 
@@ -429,10 +521,11 @@ class TransitionStore(BehaviorModel):
 
 
 class BusinessInvariantStore(BehaviorModel):
-    version: Literal[1] = 1
+    version: Literal[1, 2] = 2
     business_invariants: list[BusinessInvariant] = Field(default_factory=list)
 
 
 class LogicHypothesisStore(BehaviorModel):
-    version: Literal[1] = 1
+    version: Literal[1, 2] = 2
     hypotheses: list[LogicHypothesis] = Field(default_factory=list)
+    rejections: list[MutationRejection] = Field(default_factory=list)

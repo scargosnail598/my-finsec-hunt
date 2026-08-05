@@ -37,6 +37,7 @@ BusinessEpistemicStatus = Literal[
     "REJECTED_BY_BACKEND",
     "CONFIRMED",
 ]
+HypothesisReadiness = Literal["RESEARCH_ONLY", "REVIEW_REQUIRED", "TEST_READY"]
 
 
 class HypothesisSource(EditableModel):
@@ -124,6 +125,7 @@ class HypothesisRecord(EditableModel):
     priority: HypothesisPriority
     status: HypothesisStatus = "NOT_TESTED"
     safety_notes: list[str] = Field(default_factory=list)
+    readiness: HypothesisReadiness = "TEST_READY"
     epistemic_status: BusinessEpistemicStatus | None = None
     logic_details: dict[str, object] | None = None
     notes: str | None = None
@@ -133,5 +135,5 @@ class HypothesisRecord(EditableModel):
 class HypothesisStore(EditableModel):
     """Versioned hypothesis backlog."""
 
-    version: int = 1
+    version: int = 2
     hypotheses: list[HypothesisRecord] = Field(default_factory=list)

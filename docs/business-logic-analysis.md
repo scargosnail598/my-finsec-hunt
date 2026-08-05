@@ -61,25 +61,35 @@ Offline analysis never emits `CONFIRMED`.
 
 ## Workflow reconstruction
 
-`hunt workflows build` combines several deterministic signals:
+`hunt workflows build` extracts typed, fingerprint-only values with semantic field role, resource
+type and role, request/response location, primitive type, actor, session, capture, host, temporal
+direction, and evidence reason. Matching scalar text alone is never sufficient to merge journeys.
 
-- timestamps and capture sequence;
-- actor, session/capture identity, and channel;
-- normalized endpoints and semantic route actions;
-- concrete resource-identifier fingerprints;
-- response-to-request propagation links;
-- explicit response state fields;
-- correlation and idempotency identifiers;
-- workflow references retained only as SHA-256 fingerprints;
-- temporal proximity when stronger identifiers are absent.
+Relationships have explicit semantics:
+
+- `CAUSAL_HARD`: an earlier response produced a distinctive typed identifier or workflow token
+  consumed by a compatible later request. Only this relationship may union components.
+- `CONTEXT_SOFT`: correlation IDs, collection-member identifiers, low-entropy values, or other
+  useful context that cannot establish a workflow boundary.
+- `REPLAY_RELATED`: repeated use of a state-changing action, primary resource, or idempotency key;
+  it does not establish prerequisite order.
+- `CROSS_ACTOR_COMPARISON`: compatible typed input on separate controlled actors, retained for
+  ownership testing without merging their journeys.
+
+Hard relationships require known temporal direction, compatible semantic roles, a known actor,
+compatible session and capture continuity, sufficient distinctiveness, and stronger explicit
+evidence for cross-host correlation. Missing actor, session, capture, or semantic type is not a
+wildcard.
 
 Static assets, analytics, telemetry, third-party traffic, OpenAPI-only observations, and repeated
 polling are excluded from business paths. Interleaved journeys remain separate when they use
 different concrete identifiers. Workflow references do not automatically merge journeys because a
 cross-workflow reference is itself a security-relevant condition.
 
-When grouping is weak, the engine records ambiguity instead of forcing certainty. A single capture
-cannot establish that a step is mandatory.
+Booleans, nulls, empty values, pagination values, common statuses, timestamp-like fields, HTTP
+statuses, and incompatible numeric fields are suppressed or retained only as soft context.
+Collection response identifiers are also soft because one catalog result can feed several separate
+journeys. When grouping is weak, the engine records ambiguity instead of forcing certainty.
 
 ## Actions, resources, states, and transitions
 
@@ -106,13 +116,14 @@ unresolved state remains `UNRESOLVED`.
 
 ## Workflow families and graphs
 
-Similar instances are grouped into stable workflow families such as order lifecycle, payment
-lifecycle, refund, reward claim, team invitation, and money transfer. A family records observed
-paths, the most common path, required-looking intersections, optional actions, branches, outcomes,
-and its confidence explanation.
+Workflow families use an exact canonical structural signature: ordered method/route/action tuples,
+resource roles, state transitions, hard-edge topology, and terminal or mutating positions. Repeated
+steps remain distinct by position. Journeys that touch the same resource type but have different
+orders, branches, or terminal actions remain separate; the display name does not control grouping.
 
-The most frequent path is not declared authorized or mandatory. `required_looking_steps` is
-populated only from the intersection of at least two instances.
+Family IDs derive from that signature. `required_looking_steps` and ordering invariants come from
+typed hard producer-consumer prerequisites, not adjacency or the most frequent path. Unsupported
+adjacency is retained as a research clue rather than promoted to a step-skipping candidate.
 
 Graph output is available as text, JSON, Graphviz DOT, or Mermaid:
 
@@ -175,15 +186,17 @@ states exactly what empirical validation would require.
 - `SHADOW_ENDPOINT`
 - `ROLE_APPROVAL_BYPASS`
 
-It does not generate arbitrary fuzz values. Value hypotheses refer only to observed amount,
-quantity, total, balance, price, fee, or discount fields.
+It does not generate arbitrary fuzz values. Value hypotheses require a client-controlled request
+field with a recognized business role such as amount, refund amount, quantity, price, balance,
+credit, limit, fee, or cumulative value. Response-only values, IDs, dimensions, counters, pages,
+and unrelated numeric fields cannot make another action value-mutable.
 
 Example generated hypothesis:
 
 ```text
 Title: Ship order may succeed without pay order
-Canonical: ADD_ORDER -> PAY_ORDER -> SHIP_ORDER
-Mutation:  ADD_ORDER -> SHIP_ORDER
+Canonical: PAY_ORDER -> SHIP_ORDER
+Mutation:  omit PAY_ORDER and invoke SHIP_ORDER
 Invariant: SHIP_ORDER appears to require PAY_ORDER to occur first
 Secure:    backend rejects the mutation or produces no unauthorized state change
 Vulnerable: backend accepts it and authoritative state shows an unintended effect
@@ -192,10 +205,10 @@ Safety:    EXTERNAL_SIDE_EFFECT
 Blocker:   explicit target-policy permission is required
 ```
 
-For the included synthetic fixture this candidate is a `RESEARCH_TASK`, because a directly
-observed `CREATE_ORDER -> SHIP_ORDER` path contradicts mandatory-payment inference and shipment is
-an external side effect. Other captures can produce a `TEST_CANDIDATE` only when their evidence
-and safety controls support planning.
+For the included synthetic fixture this candidate is a `RESEARCH_TASK` because shipment is an
+external side effect and the exact structural family has insufficient executable evidence. A
+separately observed `CREATE_ORDER -> SHIP_ORDER` journey remains a distinct family instead of being
+used to distort the canonical checkout family.
 
 ## Refund workflow coverage
 
@@ -204,12 +217,13 @@ Passive order-detail observations can produce a `SHADOW_ENDPOINT` research task 
 `PATCH` and `PUT` variants of the item route, with observed server-controlled fields such as
 `status`, `quantity`, and `price` retained as bounded research metadata.
 
-Observed `RETURN_ORDER` actions produce replay, duplicate, concurrency, actor/resource binding,
-partial rollback, and value-conservation research tasks. The value-conservation task connects
-order price and quantity with authoritative credit or balance fields so a larger-than-purchase
-refund is reviewed explicitly. These remain `RESEARCH_TASK` records classified as
-`FINANCIAL_STATE_CHANGE` (or `CONCURRENT` for the race variant); they are not proof that either
-crAPI challenge is exploitable.
+Observed `RETURN_ORDER` actions can produce replay, duplicate, and concurrency research tasks.
+Actor/resource switching additionally requires typed request identifiers and cross-actor
+comparison evidence. Partial rollback requires at least two affected resource states. A
+value-conservation task is generated only when the return/refund request itself exposes a
+recognized client-controlled value; response-only price, quantity, credit, or balance fields are
+authoritative comparison evidence, not mutation inputs. These records are not proof that a target
+is exploitable.
 
 ## Scoring and false-positive control
 
@@ -217,7 +231,18 @@ Scores are deterministic and separated into likelihood, impact, test readiness, 
 confidence. Every contribution is stored, including negative points for contradictions or missing
 controls.
 
-Candidates are downgraded when:
+Mutation eligibility is evaluated separately for each family and action. Rejected mutations are
+persisted in `hypotheses/business-logic.yaml` with their evidence and deterministic reasons, such
+as "adjacency alone is not a prerequisite," "no typed client-controlled resource identifier," or
+"partial rollback requires at least two linked state effects."
+
+Plausibility and execution readiness are separate:
+
+- `RESEARCH_ONLY`: speculative, unsafe, or semantically under-supported;
+- `REVIEW_REQUIRED`: plausible, but ownership, authentication, policy, or state blockers remain;
+- `TEST_READY`: no current eligibility or safety blocker remains.
+
+A record with any blocker cannot be `TEST_READY`. Candidates are downgraded when:
 
 - only one workflow instance exists;
 - segmentation remains ambiguous;
@@ -291,9 +316,10 @@ hypotheses/
   backlog.yaml                 # canonical adapter records for existing gates
 ```
 
-All files are versioned and deterministically ordered. Existing workspaces are compatible: missing
-behavior directories and files are created lazily on the next build. No migration rewrites factual
-observations or older model artifacts.
+Relationship, workflow instance/family, business invariant, logic hypothesis, and canonical backlog
+stores now write schema version 2. Their readers accept version 1 and fill conservative defaults,
+so existing workspaces remain readable. Missing behavior files are created lazily on the next
+build; status and readiness inspection never rewrites factual observations or user data.
 
 Collection schemas are in `schemas/behavior-workflow.schema.json`,
 `schemas/business-invariant.schema.json`, and
@@ -325,6 +351,23 @@ hunt logic blockers <BLH-ID> -w workspaces/<slug>
 hunt logic plan <BLH-ID> -w workspaces/<slug>
 ```
 
+## Precision benchmark
+
+The compact sanitized benchmark covers actor/session/capture boundaries, incompatible and generic
+scalars, typed tokens and resource IDs, false adjacency, family structure, actor comparison,
+replay, value conservation, and partial rollback. Unknown labels are excluded from denominators.
+
+```bash
+python scripts/evaluate_workflow_precision.py \
+  --json-output /tmp/finsec-workflow-precision.json \
+  --markdown-output /tmp/finsec-workflow-precision.md
+```
+
+It reports workflow and family boundary pairwise precision/recall/F1, causal-edge metrics,
+forbidden hard edges, prerequisite precision/recall, precision@10, expected-mutation recall@10,
+unsupported-hypothesis rate, relationship recall, and test-ready records that still have blockers.
+The evaluator is deterministic, offline, and separate from production CLI surface area.
+
 ## Synthetic demonstration
 
 The included fixture never contacts a server:
@@ -349,9 +392,9 @@ hunt logic hypotheses -w workspaces/logic-demo
 ```
 
 The fixture contains two observed `CREATE -> ADD -> PAY -> SHIP` order lifecycles and one
-`CREATE -> SHIP` deviation. The engine reconstructs the graph, records the deviation as
-contradicting evidence, and emits specific ordering and step-skip hypotheses without claiming a
-vulnerability.
+`CREATE -> SHIP` journey. The engine reconstructs them as two structural families, derives
+prerequisites only from typed producer-consumer links, and emits specific ordering and step-skip
+research tasks without claiming a vulnerability.
 
 To continue at the safety boundary:
 
@@ -370,7 +413,7 @@ A complete empirical lifecycle is:
 
 1. ingest passive observations;
 2. reconstruct workflows and infer an invariant;
-3. generate a `TEST_CANDIDATE`;
+3. generate a hypothesis with `RESEARCH_ONLY`, `REVIEW_REQUIRED`, or `TEST_READY` readiness;
 4. create and review a bounded plan;
 5. obtain explicit target-policy and human approval using supported execution or an authorized
    external/manual collection process;
@@ -387,16 +430,16 @@ cannot confirm a hypothesis.
 
 - **One-step workflows:** capture the predecessor and an authoritative state read; until then the
   instance remains weak and related hypotheses remain research tasks.
-- **Interleaved journeys merged unexpectedly:** ensure concrete identifiers or correlation fields
-  are present in the capture. The engine does not use URL order alone.
+- **Interleaved journeys merged unexpectedly:** inspect relationship types and reasons. Correlation
+  IDs, route adjacency, collection IDs, replay links, and cross-actor comparisons cannot merge.
 - **Separate journeys not linked:** capture the response that creates the identifier/reference and
   the later request that consumes it.
 - **Polling dominates a path:** retain timestamps and stable response state fields; repeated
   read-only status traffic is then suppressed deterministically.
 - **No explicit state:** capture response status/state fields or an independent state query. Action
   semantics remain weaker than explicit fields.
-- **A step appears required from one path:** collect another complete successful workflow. One
-  instance is never treated as mandatory policy.
+- **A step appears required:** inspect `causal_prerequisites`; adjacency and frequency without a
+  typed dependency remain research clues.
 - **Plan remains blocked:** inspect `hunt logic blockers`. Do not edit away missing ownership,
   authentication, state, policy, concurrency, or side-effect controls.
 
@@ -407,6 +450,8 @@ cannot confirm a hypothesis.
 - Request/response body values are read only from already-redacted local capture copies. Captures
   that omit bodies provide correspondingly weaker propagation and state evidence.
 - Asynchronous workflows without a shared identifier remain ambiguous.
+- Conservative exact family signatures can split journeys that a researcher considers related;
+  false separation is preferred to false merging at this stage.
 - The bounded runner does not execute business-logic POST/PUT/PATCH/DELETE or concurrent mutations.
 - No LLM is required or used for canonical records. Semantic action coverage is deterministic and
   rule-based, so unusual product terminology may need future explicit rules.

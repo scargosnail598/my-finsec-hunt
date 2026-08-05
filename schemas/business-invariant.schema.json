@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["version", "business_invariants"],
   "properties": {
-    "version": {"const": 1},
+    "version": {"enum": [1, 2]},
     "business_invariants": {
       "type": "array",
       "items": {
@@ -49,6 +49,14 @@
           "candidate_methods": {"type": "array", "items": {"type": "string"}},
           "candidate_paths": {"type": "array", "items": {"type": "string"}},
           "candidate_fields": {"type": "array", "items": {"type": "string"}},
+          "prerequisite_action": {"type": ["string", "null"]},
+          "dependent_action": {"type": ["string", "null"]},
+          "prerequisite_position": {"type": ["integer", "null"], "minimum": 1},
+          "dependent_position": {"type": ["integer", "null"], "minimum": 1},
+          "support_count": {"type": "integer", "minimum": 0},
+          "support_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+          "causal_evidence": {"type": "array", "items": {"type": "string"}},
+          "counterexamples": {"type": "array", "items": {"type": "string"}},
           "confidence": {"enum": ["HIGH_EVIDENCE", "MODERATE_EVIDENCE", "WEAK_EVIDENCE", "SPECULATIVE"]},
           "confidence_explanation": {"type": "array", "items": {"type": "string"}},
           "validation_requirements": {"type": "array", "items": {"type": "string"}},

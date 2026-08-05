@@ -13,7 +13,11 @@ from finsec.behavior.analysis import (
     load_business_invariants,
     load_logic_hypotheses,
 )
-from finsec.behavior.domain import InferenceConfidence, PropagationStore, SafetyClassification
+from finsec.behavior.domain import (
+    InferenceConfidence,
+    PropagationStore,
+    SafetyClassification,
+)
 from finsec.behavior.reconstruction import (
     load_workflow_families,
     load_workflow_graph,
@@ -287,9 +291,13 @@ def _logic(workspace: WorkspacePaths) -> list[Any]:
 
 def test_valid_checkout_reconstructs_ordered_behavior(logic_workspace: WorkspacePaths) -> None:
     families = load_workflow_families(logic_workspace).workflow_families
-    order = next(item for item in families if item.name == "order lifecycle")
-    assert order.common_path == ["CREATE_ORDER", "ADD_ORDER", "PAY_ORDER", "SHIP_ORDER"]
-    assert len(order.workflow_instance_ids) >= 4
+    order = next(
+        item
+        for item in families
+        if item.common_path == ["CREATE_ORDER", "ADD_ORDER", "PAY_ORDER", "SHIP_ORDER"]
+    )
+    assert len(order.workflow_instance_ids) == 2
+    assert order.causal_prerequisites
 
 
 def test_payment_mutations_are_financial_research_tasks(
@@ -320,17 +328,16 @@ def test_step_skip_candidate_is_specific(logic_workspace: WorkspacePaths) -> Non
         if value.family == "STEP_SKIPPING" and value.affected_action == "SHIP_ORDER"
     )
     assert "pay order" in item.title.lower()
-    assert (
-        "CREATE_ORDER -> SHIP_ORDER" in item.mutated_behavior
-        or "ADD_ORDER -> SHIP_ORDER" in item.mutated_behavior
-    )
+    assert item.mutated_behavior == "omit PAY_ORDER and invoke SHIP_ORDER"
     assert item.invariant_statement
     invariant = next(
         value
         for value in load_business_invariants(logic_workspace).business_invariants
         if value.id == item.invariant_id
     )
-    assert invariant.contradicting_observations
+    assert invariant.causal_evidence
+    assert invariant.support_count == 2
+    assert invariant.support_ratio == 1.0
     assert invariant.confidence == InferenceConfidence.MODERATE_EVIDENCE
 
 
@@ -341,11 +348,18 @@ def test_reward_claim_generates_replay_candidate(logic_workspace: WorkspacePaths
     )
 
 
-def test_coupon_cancellation_generates_rollback_candidate(logic_workspace: WorkspacePaths) -> None:
-    assert any(
-        item.family == "PARTIAL_ROLLBACK" and "CANCEL_ORDER" in item.affected_action
-        for item in _logic(logic_workspace)
+def test_coupon_cancellation_rejects_unsupported_partial_rollback(
+    logic_workspace: WorkspacePaths,
+) -> None:
+    rejection = next(
+        item
+        for item in load_logic_hypotheses(logic_workspace).rejections
+        if item.mutation_family == "PARTIAL_ROLLBACK" and item.affected_action == "CANCEL_ORDER"
     )
+    assert rejection.reasons == [
+        "Partial rollback requires at least two linked resource or state effects that can be "
+        "compared."
+    ]
 
 
 def test_duplicate_refund_generates_duplicate_action(logic_workspace: WorkspacePaths) -> None:
@@ -392,14 +406,24 @@ def test_partial_refund_tracks_entitlement_state(logic_workspace: WorkspacePaths
     )
 
 
-def test_optional_coupon_step_is_not_declared_required(logic_workspace: WorkspacePaths) -> None:
-    order = next(
+def test_coupon_journey_remains_separate_from_core_family(
+    logic_workspace: WorkspacePaths,
+) -> None:
+    families = load_workflow_families(logic_workspace).workflow_families
+    core = next(
         item
-        for item in load_workflow_families(logic_workspace).workflow_families
-        if item.name == "order lifecycle"
+        for item in families
+        if item.common_path == ["CREATE_ORDER", "ADD_ORDER", "PAY_ORDER", "SHIP_ORDER"]
     )
-    assert "APPLY_ORDER" in order.optional_steps
-    assert "APPLY_ORDER" not in order.required_looking_steps
+    coupon = next(
+        item
+        for item in families
+        if item.common_path
+        == ["CREATE_ORDER", "APPLY_ORDER", "ADD_ORDER", "PAY_ORDER", "SHIP_ORDER"]
+    )
+    assert core.id != coupon.id
+    assert "APPLY_ORDER" not in core.required_looking_steps
+    assert "APPLY_ORDER" in coupon.required_looking_steps
 
 
 def test_interleaved_orders_remain_distinct_workflow_instances(
@@ -408,7 +432,7 @@ def test_interleaved_orders_remain_distinct_workflow_instances(
     order = next(
         item
         for item in load_workflow_families(logic_workspace).workflow_families
-        if item.name == "order lifecycle"
+        if item.common_path == ["CREATE_ORDER", "ADD_ORDER", "PAY_ORDER", "SHIP_ORDER"]
     )
     instances = [
         item
@@ -556,11 +580,7 @@ def test_return_order_generates_financial_replay_and_value_research_tasks(
         name="order-return",
     )
     candidates = [item for item in _logic(workspace) if item.affected_action == "RETURN_ORDER"]
-    assert {item.family for item in candidates} >= {
-        "REPLAY",
-        "DUPLICATE_ACTION",
-        "QUANTITY_VALUE_INVARIANT",
-    }
+    assert {item.family for item in candidates} >= {"REPLAY", "DUPLICATE_ACTION"}
     assert all(
         item.safety_classification == SafetyClassification.FINANCIAL_STATE_CHANGE
         for item in candidates
@@ -572,8 +592,14 @@ def test_return_order_generates_financial_replay_and_value_research_tasks(
         ).safety_classification
         == SafetyClassification.CONCURRENT
     )
-    value_candidate = next(item for item in candidates if item.family == "QUANTITY_VALUE_INVARIANT")
-    assert any("credit" in field.lower() for field in value_candidate.authoritative_value_fields)
+    assert not any(item.family == "QUANTITY_VALUE_INVARIANT" for item in candidates)
+    value_rejection = next(
+        item
+        for item in load_logic_hypotheses(workspace).rejections
+        if item.mutation_family == "QUANTITY_VALUE_INVARIANT"
+        and item.affected_action == "RETURN_ORDER"
+    )
+    assert "No client-controlled request field" in value_rejection.reasons[0]
     assert not any(item.affected_action == "ALL_ORDER" for item in _logic(workspace))
 
 
@@ -875,7 +901,7 @@ def test_graph_and_artifacts_do_not_store_capture_secrets(logic_workspace: Works
     family = next(
         item
         for item in load_workflow_families(logic_workspace).workflow_families
-        if item.name == "order lifecycle"
+        if item.common_path == ["CREATE_ORDER", "ADD_ORDER", "PAY_ORDER", "SHIP_ORDER"]
     )
     graph = load_workflow_graph(logic_workspace, family.id)
     assert graph.workflow_family_id == family.id
