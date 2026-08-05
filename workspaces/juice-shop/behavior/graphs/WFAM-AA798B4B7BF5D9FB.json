@@ -1,0 +1,45 @@
+{
+  "edges": [
+    {
+      "action": "READ_QUANTITY",
+      "actors": [
+        "mrscargo"
+      ],
+      "confidence": "MODERATE_EVIDENCE",
+      "count": 1,
+      "derivation": "DIRECTLY_OBSERVED",
+      "destination": "NODE-86C8142120E3E182",
+      "id": "EDGE-77A76A1D17982B60",
+      "median_timing_seconds": null,
+      "observation_ids": [
+        "OBS-000703"
+      ],
+      "relative_frequency": 0.09090909090909091,
+      "resource_types": [
+        "quantity"
+      ],
+      "response_outcomes": [
+        "SUCCESS"
+      ],
+      "source": "NODE-DF951699AC97BEDB",
+      "workflow_instance_ids": [
+        "WFINST-8AE299CD09D29EBE"
+      ]
+    }
+  ],
+  "id": "GRAPH-0A7C389E01104DC7",
+  "nodes": [
+    {
+      "id": "NODE-86C8142120E3E182",
+      "kind": "TERMINAL",
+      "label": "SUCCESS"
+    },
+    {
+      "id": "NODE-DF951699AC97BEDB",
+      "kind": "CHECKPOINT",
+      "label": "UNRESOLVED"
+    }
+  ],
+  "version": 1,
+  "workflow_family_id": "WFAM-AA798B4B7BF5D9FB"
+}

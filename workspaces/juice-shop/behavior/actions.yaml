@@ -1,0 +1,888 @@
+version: 1
+actions:
+- id: ACTN-0DD2E95ACB096166
+  name: READ_UNKNOWN
+  method: GET
+  route: /
+  endpoint_ids:
+  - EP-002
+  observation_ids:
+  - OBS-000012
+  - OBS-000187
+  - OBS-000260
+  - OBS-000340
+  - OBS-000570
+  - OBS-000672
+  resource_types:
+  - Unknown
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is Unknown
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-16B40AC936E871DF
+  name: READ_DELIVERY
+  method: GET
+  route: /api/Deliverys/{deliveryId}
+  endpoint_ids:
+  - EP-057
+  observation_ids:
+  - OBS-000101
+  - OBS-000107
+  - OBS-000427
+  - OBS-000433
+  resource_types:
+  - Delivery
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is Delivery
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-18FA2D0BBCA79D7B
+  name: READ_HINT
+  method: GET
+  route: /api/Hints/
+  endpoint_ids:
+  - EP-011
+  observation_ids:
+  - OBS-000498
+  resource_types:
+  - Hint
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is Hint
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-190C8BE10777E02E
+  name: CHECKOUT_BASKET
+  method: POST
+  route: /rest/basket/{basketId}/checkout
+  endpoint_ids:
+  - EP-052
+  observation_ids:
+  - OBS-000113
+  - OBS-000439
+  resource_types:
+  - Basket
+  state_changing: false
+  confidence: WEAK_EVIDENCE
+  reasons:
+  - endpoint action is checkout
+  - endpoint resource is Basket
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-22824EDAE1D4E702
+  name: READ_CARD
+  method: GET
+  route: /api/Cards/{cardId}
+  endpoint_ids:
+  - EP-006
+  observation_ids:
+  - OBS-000109
+  - OBS-000435
+  resource_types:
+  - Card
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is Card
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-22F3399C7C5BE09A
+  name: CREATE_ADDRESSS
+  method: POST
+  route: /api/Addresss/
+  endpoint_ids:
+  - EP-044
+  observation_ids:
+  - OBS-000097
+  - OBS-000423
+  resource_types:
+  - Addresss
+  state_changing: true
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is create
+  - endpoint resource is Addresss
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-250244943A28AA65
+  name: READ_PRODUCT
+  method: GET
+  route: /rest/products/{productId}/reviews
+  endpoint_ids:
+  - EP-032
+  observation_ids:
+  - OBS-000124
+  - OBS-000125
+  - OBS-000127
+  - OBS-000129
+  - OBS-000130
+  - OBS-000131
+  - OBS-000326
+  - OBS-000327
+  - OBS-000328
+  resource_types:
+  - Product
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is Product
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-25989BD2E60FFF19
+  name: LOGIN_LOGIN
+  method: POST
+  route: /rest/user/login
+  endpoint_ids:
+  - EP-053
+  observation_ids:
+  - OBS-000069
+  - OBS-000394
+  - OBS-000476
+  resource_types:
+  - Login
+  state_changing: false
+  confidence: WEAK_EVIDENCE
+  reasons:
+  - endpoint action is login
+  - endpoint resource is Login
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-26E0AD9A595B43BC
+  name: READ_LANGUAGE
+  method: GET
+  route: /rest/languages
+  endpoint_ids:
+  - EP-029
+  observation_ids:
+  - OBS-000034
+  - OBS-000210
+  - OBS-000283
+  - OBS-000362
+  - OBS-000593
+  - OBS-000695
+  resource_types:
+  - Language
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is Language
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-27C228383806B30F
+  name: CREATE_CARD
+  method: POST
+  route: /api/Cards/
+  endpoint_ids:
+  - EP-046
+  observation_ids:
+  - OBS-000105
+  - OBS-000431
+  resource_types:
+  - Card
+  state_changing: true
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is create
+  - endpoint resource is Card
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-4B9BBC7AF58D84E9
+  name: READ_WHOAMI
+  method: GET
+  route: /rest/user/whoami
+  endpoint_ids:
+  - EP-036
+  observation_ids:
+  - OBS-000067
+  - OBS-000068
+  - OBS-000071
+  - OBS-000072
+  - OBS-000095
+  - OBS-000111
+  - OBS-000119
+  - OBS-000123
+  - OBS-000209
+  - OBS-000214
+  - OBS-000282
+  - OBS-000287
+  - OBS-000318
+  - OBS-000325
+  - OBS-000330
+  - OBS-000332
+  - OBS-000335
+  - OBS-000392
+  - OBS-000393
+  - OBS-000396
+  - OBS-000397
+  - OBS-000420
+  - OBS-000437
+  - OBS-000445
+  - OBS-000474
+  - OBS-000475
+  - OBS-000478
+  - OBS-000479
+  - OBS-000505
+  - OBS-000509
+  - OBS-000525
+  - OBS-000537
+  - OBS-000540
+  - OBS-000592
+  - OBS-000597
+  - OBS-000694
+  - OBS-000699
+  resource_types:
+  - Whoami
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is Whoami
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-54BB7752A2CB2942
+  name: CHANGE_PASSWORD
+  method: GET
+  route: /rest/user/change-password
+  endpoint_ids:
+  - EP-035
+  observation_ids:
+  - OBS-000244
+  - OBS-000245
+  - OBS-000454
+  resource_types:
+  - Password
+  state_changing: true
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is change
+  - endpoint resource is Password
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-561305624A3DA15F
+  name: READ_APPLICATIONCONFIGURATION
+  method: GET
+  route: /rest/admin/application-configuration
+  endpoint_ids:
+  - EP-025
+  observation_ids:
+  - OBS-000002
+  - OBS-000003
+  - OBS-000004
+  - OBS-000032
+  - OBS-000036
+  - OBS-000038
+  - OBS-000039
+  - OBS-000066
+  - OBS-000103
+  - OBS-000116
+  - OBS-000135
+  - OBS-000207
+  - OBS-000213
+  - OBS-000216
+  - OBS-000217
+  - OBS-000242
+  - OBS-000280
+  - OBS-000286
+  - OBS-000289
+  - OBS-000290
+  - OBS-000360
+  - OBS-000364
+  - OBS-000366
+  - OBS-000367
+  - OBS-000391
+  - OBS-000429
+  - OBS-000442
+  - OBS-000449
+  - OBS-000473
+  - OBS-000499
+  - OBS-000531
+  - OBS-000590
+  - OBS-000596
+  - OBS-000599
+  - OBS-000600
+  - OBS-000692
+  - OBS-000698
+  - OBS-000701
+  - OBS-000702
+  resource_types:
+  - ApplicationConfiguration
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is ApplicationConfiguration
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-5B773394AFE0E7ED
+  name: HISTORY_ORDERHISTORY
+  method: GET
+  route: /rest/order-history
+  endpoint_ids:
+  - EP-030
+  observation_ids:
+  - OBS-000120
+  - OBS-000322
+  - OBS-000337
+  - OBS-000446
+  - OBS-000506
+  resource_types:
+  - OrderHistory
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is history
+  - endpoint resource is OrderHistory
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-5C0E1074709F8F7F
+  name: SOCKET_IO_SOCKET_IO
+  method: POST
+  route: /socket.io/
+  endpoint_ids:
+  - EP-054
+  observation_ids:
+  - OBS-000007
+  - OBS-000043
+  - OBS-000222
+  - OBS-000295
+  - OBS-000372
+  - OBS-000605
+  - OBS-000707
+  resource_types:
+  - Socket.Io
+  state_changing: false
+  confidence: WEAK_EVIDENCE
+  reasons:
+  - endpoint action is socket.io
+  - endpoint resource is Socket.Io
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-67F8E2221CE2C42E
+  name: CREATE_BASKETITEM
+  method: POST
+  route: /api/BasketItems/
+  endpoint_ids:
+  - EP-045
+  observation_ids:
+  - OBS-000091
+  - OBS-000314
+  - OBS-000416
+  - OBS-000521
+  resource_types:
+  - Basketitem
+  state_changing: true
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is create
+  - endpoint resource is Basketitem
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-697348D8447E1846
+  name: READ_ADDRESSS
+  method: GET
+  route: /api/Addresss
+  endpoint_ids:
+  - EP-003
+  observation_ids:
+  - OBS-000096
+  - OBS-000098
+  - OBS-000139
+  - OBS-000336
+  - OBS-000422
+  - OBS-000424
+  resource_types:
+  - Addresss
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is Addresss
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-7203838ED33C1CC2
+  name: READ_SAVELOGINIP
+  method: GET
+  route: /rest/saveLoginIp
+  endpoint_ids:
+  - EP-033
+  observation_ids:
+  - OBS-000455
+  resource_types:
+  - Saveloginip
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is Saveloginip
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-721EAD8A7A8B2C6B
+  name: READ_CHALLENGE
+  method: GET
+  route: /api/Challenges/
+  endpoint_ids:
+  - EP-007
+  observation_ids:
+  - OBS-000001
+  - OBS-000033
+  - OBS-000037
+  - OBS-000208
+  - OBS-000215
+  - OBS-000281
+  - OBS-000288
+  - OBS-000361
+  - OBS-000365
+  - OBS-000497
+  - OBS-000591
+  - OBS-000598
+  - OBS-000693
+  - OBS-000700
+  resource_types:
+  - Challenge
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is Challenge
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-72B786DB47A79314
+  name: URL_URL
+  method: POST
+  route: /profile/image/url
+  endpoint_ids:
+  - EP-051
+  observation_ids:
+  - OBS-000172
+  - OBS-000655
+  resource_types:
+  - Url
+  state_changing: false
+  confidence: WEAK_EVIDENCE
+  reasons:
+  - endpoint action is url
+  - endpoint resource is Url
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-7B616E6F5D401F9E
+  name: REPLACE_WALLET
+  method: PUT
+  route: /rest/wallet/balance
+  endpoint_ids:
+  - EP-056
+  observation_ids:
+  - OBS-000137
+  resource_types:
+  - Wallet
+  state_changing: true
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is replace
+  - endpoint resource is Wallet
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-80B80A7AB68A3AD7
+  name: FILE_UPLOAD_FILEUPLOAD
+  method: POST
+  route: /file-upload
+  endpoint_ids:
+  - EP-048
+  observation_ids:
+  - OBS-000333
+  - OBS-000538
+  resource_types:
+  - FileUpload
+  state_changing: false
+  confidence: WEAK_EVIDENCE
+  reasons:
+  - endpoint action is file_upload
+  - endpoint resource is FileUpload
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-9030656BA5D57FF5
+  name: READ_CONTINUECODE
+  method: GET
+  route: /rest/continue-code
+  endpoint_ids:
+  - EP-028
+  observation_ids:
+  - OBS-000451
+  - OBS-000503
+  resource_types:
+  - ContinueCode
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is ContinueCode
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-9A7DEF0C3408A116
+  name: READ_APPLICATIONVERSION
+  method: GET
+  route: /rest/admin/application-version
+  endpoint_ids:
+  - EP-026
+  observation_ids:
+  - OBS-000031
+  - OBS-000035
+  - OBS-000206
+  - OBS-000212
+  - OBS-000279
+  - OBS-000285
+  - OBS-000359
+  - OBS-000363
+  - OBS-000589
+  - OBS-000595
+  - OBS-000691
+  - OBS-000697
+  resource_types:
+  - ApplicationVersion
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is ApplicationVersion
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-A0E947A80C19F5BE
+  name: READ_BASKET
+  method: GET
+  route: /rest/basket/{basketId}
+  endpoint_ids:
+  - EP-027
+  observation_ids:
+  - OBS-000070
+  - OBS-000090
+  - OBS-000093
+  - OBS-000094
+  - OBS-000110
+  - OBS-000114
+  - OBS-000118
+  - OBS-000211
+  - OBS-000284
+  - OBS-000313
+  - OBS-000316
+  - OBS-000317
+  - OBS-000320
+  - OBS-000321
+  - OBS-000329
+  - OBS-000395
+  - OBS-000415
+  - OBS-000418
+  - OBS-000419
+  - OBS-000436
+  - OBS-000440
+  - OBS-000444
+  - OBS-000477
+  - OBS-000504
+  - OBS-000520
+  - OBS-000523
+  - OBS-000524
+  - OBS-000527
+  - OBS-000528
+  - OBS-000594
+  - OBS-000696
+  resource_types:
+  - Basket
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is Basket
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-ACEC966CE3A341D5
+  name: READ_FEEDBACK
+  method: GET
+  route: /api/Feedbacks/
+  endpoint_ids:
+  - EP-010
+  observation_ids:
+  - OBS-000530
+  resource_types:
+  - Feedback
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is Feedback
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-ADBE3F1B74FF574E
+  name: READ_PRODUCT
+  method: GET
+  route: /api/Products/{productId}
+  endpoint_ids:
+  - EP-012
+  observation_ids:
+  - OBS-000092
+  - OBS-000122
+  - OBS-000315
+  - OBS-000324
+  - OBS-000417
+  - OBS-000508
+  - OBS-000522
+  resource_types:
+  - Product
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is Product
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-B2B1E9EB8EFE2B53
+  name: READ_SOCKET_IO
+  method: GET
+  route: /socket.io/
+  endpoint_ids:
+  - EP-038
+  observation_ids:
+  - OBS-000008
+  - OBS-000009
+  - OBS-000029
+  - OBS-000044
+  - OBS-000045
+  - OBS-000204
+  - OBS-000223
+  - OBS-000224
+  - OBS-000277
+  - OBS-000296
+  - OBS-000297
+  - OBS-000357
+  - OBS-000373
+  - OBS-000374
+  - OBS-000587
+  - OBS-000606
+  - OBS-000607
+  - OBS-000689
+  - OBS-000708
+  - OBS-000709
+  resource_types:
+  - Socket.Io
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is Socket.Io
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-BBB4897E859568F6
+  name: READ_QUANTITY
+  method: GET
+  route: /api/Quantitys/
+  endpoint_ids:
+  - EP-013
+  observation_ids:
+  - OBS-000046
+  - OBS-000073
+  - OBS-000218
+  - OBS-000225
+  - OBS-000291
+  - OBS-000368
+  - OBS-000398
+  - OBS-000456
+  - OBS-000480
+  - OBS-000518
+  - OBS-000601
+  - OBS-000703
+  resource_types:
+  - Quantity
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is Quantity
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-BBF5734A377B5D14
+  name: READ_WALLET
+  method: GET
+  route: /rest/wallet/balance
+  endpoint_ids:
+  - EP-037
+  observation_ids:
+  - OBS-000428
+  resource_types:
+  - Wallet
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is Wallet
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-BC28031F1AD457CE
+  name: FILE_FILE
+  method: POST
+  route: /profile/image/file
+  endpoint_ids:
+  - EP-050
+  observation_ids:
+  - OBS-000170
+  - OBS-000637
+  - OBS-000653
+  - OBS-000670
+  resource_types:
+  - File
+  state_changing: false
+  confidence: WEAK_EVIDENCE
+  reasons:
+  - endpoint action is file
+  - endpoint resource is File
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-BCDA3D914FEAFE66
+  name: READ_PROFILE
+  method: GET
+  route: /profile
+  endpoint_ids:
+  - EP-024
+  observation_ids:
+  - OBS-000141
+  - OBS-000156
+  - OBS-000173
+  - OBS-000246
+  - OBS-000541
+  - OBS-000556
+  - OBS-000623
+  - OBS-000639
+  - OBS-000656
+  resource_types:
+  - Profile
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is Profile
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-BE34A265AB9588E6
+  name: READ_DELIVERY
+  method: GET
+  route: /api/Deliverys
+  endpoint_ids:
+  - EP-008
+  observation_ids:
+  - OBS-000100
+  - OBS-000426
+  resource_types:
+  - Delivery
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is Delivery
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-BE5E72C121C8A31A
+  name: SEARCH_PRODUCT
+  method: GET
+  route: /rest/products/search
+  endpoint_ids:
+  - EP-031
+  observation_ids:
+  - OBS-000047
+  - OBS-000074
+  - OBS-000219
+  - OBS-000226
+  - OBS-000292
+  - OBS-000369
+  - OBS-000399
+  - OBS-000457
+  - OBS-000481
+  - OBS-000519
+  - OBS-000602
+  - OBS-000704
+  resource_types:
+  - Product
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is search
+  - endpoint resource is Product
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-C523429F129CD354
+  name: READ_SECURITYQUESTION
+  method: GET
+  route: /api/SecurityQuestions/
+  endpoint_ids:
+  - EP-014
+  observation_ids:
+  - OBS-000011
+  - OBS-000040
+  resource_types:
+  - Securityquestion
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is Securityquestion
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-CAC79F2F79EC0CCE
+  name: READ_TRACKORDER
+  method: GET
+  route: /rest/track-order/{trackOrderId}
+  endpoint_ids:
+  - EP-034
+  observation_ids:
+  - OBS-000115
+  - OBS-000132
+  - OBS-000339
+  - OBS-000441
+  - OBS-000448
+  resource_types:
+  - TrackOrder
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is TrackOrder
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-D342153E09080346
+  name: PROFILE_PROFILE
+  method: POST
+  route: /profile
+  endpoint_ids:
+  - EP-049
+  observation_ids:
+  - OBS-000155
+  - OBS-000555
+  resource_types:
+  - Profile
+  state_changing: false
+  confidence: WEAK_EVIDENCE
+  reasons:
+  - endpoint action is profile
+  - endpoint resource is Profile
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-D93F1A8846971AB3
+  name: DELETE_BASKETITEM
+  method: DELETE
+  route: /api/BasketItems/{basketitemId}
+  endpoint_ids:
+  - EP-001
+  observation_ids:
+  - OBS-000319
+  - OBS-000526
+  resource_types:
+  - Basketitem
+  state_changing: true
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is delete
+  - endpoint resource is Basketitem
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-E37A0D410B5911E3
+  name: CREATE_COMPLAINT
+  method: POST
+  route: /api/Complaints/
+  endpoint_ids:
+  - EP-047
+  observation_ids:
+  - OBS-000334
+  - OBS-000539
+  resource_types:
+  - Complaint
+  state_changing: true
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is create
+  - endpoint resource is Complaint
+  epistemic_status: INFERRED_PATTERN
+- id: ACTN-E69B662D814411C2
+  name: REPLACE_PRODUCT
+  method: PUT
+  route: /rest/products/{productId}/reviews
+  endpoint_ids:
+  - EP-055
+  observation_ids:
+  - OBS-000128
+  - OBS-000514
+  resource_types:
+  - Product
+  state_changing: true
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is replace
+  - endpoint resource is Product
+  epistemic_status: INFERRED_PATTERN

@@ -11242,7 +11242,35 @@ endpoints:
     original_examples: []
     normalization_reasons:
     - response JSON contains field $.status
-  object_access: []
+  object_access:
+  - identifier: basketId
+    source: RESPONSE_BODY
+    confidence: high
+    owner_field_path: $.data.UserId
+    baselines:
+    - actor: mrscargo
+      requested_value: '6'
+      response_object_path: $.data.id
+      owner_value_fingerprint: f1d3825973e71668ef20dedf3dfb0ec82477c4e79dedec911c0cfd24a26da163
+      observations:
+      - OBS-000696
+    - actor: saeedmehmandoust
+      requested_value: '7'
+      response_object_path: $.data.id
+      owner_value_fingerprint: 87d63e266f7a9461fb9ebf4f5233166f6bce7ad4524b130c8e86b553128f7155
+      observations:
+      - OBS-000284
+      - OBS-000313
+      - OBS-000316
+      - OBS-000317
+      - OBS-000320
+      - OBS-000321
+      - OBS-000329
+    distinct_actors: 2
+    distinct_objects: 2
+    distinct_owner_values: 2
+    distinct_scope_values: 0
+    actor_object_binding_observed: true
   ownership_inference:
   - parameter: basketId
     classification: UNCLASSIFIED
@@ -11257,11 +11285,14 @@ endpoints:
   state_change_reasons:
   - GET is a safe HTTP method
   financial_impact: none
-  security_relevance: 6
+  security_relevance: 9
   relevance_reasons:
   - first-party API endpoint
   - authenticated endpoint observed
   - client-controlled object identifier observed
+  - two controlled actors have distinct object baselines
+  - successful JSON response object IDs match requested IDs
+  - distinct owner/account values observed at $.data.UserId
   disposition: ACTIVE
   observed_by:
   - mrscargo
