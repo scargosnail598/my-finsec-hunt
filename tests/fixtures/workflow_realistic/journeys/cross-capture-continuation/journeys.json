@@ -1,0 +1,94 @@
+{
+  "name": "cross-capture-continuation",
+  "captures": [
+    {
+      "name": "capture-session-1",
+      "actor": "ACCOUNT_X",
+      "entries": [
+        {
+          "label": "create_order",
+          "offset_seconds": 0,
+          "method": "POST",
+          "path": "/api/orders",
+          "host": "api.orders.test",
+          "request": {
+            "items": ["SKU-001", "SKU-002"]
+          },
+          "response": {
+            "orderId": "ORD-CROSS-CAP-01",
+            "status": "CREATED",
+            "createdAt": "2026-08-05T10:00:00Z"
+          },
+          "request_headers": {
+            "Authorization": "Bearer SANITIZED_TOKEN"
+          },
+          "response_headers": {
+            "Content-Type": "application/json"
+          },
+          "status": 201
+        }
+      ]
+    },
+    {
+      "name": "capture-session-2",
+      "actor": "ACCOUNT_X",
+      "entries": [
+        {
+          "label": "pay_order",
+          "offset_seconds": 10,
+          "method": "POST",
+          "path": "/api/orders/ORD-CROSS-CAP-01/pay",
+          "host": "api.orders.test",
+          "request": {
+            "orderId": "ORD-CROSS-CAP-01",
+            "amount": 149.99
+          },
+          "response": {
+            "orderId": "ORD-CROSS-CAP-01",
+            "paymentId": "PAY-CROSS-CAP-99",
+            "status": "PAID",
+            "paidAt": "2026-08-05T10:00:10Z"
+          },
+          "request_headers": {
+            "Authorization": "Bearer SANITIZED_TOKEN",
+            "Content-Type": "application/json"
+          },
+          "response_headers": {
+            "Content-Type": "application/json"
+          },
+          "status": 200
+        }
+      ]
+    },
+    {
+      "name": "capture-session-3",
+      "actor": "ACCOUNT_X",
+      "entries": [
+        {
+          "label": "confirm_order",
+          "offset_seconds": 20,
+          "method": "POST",
+          "path": "/api/orders/ORD-CROSS-CAP-01/confirm",
+          "host": "api.orders.test",
+          "request": {
+            "paymentId": "PAY-CROSS-CAP-99"
+          },
+          "response": {
+            "orderId": "ORD-CROSS-CAP-01",
+            "paymentId": "PAY-CROSS-CAP-99",
+            "status": "CONFIRMED",
+            "confirmedAt": "2026-08-05T10:00:20Z"
+          },
+          "request_headers": {
+            "Authorization": "Bearer SANITIZED_TOKEN",
+            "Content-Type": "application/json"
+          },
+          "response_headers": {
+            "Content-Type": "application/json"
+          },
+          "status": 200
+        }
+      ]
+    }
+  ]
+}

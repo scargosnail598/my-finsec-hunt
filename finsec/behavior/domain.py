@@ -68,6 +68,108 @@ class CausalBasis(StrEnum):
     LEGACY_UNTYPED = "LEGACY_UNTYPED"
 
 
+class CausalEvidence(BehaviorModel):
+    """Evidence-based predicate set for deterministic causal reasoning.
+    
+    Tracks which evidence conditions are met for a candidate causal edge.
+    Used to explain why a relationship was or was not classified as CAUSAL_HARD.
+    All fields are boolean predicates; final causal basis is deterministically derived.
+    """
+
+    output_only: bool = False
+    """Value appears in response but not in producing request."""
+
+    later_consumed: bool = False
+    """Value is explicitly supplied in a later request."""
+
+    compatible_resource_type: bool = False
+    """Source and destination resources have compatible types."""
+
+    temporal_order: bool = False
+    """Temporal precedence is established via timestamps or sequence."""
+
+    same_controlled_actor: bool = False
+    """Producer and consumer share the same authenticated principal."""
+
+    distinctive_value: bool = False
+    """Value is distinctive (low entropy, not a generic enum)."""
+
+    same_session: bool = False
+    """Producer and consumer share explicit session identity."""
+
+    same_capture: bool = False
+    """Producer and consumer observations are in the same traffic capture."""
+
+    same_host: bool = False
+    """Producer and consumer are on the same service endpoint."""
+
+    request_echo: bool = False
+    """Value was supplied in the producer's request (not produced)."""
+
+    previously_observed: bool = False
+    """Value was observed in prior operations (read, not produced)."""
+
+    capability_semantics: bool = False
+    """Evidence suggests the value is a workflow token/capability."""
+
+    state_transition_evidence: bool = False
+    """Evidence of state change in a lifecycle field."""
+
+    distinctive_semantic_role: bool = False
+    """Field semantic role (e.g., WORKFLOW_TOKEN) is distinctive."""
+
+    def hard_causal_admissibility(self) -> bool:
+        """Deterministically derive whether this evidence supports CAUSAL_HARD."""
+        # Must have output-only or state transition evidence
+        produced = self.output_only or self.state_transition_evidence
+
+        if not produced:
+            return False
+
+        # Must have evidence of consumption
+        if not self.later_consumed:
+            return False
+
+        # If cross-host or cross-capture, must have capability-like evidence
+        cross_boundary = not (self.same_capture and self.same_host)
+        if cross_boundary and not self.capability_semantics:
+            return False
+
+        # If cross-session, must have very strong evidence
+        cross_session = not self.same_session
+        if cross_session and not self.capability_semantics:
+            return False
+
+        # Must have temporal order or be capability-based
+        return self.temporal_order or self.capability_semantics
+
+    def context_soft_reason(self) -> str:
+        """Explain why this edge is CONTEXT_SOFT, if not admissible for CAUSAL_HARD."""
+        if self.request_echo:
+            return "Value was echoed from the request, not newly produced"
+        if self.previously_observed:
+            return "Value was observed in a prior read operation, not produced"
+        if not self.output_only and not self.state_transition_evidence:
+            return "No evidence of value production"
+        if not self.later_consumed:
+            return "Value is not explicitly consumed in a later request"
+        if self.request_echo:
+            return "Value is a request echo, not production"
+        if not self.distinctive_value:
+            return "Value is not distinctive (may be generic enum or business value)"
+        if not self.same_controlled_actor:
+            return "Producer and consumer have different actors"
+        if not self.temporal_order:
+            return "Temporal order cannot be established"
+        if not self.same_session and not self.capability_semantics:
+            return "Session continuity is absent without capability evidence"
+        if not self.same_capture and not self.capability_semantics:
+            return "Capture continuity is absent without capability evidence"
+        if not self.same_host and not self.capability_semantics:
+            return "Cross-service without distinctive capability evidence"
+        return "Evidence does not reach CAUSAL_HARD threshold"
+
+
 class HypothesisReadiness(StrEnum):
     """Separate plausibility from whether unresolved blockers remain."""
 

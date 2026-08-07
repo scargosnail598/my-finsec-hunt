@@ -1,0 +1,77 @@
+{
+  "name": "capability-handoff",
+  "actor": "PAYMENT_USER_1",
+  "entries": [
+    {
+      "label": "get_checkout",
+      "offset_seconds": 0,
+      "method": "GET",
+      "path": "/api/checkout/session",
+      "host": "api.fintech.test",
+      "response": {
+        "sessionId": "SESSION-XYZ789ABC",
+        "challenge": "CHG_9K7M2L5X8N3Q6R1V",
+        "cartTotal": 249.99,
+        "currency": "USD"
+      },
+      "request_headers": {
+        "Authorization": "Bearer SANITIZED_TOKEN"
+      },
+      "response_headers": {
+        "Content-Type": "application/json"
+      },
+      "status": 200
+    },
+    {
+      "label": "authorize_payment",
+      "offset_seconds": 3,
+      "method": "POST",
+      "path": "/api/payment/authorize",
+      "host": "api.fintech.test",
+      "request": {
+        "challenge": "CHG_9K7M2L5X8N3Q6R1V",
+        "amount": 249.99,
+        "currency": "USD"
+      },
+      "response": {
+        "authorizationId": "AUTH_4P7U2X9Y1Z3B5C8D",
+        "authStatus": "APPROVED",
+        "expiresAt": "2026-08-05T10:15:00Z"
+      },
+      "request_headers": {
+        "Authorization": "Bearer SANITIZED_TOKEN",
+        "Content-Type": "application/json"
+      },
+      "response_headers": {
+        "Content-Type": "application/json"
+      },
+      "status": 200
+    },
+    {
+      "label": "confirm_payment",
+      "offset_seconds": 5,
+      "method": "POST",
+      "path": "/api/payment/confirm",
+      "host": "api.fintech.test",
+      "request": {
+        "authorizationId": "AUTH_4P7U2X9Y1Z3B5C8D",
+        "amount": 249.99,
+        "reference": "ORDER-12345"
+      },
+      "response": {
+        "transactionId": "TXN_7Q2V5X8A1B4C6D9E",
+        "status": "SETTLED",
+        "settledAt": "2026-08-05T10:00:05Z",
+        "authorizationId": "AUTH_4P7U2X9Y1Z3B5C8D"
+      },
+      "request_headers": {
+        "Authorization": "Bearer SANITIZED_TOKEN",
+        "Content-Type": "application/json"
+      },
+      "response_headers": {
+        "Content-Type": "application/json"
+      },
+      "status": 200
+    }
+  ]
+}

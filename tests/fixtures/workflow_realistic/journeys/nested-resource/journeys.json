@@ -1,0 +1,77 @@
+{
+  "name": "nested-resource",
+  "actor": "NESTED_USER_1",
+  "entries": [
+    {
+      "label": "create_order",
+      "offset_seconds": 0,
+      "method": "POST",
+      "path": "/accounts/ACC-SCOPE-12345/orders",
+      "host": "api.nested.test",
+      "request": {
+        "description": "Office supplies"
+      },
+      "response": {
+        "orderId": "ORD-NESTED-98765",
+        "status": "CREATED",
+        "createdAt": "2026-08-05T10:00:00Z"
+      },
+      "request_headers": {
+        "Authorization": "Bearer SANITIZED_TOKEN"
+      },
+      "response_headers": {
+        "Content-Type": "application/json"
+      },
+      "status": 201
+    },
+    {
+      "label": "create_item",
+      "offset_seconds": 5,
+      "method": "POST",
+      "path": "/accounts/ACC-SCOPE-12345/orders/ORD-NESTED-98765/items",
+      "host": "api.nested.test",
+      "request": {
+        "sku": "SKU-001",
+        "quantity": 10
+      },
+      "response": {
+        "itemId": "ITEM-NESTED-54321",
+        "orderId": "ORD-NESTED-98765",
+        "status": "ADDED",
+        "quantity": 10
+      },
+      "request_headers": {
+        "Authorization": "Bearer SANITIZED_TOKEN",
+        "Content-Type": "application/json"
+      },
+      "response_headers": {
+        "Content-Type": "application/json"
+      },
+      "status": 201
+    },
+    {
+      "label": "confirm_item",
+      "offset_seconds": 8,
+      "method": "POST",
+      "path": "/accounts/ACC-SCOPE-12345/orders/ORD-NESTED-98765/items/ITEM-NESTED-54321/confirm",
+      "host": "api.nested.test",
+      "request": {
+        "confirmed": true
+      },
+      "response": {
+        "itemId": "ITEM-NESTED-54321",
+        "orderId": "ORD-NESTED-98765",
+        "status": "CONFIRMED",
+        "confirmedAt": "2026-08-05T10:00:08Z"
+      },
+      "request_headers": {
+        "Authorization": "Bearer SANITIZED_TOKEN",
+        "Content-Type": "application/json"
+      },
+      "response_headers": {
+        "Content-Type": "application/json"
+      },
+      "status": 200
+    }
+  ]
+}

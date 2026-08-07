@@ -1,0 +1,456 @@
+# Causal Edges Ground Truth
+# 
+# This file documents all expected, forbidden, and unknown causal edges
+# for the realistic workflow corpus.
+#
+# Status:
+#   - expected: engine must create this edge as CAUSAL_HARD
+#   - forbidden: engine must NOT create this edge as CAUSAL_HARD
+#   - unknown: edge may or may not be created (exploratory)
+
+edges:
+
+# ============================================================================
+# RESOURCE-LIFECYCLE JOURNEY
+# ============================================================================
+
+  - id: "rl-001"
+    journey: "resource-lifecycle"
+    producer: "create_order"
+    consumer: "confirm_order"
+    field_name: "orderId"
+    resource_type: "order"
+    value: "ORD-A2B3C4D5E6F7G8H9"
+    relationship: "CAUSAL_HARD"
+    expected_basis: "RESOURCE_CREATED"
+    status: "expected"
+    reason: "orderId is produced in create_order response and consumed in confirm_order request"
+    distinctive: true
+
+  - id: "rl-002"
+    journey: "resource-lifecycle"
+    producer: "create_order"
+    consumer: "read_order_1"
+    field_name: "orderId"
+    resource_type: "order"
+    value: "ORD-A2B3C4D5E6F7G8H9"
+    relationship: "CONTEXT_SOFT"
+    expected_basis: "EXISTING_VALUE_OBSERVED"
+    status: "forbidden"
+    reason: "read_order_1 observes orderId but does not consume it as a prerequisite; GET does not produce"
+    note: "orderId must come from create_order, not from read_order_1"
+
+  - id: "rl-003"
+    journey: "resource-lifecycle"
+    producer: "confirm_order"
+    consumer: "read_order_2"
+    field_name: "orderId"
+    resource_type: "order"
+    value: "ORD-A2B3C4D5E6F7G8H9"
+    relationship: "CONTEXT_SOFT"
+    expected_basis: "EXISTING_VALUE_OBSERVED"
+    status: "forbidden"
+    reason: "read_order_2 observes orderId but does not consume it as a prerequisite; orderId origin is create_order"
+
+# ============================================================================
+# CAPABILITY-HANDOFF JOURNEY
+# ============================================================================
+
+  - id: "ch-001"
+    journey: "capability-handoff"
+    producer: "get_checkout"
+    consumer: "authorize_payment"
+    field_name: "challenge"
+    resource_type: "capability"
+    value: "CHG_9K7M2L5X8N3Q6R1V"
+    relationship: "CAUSAL_HARD"
+    expected_basis: "CAPABILITY_ISSUED"
+    status: "expected"
+    reason: "challenge is output-only in checkout, consumed in authorize request"
+    distinctive: true
+    output_only: true
+
+  - id: "ch-002"
+    journey: "capability-handoff"
+    producer: "authorize_payment"
+    consumer: "confirm_payment"
+    field_name: "authorizationId"
+    resource_type: "capability"
+    value: "AUTH_4P7U2X9Y1Z3B5C8D"
+    relationship: "CAUSAL_HARD"
+    expected_basis: "CAPABILITY_ISSUED"
+    status: "expected"
+    reason: "authorizationId is issued in authorize response, consumed in confirm request"
+    distinctive: true
+    output_only: true
+
+# ============================================================================
+# MULTI-SERVICE-PAYMENT JOURNEY
+# ============================================================================
+
+  - id: "mp-001"
+    journey: "multi-service-payment"
+    producer: "create_transaction"
+    consumer: "call_payments"
+    field_name: "transactionId"
+    resource_type: "capability"
+    value: "TRX_KM7N9Q2S5T8V1W3X"
+    relationship: "CAUSAL_HARD"
+    expected_basis: "CAPABILITY_ISSUED"
+    status: "expected"
+    reason: "transactionId crosses service boundary (api→payments) using distinctive token"
+    distinctive: true
+    cross_host: true
+    same_actor: true
+    capture_continuity: false
+
+  - id: "mp-002"
+    journey: "multi-service-payment"
+    producer: "call_payments"
+    consumer: "settle_transaction"
+    field_name: "paymentId"
+    resource_type: "capability"
+    value: "PAY_R2T5U7V9X1Z3A5B7"
+    relationship: "CAUSAL_HARD"
+    expected_basis: "CAPABILITY_ISSUED"
+    status: "expected"
+    reason: "paymentId is produced by payment service and returned to main API for settlement"
+    distinctive: true
+    output_only: true
+
+# ============================================================================
+# NESTED-RESOURCE JOURNEY
+# ============================================================================
+
+  - id: "nr-001"
+    journey: "nested-resource"
+    producer: "create_order"
+    consumer: "create_item"
+    field_name: "orderId"
+    resource_type: "order"
+    value: "ORD-NESTED-98765"
+    relationship: "CAUSAL_HARD"
+    expected_basis: "RESOURCE_CREATED"
+    status: "expected"
+    reason: "orderId is produced and consumed; hierarchical prerequisite"
+    distinctive: true
+
+  - id: "nr-002"
+    journey: "nested-resource"
+    producer: "create_item"
+    consumer: "confirm_item"
+    field_name: "itemId"
+    resource_type: "item"
+    value: "ITEM-NESTED-54321"
+    relationship: "CAUSAL_HARD"
+    expected_basis: "RESOURCE_CREATED"
+    status: "expected"
+    reason: "itemId is produced and consumed in immediate next step"
+    distinctive: true
+
+  - id: "nr-003"
+    journey: "nested-resource"
+    producer: "create_order"
+    consumer: "create_item"
+    field_name: "accountId"
+    resource_type: "account"
+    value: "ACC-SCOPE-12345"
+    relationship: "CONTEXT_SOFT"
+    expected_basis: "AMBIGUOUS_ORIGIN"
+    status: "forbidden"
+    reason: "accountId is a scope/authorization parameter, not a causal prerequisite"
+    note: "Path parameters used for scoping are not causal edges"
+
+# ============================================================================
+# UNFAMILIAR-STATE-TRANSITIONS JOURNEY
+# ============================================================================
+
+  - id: "ust-001"
+    journey: "unfamiliar-state-transitions"
+    producer: "create_payment"
+    consumer: "reserve_payment"
+    field_name: "paymentId"
+    resource_type: "payment"
+    value: "PAY-UNFAM-A1B2C3D4E5F6"
+    relationship: "CAUSAL_HARD"
+    expected_basis: "RESOURCE_CREATED"
+    status: "expected"
+    reason: "paymentId is produced and consumed"
+    distinctive: true
+
+  - id: "ust-002"
+    journey: "unfamiliar-state-transitions"
+    producer: "create_payment"
+    consumer: "reserve_payment"
+    field_name: "state"
+    resource_type: "payment"
+    value_from: "CREATED"
+    value_to: "RESERVED"
+    relationship: "CAUSAL_HARD"
+    expected_basis: "STATE_TRANSITION_PRODUCED"
+    status: "expected"
+    reason: "State transitions from CREATED to RESERVED; inferred from same resource + different values + intervening action"
+    state_transition: true
+
+  - id: "ust-003"
+    journey: "unfamiliar-state-transitions"
+    producer: "reserve_payment"
+    consumer: "capture_payment"
+    field_name: "state"
+    resource_type: "payment"
+    value_from: "RESERVED"
+    value_to: "CAPTURED"
+    relationship: "CAUSAL_HARD"
+    expected_basis: "STATE_TRANSITION_PRODUCED"
+    status: "expected"
+    reason: "State transitions from RESERVED to CAPTURED"
+    state_transition: true
+
+  - id: "ust-004"
+    journey: "unfamiliar-state-transitions"
+    producer: "capture_payment"
+    consumer: "settle_payment"
+    field_name: "state"
+    resource_type: "payment"
+    value_from: "CAPTURED"
+    value_to: "SETTLED"
+    relationship: "CAUSAL_HARD"
+    expected_basis: "STATE_TRANSITION_PRODUCED"
+    status: "expected"
+    reason: "State transitions from CAPTURED to SETTLED"
+    state_transition: true
+
+  - id: "ust-005"
+    journey: "unfamiliar-state-transitions"
+    producer: "capture_payment"
+    consumer: "read_payment"
+    field_name: "paymentId"
+    resource_type: "payment"
+    value: "PAY-UNFAM-A1B2C3D4E5F6"
+    relationship: "CONTEXT_SOFT"
+    expected_basis: "EXISTING_VALUE_OBSERVED"
+    status: "forbidden"
+    reason: "read_payment observes existing value; does not establish production prerequisite"
+
+# ============================================================================
+# TOKEN-ALIASES JOURNEY
+# ============================================================================
+
+  - id: "ta-001"
+    journey: "token-aliases"
+    producer: "start_auth"
+    consumer: "verify_auth"
+    field_name_producer: "continuation"
+    field_name_consumer: "sessionReference"
+    resource_type: "capability"
+    value: "CONT_M3N5P7Q9R2S4T6U8"
+    relationship: "CAUSAL_HARD"
+    expected_basis: "CAPABILITY_ISSUED"
+    status: "expected"
+    reason: "Same value appears with different field names; matched by value not name"
+    alias_handling: true
+    distinctive: true
+
+  - id: "ta-002"
+    journey: "token-aliases"
+    producer: "verify_auth"
+    consumer: "confirm_auth"
+    field_name: "verifyToken"
+    resource_type: "capability"
+    value: "VFYTOK_7X2Y9Z1A3B5C7D9E"
+    relationship: "CAUSAL_HARD"
+    expected_basis: "CAPABILITY_ISSUED"
+    status: "expected"
+    reason: "verifyToken is issued and consumed in next step"
+    distinctive: true
+
+# ============================================================================
+# REPLAY-AND-FANOUT JOURNEY
+# ============================================================================
+
+  - id: "raf-001"
+    journey: "replay-and-fanout"
+    producer: "create_search"
+    consumer: "next_page"
+    field_name: "searchId"
+    resource_type: "capability"
+    value: "SRCH_V2W4X6Y8Z1A3B5C7"
+    relationship: "CAUSAL_HARD"
+    expected_basis: "CAPABILITY_ISSUED"
+    status: "expected"
+    reason: "searchId is issued and reused legitimately for pagination"
+    reuse_legitimate: true
+    distinctive: true
+
+  - id: "raf-002"
+    journey: "replay-and-fanout"
+    producer: "create_search"
+    consumer: "count_results"
+    field_name: "searchId"
+    resource_type: "capability"
+    value: "SRCH_V2W4X6Y8Z1A3B5C7"
+    relationship: "CAUSAL_HARD"
+    expected_basis: "CAPABILITY_ISSUED"
+    status: "expected"
+    reason: "searchId reused for count operation"
+    reuse_legitimate: true
+    distinctive: true
+
+  - id: "raf-003"
+    journey: "replay-and-fanout"
+    producer: "create_search"
+    consumer: "close_search"
+    field_name: "searchId"
+    resource_type: "capability"
+    value: "SRCH_V2W4X6Y8Z1A3B5C7"
+    relationship: "CAUSAL_HARD"
+    expected_basis: "CAPABILITY_ISSUED"
+    status: "expected"
+    reason: "searchId reused for cleanup operation"
+    reuse_legitimate: true
+    distinctive: true
+
+# ============================================================================
+# CROSS-CAPTURE-CONTINUATION JOURNEY
+# ============================================================================
+
+  - id: "ccc-001"
+    journey: "cross-capture-continuation"
+    producer: "create_order"
+    consumer: "pay_order"
+    field_name: "orderId"
+    resource_type: "order"
+    value: "ORD-CROSS-CAP-01"
+    relationship: "CAUSAL_HARD"
+    expected_basis: "RESOURCE_CREATED"
+    status: "expected"
+    reason: "orderId bridges capture-1 to capture-2; same actor, distinctive token"
+    cross_capture: true
+    same_actor: true
+    distinctive: true
+
+  - id: "ccc-002"
+    journey: "cross-capture-continuation"
+    producer: "pay_order"
+    consumer: "confirm_order"
+    field_name: "paymentId"
+    resource_type: "capability"
+    value: "PAY-CROSS-CAP-99"
+    relationship: "CAUSAL_HARD"
+    expected_basis: "CAPABILITY_ISSUED"
+    status: "expected"
+    reason: "paymentId bridges capture-2 to capture-3; capability-based continuation"
+    cross_capture: true
+    same_actor: true
+    distinctive: true
+
+# ============================================================================
+# ADVERSARIAL JOURNEY (Forbidden Edges)
+# ============================================================================
+
+  - id: "adv-001"
+    journey: "adversarial"
+    producer: "post_order"
+    consumer: "post_report"
+    field_name: "total"
+    relationship: "CONTEXT_SOFT"
+    expected_basis: "AMBIGUOUS_ORIGIN"
+    status: "forbidden"
+    reason: "Coincidental numeric value (50.00) across unrelated resources; must not merge workflows"
+    coincidental: true
+    same_value_different_semantics: true
+
+  - id: "adv-002"
+    journey: "adversarial"
+    producer: "post_order"
+    consumer: "get_report_details"
+    field_name: "orderId (numeric part) vs reportId"
+    relationship: "CONTEXT_SOFT"
+    expected_basis: "AMBIGUOUS_ORIGIN"
+    status: "forbidden"
+    reason: "Coincidental numeric equality (100) in different resource types; must not create edge"
+    coincidental: true
+
+  - id: "adv-003"
+    journey: "adversarial"
+    producer: "post_shipment"
+    consumer: "post_report"
+    field_name: "status"
+    value: "ACTIVE"
+    relationship: "CONTEXT_SOFT"
+    expected_basis: "AMBIGUOUS_ORIGIN"
+    status: "forbidden"
+    reason: "Generic enum value (ACTIVE) appears in multiple resources; must not create causal edge"
+    generic_value: true
+
+  - id: "adv-004"
+    journey: "adversarial"
+    producer: "post_shipment"
+    consumer: "get_report_details"
+    field_name: "status"
+    value: "ACTIVE"
+    relationship: "CONTEXT_SOFT"
+    expected_basis: "AMBIGUOUS_ORIGIN"
+    status: "forbidden"
+    reason: "Generic status value across unrelated resources"
+    generic_value: true
+
+  - id: "adv-005"
+    journey: "adversarial"
+    producer: "get_account"
+    consumer: "post_transfer"
+    field_name: "accountId"
+    value: "ACC-500"
+    relationship: "CONTEXT_SOFT"
+    expected_basis: "EXISTING_VALUE_OBSERVED"
+    status: "forbidden"
+    reason: "Read-before-write: GET does not establish production; POST produces the state change"
+    read_before_write: true
+
+  - id: "adv-006"
+    journey: "adversarial"
+    producer: "payment_customer_b"
+    consumer: "payment_customer_a"
+    field_name: "paymentId"
+    value_from: "PAY-501"
+    value_to: "PAY-502"
+    relationship: "CROSS_ACTOR_COMPARISON"
+    expected_basis: "AMBIGUOUS_ORIGIN"
+    status: "forbidden"
+    reason: "Cross-actor payment IDs must not merge; different controlled actors"
+    cross_actor: true
+
+# ============================================================================
+# Expected Isolated Workflow Components (Adversarial)
+# ============================================================================
+
+isolated_workflows:
+  - id: "adv-wf-1"
+    name: "Order + Shipment"
+    observations: ["post_order", "post_shipment"]
+    expected_components: 1
+    reason: "Same actor, orderId link"
+
+  - id: "adv-wf-2"
+    name: "Report + Report Details"
+    observations: ["post_report", "get_report_details"]
+    expected_components: 1
+    reason: "Same actor, resource ID link"
+
+  - id: "adv-wf-3"
+    name: "Account + Transfer"
+    observations: ["get_account", "post_transfer"]
+    expected_components: 1
+    reason: "Same actor, same resource (accountId), scoped by read then modified"
+
+  - id: "adv-wf-b"
+    name: "Payment (Customer B)"
+    observations: ["payment_customer_b"]
+    expected_components: 1
+    reason: "Customer B only; isolated by actor"
+
+  - id: "adv-wf-a"
+    name: "Payment (Customer A)"
+    observations: ["payment_customer_a"]
+    expected_components: 1
+    reason: "Customer A payment; different actor from wf-b"

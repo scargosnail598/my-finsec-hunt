@@ -1,0 +1,212 @@
+{
+  "name": "adversarial",
+  "captures": [
+    {
+      "name": "customer-a-orders",
+      "actor": "CUSTOMER_A",
+      "entries": [
+        {
+          "label": "post_order",
+          "offset_seconds": 0,
+          "method": "POST",
+          "path": "/api/orders",
+          "host": "api.adv.test",
+          "request": {
+            "items": ["item-1"]
+          },
+          "response": {
+            "orderId": "ORDER-100",
+            "total": 50.00,
+            "status": "ACTIVE",
+            "createdAt": "2026-08-05T10:00:00Z"
+          },
+          "request_headers": {
+            "Authorization": "Bearer SANITIZED_TOKEN"
+          },
+          "response_headers": {
+            "Content-Type": "application/json"
+          },
+          "status": 201
+        },
+        {
+          "label": "post_shipment",
+          "offset_seconds": 5,
+          "method": "POST",
+          "path": "/api/shipments",
+          "host": "api.adv.test",
+          "request": {
+            "orderId": "ORDER-100"
+          },
+          "response": {
+            "shipmentId": "SHIP-X",
+            "status": "ACTIVE",
+            "estimatedDelivery": "2026-08-10"
+          },
+          "request_headers": {
+            "Authorization": "Bearer SANITIZED_TOKEN",
+            "Content-Type": "application/json"
+          },
+          "response_headers": {
+            "Content-Type": "application/json"
+          },
+          "status": 201
+        }
+      ]
+    },
+    {
+      "name": "customer-a-reports",
+      "actor": "CUSTOMER_A",
+      "entries": [
+        {
+          "label": "post_report",
+          "offset_seconds": 10,
+          "method": "POST",
+          "path": "/api/reports",
+          "host": "api.adv.test",
+          "request": {
+            "type": "TRANSACTION_HISTORY"
+          },
+          "response": {
+            "reportId": 100,
+            "total": 50.00,
+            "status": "ACTIVE",
+            "createdAt": "2026-08-05T10:00:10Z"
+          },
+          "request_headers": {
+            "Authorization": "Bearer SANITIZED_TOKEN",
+            "Content-Type": "application/json"
+          },
+          "response_headers": {
+            "Content-Type": "application/json"
+          },
+          "status": 201
+        },
+        {
+          "label": "get_report_details",
+          "offset_seconds": 12,
+          "method": "GET",
+          "path": "/api/reports/100/details",
+          "host": "api.adv.test",
+          "response": {
+            "reportId": 100,
+            "total": 50.00,
+            "status": "ACTIVE",
+            "data": ["entry-1", "entry-2"]
+          },
+          "request_headers": {
+            "Authorization": "Bearer SANITIZED_TOKEN"
+          },
+          "response_headers": {
+            "Content-Type": "application/json"
+          },
+          "status": 200
+        }
+      ]
+    },
+    {
+      "name": "customer-a-account",
+      "actor": "CUSTOMER_A",
+      "entries": [
+        {
+          "label": "get_account",
+          "offset_seconds": 15,
+          "method": "GET",
+          "path": "/api/accounts/ACC-500",
+          "host": "api.adv.test",
+          "response": {
+            "accountId": "ACC-500",
+            "balance": 1000.00,
+            "status": "ACTIVE"
+          },
+          "request_headers": {
+            "Authorization": "Bearer SANITIZED_TOKEN"
+          },
+          "response_headers": {
+            "Content-Type": "application/json"
+          },
+          "status": 200
+        },
+        {
+          "label": "post_transfer",
+          "offset_seconds": 17,
+          "method": "POST",
+          "path": "/api/accounts/ACC-500/transfer",
+          "host": "api.adv.test",
+          "request": {
+            "amount": 100.00,
+            "destination": "ACC-501"
+          },
+          "response": {
+            "accountId": "ACC-500",
+            "balance": 900.00,
+            "status": "ACTIVE"
+          },
+          "request_headers": {
+            "Authorization": "Bearer SANITIZED_TOKEN",
+            "Content-Type": "application/json"
+          },
+          "response_headers": {
+            "Content-Type": "application/json"
+          },
+          "status": 200
+        }
+      ]
+    },
+    {
+      "name": "customer-b-payments",
+      "actor": "CUSTOMER_B",
+      "entries": [
+        {
+          "label": "payment_customer_b",
+          "offset_seconds": 3,
+          "method": "POST",
+          "path": "/api/payments",
+          "host": "api.adv.test",
+          "request": {
+            "amount": 75.00
+          },
+          "response": {
+            "paymentId": "PAY-501",
+            "status": "ACTIVE",
+            "processedAt": "2026-08-05T10:00:03Z"
+          },
+          "request_headers": {
+            "Authorization": "Bearer SANITIZED_TOKEN_B"
+          },
+          "response_headers": {
+            "Content-Type": "application/json"
+          },
+          "status": 201
+        }
+      ]
+    },
+    {
+      "name": "customer-a-payments",
+      "actor": "CUSTOMER_A",
+      "entries": [
+        {
+          "label": "payment_customer_a",
+          "offset_seconds": 8,
+          "method": "POST",
+          "path": "/api/payments",
+          "host": "api.adv.test",
+          "request": {
+            "amount": 125.00
+          },
+          "response": {
+            "paymentId": "PAY-502",
+            "status": "ACTIVE",
+            "processedAt": "2026-08-05T10:00:08Z"
+          },
+          "request_headers": {
+            "Authorization": "Bearer SANITIZED_TOKEN"
+          },
+          "response_headers": {
+            "Content-Type": "application/json"
+          },
+          "status": 201
+        }
+      ]
+    }
+  ]
+}

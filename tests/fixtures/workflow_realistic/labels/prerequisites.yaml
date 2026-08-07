@@ -1,0 +1,257 @@
+# Prerequisites and Ordering Ground Truth
+#
+# This file documents expected prerequisites (true dependencies)
+# and forbidden adjacencies (false implied ordering).
+
+prerequisites:
+
+  # ========================================================================
+  # RESOURCE-LIFECYCLE
+  # ========================================================================
+
+  - id: "rl-p-001"
+    journey: "resource-lifecycle"
+    dependent_action: "confirm_order"
+    prerequisite_action: "create_order"
+    field: "orderId"
+    status: "expected"
+    confidence: "HIGH_EVIDENCE"
+    reason: "orderId must be created before it can be confirmed"
+    evidence:
+      - "orderId is produced in create_order response"
+      - "orderId is consumed in confirm_order request"
+      - "Same resource type and value"
+
+  - id: "rl-p-002"
+    journey: "resource-lifecycle"
+    dependent_action: "read_order_1"
+    prerequisite_action: "create_order"
+    field: "orderId"
+    status: "forbidden"
+    confidence: "HIGH_EVIDENCE"
+    reason: "read_order_1 does not create a causal prerequisite; orderId originates from create_order"
+    note: "GET operations read existing resources; they don't establish production"
+
+  # ========================================================================
+  # CAPABILITY-HANDOFF
+  # ========================================================================
+
+  - id: "ch-p-001"
+    journey: "capability-handoff"
+    dependent_action: "authorize_payment"
+    prerequisite_action: "get_checkout"
+    field: "challenge"
+    status: "expected"
+    confidence: "HIGH_EVIDENCE"
+    reason: "challenge must be obtained before payment can be authorized"
+
+  - id: "ch-p-002"
+    journey: "capability-handoff"
+    dependent_action: "confirm_payment"
+    prerequisite_action: "authorize_payment"
+    field: "authorizationId"
+    status: "expected"
+    confidence: "HIGH_EVIDENCE"
+    reason: "authorizationId must be obtained before payment can be confirmed"
+
+  # ========================================================================
+  # NESTED-RESOURCE
+  # ========================================================================
+
+  - id: "nr-p-001"
+    journey: "nested-resource"
+    dependent_action: "create_item"
+    prerequisite_action: "create_order"
+    field: "orderId"
+    status: "expected"
+    confidence: "HIGH_EVIDENCE"
+    reason: "orderId must exist before items can be added to it"
+
+  - id: "nr-p-002"
+    journey: "nested-resource"
+    dependent_action: "confirm_item"
+    prerequisite_action: "create_item"
+    field: "itemId"
+    status: "expected"
+    confidence: "HIGH_EVIDENCE"
+    reason: "itemId must be created before it can be confirmed"
+
+  - id: "nr-p-003"
+    journey: "nested-resource"
+    dependent_action: "create_item"
+    prerequisite_action: "create_order"
+    field: "accountId"
+    status: "forbidden"
+    confidence: "HIGH_EVIDENCE"
+    reason: "accountId is a scope parameter, not a causal prerequisite"
+    note: "Path parameters used for authorization/scoping don't imply causality"
+
+  # ========================================================================
+  # UNFAMILIAR-STATE-TRANSITIONS
+  # ========================================================================
+
+  - id: "ust-p-001"
+    journey: "unfamiliar-state-transitions"
+    dependent_action: "reserve_payment"
+    prerequisite_action: "create_payment"
+    field: "paymentId"
+    status: "expected"
+    confidence: "HIGH_EVIDENCE"
+    reason: "paymentId must be created before it can be reserved"
+
+  - id: "ust-p-002"
+    journey: "unfamiliar-state-transitions"
+    dependent_action: "capture_payment"
+    prerequisite_action: "reserve_payment"
+    field: "paymentId"
+    status: "expected"
+    confidence: "HIGH_EVIDENCE"
+    reason: "payment must be reserved before capture"
+
+  - id: "ust-p-003"
+    journey: "unfamiliar-state-transitions"
+    dependent_action: "settle_payment"
+    prerequisite_action: "capture_payment"
+    field: "paymentId"
+    status: "expected"
+    confidence: "HIGH_EVIDENCE"
+    reason: "payment must be captured before settlement"
+
+  - id: "ust-p-004"
+    journey: "unfamiliar-state-transitions"
+    dependent_action: "settle_payment"
+    prerequisite_action: "read_payment"
+    field: "paymentId"
+    status: "forbidden"
+    confidence: "HIGH_EVIDENCE"
+    reason: "read_payment observes state but does not establish production prerequisite"
+
+  # ========================================================================
+  # TOKEN-ALIASES
+  # ========================================================================
+
+  - id: "ta-p-001"
+    journey: "token-aliases"
+    dependent_action: "verify_auth"
+    prerequisite_action: "start_auth"
+    field: "continuation / sessionReference"
+    status: "expected"
+    confidence: "HIGH_EVIDENCE"
+    reason: "Auth session must be started before verification can proceed"
+
+  - id: "ta-p-002"
+    journey: "token-aliases"
+    dependent_action: "confirm_auth"
+    prerequisite_action: "verify_auth"
+    field: "verifyToken"
+    status: "expected"
+    confidence: "HIGH_EVIDENCE"
+    reason: "Auth must be verified before confirmation"
+
+  # ========================================================================
+  # REPLAY-AND-FANOUT
+  # ========================================================================
+
+  - id: "raf-p-001"
+    journey: "replay-and-fanout"
+    dependent_action: "next_page"
+    prerequisite_action: "create_search"
+    field: "searchId"
+    status: "expected"
+    confidence: "HIGH_EVIDENCE"
+    reason: "Search must be created before pagination can proceed"
+
+  - id: "raf-p-002"
+    journey: "replay-and-fanout"
+    dependent_action: "count_results"
+    prerequisite_action: "create_search"
+    field: "searchId"
+    status: "expected"
+    confidence: "HIGH_EVIDENCE"
+    reason: "Search must be created before count can be retrieved"
+
+  - id: "raf-p-003"
+    journey: "replay-and-fanout"
+    dependent_action: "close_search"
+    prerequisite_action: "create_search"
+    field: "searchId"
+    status: "expected"
+    confidence: "HIGH_EVIDENCE"
+    reason: "Search must be created before it can be closed"
+
+  # ========================================================================
+  # CROSS-CAPTURE-CONTINUATION
+  # ========================================================================
+
+  - id: "ccc-p-001"
+    journey: "cross-capture-continuation"
+    dependent_action: "pay_order"
+    prerequisite_action: "create_order"
+    field: "orderId"
+    status: "expected"
+    confidence: "HIGH_EVIDENCE"
+    reason: "Order must be created before payment can be made (cross-capture)"
+
+  - id: "ccc-p-002"
+    journey: "cross-capture-continuation"
+    dependent_action: "confirm_order"
+    prerequisite_action: "pay_order"
+    field: "paymentId"
+    status: "expected"
+    confidence: "HIGH_EVIDENCE"
+    reason: "Payment must be completed before order can be confirmed (cross-capture)"
+
+  # ========================================================================
+  # ADVERSARIAL
+  # ========================================================================
+
+  - id: "adv-p-001"
+    journey: "adversarial"
+    dependent_action: "post_shipment"
+    prerequisite_action: "post_order"
+    field: "orderId"
+    status: "expected"
+    confidence: "HIGH_EVIDENCE"
+    reason: "Legitimate prerequisite: order must exist before shipment"
+
+  - id: "adv-p-002"
+    journey: "adversarial"
+    dependent_action: "get_report_details"
+    prerequisite_action: "post_report"
+    field: "reportId"
+    status: "expected"
+    confidence: "HIGH_EVIDENCE"
+    reason: "Legitimate prerequisite: report must be created before details can be fetched"
+
+  - id: "adv-p-003"
+    journey: "adversarial"
+    dependent_action: "post_transfer"
+    prerequisite_action: "get_account"
+    field: "accountId"
+    status: "forbidden"
+    confidence: "HIGH_EVIDENCE"
+    reason: "GET does not establish production; transfer operation produces state change"
+
+  - id: "adv-p-004"
+    journey: "adversarial"
+    dependent_action: "post_shipment"
+    prerequisite_action: "post_report"
+    field: "status"
+    value: "ACTIVE"
+    status: "forbidden"
+    confidence: "HIGH_EVIDENCE"
+    reason: "Generic enum value does not establish prerequisite between unrelated resources"
+
+  - id: "adv-p-005"
+    journey: "adversarial"
+    dependent_action: "payment_customer_a"
+    prerequisite_action: "payment_customer_b"
+    status: "forbidden"
+    confidence: "HIGH_EVIDENCE"
+    reason: "Cross-actor operations cannot have prerequisite relationships"
+
+# Summary
+summary:
+  total_prerequisites: 24
+  expected_prerequisites: 18
+  forbidden_adjacencies: 6

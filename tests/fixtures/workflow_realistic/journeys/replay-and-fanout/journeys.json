@@ -1,0 +1,95 @@
+{
+  "name": "replay-and-fanout",
+  "actor": "SEARCH_USER_1",
+  "entries": [
+    {
+      "label": "create_search",
+      "offset_seconds": 0,
+      "method": "POST",
+      "path": "/api/search",
+      "host": "api.fanout.test",
+      "request": {
+        "query": "payment history"
+      },
+      "response": {
+        "searchId": "SRCH_V2W4X6Y8Z1A3B5C7",
+        "totalResults": 42,
+        "pageSize": 10,
+        "status": "ACTIVE"
+      },
+      "request_headers": {
+        "Authorization": "Bearer SANITIZED_TOKEN"
+      },
+      "response_headers": {
+        "Content-Type": "application/json"
+      },
+      "status": 201
+    },
+    {
+      "label": "next_page",
+      "offset_seconds": 2,
+      "method": "POST",
+      "path": "/api/search/SRCH_V2W4X6Y8Z1A3B5C7/next",
+      "host": "api.fanout.test",
+      "request": {
+        "page": 2
+      },
+      "response": {
+        "searchId": "SRCH_V2W4X6Y8Z1A3B5C7",
+        "results": [{"id": "result-1"}, {"id": "result-2"}],
+        "status": "ACTIVE"
+      },
+      "request_headers": {
+        "Authorization": "Bearer SANITIZED_TOKEN",
+        "Content-Type": "application/json"
+      },
+      "response_headers": {
+        "Content-Type": "application/json"
+      },
+      "status": 200
+    },
+    {
+      "label": "count_results",
+      "offset_seconds": 5,
+      "method": "POST",
+      "path": "/api/search/SRCH_V2W4X6Y8Z1A3B5C7/count",
+      "host": "api.fanout.test",
+      "request": {
+        "filter": "type:transaction"
+      },
+      "response": {
+        "searchId": "SRCH_V2W4X6Y8Z1A3B5C7",
+        "count": 35,
+        "status": "ACTIVE"
+      },
+      "request_headers": {
+        "Authorization": "Bearer SANITIZED_TOKEN",
+        "Content-Type": "application/json"
+      },
+      "response_headers": {
+        "Content-Type": "application/json"
+      },
+      "status": 200
+    },
+    {
+      "label": "close_search",
+      "offset_seconds": 8,
+      "method": "POST",
+      "path": "/api/search/SRCH_V2W4X6Y8Z1A3B5C7/close",
+      "host": "api.fanout.test",
+      "request": {},
+      "response": {
+        "searchId": "SRCH_V2W4X6Y8Z1A3B5C7",
+        "status": "CLOSED"
+      },
+      "request_headers": {
+        "Authorization": "Bearer SANITIZED_TOKEN",
+        "Content-Type": "application/json"
+      },
+      "response_headers": {
+        "Content-Type": "application/json"
+      },
+      "status": 200
+    }
+  ]
+}

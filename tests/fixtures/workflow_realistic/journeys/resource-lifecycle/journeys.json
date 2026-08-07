@@ -1,0 +1,92 @@
+{
+  "name": "resource-lifecycle",
+  "actor": "ECOMMERCE_USER_1",
+  "entries": [
+    {
+      "label": "create_order",
+      "offset_seconds": 0,
+      "method": "POST",
+      "path": "/api/orders",
+      "host": "api.store.test",
+      "response": {
+        "orderId": "ORD-A2B3C4D5E6F7G8H9",
+        "status": "PENDING",
+        "createdAt": "2026-08-05T10:00:00Z",
+        "total": 99.99,
+        "itemCount": 3
+      },
+      "request_headers": {
+        "Authorization": "Bearer SANITIZED_TOKEN"
+      },
+      "response_headers": {
+        "Content-Type": "application/json"
+      },
+      "status": 201
+    },
+    {
+      "label": "read_order_1",
+      "offset_seconds": 5,
+      "method": "GET",
+      "path": "/api/orders/ORD-A2B3C4D5E6F7G8H9",
+      "host": "api.store.test",
+      "response": {
+        "orderId": "ORD-A2B3C4D5E6F7G8H9",
+        "status": "PENDING",
+        "createdAt": "2026-08-05T10:00:00Z",
+        "total": 99.99,
+        "itemCount": 3
+      },
+      "request_headers": {
+        "Authorization": "Bearer SANITIZED_TOKEN"
+      },
+      "response_headers": {
+        "Content-Type": "application/json"
+      },
+      "status": 200
+    },
+    {
+      "label": "confirm_order",
+      "offset_seconds": 10,
+      "method": "POST",
+      "path": "/api/orders/ORD-A2B3C4D5E6F7G8H9/confirm",
+      "host": "api.store.test",
+      "request": {
+        "orderId": "ORD-A2B3C4D5E6F7G8H9"
+      },
+      "response": {
+        "orderId": "ORD-A2B3C4D5E6F7G8H9",
+        "status": "CONFIRMED",
+        "confirmedAt": "2026-08-05T10:00:10Z"
+      },
+      "request_headers": {
+        "Authorization": "Bearer SANITIZED_TOKEN",
+        "Content-Type": "application/json"
+      },
+      "response_headers": {
+        "Content-Type": "application/json"
+      },
+      "status": 200
+    },
+    {
+      "label": "read_order_2",
+      "offset_seconds": 12,
+      "method": "GET",
+      "path": "/api/orders/ORD-A2B3C4D5E6F7G8H9",
+      "host": "api.store.test",
+      "response": {
+        "orderId": "ORD-A2B3C4D5E6F7G8H9",
+        "status": "CONFIRMED",
+        "confirmedAt": "2026-08-05T10:00:10Z",
+        "total": 99.99,
+        "itemCount": 3
+      },
+      "request_headers": {
+        "Authorization": "Bearer SANITIZED_TOKEN"
+      },
+      "response_headers": {
+        "Content-Type": "application/json"
+      },
+      "status": 200
+    }
+  ]
+}

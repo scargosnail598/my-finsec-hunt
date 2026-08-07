@@ -1,0 +1,88 @@
+{
+  "name": "multi-service-payment",
+  "captures": [
+    {
+      "name": "api-service-capture",
+      "actor": "FINTECH_SERVICE_A",
+      "entries": [
+        {
+          "label": "create_transaction",
+          "offset_seconds": 0,
+          "method": "POST",
+          "path": "/api/transactions",
+          "host": "api.example.test",
+          "request": {
+            "amount": 500.00,
+            "currency": "USD"
+          },
+          "response": {
+            "transactionId": "TRX_KM7N9Q2S5T8V1W3X",
+            "status": "INITIATED",
+            "createdAt": "2026-08-05T10:00:00Z"
+          },
+          "request_headers": {
+            "Authorization": "Bearer SANITIZED_TOKEN"
+          },
+          "response_headers": {
+            "Content-Type": "application/json"
+          },
+          "status": 201
+        },
+        {
+          "label": "settle_transaction",
+          "offset_seconds": 15,
+          "method": "POST",
+          "path": "/api/transactions/TRX_KM7N9Q2S5T8V1W3X/settle",
+          "host": "api.example.test",
+          "request": {
+            "paymentId": "PAY_R2T5U7V9X1Z3A5B7"
+          },
+          "response": {
+            "transactionId": "TRX_KM7N9Q2S5T8V1W3X",
+            "paymentId": "PAY_R2T5U7V9X1Z3A5B7",
+            "status": "SETTLED",
+            "settledAt": "2026-08-05T10:00:15Z"
+          },
+          "request_headers": {
+            "Authorization": "Bearer SANITIZED_TOKEN",
+            "Content-Type": "application/json"
+          },
+          "response_headers": {
+            "Content-Type": "application/json"
+          },
+          "status": 200
+        }
+      ]
+    },
+    {
+      "name": "payment-service-capture",
+      "actor": "FINTECH_SERVICE_A",
+      "entries": [
+        {
+          "label": "call_payments",
+          "offset_seconds": 5,
+          "method": "POST",
+          "path": "/api/payments",
+          "host": "payments.example.test",
+          "request": {
+            "transactionId": "TRX_KM7N9Q2S5T8V1W3X",
+            "amount": 500.00,
+            "currency": "USD"
+          },
+          "response": {
+            "paymentId": "PAY_R2T5U7V9X1Z3A5B7",
+            "status": "PROCESSED",
+            "reference": "REF-2026-08-05-001"
+          },
+          "request_headers": {
+            "Authorization": "Bearer SANITIZED_PAYMENT_TOKEN"
+          },
+          "response_headers": {
+            "Content-Type": "application/json"
+          },
+          "status": 201
+        }
+      ]
+    }
+  ]
+}

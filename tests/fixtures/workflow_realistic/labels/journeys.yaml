@@ -1,0 +1,251 @@
+# Journey Membership and Structure Ground Truth
+#
+# This file documents expected workflow membership and journey integrity
+# for each test scenario.
+
+journeys:
+
+  - id: "resource-lifecycle"
+    name: "E-Commerce Order Lifecycle"
+    description: "User creates an order, reads status, confirms it, and verifies final status"
+    expected_observations:
+      - create_order
+      - read_order_1
+      - confirm_order
+      - read_order_2
+    expected_components: 1
+    expected_order: true
+    expected_steps:
+      - create_order
+      - confirm_order
+    expected_resource_lineage:
+      orderId:
+        created_by: create_order
+        created_basis: RESOURCE_CREATED
+        consumed_by: [confirm_order]
+    status: "fully_labeled"
+    difficulty: "obvious"
+    category: "resource-lifecycle"
+
+  - id: "capability-handoff"
+    name: "Capability Challenge-Response Payment"
+    description: "Checkout returns challenge → authorize uses it → payment confirmed with authorization ID"
+    expected_observations:
+      - get_checkout
+      - authorize_payment
+      - confirm_payment
+    expected_components: 1
+    expected_order: true
+    expected_steps:
+      - get_checkout
+      - authorize_payment
+      - confirm_payment
+    expected_capability_chain:
+      - token: "challenge"
+        source: get_checkout
+        used_by: authorize_payment
+      - token: "authorizationId"
+        source: authorize_payment
+        used_by: confirm_payment
+    status: "fully_labeled"
+    difficulty: "obvious"
+    category: "capability-handoff"
+
+  - id: "multi-service-payment"
+    name: "Multi-Service Payment Workflow"
+    description: "Main API initiates transaction → Payment service processes → Main API settles"
+    expected_observations:
+      - create_transaction
+      - call_payments
+      - settle_transaction
+    expected_components: 1
+    expected_order: true
+    expected_cross_host: true
+    expected_steps:
+      - create_transaction
+      - call_payments
+      - settle_transaction
+    expected_service_boundaries:
+      - api.example.test
+      - payments.example.test
+    expected_capability_chain:
+      - token: "transactionId"
+        source: create_transaction
+        used_by: call_payments
+      - token: "paymentId"
+        source: call_payments
+        used_by: settle_transaction
+    status: "fully_labeled"
+    difficulty: "indirect"
+    category: "multi-service-payment"
+
+  - id: "nested-resource"
+    name: "Nested Resource Hierarchy"
+    description: "Account scopes → Orders created → Items added to orders"
+    expected_observations:
+      - create_order
+      - create_item
+      - confirm_item
+    expected_components: 1
+    expected_order: true
+    expected_steps:
+      - create_order
+      - create_item
+      - confirm_item
+    expected_resource_lineage:
+      orderId:
+        created_by: create_order
+        created_basis: RESOURCE_CREATED
+        used_by: create_item
+      itemId:
+        created_by: create_item
+        created_basis: RESOURCE_CREATED
+        used_by: confirm_item
+      accountId:
+        role: "scope_parameter"
+        must_not_create_causal_edge: true
+    status: "fully_labeled"
+    difficulty: "indirect"
+    category: "nested-resource"
+
+  - id: "unfamiliar-state-transitions"
+    name: "Unfamiliar State Machine"
+    description: "Payment moves through CREATED → RESERVED → CAPTURED → SETTLED states"
+    expected_observations:
+      - create_payment
+      - reserve_payment
+      - capture_payment
+      - read_payment
+      - settle_payment
+    expected_components: 1
+    expected_order: true
+    expected_steps:
+      - create_payment
+      - reserve_payment
+      - capture_payment
+      - settle_payment
+    expected_state_transitions:
+      - from: "CREATED"
+        to: "RESERVED"
+        evidence: [create_payment, reserve_payment]
+      - from: "RESERVED"
+        to: "CAPTURED"
+        evidence: [reserve_payment, capture_payment]
+      - from: "CAPTURED"
+        to: "SETTLED"
+        evidence: [capture_payment, settle_payment]
+    state_names_unknown: true
+    status: "fully_labeled"
+    difficulty: "ambiguous"
+    category: "unfamiliar-state-transitions"
+    note: "Critical test: engine must infer states without hard-coded vocabulary"
+
+  - id: "token-aliases"
+    name: "Token Field Aliases"
+    description: "Same token appears with different field names across API calls"
+    expected_observations:
+      - start_auth
+      - verify_auth
+      - confirm_auth
+    expected_components: 1
+    expected_order: true
+    expected_steps:
+      - start_auth
+      - verify_auth
+      - confirm_auth
+    expected_field_aliases:
+      - field_names: ["continuation", "sessionReference"]
+        value: "CONT_M3N5P7Q9R2S4T6U8"
+        role: "WORKFLOW_TOKEN"
+    status: "fully_labeled"
+    difficulty: "ambiguous"
+    category: "token-aliases"
+
+  - id: "replay-and-fanout"
+    name: "Search Token Legitimate Multi-Use"
+    description: "Search token issued once; reused legitimately for pagination, counting, cleanup"
+    expected_observations:
+      - create_search
+      - next_page
+      - count_results
+      - close_search
+    expected_components: 1
+    expected_order: true
+    expected_multi_use:
+      searchId:
+        sources: [create_search]
+        consumers: [next_page, count_results, close_search]
+        legitimate_reuse: true
+    status: "fully_labeled"
+    difficulty: "indirect"
+    category: "replay-and-fanout"
+
+  - id: "cross-capture-continuation"
+    name: "Workflow Spanning Multiple Captures"
+    description: "Same actor, same workflow across 3 separate capture files"
+    expected_observations:
+      - create_order
+      - pay_order
+      - confirm_order
+    expected_components: 1
+    expected_order: true
+    expected_cross_capture: true
+    expected_steps:
+      - create_order
+      - pay_order
+      - confirm_order
+    capture_names:
+      - capture-session-1
+      - capture-session-2
+      - capture-session-3
+    status: "fully_labeled"
+    difficulty: "indirect"
+    category: "cross-capture-continuation"
+
+  - id: "adversarial"
+    name: "Adversarial Anti-Patterns"
+    description: "Complex multi-workflow corpus with coincidental collisions, read-before-write, generic enums, and cross-actor isolation"
+    expected_observations:
+      - post_order
+      - post_shipment
+      - post_report
+      - get_report_details
+      - get_account
+      - post_transfer
+      - payment_customer_b
+      - payment_customer_a
+    expected_components: 5
+    expected_order: false
+    status: "fully_labeled"
+    difficulty: "ambiguous"
+    category: "adversarial"
+    note: "Contains 5 independent workflows designed to test precision against false merges"
+    independent_workflows:
+      - observations: [post_order, post_shipment]
+        expected_components: 1
+      - observations: [post_report, get_report_details]
+        expected_components: 1
+      - observations: [get_account, post_transfer]
+        expected_components: 1
+      - observations: [payment_customer_b]
+        expected_components: 1
+      - observations: [payment_customer_a]
+        expected_components: 1
+
+# Aggregate Statistics
+summary:
+  total_journeys: 9
+  fully_labeled_journeys: 9
+  total_expected_observations: 43
+  categories:
+    resource-lifecycle: 1
+    capability-handoff: 1
+    multi-service-payment: 1
+    nested-resource: 1
+    unfamiliar-state-transitions: 1
+    token-aliases: 1
+    replay-and-fanout: 1
+    cross-capture-continuation: 1
+    adversarial: 1
+  expected_components: 9
+  expected_total_edges: 27

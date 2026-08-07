@@ -1,0 +1,72 @@
+{
+  "name": "token-aliases",
+  "actor": "AUTH_SERVICE_1",
+  "entries": [
+    {
+      "label": "start_auth",
+      "offset_seconds": 0,
+      "method": "GET",
+      "path": "/api/auth/start",
+      "host": "api.auth.test",
+      "response": {
+        "continuation": "CONT_M3N5P7Q9R2S4T6U8",
+        "status": "INITIATED",
+        "expiresIn": 600
+      },
+      "request_headers": {
+        "Authorization": "Bearer SANITIZED_TOKEN"
+      },
+      "response_headers": {
+        "Content-Type": "application/json"
+      },
+      "status": 200
+    },
+    {
+      "label": "verify_auth",
+      "offset_seconds": 2,
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "host": "api.auth.test",
+      "request": {
+        "sessionReference": "CONT_M3N5P7Q9R2S4T6U8",
+        "code": "123456"
+      },
+      "response": {
+        "verifyToken": "VFYTOK_7X2Y9Z1A3B5C7D9E",
+        "status": "VERIFIED",
+        "verifiedAt": "2026-08-05T10:00:02Z"
+      },
+      "request_headers": {
+        "Authorization": "Bearer SANITIZED_TOKEN",
+        "Content-Type": "application/json"
+      },
+      "response_headers": {
+        "Content-Type": "application/json"
+      },
+      "status": 200
+    },
+    {
+      "label": "confirm_auth",
+      "offset_seconds": 4,
+      "method": "POST",
+      "path": "/api/auth/confirm",
+      "host": "api.auth.test",
+      "request": {
+        "verifyToken": "VFYTOK_7X2Y9Z1A3B5C7D9E"
+      },
+      "response": {
+        "sessionToken": "SES_K7L9M2N4O6P8Q1R3",
+        "status": "CONFIRMED",
+        "confirmedAt": "2026-08-05T10:00:04Z"
+      },
+      "request_headers": {
+        "Authorization": "Bearer SANITIZED_TOKEN",
+        "Content-Type": "application/json"
+      },
+      "response_headers": {
+        "Content-Type": "application/json"
+      },
+      "status": 200
+    }
+  ]
+}
