@@ -1,0 +1,437 @@
+{
+  "version": 2,
+  "datasets": [
+    {
+      "id": "precision_gate_journeys",
+      "host": "api.gate.test",
+      "notes": [
+        "Fully sanitized precision and fragmentation gate fixture.",
+        "Covers create, repetition, branches, asynchronous and cross-service handoffs, actor separation, capture separation, state progression, and read-existing-ID controls."
+      ],
+      "captures": [
+        {
+          "name": "normal-create-mutate",
+          "actor": "ACCOUNT_A",
+          "entries": [
+            {
+              "label": "normal_create",
+              "offset_seconds": 0,
+              "method": "POST",
+              "path": "/api/orders/create",
+              "request": {"quantity": 1},
+              "response": {"orderId": "ORDER-NORMAL-1", "status": "created"}
+            },
+            {
+              "label": "normal_confirm",
+              "offset_seconds": 5,
+              "method": "POST",
+              "path": "/api/orders/1/confirm",
+              "request": {"orderId": "ORDER-NORMAL-1"},
+              "response": {"orderId": "ORDER-NORMAL-1", "status": "confirmed"}
+            }
+          ]
+        },
+        {
+          "name": "repeated-step",
+          "actor": "ACCOUNT_A",
+          "entries": [
+            {
+              "label": "repeat_create",
+              "offset_seconds": 10,
+              "method": "POST",
+              "path": "/api/carts/create",
+              "response": {"cartToken": "CART-STEP-TOKEN-1", "status": "created"}
+            },
+            {
+              "label": "repeat_add_one",
+              "offset_seconds": 15,
+              "method": "POST",
+              "path": "/api/carts/1/add",
+              "request": {"cartToken": "CART-STEP-TOKEN-1", "quantity": 1},
+              "response": {"cartToken": "CART-STEP-TOKEN-2", "status": "item_added"}
+            },
+            {
+              "label": "repeat_add_two",
+              "offset_seconds": 20,
+              "method": "POST",
+              "path": "/api/carts/1/add",
+              "request": {"cartToken": "CART-STEP-TOKEN-2", "quantity": 1},
+              "response": {"cartToken": "CART-STEP-TOKEN-3", "status": "item_added"}
+            },
+            {
+              "label": "repeat_confirm",
+              "offset_seconds": 25,
+              "method": "POST",
+              "path": "/api/carts/1/confirm",
+              "request": {"cartToken": "CART-STEP-TOKEN-3"},
+              "response": {"status": "confirmed"}
+            }
+          ]
+        },
+        {
+          "name": "branch-approve",
+          "actor": "ACCOUNT_A",
+          "entries": [
+            {
+              "label": "branch_approve_create",
+              "offset_seconds": 30,
+              "method": "POST",
+              "path": "/api/applications/create",
+              "response": {"applicationId": "APPROVE-BRANCH-1", "status": "created"}
+            },
+            {
+              "label": "branch_approve_review",
+              "offset_seconds": 35,
+              "method": "POST",
+              "path": "/api/applications/1/review",
+              "request": {"applicationId": "APPROVE-BRANCH-1"},
+              "response": {"reviewToken": "REVIEW-APPROVE-TOKEN", "status": "reviewed"}
+            },
+            {
+              "label": "branch_approve_final",
+              "offset_seconds": 40,
+              "method": "POST",
+              "path": "/api/applications/1/approve",
+              "request": {"reviewToken": "REVIEW-APPROVE-TOKEN"},
+              "response": {"status": "approved"}
+            }
+          ]
+        },
+        {
+          "name": "branch-reject",
+          "actor": "ACCOUNT_A",
+          "entries": [
+            {
+              "label": "branch_reject_create",
+              "offset_seconds": 45,
+              "method": "POST",
+              "path": "/api/applications/create",
+              "response": {"applicationId": "REJECT-BRANCH-1", "status": "created"}
+            },
+            {
+              "label": "branch_reject_review",
+              "offset_seconds": 50,
+              "method": "POST",
+              "path": "/api/applications/2/review",
+              "request": {"applicationId": "REJECT-BRANCH-1"},
+              "response": {"reviewToken": "REVIEW-REJECT-TOKEN", "status": "reviewed"}
+            },
+            {
+              "label": "branch_reject_final",
+              "offset_seconds": 55,
+              "method": "POST",
+              "path": "/api/applications/2/reject",
+              "request": {"reviewToken": "REVIEW-REJECT-TOKEN"},
+              "response": {"status": "rejected"}
+            }
+          ]
+        },
+        {
+          "name": "async-issuer",
+          "actor": "ACCOUNT_A",
+          "entries": [
+            {
+              "label": "async_issue",
+              "offset_seconds": 60,
+              "method": "GET",
+              "path": "/api/settlements/nonce",
+              "response": {"settlementNonce": "ASYNC-NONCE-0001"}
+            }
+          ]
+        },
+        {
+          "name": "async-consumer",
+          "actor": "ACCOUNT_A",
+          "entries": [
+            {
+              "label": "async_consume",
+              "offset_seconds": 65,
+              "method": "POST",
+              "path": "/api/settlements/execute",
+              "request": {"settlementNonce": "ASYNC-NONCE-0001"},
+              "response": {"status": "completed"}
+            }
+          ]
+        },
+        {
+          "name": "cross-service",
+          "actor": "ACCOUNT_A",
+          "entries": [
+            {
+              "label": "cross_service_issue",
+              "offset_seconds": 70,
+              "method": "POST",
+              "host": "orders.gate.test",
+              "path": "/api/orders/prepare",
+              "response": {"handoffToken": "CROSS-SERVICE-HANDOFF-1", "status": "prepared"}
+            },
+            {
+              "label": "cross_service_consume",
+              "offset_seconds": 75,
+              "method": "POST",
+              "host": "ledger.gate.test",
+              "path": "/api/ledger/post",
+              "request": {"handoffToken": "CROSS-SERVICE-HANDOFF-1"},
+              "response": {"status": "posted"}
+            }
+          ]
+        },
+        {
+          "name": "actor-a-order",
+          "actor": "ACCOUNT_A",
+          "entries": [
+            {
+              "label": "actor_a_create",
+              "offset_seconds": 80,
+              "method": "POST",
+              "path": "/api/orders/create",
+              "response": {"orderId": "ACTOR-A-GATE-ORDER", "status": "created"}
+            },
+            {
+              "label": "actor_a_ship",
+              "offset_seconds": 85,
+              "method": "POST",
+              "path": "/api/orders/10/ship",
+              "request": {"orderId": "ACTOR-A-GATE-ORDER"},
+              "response": {"status": "shipped"}
+            }
+          ]
+        },
+        {
+          "name": "actor-b-order",
+          "actor": "ACCOUNT_B",
+          "entries": [
+            {
+              "label": "actor_b_create",
+              "offset_seconds": 82,
+              "method": "POST",
+              "path": "/api/orders/create",
+              "response": {"orderId": "ACTOR-B-GATE-ORDER", "status": "created"}
+            },
+            {
+              "label": "actor_b_ship",
+              "offset_seconds": 87,
+              "method": "POST",
+              "path": "/api/orders/11/ship",
+              "request": {"orderId": "ACTOR-B-GATE-ORDER"},
+              "response": {"status": "shipped"}
+            }
+          ]
+        },
+        {
+          "name": "state-transition",
+          "actor": "ACCOUNT_A",
+          "entries": [
+            {
+              "label": "state_initiate",
+              "offset_seconds": 90,
+              "method": "POST",
+              "path": "/api/transfers/42/initiate",
+              "request": {"transferId": "STATE-TRANSFER-42"},
+              "response": {"transferId": "STATE-TRANSFER-42", "transferStatus": "pending"}
+            },
+            {
+              "label": "state_approve",
+              "offset_seconds": 95,
+              "method": "POST",
+              "path": "/api/transfers/42/approve",
+              "request": {"transferId": "STATE-TRANSFER-42"},
+              "response": {"transferId": "STATE-TRANSFER-42", "transferStatus": "approved"}
+            }
+          ]
+        },
+        {
+          "name": "similar-capture-one",
+          "actor": "ACCOUNT_A",
+          "entries": [
+            {
+              "label": "similar_capture_source",
+              "offset_seconds": 100,
+              "method": "POST",
+              "path": "/api/orders/create",
+              "response": {"orderId": "SIMILAR-CAPTURE-ID", "status": "created"}
+            }
+          ]
+        },
+        {
+          "name": "similar-capture-two",
+          "actor": "ACCOUNT_A",
+          "entries": [
+            {
+              "label": "similar_capture_destination",
+              "offset_seconds": 105,
+              "method": "POST",
+              "path": "/api/orders/99/confirm",
+              "request": {"orderId": "SIMILAR-CAPTURE-ID"},
+              "response": {"status": "confirmed"}
+            }
+          ]
+        },
+        {
+          "name": "read-existing-negative",
+          "actor": "ACCOUNT_A",
+          "entries": [
+            {
+              "label": "read_existing",
+              "offset_seconds": 110,
+              "method": "GET",
+              "path": "/api/orders/42",
+              "response": {"orderId": "READ-ORDER-42", "status": "delivered"}
+            },
+            {
+              "label": "return_existing",
+              "offset_seconds": 115,
+              "method": "POST",
+              "path": "/api/orders/42/return",
+              "request": {"orderId": "READ-ORDER-42"},
+              "response": {"orderId": "READ-ORDER-42", "status": "return_pending"}
+            }
+          ]
+        }
+      ],
+      "labels": {
+        "same_workflow": [
+          ["normal_create", "normal_confirm"],
+          ["repeat_create", "repeat_add_one"],
+          ["repeat_add_one", "repeat_add_two"],
+          ["repeat_add_two", "repeat_confirm"],
+          ["branch_approve_create", "branch_approve_review"],
+          ["branch_approve_review", "branch_approve_final"],
+          ["branch_reject_create", "branch_reject_review"],
+          ["branch_reject_review", "branch_reject_final"],
+          ["async_issue", "async_consume"],
+          ["cross_service_issue", "cross_service_consume"],
+          ["actor_a_create", "actor_a_ship"],
+          ["actor_b_create", "actor_b_ship"],
+          ["state_initiate", "state_approve"]
+        ],
+        "different_workflow": [
+          ["actor_a_create", "actor_b_create"],
+          ["actor_a_ship", "actor_b_ship"],
+          ["similar_capture_source", "similar_capture_destination"],
+          ["read_existing", "return_existing"]
+        ],
+        "unknown_workflow": [],
+        "expected_causal_edges": [
+          ["normal_create", "normal_confirm"],
+          ["repeat_create", "repeat_add_one"],
+          ["repeat_add_one", "repeat_add_two"],
+          ["repeat_add_two", "repeat_confirm"],
+          ["branch_approve_create", "branch_approve_review"],
+          ["branch_approve_review", "branch_approve_final"],
+          ["branch_reject_create", "branch_reject_review"],
+          ["branch_reject_review", "branch_reject_final"],
+          ["async_issue", "async_consume"],
+          ["cross_service_issue", "cross_service_consume"],
+          ["actor_a_create", "actor_a_ship"],
+          ["actor_b_create", "actor_b_ship"],
+          ["state_initiate", "state_approve"]
+        ],
+        "forbidden_edges": [
+          ["actor_a_create", "actor_b_create"],
+          ["similar_capture_source", "similar_capture_destination"],
+          ["read_existing", "return_existing"]
+        ],
+        "unknown_edges": [],
+        "same_family": [],
+        "different_family": [],
+        "expected_relationships": [
+          {"left": "actor_a_ship", "right": "actor_b_ship", "relationship_type": "CROSS_ACTOR_COMPARISON"},
+          {"left": "read_existing", "right": "return_existing", "relationship_type": "CONTEXT_SOFT"}
+        ],
+        "true_prerequisites": [
+          ["CREATE_ORDER", "CONFIRM_ORDER"],
+          ["CREATE_CART", "ADD_CART"],
+          ["ADD_CART", "CONFIRM_CART"],
+          ["CREATE_APPLICATION", "REVIEW_APPLICATION"],
+          ["REVIEW_APPLICATION", "APPROVE_APPLICATION"],
+          ["REVIEW_APPLICATION", "REJECT_APPLICATION"],
+          ["NONCE_SETTLEMENT", "EXECUTE_SETTLEMENT"],
+          ["PREPARE_ORDER", "POST_LEDGER"],
+          ["CREATE_ORDER", "SHIP_ORDER"],
+          ["INITIATE_TRANSFER", "APPROVE_TRANSFER"]
+        ],
+        "false_adjacency": [
+          ["READ_ORDER", "RETURN_ORDER"]
+        ],
+        "unknown_prerequisites": [],
+        "expected_hypotheses": [
+          {
+            "key": "order-terminal-bypass",
+            "family": "TERMINAL_STATE_BYPASS",
+            "affected_action": "CREATE_ORDER",
+            "semantic_key": "ff50a602856dbb6745ccdb55253d6fa01db358d13c4c098464d6dad9438d5106:TERMINAL_STATE:TERMINAL_STATE_BYPASS:CREATE_ORDER"
+          },
+          {
+            "key": "ship-out-of-order",
+            "family": "OUT_OF_ORDER_EXECUTION",
+            "affected_action": "SHIP_ORDER",
+            "semantic_key": "ff50a602856dbb6745ccdb55253d6fa01db358d13c4c098464d6dad9438d5106:ORDERING:OUT_OF_ORDER_EXECUTION:SHIP_ORDER"
+          },
+          {
+            "key": "ship-step-skipping",
+            "family": "STEP_SKIPPING",
+            "affected_action": "SHIP_ORDER",
+            "semantic_key": "ff50a602856dbb6745ccdb55253d6fa01db358d13c4c098464d6dad9438d5106:ORDERING:STEP_SKIPPING:SHIP_ORDER"
+          },
+          {
+            "key": "approve-transfer-concurrent",
+            "family": "CONCURRENT_EXECUTION",
+            "affected_action": "APPROVE_TRANSFER",
+            "semantic_key": "bed3f82a5bc113944018ec9252eda033f7741031770d4aaca1c338e3d28e0778:SINGLE_EXECUTION:CONCURRENT_EXECUTION:APPROVE_TRANSFER"
+          },
+          {
+            "key": "ship-actor-switch",
+            "family": "ACTOR_SWITCH",
+            "affected_action": "SHIP_ORDER",
+            "semantic_key": "ff50a602856dbb6745ccdb55253d6fa01db358d13c4c098464d6dad9438d5106:ACTOR_BINDING:ACTOR_SWITCH:SHIP_ORDER"
+          },
+          {
+            "key": "approve-transfer-duplicate",
+            "family": "DUPLICATE_ACTION",
+            "affected_action": "APPROVE_TRANSFER",
+            "semantic_key": "bed3f82a5bc113944018ec9252eda033f7741031770d4aaca1c338e3d28e0778:SINGLE_EXECUTION:DUPLICATE_ACTION:APPROVE_TRANSFER"
+          },
+          {
+            "key": "approve-transfer-step-skipping",
+            "family": "STEP_SKIPPING",
+            "affected_action": "APPROVE_TRANSFER",
+            "semantic_key": "bed3f82a5bc113944018ec9252eda033f7741031770d4aaca1c338e3d28e0778:ORDERING:STEP_SKIPPING:APPROVE_TRANSFER"
+          },
+          {
+            "key": "approve-transfer-out-of-order",
+            "family": "OUT_OF_ORDER_EXECUTION",
+            "affected_action": "APPROVE_TRANSFER",
+            "semantic_key": "bed3f82a5bc113944018ec9252eda033f7741031770d4aaca1c338e3d28e0778:ORDERING:OUT_OF_ORDER_EXECUTION:APPROVE_TRANSFER"
+          },
+          {
+            "key": "ship-resource-switch",
+            "family": "RESOURCE_SWITCH",
+            "affected_action": "SHIP_ORDER",
+            "semantic_key": "ff50a602856dbb6745ccdb55253d6fa01db358d13c4c098464d6dad9438d5106:RESOURCE_BINDING:RESOURCE_SWITCH:SHIP_ORDER"
+          },
+          {
+            "key": "approve-transfer-replay",
+            "family": "REPLAY",
+            "affected_action": "APPROVE_TRANSFER",
+            "semantic_key": "bed3f82a5bc113944018ec9252eda033f7741031770d4aaca1c338e3d28e0778:SINGLE_EXECUTION:REPLAY:APPROVE_TRANSFER"
+          }
+        ],
+        "forbidden_hypotheses": [],
+        "unknown_hypotheses": [],
+        "expected_journeys": [
+          {"key": "normal-create-mutate", "steps": ["normal_create", "normal_confirm"]},
+          {"key": "repeated-step-order", "steps": ["repeat_create", "repeat_add_one", "repeat_add_two", "repeat_confirm"]},
+          {"key": "branch-approve", "steps": ["branch_approve_create", "branch_approve_review", "branch_approve_final"]},
+          {"key": "branch-reject", "steps": ["branch_reject_create", "branch_reject_review", "branch_reject_final"]},
+          {"key": "async-handoff", "steps": ["async_issue", "async_consume"]},
+          {"key": "cross-service-handoff", "steps": ["cross_service_issue", "cross_service_consume"]},
+          {"key": "actor-a-own-object", "steps": ["actor_a_create", "actor_a_ship"]},
+          {"key": "actor-b-own-object", "steps": ["actor_b_create", "actor_b_ship"]},
+          {"key": "state-transition", "steps": ["state_initiate", "state_approve"]}
+        ]
+      },
+      "label_policy": "COMPLETE_TOP_K"
+    }
+  ]
+}

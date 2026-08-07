@@ -31,6 +31,7 @@ cd "$finsec_repo_root"
 "$finsec_check_python" -m ruff check .
 "$finsec_check_python" -m mypy finsec
 "$finsec_check_python" -m pytest
+"$finsec_check_python" scripts/check_workflow_quality_gates.py
 "$finsec_check_python" -m finsec.cli --help >/dev/null
 bash -n install.sh scripts/*.sh
 

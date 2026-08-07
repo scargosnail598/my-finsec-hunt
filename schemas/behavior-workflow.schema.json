@@ -60,7 +60,23 @@
               "support_ratio",
               "confidence",
               "reason"
-            ]
+            ],
+            "properties": {
+              "causal_bases": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "RESOURCE_CREATED",
+                    "CAPABILITY_ISSUED",
+                    "STATE_TRANSITION_PRODUCED",
+                    "EXISTING_VALUE_OBSERVED",
+                    "REQUEST_VALUE_ECHOED",
+                    "AMBIGUOUS_ORIGIN",
+                    "LEGACY_UNTYPED"
+                  ]
+                }
+              }
+            }
           }
         },
         "research_clues": {"type": "array", "items": {"type": "string"}},

@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "fixture": "precision-gate.json",
+  "thresholds": {
+    "k": 10,
+    "max_forbidden_hard_edges": 0,
+    "max_forbidden_workflow_merges": 0,
+    "min_labeled_precision_at_k": 1.0,
+    "min_label_coverage_at_k": 1.0,
+    "min_expected_mutation_recall_at_k": 1.0,
+    "max_test_ready_with_blockers": 0,
+    "max_fragmented_expected_journeys": 0,
+    "max_journey_order_violations": 0,
+    "require_deterministic_output": true
+  }
+}

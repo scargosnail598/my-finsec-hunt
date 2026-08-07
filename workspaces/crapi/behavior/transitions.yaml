@@ -1,5 +1,26 @@
 version: 1
 transitions:
+- id: TRANS-04207244BFA50E3E
+  workflow_family_id: WFAM-68070DACD38FAE40
+  source_state: UNRESOLVED
+  action_id: ACTN-675607B4373F0BCE
+  action_name: READ_ORDER
+  destination_state: DELIVERED
+  actors:
+  - mrscargo
+  preconditions: []
+  resource_types:
+  - order
+  frequency: 2
+  examples:
+  - WFINST-7683E9A485022C74
+  - WFINST-FD152BC9F3B7605F
+  contradictions: []
+  confidence: HIGH_EVIDENCE
+  evidence:
+  - OBS-000706
+  - OBS-000709
+  epistemic_status: INFERRED_PATTERN
 - id: TRANS-1A3D2961BCD1B5F8
   workflow_family_id: WFAM-385EF29E1E914D0C
   source_state: UNRESOLVED
@@ -62,8 +83,9 @@ transitions:
   preconditions: []
   resource_types:
   - order
-  frequency: 3
+  frequency: 4
   examples:
+  - WFINST-2BCF7A29C02F2EE9
   - WFINST-3A17955119345F11
   - WFINST-A0AE893A0BA845A8
   - WFINST-C1B6359B9BE200DB
@@ -73,6 +95,7 @@ transitions:
   - OBS-000012
   - OBS-000059
   - OBS-000700
+  - OBS-000711
   epistemic_status: INFERRED_PATTERN
 - id: TRANS-586F9D7F4D3638CF
   workflow_family_id: WFAM-51AD613D329592CD
@@ -286,26 +309,6 @@ transitions:
   - OBS-000707
   - OBS-000710
   epistemic_status: INFERRED_PATTERN
-- id: TRANS-B22EC0985E12942F
-  workflow_family_id: WFAM-070E94C62CCCE75E
-  source_state: DELIVERED
-  action_id: ACTN-675607B4373F0BCE
-  action_name: READ_ORDER
-  destination_state: DELIVERED
-  actors:
-  - mrscargo
-  preconditions:
-  - Resource state is DELIVERED
-  resource_types:
-  - order
-  frequency: 1
-  examples:
-  - WFINST-246E1679645A3DB9
-  contradictions: []
-  confidence: MODERATE_EVIDENCE
-  evidence:
-  - OBS-000709
-  epistemic_status: INFERRED_PATTERN
 - id: TRANS-B4D8D2F916D39B33
   workflow_family_id: WFAM-A955B9C288A08FC1
   source_state: UNRESOLVED
@@ -431,45 +434,6 @@ transitions:
   - OBS-000704
   - OBS-000707
   - OBS-000710
-  epistemic_status: INFERRED_PATTERN
-- id: TRANS-FA27F9264D81E12C
-  workflow_family_id: WFAM-070E94C62CCCE75E
-  source_state: UNRESOLVED
-  action_id: ACTN-675607B4373F0BCE
-  action_name: READ_ORDER
-  destination_state: DELIVERED
-  actors:
-  - mrscargo
-  preconditions: []
-  resource_types:
-  - order
-  frequency: 1
-  examples:
-  - WFINST-246E1679645A3DB9
-  contradictions: []
-  confidence: MODERATE_EVIDENCE
-  evidence:
-  - OBS-000706
-  epistemic_status: INFERRED_PATTERN
-- id: TRANS-FC0B34E91B49B360
-  workflow_family_id: WFAM-070E94C62CCCE75E
-  source_state: DELIVERED
-  action_id: ACTN-1EE6E534FAD588CE
-  action_name: RETURN_ORDER
-  destination_state: RETURN PENDING
-  actors:
-  - mrscargo
-  preconditions:
-  - Resource state is DELIVERED
-  resource_types:
-  - order
-  frequency: 1
-  examples:
-  - WFINST-246E1679645A3DB9
-  contradictions: []
-  confidence: MODERATE_EVIDENCE
-  evidence:
-  - OBS-000711
   epistemic_status: INFERRED_PATTERN
 - id: TRANS-FD180C103EA62BE6
   workflow_family_id: WFAM-3899C528149F1ED6

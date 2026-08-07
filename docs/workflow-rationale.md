@@ -53,16 +53,22 @@ explainable `CAUSAL_HARD` producer-consumer link may join components. `CONTEXT_S
 `REPLAY_RELATED`, and `CROSS_ACTOR_COMPARISON` relationships remain available for research and
 scoring but never merge journeys.
 
+`CAUSAL_HARD` additionally requires a positive causal basis: a resource was created, a capability
+was issued, or a compatible explicit state transition was produced. Existing values observed by a
+read, echoed request values, ambiguous outputs, and untyped legacy links cannot join components.
+
 Families are keyed by exact ordered route/action/state/topology signatures rather than display
 name or resource type. Prerequisites are persisted with positions, support counts and ratios,
-causal link IDs, counterexamples, confidence, and a human-readable reason. This intentionally
-prefers false separation when evidence is incomplete.
+causal link IDs and bases, counterexamples, confidence, and a human-readable reason. This
+intentionally prefers false separation when evidence is incomplete.
 
 Mutation generation has semantic gates per mutation family. Rejections are first-class derived
 records, and readiness (`RESEARCH_ONLY`, `REVIEW_REQUIRED`, `TEST_READY`) is separate from
-plausibility. The compact evaluator in `scripts/evaluate_workflow_precision.py` measures boundaries,
-causal edges, prerequisites, hypotheses, relationship recall, unsupported output, and blocker/readiness
-consistency without network access.
+plausibility. The compact evaluator in `scripts/evaluate_workflow_precision.py` separates labeled
+precision from label coverage and lower-bound precision, and measures causal edges, prerequisites,
+hypotheses, fragmentation, relationship recall, unsupported output, and blocker/readiness
+consistency without network access. `scripts/check_workflow_quality_gates.py` enforces the fully
+labeled thresholds in CI and verifies byte-equivalent deterministic reports across identical runs.
 
 ## Canonical Readiness Contract
 

@@ -14,11 +14,14 @@ from finsec.behavior.analysis import (
     load_logic_hypotheses,
 )
 from finsec.behavior.domain import (
+    CausalBasis,
     InferenceConfidence,
     PropagationStore,
+    RelationshipType,
     SafetyClassification,
 )
 from finsec.behavior.reconstruction import (
+    load_propagation,
     load_workflow_families,
     load_workflow_graph,
     load_workflow_instances,
@@ -289,6 +292,20 @@ def _logic(workspace: WorkspacePaths) -> list[Any]:
     return load_logic_hypotheses(workspace).hypotheses
 
 
+def _link_for_actions(workspace: WorkspacePaths, source: str, destination: str) -> Any:
+    action_by_observation = {
+        step.observation_id: step.action_name
+        for instance in load_workflow_instances(workspace).workflow_instances
+        for step in instance.steps
+    }
+    return next(
+        link
+        for link in load_propagation(workspace).propagation_links
+        if action_by_observation.get(link.source_observation_id) == source
+        and action_by_observation.get(link.destination_observation_id) == destination
+    )
+
+
 def test_valid_checkout_reconstructs_ordered_behavior(logic_workspace: WorkspacePaths) -> None:
     families = load_workflow_families(logic_workspace).workflow_families
     order = next(
@@ -492,6 +509,179 @@ def test_equal_scalar_values_do_not_bridge_unrelated_resource_workflows(
         assert not {"ORDER", "POST"}.issubset(action_resources)
 
 
+def test_read_existing_identifier_is_context_only_and_creates_no_prerequisite(
+    tmp_path: Path,
+) -> None:
+    workspace = _build_entries_workspace(
+        tmp_path,
+        [
+            _entry(
+                1,
+                "GET",
+                "/api/orders/42",
+                {"orderId": "ORD-42", "status": "delivered"},
+            ),
+            _entry(
+                2,
+                "POST",
+                "/api/orders/42/return",
+                {"orderId": "ORD-42", "status": "return_pending"},
+                request={"orderId": "ORD-42"},
+            ),
+        ],
+        name="read-existing-negative",
+    )
+    link = _link_for_actions(workspace, "READ_ORDER", "RETURN_ORDER")
+    instances = load_workflow_instances(workspace).workflow_instances
+    observation_instance = {
+        step.observation_id: instance.id for instance in instances for step in instance.steps
+    }
+
+    assert link.relationship_type == RelationshipType.CONTEXT_SOFT
+    assert link.causal_basis == CausalBasis.EXISTING_VALUE_OBSERVED
+    assert "OBSERVED_EXISTING_VALUE" in link.evidence_reason
+    assert (
+        observation_instance[link.source_observation_id]
+        != observation_instance[link.destination_observation_id]
+    )
+    assert not any(
+        item.prerequisite_action == "READ_ORDER" and item.dependent_action == "RETURN_ORDER"
+        for family in load_workflow_families(workspace).workflow_families
+        for item in family.causal_prerequisites
+    )
+    assert not any(
+        item.affected_action == "RETURN_ORDER"
+        and item.family in {"STEP_SKIPPING", "OUT_OF_ORDER_EXECUTION"}
+        for item in _logic(workspace)
+    )
+
+
+def test_echoed_and_ambiguous_identifiers_are_soft_with_explicit_reasons(
+    tmp_path: Path,
+) -> None:
+    echoed = _build_entries_workspace(
+        tmp_path,
+        [
+            _entry(
+                1,
+                "POST",
+                "/api/orders/42/update",
+                {"orderId": "ORD-ECHO", "updated": "ok"},
+                request={"orderId": "ORD-ECHO"},
+            ),
+            _entry(
+                2,
+                "POST",
+                "/api/orders/42/approve",
+                {"approvalId": "APPROVAL-ECHO"},
+                request={"orderId": "ORD-ECHO"},
+            ),
+        ],
+        name="echoed-producer-negative",
+    )
+    echoed_link = _link_for_actions(echoed, "UPDATE_ORDER", "APPROVE_ORDER")
+    assert echoed_link.relationship_type == RelationshipType.CONTEXT_SOFT
+    assert echoed_link.causal_basis == CausalBasis.REQUEST_VALUE_ECHOED
+    assert "ECHOED_REQUEST_VALUE" in echoed_link.evidence_reason
+
+    ambiguous = _build_entries_workspace(
+        tmp_path,
+        [
+            _entry(1, "POST", "/api/orders/42/adjust", {"ticketId": "TICKET-AMBIGUOUS"}),
+            _entry(
+                2,
+                "POST",
+                "/api/orders/42/confirm",
+                {"status": "confirmed"},
+                request={"ticketId": "TICKET-AMBIGUOUS"},
+            ),
+        ],
+        name="ambiguous-producer-negative",
+    )
+    ambiguous_link = next(
+        item
+        for item in load_propagation(ambiguous).propagation_links
+        if item.value_fingerprint and item.causal_basis == CausalBasis.AMBIGUOUS_ORIGIN
+    )
+    assert ambiguous_link.relationship_type == RelationshipType.CONTEXT_SOFT
+    assert "AMBIGUOUS_PRODUCER" in ambiguous_link.evidence_reason
+
+
+def test_created_identifier_issued_nonce_and_state_transition_remain_hard(
+    tmp_path: Path,
+) -> None:
+    workspace = _build_entries_workspace(
+        tmp_path,
+        [
+            _entry(
+                1,
+                "POST",
+                "/api/orders/create",
+                {"orderId": "ORD-NEW"},
+                request={"quantity": 1},
+            ),
+            _entry(
+                2,
+                "POST",
+                "/api/orders/42/confirm",
+                {"accepted": "yes"},
+                request={"orderId": "ORD-NEW"},
+            ),
+            _entry(
+                3,
+                "GET",
+                "/api/checkouts/nonce",
+                {"checkoutNonce": "NONCE-CAPABILITY-0001"},
+            ),
+            _entry(
+                4,
+                "POST",
+                "/api/checkouts/execute",
+                {"status": "completed"},
+                request={"checkoutNonce": "NONCE-CAPABILITY-0001"},
+            ),
+            _entry(
+                5,
+                "POST",
+                "/api/transfers/42/initiate",
+                {"transferId": "TRANSFER-STATE-42", "transferStatus": "pending"},
+                request={"transferId": "TRANSFER-STATE-42"},
+            ),
+            _entry(
+                6,
+                "POST",
+                "/api/transfers/42/approve",
+                {"transferId": "TRANSFER-STATE-42", "transferStatus": "approved"},
+                request={"transferId": "TRANSFER-STATE-42"},
+            ),
+        ],
+        name="positive-producer-controls",
+    )
+    links = load_propagation(workspace).propagation_links
+    by_basis = {
+        basis: next(item for item in links if item.causal_basis == basis)
+        for basis in (
+            CausalBasis.RESOURCE_CREATED,
+            CausalBasis.CAPABILITY_ISSUED,
+            CausalBasis.STATE_TRANSITION_PRODUCED,
+        )
+    }
+
+    assert all(item.relationship_type == RelationshipType.CAUSAL_HARD for item in by_basis.values())
+    assert by_basis[CausalBasis.CAPABILITY_ISSUED].source_observation_id
+    state_family = next(
+        family
+        for family in load_workflow_families(workspace).workflow_families
+        if any(item.dependent_action == "APPROVE_TRANSFER" for item in family.causal_prerequisites)
+    )
+    state_prerequisite = next(
+        item
+        for item in state_family.causal_prerequisites
+        if item.dependent_action == "APPROVE_TRANSFER"
+    )
+    assert state_prerequisite.causal_bases == [CausalBasis.STATE_TRANSITION_PRODUCED]
+
+
 def test_collection_identifiers_do_not_chain_separate_order_instances(tmp_path: Path) -> None:
     workspace = _build_entries_workspace(
         tmp_path,
@@ -622,7 +812,11 @@ def test_legacy_propagation_link_without_destination_kind_remains_loadable() -> 
         }
     )
 
-    assert store.propagation_links[0].destination_value_kind is None
+    link = store.propagation_links[0]
+    assert link.destination_value_kind is None
+    assert link.relationship_type == RelationshipType.CONTEXT_SOFT
+    assert link.causal_basis == CausalBasis.LEGACY_UNTYPED
+    assert "Rebuild from factual observations" in link.evidence_reason
 
 
 def test_read_only_all_action_is_never_selected_as_a_mutation(tmp_path: Path) -> None:

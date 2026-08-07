@@ -39,111 +39,6 @@ workflow_families:
   - Derived from 5 workflow instance(s), including 0 with moderate-or-better segmentation
     evidence.
   epistemic_status: INFERRED_PATTERN
-- id: WFAM-070E94C62CCCE75E
-  name: order lifecycle
-  entry_actions:
-  - READ_ORDER
-  terminal_actions:
-  - RETURN_ORDER
-  observed_paths:
-  - - READ_ORDER
-    - READ_ORDER
-    - RETURN_ORDER
-  common_path:
-  - READ_ORDER
-  - READ_ORDER
-  - RETURN_ORDER
-  optional_steps: []
-  required_looking_steps:
-  - READ_ORDER
-  - RETURN_ORDER
-  branch_points:
-  - READ_ORDER
-  actors:
-  - mrscargo
-  resource_types:
-  - Order
-  - order
-  - product
-  transition_frequencies:
-    READ_ORDER -> READ_ORDER: 1
-    READ_ORDER -> RETURN_ORDER: 1
-  outcome_distribution:
-    RETURN PENDING: 1
-  structural_signature: 7f51e702651344d0661fe2323154dc78ba1a8b30efa62c91b95e3215a7a8f7c7
-  ordered_step_signature:
-  - 1:GET:/workshop/api/shop/orders/{orderId}:READ_ORDER:PRIMARY:order:READ_ONLY:UNRESOLVED->DELIVERED
-  - 2:GET:/workshop/api/shop/orders/{orderId}:READ_ORDER:PRIMARY:order:READ_ONLY:DELIVERED->DELIVERED
-  - 3:POST:/workshop/api/shop/orders/return_order:RETURN_ORDER:PRIMARY:order:MUTATING:DELIVERED->RETURN
-    PENDING
-  causal_topology:
-  - 1->2:resource:order:identifier
-  - 1->3:resource:order:identifier
-  - 2->3:resource:order:identifier
-  terminal_or_mutating_steps:
-  - 3:RETURN_ORDER:RETURN PENDING
-  causal_prerequisites:
-  - prerequisite_action: READ_ORDER
-    dependent_action: READ_ORDER
-    prerequisite_position: 1
-    dependent_position: 2
-    support_count: 1
-    comparable_instances: 1
-    support_ratio: 1.0
-    causal_link_ids:
-    - PROP-00A809EECD487DD1
-    - PROP-A53BEC8EA4D6B7A9
-    supporting_observations:
-    - OBS-000706
-    - OBS-000709
-    counterexamples: []
-    confidence: HIGH_EVIDENCE
-    reason: A typed response value from the prerequisite step is consumed by the dependent
-      request.
-  - prerequisite_action: READ_ORDER
-    dependent_action: RETURN_ORDER
-    prerequisite_position: 1
-    dependent_position: 3
-    support_count: 1
-    comparable_instances: 1
-    support_ratio: 1.0
-    causal_link_ids:
-    - PROP-A93BFB06712D853D
-    - PROP-EC7036C6BAC6D2AA
-    supporting_observations:
-    - OBS-000706
-    - OBS-000711
-    counterexamples: []
-    confidence: HIGH_EVIDENCE
-    reason: A typed response value from the prerequisite step is consumed by the dependent
-      request.
-  - prerequisite_action: READ_ORDER
-    dependent_action: RETURN_ORDER
-    prerequisite_position: 2
-    dependent_position: 3
-    support_count: 1
-    comparable_instances: 1
-    support_ratio: 1.0
-    causal_link_ids:
-    - PROP-D2E9FBA651381C3C
-    - PROP-E038BBEF6A7A10A5
-    supporting_observations:
-    - OBS-000709
-    - OBS-000711
-    counterexamples: []
-    confidence: HIGH_EVIDENCE
-    reason: A typed response value from the prerequisite step is consumed by the dependent
-      request.
-  research_clues: []
-  workflow_instance_ids:
-  - WFINST-246E1679645A3DB9
-  inference_confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - Derived from 1 workflow instance(s), including 1 with moderate-or-better segmentation
-    evidence.
-  - A single instance cannot establish mandatory steps or authorization policy.
-  - Required-looking steps come only from typed hard producer-consumer evidence.
-  epistemic_status: INFERRED_PATTERN
 - id: WFAM-125068705321D835
   name: Product lifecycle
   entry_actions:
@@ -873,6 +768,44 @@ workflow_families:
   - Derived from 25 workflow instance(s), including 0 with moderate-or-better segmentation
     evidence.
   epistemic_status: INFERRED_PATTERN
+- id: WFAM-68070DACD38FAE40
+  name: order lifecycle
+  entry_actions:
+  - READ_ORDER
+  terminal_actions:
+  - READ_ORDER
+  observed_paths:
+  - - READ_ORDER
+  common_path:
+  - READ_ORDER
+  optional_steps:
+  - READ_ORDER
+  required_looking_steps: []
+  branch_points: []
+  actors:
+  - mrscargo
+  resource_types:
+  - Order
+  - order
+  - product
+  transition_frequencies: {}
+  outcome_distribution:
+    DELIVERED: 2
+  structural_signature: 410e9f692ce815ee7249eb994eb10e4cec6377339bb8da6ae776942f50c74aef
+  ordered_step_signature:
+  - 1:GET:/workshop/api/shop/orders/{orderId}:READ_ORDER:PRIMARY:order:READ_ONLY:UNRESOLVED->DELIVERED
+  causal_topology: []
+  terminal_or_mutating_steps: []
+  causal_prerequisites: []
+  research_clues: []
+  workflow_instance_ids:
+  - WFINST-7683E9A485022C74
+  - WFINST-FD152BC9F3B7605F
+  inference_confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - Derived from 2 workflow instance(s), including 0 with moderate-or-better segmentation
+    evidence.
+  epistemic_status: INFERRED_PATTERN
 - id: WFAM-6A4B7A915C98B513
   name: Post lifecycle
   entry_actions:
@@ -1403,7 +1336,7 @@ workflow_families:
   - product
   transition_frequencies: {}
   outcome_distribution:
-    RETURN PENDING: 3
+    RETURN PENDING: 4
   structural_signature: 16bebf7ddc84e8d7bb2552cab4502bba176a1fa5c7d376c067e20ef287e87ea9
   ordered_step_signature:
   - 1:POST:/workshop/api/shop/orders/return_order:RETURN_ORDER:PRIMARY:order:MUTATING:UNRESOLVED->RETURN
@@ -1414,12 +1347,13 @@ workflow_families:
   causal_prerequisites: []
   research_clues: []
   workflow_instance_ids:
+  - WFINST-2BCF7A29C02F2EE9
   - WFINST-3A17955119345F11
   - WFINST-A0AE893A0BA845A8
   - WFINST-C1B6359B9BE200DB
   inference_confidence: WEAK_EVIDENCE
   confidence_explanation:
-  - Derived from 3 workflow instance(s), including 0 with moderate-or-better segmentation
+  - Derived from 4 workflow instance(s), including 0 with moderate-or-better segmentation
     evidence.
   epistemic_status: INFERRED_PATTERN
 - id: WFAM-B455D1EDD5234984

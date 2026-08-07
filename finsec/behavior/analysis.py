@@ -32,7 +32,11 @@ from finsec.behavior.domain import (
     WorkflowInstance,
     WorkflowInstanceStore,
 )
-from finsec.behavior.reconstruction import TERMINAL_STATES, build_behavior_model
+from finsec.behavior.reconstruction import (
+    TERMINAL_STATES,
+    build_behavior_model,
+    is_merge_capable_relationship,
+)
 from finsec.config.models import TargetDocument
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
@@ -454,7 +458,7 @@ def infer_business_invariants(inputs: _Inputs) -> list[BusinessInvariant]:
             item
             for item in inputs.propagation.propagation_links
             if item.value_kind == "WORKFLOW_TOKEN"
-            and item.relationship_type == RelationshipType.CAUSAL_HARD
+            and is_merge_capable_relationship(item)
             and item.source_observation_id in family_observations
         ]
         if token_links:

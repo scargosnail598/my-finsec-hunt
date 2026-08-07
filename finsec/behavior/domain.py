@@ -3,7 +3,7 @@
 from enum import StrEnum
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class BehaviorModel(BaseModel):
@@ -54,6 +54,18 @@ class RelationshipType(StrEnum):
     CONTEXT_SOFT = "CONTEXT_SOFT"
     REPLAY_RELATED = "REPLAY_RELATED"
     CROSS_ACTOR_COMPARISON = "CROSS_ACTOR_COMPARISON"
+
+
+class CausalBasis(StrEnum):
+    """Explain whether a matched value was produced or merely observed."""
+
+    RESOURCE_CREATED = "RESOURCE_CREATED"
+    CAPABILITY_ISSUED = "CAPABILITY_ISSUED"
+    STATE_TRANSITION_PRODUCED = "STATE_TRANSITION_PRODUCED"
+    EXISTING_VALUE_OBSERVED = "EXISTING_VALUE_OBSERVED"
+    REQUEST_VALUE_ECHOED = "REQUEST_VALUE_ECHOED"
+    AMBIGUOUS_ORIGIN = "AMBIGUOUS_ORIGIN"
+    LEGACY_UNTYPED = "LEGACY_UNTYPED"
 
 
 class HypothesisReadiness(StrEnum):
@@ -134,7 +146,8 @@ class PropagationLink(BehaviorModel):
     """An explainable typed relationship between two passive observations."""
 
     id: str
-    relationship_type: RelationshipType = RelationshipType.CAUSAL_HARD
+    relationship_type: RelationshipType = RelationshipType.CONTEXT_SOFT
+    causal_basis: CausalBasis = CausalBasis.LEGACY_UNTYPED
     value_fingerprint: str
     value_kind: Literal[
         "RESOURCE_IDENTIFIER",
@@ -178,7 +191,10 @@ class PropagationLink(BehaviorModel):
     temporal_order_known: bool = False
     capture_continuity: bool = False
     distinctive_value: bool = False
-    evidence_reason: str = "Legacy propagation link without a persisted relationship reason."
+    evidence_reason: str = (
+        "LEGACY_UNTYPED: causal provenance is unavailable; rebuild workflows from factual "
+        "observations to obtain typed producer evidence."
+    )
     evidence: list[str] = Field(default_factory=list)
     confidence: InferenceConfidence
     epistemic_status: Literal[EpistemicStatus.OBSERVED_FACT] = EpistemicStatus.OBSERVED_FACT
@@ -297,6 +313,7 @@ class WorkflowPrerequisite(BehaviorModel):
     comparable_instances: int = Field(ge=1)
     support_ratio: float = Field(ge=0, le=1)
     causal_link_ids: list[str] = Field(default_factory=list)
+    causal_bases: list[CausalBasis] = Field(default_factory=list)
     supporting_observations: list[str] = Field(default_factory=list)
     counterexamples: list[str] = Field(default_factory=list)
     confidence: InferenceConfidence
@@ -498,6 +515,33 @@ class ResourceInstanceStore(BehaviorModel):
 class PropagationStore(BehaviorModel):
     version: Literal[1, 2] = 2
     propagation_links: list[PropagationLink] = Field(default_factory=list)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _downgrade_untyped_legacy_links(cls, value: object) -> object:
+        if not isinstance(value, dict):
+            return value
+        version = value.get("version", 2)
+        links = value.get("propagation_links")
+        if version != 1 or not isinstance(links, list):
+            return value
+        normalized = dict(value)
+        normalized_links: list[object] = []
+        for link in links:
+            if not isinstance(link, dict) or "relationship_type" in link:
+                normalized_links.append(link)
+                continue
+            legacy = dict(link)
+            legacy["relationship_type"] = RelationshipType.CONTEXT_SOFT
+            legacy["causal_basis"] = CausalBasis.LEGACY_UNTYPED
+            legacy["evidence_reason"] = (
+                "LEGACY_UNTYPED: v1 propagation did not persist producer semantics; "
+                "the link is display-only and cannot merge workflows. Rebuild from factual "
+                "observations to obtain v2 typed causal evidence."
+            )
+            normalized_links.append(legacy)
+        normalized["propagation_links"] = normalized_links
+        return normalized
 
 
 class WorkflowInstanceStore(BehaviorModel):

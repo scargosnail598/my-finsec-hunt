@@ -67,8 +67,9 @@ direction, and evidence reason. Matching scalar text alone is never sufficient t
 
 Relationships have explicit semantics:
 
-- `CAUSAL_HARD`: an earlier response produced a distinctive typed identifier or workflow token
-  consumed by a compatible later request. Only this relationship may union components.
+- `CAUSAL_HARD`: positive producer evidence shows that an earlier operation created a resource,
+  issued a capability/token/nonce, or produced a compatible typed state transition consumed by a
+  later request. Only this relationship may union components.
 - `CONTEXT_SOFT`: correlation IDs, collection-member identifiers, low-entropy values, or other
   useful context that cannot establish a workflow boundary.
 - `REPLAY_RELATED`: repeated use of a state-changing action, primary resource, or idempotency key;
@@ -80,6 +81,13 @@ Hard relationships require known temporal direction, compatible semantic roles, 
 compatible session and capture continuity, sufficient distinctiveness, and stronger explicit
 evidence for cross-host correlation. Missing actor, session, capture, or semantic type is not a
 wildcard.
+
+Every propagation link also records a causal basis: `RESOURCE_CREATED`, `CAPABILITY_ISSUED`,
+`STATE_TRANSITION_PRODUCED`, `EXISTING_VALUE_OBSERVED`, `REQUEST_VALUE_ECHOED`,
+`AMBIGUOUS_ORIGIN`, or `LEGACY_UNTYPED`. A read that exposes an existing identifier, a response
+that echoes its request, and an output with ambiguous origin remain soft even when the scalar is
+distinctive. HTTP method alone never decides production: a `GET` can issue a nonce, while a `POST`
+can merely echo an existing identifier.
 
 Static assets, analytics, telemetry, third-party traffic, OpenAPI-only observations, and repeated
 polling are excluded from business paths. Interleaved journeys remain separate when they use
@@ -318,8 +326,12 @@ hypotheses/
 
 Relationship, workflow instance/family, business invariant, logic hypothesis, and canonical backlog
 stores now write schema version 2. Their readers accept version 1 and fill conservative defaults,
-so existing workspaces remain readable. Missing behavior files are created lazily on the next
-build; status and readiness inspection never rewrites factual observations or user data.
+so existing workspaces remain readable. Untyped v1 propagation links load as display-only soft
+context with `LEGACY_UNTYPED` causal basis; they cannot merge workflows or establish prerequisites.
+`hunt workflows show/explain` recommends rebuilding from factual observations to obtain modern
+typed evidence. Readers never migrate or rewrite legacy workspace data automatically. Missing
+behavior files are created lazily on the next build; status and readiness inspection never rewrites
+factual observations or user data.
 
 Collection schemas are in `schemas/behavior-workflow.schema.json`,
 `schemas/business-invariant.schema.json`, and
@@ -355,7 +367,8 @@ hunt logic plan <BLH-ID> -w workspaces/<slug>
 
 The compact sanitized benchmark covers actor/session/capture boundaries, incompatible and generic
 scalars, typed tokens and resource IDs, false adjacency, family structure, actor comparison,
-replay, value conservation, and partial rollback. Unknown labels are excluded from denominators.
+replay, value conservation, partial rollback, and labeled workflow fragmentation. Unknown labels
+are excluded only from labeled precision, not from coverage or lower-bound precision.
 
 ```bash
 python scripts/evaluate_workflow_precision.py \
@@ -363,10 +376,25 @@ python scripts/evaluate_workflow_precision.py \
   --markdown-output /tmp/finsec-workflow-precision.md
 ```
 
-It reports workflow and family boundary pairwise precision/recall/F1, causal-edge metrics,
-forbidden hard edges, prerequisite precision/recall, precision@10, expected-mutation recall@10,
-unsupported-hypothesis rate, relationship recall, and test-ready records that still have blockers.
-The evaluator is deterministic, offline, and separate from production CLI surface area.
+It reports `labeled_precision_at_k`, `label_coverage_at_k`, `unknown_rate_at_k`,
+`precision_lower_bound_at_k`, expected-mutation recall, known-forbidden rate, and raw expected,
+forbidden, unknown, labeled, and emitted counts. The deprecated `hypothesis_precision_at_k` field
+is an exact alias for labeled precision, not overall precision. Fragmentation diagnostics report
+singletons, labeled journey retention, fragments per journey, under-merge and over-merge pairs, and
+known-journey component recall.
+
+The fully labeled gate fixture and executable thresholds are checked in under
+`tests/fixtures/workflow_precision/`. CI runs:
+
+```bash
+python scripts/check_workflow_quality_gates.py
+```
+
+The command evaluates the fixture twice and fails on forbidden hard edges or merges, incomplete
+top-K labels, precision/coverage/recall regressions, blocker-bearing `TEST_READY` output, labeled
+journey fragmentation or order loss, and nondeterministic serialization. Singleton rate remains a
+diagnostic because independent observations are often legitimate. The benchmark is deterministic,
+offline, and does not estimate real-world precision beyond its sanitized labeled cases.
 
 ## Synthetic demonstration
 

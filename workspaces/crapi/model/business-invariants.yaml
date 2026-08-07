@@ -146,6 +146,7 @@ business_invariants:
   - OBS-000012
   - OBS-000059
   - OBS-000700
+  - OBS-000711
   contradicting_observations: []
   source_of_inference:
   - 'Observed actors: mrscargo, saeedmehmandoust.'
@@ -166,53 +167,9 @@ business_invariants:
   counterexamples: []
   confidence: MODERATE_EVIDENCE
   confidence_explanation:
-  - The rule is derived from 3 workflow instance(s).
+  - The rule is derived from 4 workflow instance(s).
   - Observed frequency is evidence of a pattern, not proof that the backend requires
     it.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-3EE8BD7278E77A9D
-  statement: RETURN_ORDER appears to require READ_ORDER to occur first in order lifecycle.
-  invariant_type: ORDERING
-  workflow_family_id: WFAM-070E94C62CCCE75E
-  resource_types:
-  - Order
-  - order
-  - product
-  supporting_observations:
-  - OBS-000709
-  - OBS-000711
-  contradicting_observations: []
-  source_of_inference:
-  - A typed response value from the prerequisite step is consumed by the dependent
-    request.
-  - 'Support: 1/1 comparable workflow instances.'
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  prerequisite_action: READ_ORDER
-  dependent_action: RETURN_ORDER
-  prerequisite_position: 2
-  dependent_position: 3
-  support_count: 1
-  support_ratio: 1.0
-  causal_evidence:
-  - PROP-D2E9FBA651381C3C
-  - PROP-E038BBEF6A7A10A5
-  counterexamples: []
-  confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 1 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  - One workflow instance cannot establish a mandatory business rule.
   validation_requirements:
   - Use only researcher-controlled actors and resources.
   - Capture the mutation request and immediate response.
@@ -385,6 +342,7 @@ business_invariants:
   - OBS-000012
   - OBS-000059
   - OBS-000700
+  - OBS-000711
   contradicting_observations: []
   source_of_inference:
   - 'Observed typed client-controlled identifier fields: query.order_id.'
@@ -404,7 +362,7 @@ business_invariants:
   counterexamples: []
   confidence: MODERATE_EVIDENCE
   confidence_explanation:
-  - The rule is derived from 3 workflow instance(s).
+  - The rule is derived from 4 workflow instance(s).
   - Observed frequency is evidence of a pattern, not proof that the backend requires
     it.
   validation_requirements:
@@ -482,6 +440,7 @@ business_invariants:
   - OBS-000012
   - OBS-000059
   - OBS-000700
+  - OBS-000711
   contradicting_observations: []
   source_of_inference:
   - RETURN_ORDER has one-time or irreversible action semantics.
@@ -501,7 +460,7 @@ business_invariants:
   counterexamples: []
   confidence: MODERATE_EVIDENCE
   confidence_explanation:
-  - The rule is derived from 3 workflow instance(s).
+  - The rule is derived from 4 workflow instance(s).
   - Observed frequency is evidence of a pattern, not proof that the backend requires
     it.
   validation_requirements:
@@ -549,46 +508,6 @@ business_invariants:
   - The rule is derived from 6 workflow instance(s).
   - Observed frequency is evidence of a pattern, not proof that the backend requires
     it.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-D5F6B38226CE8BCD
-  statement: RETURN_ORDER should produce at most one successful business effect per
-    logical workflow.
-  invariant_type: SINGLE_EXECUTION
-  workflow_family_id: WFAM-070E94C62CCCE75E
-  resource_types:
-  - Order
-  - order
-  - product
-  supporting_observations:
-  - OBS-000711
-  contradicting_observations: []
-  source_of_inference:
-  - RETURN_ORDER has one-time or irreversible action semantics.
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  prerequisite_action: null
-  dependent_action: null
-  prerequisite_position: null
-  dependent_position: null
-  support_count: 0
-  support_ratio: 0.0
-  causal_evidence: []
-  counterexamples: []
-  confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 1 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  - One workflow instance cannot establish a mandatory business rule.
   validation_requirements:
   - Use only researcher-controlled actors and resources.
   - Capture the mutation request and immediate response.

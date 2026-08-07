@@ -2401,197 +2401,6 @@ workflow_instances:
   ambiguities:
   - Only one meaningful observation was available for this journey.
   epistemic_status: INFERRED_PATTERN
-- id: WFINST-246E1679645A3DB9
-  family_id: WFAM-070E94C62CCCE75E
-  actors:
-  - mrscargo
-  sessions:
-  - mrscargo:observations/har/mrscargo-crapi-return-15972e45-redacted.har
-  captures:
-  - observations/har/mrscargo-crapi-return-15972e45-redacted.har
-  resource_instance_ids:
-  - RINST-599F2693CCF29203
-  - RINST-E6B260A8918184A4
-  resource_types:
-  - Order
-  - order
-  - product
-  steps:
-  - position: 1
-    action_id: ACTN-675607B4373F0BCE
-    action_name: READ_ORDER
-    observation_id: OBS-000706
-    endpoint_ids:
-    - EP-069
-    actor: mrscargo
-    method: GET
-    route: /workshop/api/shop/orders/{orderId}
-    resource_role: PRIMARY:order
-    state_changing: false
-    timestamp: '2026-08-03T19:31:04.527000+00:00'
-    resource_instance_ids:
-    - RINST-599F2693CCF29203
-    - RINST-E6B260A8918184A4
-    client_controlled_resource_fields:
-    - path.orderId
-    state_observations:
-    - field: $.order.status
-      resource_type: order
-      resource_instance_ids:
-      - RINST-599F2693CCF29203
-      state_before: null
-      state_after: DELIVERED
-      derivation: EXPLICIT_FIELD
-    business_values:
-    - field: $.order.product.price
-      value: '10.00'
-      direction: RESPONSE
-      resource_type: product
-      resource_instance_ids:
-      - RINST-E6B260A8918184A4
-      semantic_role: business:price
-      location: BODY
-      primitive_type: STRING
-      client_controlled: false
-    - field: $.order.quantity
-      value: '1'
-      direction: RESPONSE
-      resource_type: order
-      resource_instance_ids:
-      - RINST-599F2693CCF29203
-      semantic_role: business:quantity
-      location: BODY
-      primitive_type: INTEGER
-      client_controlled: false
-    - field: $.payment.amount
-      value: '10'
-      direction: RESPONSE
-      resource_type: payment
-      resource_instance_ids: []
-      semantic_role: business:amount
-      location: BODY
-      primitive_type: INTEGER
-      client_controlled: false
-    state_before: null
-    state_after: DELIVERED
-    state_derivation: EXPLICIT_FIELD
-  - position: 2
-    action_id: ACTN-675607B4373F0BCE
-    action_name: READ_ORDER
-    observation_id: OBS-000709
-    endpoint_ids:
-    - EP-069
-    actor: mrscargo
-    method: GET
-    route: /workshop/api/shop/orders/{orderId}
-    resource_role: PRIMARY:order
-    state_changing: false
-    timestamp: '2026-08-03T19:31:11.278000+00:00'
-    resource_instance_ids:
-    - RINST-599F2693CCF29203
-    - RINST-E6B260A8918184A4
-    client_controlled_resource_fields:
-    - path.orderId
-    state_observations:
-    - field: $.order.status
-      resource_type: order
-      resource_instance_ids:
-      - RINST-599F2693CCF29203
-      state_before: DELIVERED
-      state_after: DELIVERED
-      derivation: EXPLICIT_FIELD
-    business_values:
-    - field: $.order.product.price
-      value: '10.00'
-      direction: RESPONSE
-      resource_type: product
-      resource_instance_ids:
-      - RINST-E6B260A8918184A4
-      semantic_role: business:price
-      location: BODY
-      primitive_type: STRING
-      client_controlled: false
-    - field: $.order.quantity
-      value: '1'
-      direction: RESPONSE
-      resource_type: order
-      resource_instance_ids:
-      - RINST-599F2693CCF29203
-      semantic_role: business:quantity
-      location: BODY
-      primitive_type: INTEGER
-      client_controlled: false
-    - field: $.payment.amount
-      value: '10'
-      direction: RESPONSE
-      resource_type: payment
-      resource_instance_ids: []
-      semantic_role: business:amount
-      location: BODY
-      primitive_type: INTEGER
-      client_controlled: false
-    state_before: DELIVERED
-    state_after: DELIVERED
-    state_derivation: EXPLICIT_FIELD
-  - position: 3
-    action_id: ACTN-1EE6E534FAD588CE
-    action_name: RETURN_ORDER
-    observation_id: OBS-000711
-    endpoint_ids:
-    - EP-021
-    actor: mrscargo
-    method: POST
-    route: /workshop/api/shop/orders/return_order
-    resource_role: PRIMARY:order
-    state_changing: true
-    timestamp: '2026-08-03T19:31:15.612000+00:00'
-    resource_instance_ids:
-    - RINST-599F2693CCF29203
-    - RINST-E6B260A8918184A4
-    client_controlled_resource_fields:
-    - query.order_id
-    state_observations:
-    - field: $.order.status
-      resource_type: order
-      resource_instance_ids:
-      - RINST-599F2693CCF29203
-      state_before: DELIVERED
-      state_after: RETURN PENDING
-      derivation: EXPLICIT_FIELD
-    business_values:
-    - field: $.order.product.price
-      value: '10.00'
-      direction: RESPONSE
-      resource_type: product
-      resource_instance_ids:
-      - RINST-E6B260A8918184A4
-      semantic_role: business:price
-      location: BODY
-      primitive_type: STRING
-      client_controlled: false
-    - field: $.order.quantity
-      value: '1'
-      direction: RESPONSE
-      resource_type: order
-      resource_instance_ids:
-      - RINST-599F2693CCF29203
-      semantic_role: business:quantity
-      location: BODY
-      primitive_type: INTEGER
-      client_controlled: false
-    state_before: DELIVERED
-    state_after: RETURN PENDING
-    state_derivation: EXPLICIT_FIELD
-  started_at: '2026-08-03T19:31:04.527000+00:00'
-  ended_at: '2026-08-03T19:31:15.612000+00:00'
-  terminal_outcome: RETURN PENDING
-  evidence:
-  - OBS-000706
-  - OBS-000709
-  - OBS-000711
-  segmentation_confidence: HIGH_EVIDENCE
-  ambiguities: []
-  epistemic_status: INFERRED_PATTERN
 - id: WFINST-24E8E94D87AFA37C
   family_id: WFAM-651E1B8910D89F80
   actors:
@@ -3000,6 +2809,80 @@ workflow_instances:
   ambiguities:
   - Only one meaningful observation was available for this journey.
   - No concrete resource identifier linked the observations.
+  epistemic_status: INFERRED_PATTERN
+- id: WFINST-2BCF7A29C02F2EE9
+  family_id: WFAM-B18CAB66F33EC59A
+  actors:
+  - mrscargo
+  sessions:
+  - mrscargo:observations/har/mrscargo-crapi-return-15972e45-redacted.har
+  captures:
+  - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+  resource_instance_ids:
+  - RINST-599F2693CCF29203
+  - RINST-E6B260A8918184A4
+  resource_types:
+  - Order
+  - order
+  - product
+  steps:
+  - position: 1
+    action_id: ACTN-1EE6E534FAD588CE
+    action_name: RETURN_ORDER
+    observation_id: OBS-000711
+    endpoint_ids:
+    - EP-021
+    actor: mrscargo
+    method: POST
+    route: /workshop/api/shop/orders/return_order
+    resource_role: PRIMARY:order
+    state_changing: true
+    timestamp: '2026-08-03T19:31:15.612000+00:00'
+    resource_instance_ids:
+    - RINST-599F2693CCF29203
+    - RINST-E6B260A8918184A4
+    client_controlled_resource_fields:
+    - query.order_id
+    state_observations:
+    - field: $.order.status
+      resource_type: order
+      resource_instance_ids:
+      - RINST-599F2693CCF29203
+      state_before: null
+      state_after: RETURN PENDING
+      derivation: EXPLICIT_FIELD
+    business_values:
+    - field: $.order.product.price
+      value: '10.00'
+      direction: RESPONSE
+      resource_type: product
+      resource_instance_ids:
+      - RINST-E6B260A8918184A4
+      semantic_role: business:price
+      location: BODY
+      primitive_type: STRING
+      client_controlled: false
+    - field: $.order.quantity
+      value: '1'
+      direction: RESPONSE
+      resource_type: order
+      resource_instance_ids:
+      - RINST-599F2693CCF29203
+      semantic_role: business:quantity
+      location: BODY
+      primitive_type: INTEGER
+      client_controlled: false
+    state_before: null
+    state_after: RETURN PENDING
+    state_derivation: EXPLICIT_FIELD
+  started_at: '2026-08-03T19:31:15.612000+00:00'
+  ended_at: '2026-08-03T19:31:15.612000+00:00'
+  terminal_outcome: RETURN PENDING
+  evidence:
+  - OBS-000711
+  segmentation_confidence: WEAK_EVIDENCE
+  ambiguities:
+  - Only one meaningful observation was available for this journey.
   epistemic_status: INFERRED_PATTERN
 - id: WFINST-2C8DCCC6EA402DF9
   family_id: WFAM-99B3FB004FE27101
@@ -7223,6 +7106,89 @@ workflow_instances:
   ambiguities:
   - Only one meaningful observation was available for this journey.
   - No concrete resource identifier linked the observations.
+  epistemic_status: INFERRED_PATTERN
+- id: WFINST-7683E9A485022C74
+  family_id: WFAM-68070DACD38FAE40
+  actors:
+  - mrscargo
+  sessions:
+  - mrscargo:observations/har/mrscargo-crapi-return-15972e45-redacted.har
+  captures:
+  - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+  resource_instance_ids:
+  - RINST-599F2693CCF29203
+  - RINST-E6B260A8918184A4
+  resource_types:
+  - Order
+  - order
+  - product
+  steps:
+  - position: 1
+    action_id: ACTN-675607B4373F0BCE
+    action_name: READ_ORDER
+    observation_id: OBS-000709
+    endpoint_ids:
+    - EP-069
+    actor: mrscargo
+    method: GET
+    route: /workshop/api/shop/orders/{orderId}
+    resource_role: PRIMARY:order
+    state_changing: false
+    timestamp: '2026-08-03T19:31:11.278000+00:00'
+    resource_instance_ids:
+    - RINST-599F2693CCF29203
+    - RINST-E6B260A8918184A4
+    client_controlled_resource_fields:
+    - path.orderId
+    state_observations:
+    - field: $.order.status
+      resource_type: order
+      resource_instance_ids:
+      - RINST-599F2693CCF29203
+      state_before: null
+      state_after: DELIVERED
+      derivation: EXPLICIT_FIELD
+    business_values:
+    - field: $.order.product.price
+      value: '10.00'
+      direction: RESPONSE
+      resource_type: product
+      resource_instance_ids:
+      - RINST-E6B260A8918184A4
+      semantic_role: business:price
+      location: BODY
+      primitive_type: STRING
+      client_controlled: false
+    - field: $.order.quantity
+      value: '1'
+      direction: RESPONSE
+      resource_type: order
+      resource_instance_ids:
+      - RINST-599F2693CCF29203
+      semantic_role: business:quantity
+      location: BODY
+      primitive_type: INTEGER
+      client_controlled: false
+    - field: $.payment.amount
+      value: '10'
+      direction: RESPONSE
+      resource_type: payment
+      resource_instance_ids: []
+      semantic_role: business:amount
+      location: BODY
+      primitive_type: INTEGER
+      client_controlled: false
+    state_before: null
+    state_after: DELIVERED
+    state_derivation: EXPLICIT_FIELD
+  started_at: '2026-08-03T19:31:11.278000+00:00'
+  ended_at: '2026-08-03T19:31:11.278000+00:00'
+  terminal_outcome: DELIVERED
+  evidence:
+  - OBS-000709
+  segmentation_confidence: WEAK_EVIDENCE
+  ambiguities:
+  - Only one meaningful observation was available for this journey.
   epistemic_status: INFERRED_PATTERN
 - id: WFINST-782241BD97082C03
   family_id: WFAM-0532B103197330E9
@@ -14690,6 +14656,89 @@ workflow_instances:
   ambiguities:
   - Only one meaningful observation was available for this journey.
   - No concrete resource identifier linked the observations.
+  epistemic_status: INFERRED_PATTERN
+- id: WFINST-FD152BC9F3B7605F
+  family_id: WFAM-68070DACD38FAE40
+  actors:
+  - mrscargo
+  sessions:
+  - mrscargo:observations/har/mrscargo-crapi-return-15972e45-redacted.har
+  captures:
+  - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+  resource_instance_ids:
+  - RINST-599F2693CCF29203
+  - RINST-E6B260A8918184A4
+  resource_types:
+  - Order
+  - order
+  - product
+  steps:
+  - position: 1
+    action_id: ACTN-675607B4373F0BCE
+    action_name: READ_ORDER
+    observation_id: OBS-000706
+    endpoint_ids:
+    - EP-069
+    actor: mrscargo
+    method: GET
+    route: /workshop/api/shop/orders/{orderId}
+    resource_role: PRIMARY:order
+    state_changing: false
+    timestamp: '2026-08-03T19:31:04.527000+00:00'
+    resource_instance_ids:
+    - RINST-599F2693CCF29203
+    - RINST-E6B260A8918184A4
+    client_controlled_resource_fields:
+    - path.orderId
+    state_observations:
+    - field: $.order.status
+      resource_type: order
+      resource_instance_ids:
+      - RINST-599F2693CCF29203
+      state_before: null
+      state_after: DELIVERED
+      derivation: EXPLICIT_FIELD
+    business_values:
+    - field: $.order.product.price
+      value: '10.00'
+      direction: RESPONSE
+      resource_type: product
+      resource_instance_ids:
+      - RINST-E6B260A8918184A4
+      semantic_role: business:price
+      location: BODY
+      primitive_type: STRING
+      client_controlled: false
+    - field: $.order.quantity
+      value: '1'
+      direction: RESPONSE
+      resource_type: order
+      resource_instance_ids:
+      - RINST-599F2693CCF29203
+      semantic_role: business:quantity
+      location: BODY
+      primitive_type: INTEGER
+      client_controlled: false
+    - field: $.payment.amount
+      value: '10'
+      direction: RESPONSE
+      resource_type: payment
+      resource_instance_ids: []
+      semantic_role: business:amount
+      location: BODY
+      primitive_type: INTEGER
+      client_controlled: false
+    state_before: null
+    state_after: DELIVERED
+    state_derivation: EXPLICIT_FIELD
+  started_at: '2026-08-03T19:31:04.527000+00:00'
+  ended_at: '2026-08-03T19:31:04.527000+00:00'
+  terminal_outcome: DELIVERED
+  evidence:
+  - OBS-000706
+  segmentation_confidence: WEAK_EVIDENCE
+  ambiguities:
+  - Only one meaningful observation was available for this journey.
   epistemic_status: INFERRED_PATTERN
 - id: WFINST-FDDD05CB643EBB57
   family_id: WFAM-6200E8D84D1FDB2E

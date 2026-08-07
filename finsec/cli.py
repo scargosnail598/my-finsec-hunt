@@ -37,6 +37,7 @@ from finsec.behavior.analysis import (
 from finsec.behavior.reconstruction import (
     build_behavior_model,
     find_workflow_family,
+    load_propagation,
     load_workflow_families,
     load_workflow_graph,
     load_workflow_instances,
@@ -1717,6 +1718,7 @@ def workflows_list_command(workspace: WorkspaceOption = None) -> None:
 
 def _workflow_panel(paths: WorkspacePaths, workflow_id: str) -> Panel:
     family = find_workflow_family(paths, workflow_id)
+    propagation = load_propagation(paths)
     instances = [
         item
         for item in load_workflow_instances(paths).workflow_instances
@@ -1736,10 +1738,30 @@ def _workflow_panel(paths: WorkspacePaths, workflow_id: str) -> Panel:
         "[bold]Inference explanation[/bold]",
         *[f"- {item}" for item in family.confidence_explanation],
         "",
+        "[bold]Causal prerequisites[/bold]",
+        *[
+            f"- {item.prerequisite_action} -> {item.dependent_action} "
+            f"(basis: {', '.join(value.value for value in item.causal_bases) or 'unavailable'})"
+            for item in family.causal_prerequisites
+        ],
+        "",
         "[bold]Instance ambiguity[/bold]",
     ]
+    if not family.causal_prerequisites:
+        lines.insert(-2, "- None recorded.")
     ambiguous = [f"{item.id}: {reason}" for item in instances for reason in item.ambiguities]
     lines.extend(f"- {item}" for item in ambiguous or ["None recorded."])
+    if propagation.version == 1 or any(
+        link.causal_basis.value == "LEGACY_UNTYPED" for link in propagation.propagation_links
+    ):
+        lines.extend(
+            [
+                "",
+                "[bold yellow]Legacy compatibility warning[/bold yellow]",
+                "- Untyped v1 propagation is display-only and cannot merge workflows.",
+                "- Rebuild from factual observations to obtain v2 typed producer evidence.",
+            ]
+        )
     return Panel("\n".join(lines), title=f"{family.id}: {family.name}")
 
 
