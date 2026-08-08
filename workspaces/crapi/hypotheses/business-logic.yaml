@@ -1,4 +1,4 @@
-version: 2
+version: 3
 hypotheses:
 - id: BLH-042DE49D21BF40CB
   fingerprint: 042de49d21bf40cb4adbb5c18669563ecdff820894e52372cb989824e6cfda6b
@@ -92,6 +92,57 @@ hypotheses:
   kind: RESEARCH_TASK
   readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
+  semantics:
+    vulnerability_family: REPLAY
+    subject_action: RETURN_ORDER
+    subject_resource: order
+    violated_property: SINGLE_EXECUTION
+    mutation_type: REPLAY
+    actor_dimension: []
+    resource_dimension:
+    - order
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /workshop/api/shop/orders/return-order
+    value_dimension: []
+    label:
+      value: Return order
+      normalized_value: RETURN_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: 9e7a39b10fbda8d8120f7855ca2b378629fa1c052f9b9cd79ca2812f68f7f83f
+    canonical_id: HCL-9E7A39B10FBDA8D8
+  qualification:
+    evidence:
+      authenticated: true
+      sensitive_operation: true
+      sensitive_read: false
+      state_changing: true
+      controlled_identifier: true
+      ownership_known: false
+      cross_actor_baseline: false
+      causal_prerequisites_proven: false
+      business_relevant_resource: true
+      independently_identifiable_resource: true
+      cross_workflow_resource: true
+      privileged_or_approval_context: false
+      independent_support_count: 3
+    hypothesis_confidence: HIGH
+    evidence_strength: STRONG
+    promotion: RESEARCH_HIGH
+    research_score: 75
+    qualification_reasons:
+    - 3 independent support(s) contribute 6 points.
+    - Authenticated operation contributes 3 points.
+    - Business-relevant resource contributes 3 points.
+    - Controlled identifier contributes 3 points.
+    - Cross-workflow resource contributes 3 points.
+    - High-confidence semantic naming contributes 3 points.
+    - Legacy transparent score contributes 36 points.
+    - Sensitive operation contributes 3 points.
+    suppression_reasons: []
 - id: BLH-1C9987F3CF1E6DBB
   fingerprint: 1c9987f3cf1e6dbb9c7fc944b51dd511cfdf3452e722e364c4ea1f184c26bd98
   title: Concurrent return order may bypass single-execution protection
@@ -188,6 +239,58 @@ hypotheses:
   kind: RESEARCH_TASK
   readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
+  semantics:
+    vulnerability_family: CONCURRENT_EXECUTION
+    subject_action: RETURN_ORDER
+    subject_resource: order
+    violated_property: SINGLE_EXECUTION
+    mutation_type: CONCURRENT_EXECUTION
+    actor_dimension: []
+    resource_dimension:
+    - order
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /workshop/api/shop/orders/return-order
+    value_dimension: []
+    label:
+      value: Return order
+      normalized_value: RETURN_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: 1727abcfe47da26b9c0fbf7b854b0349688fa319055c4774efb69d76be547df1
+    canonical_id: HCL-1727ABCFE47DA26B
+  qualification:
+    evidence:
+      authenticated: true
+      sensitive_operation: true
+      sensitive_read: false
+      state_changing: true
+      controlled_identifier: true
+      ownership_known: false
+      cross_actor_baseline: true
+      causal_prerequisites_proven: false
+      business_relevant_resource: true
+      independently_identifiable_resource: true
+      cross_workflow_resource: true
+      privileged_or_approval_context: false
+      independent_support_count: 4
+    hypothesis_confidence: HIGH
+    evidence_strength: STRONG
+    promotion: RESEARCH_HIGH
+    research_score: 78
+    qualification_reasons:
+    - 4 independent support(s) contribute 6 points.
+    - Authenticated operation contributes 3 points.
+    - Business-relevant resource contributes 3 points.
+    - Controlled identifier contributes 3 points.
+    - Cross-actor baseline contributes 3 points.
+    - Cross-workflow resource contributes 3 points.
+    - High-confidence semantic naming contributes 3 points.
+    - Legacy transparent score contributes 36 points.
+    - Sensitive operation contributes 3 points.
+    suppression_reasons: []
 - id: BLH-2F40AB26AF496347
   fingerprint: 2f40ab26af496347a5b8cce5ad0fc5f61b92bdf84a8c9c331b5aa782ea715b87
   title: Return order may remain replayable after its first successful effect
@@ -284,6 +387,58 @@ hypotheses:
   kind: RESEARCH_TASK
   readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
+  semantics:
+    vulnerability_family: REPLAY
+    subject_action: RETURN_ORDER
+    subject_resource: order
+    violated_property: SINGLE_EXECUTION
+    mutation_type: REPLAY
+    actor_dimension: []
+    resource_dimension:
+    - order
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /workshop/api/shop/orders/return-order
+    value_dimension: []
+    label:
+      value: Return order
+      normalized_value: RETURN_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: 9e7a39b10fbda8d8120f7855ca2b378629fa1c052f9b9cd79ca2812f68f7f83f
+    canonical_id: HCL-9E7A39B10FBDA8D8
+  qualification:
+    evidence:
+      authenticated: true
+      sensitive_operation: true
+      sensitive_read: false
+      state_changing: true
+      controlled_identifier: true
+      ownership_known: false
+      cross_actor_baseline: true
+      causal_prerequisites_proven: false
+      business_relevant_resource: true
+      independently_identifiable_resource: true
+      cross_workflow_resource: true
+      privileged_or_approval_context: false
+      independent_support_count: 4
+    hypothesis_confidence: HIGH
+    evidence_strength: STRONG
+    promotion: RESEARCH_HIGH
+    research_score: 78
+    qualification_reasons:
+    - 4 independent support(s) contribute 6 points.
+    - Authenticated operation contributes 3 points.
+    - Business-relevant resource contributes 3 points.
+    - Controlled identifier contributes 3 points.
+    - Cross-actor baseline contributes 3 points.
+    - Cross-workflow resource contributes 3 points.
+    - High-confidence semantic naming contributes 3 points.
+    - Legacy transparent score contributes 36 points.
+    - Sensitive operation contributes 3 points.
+    suppression_reasons: []
 - id: BLH-303421BEF52FEFA6
   fingerprint: 303421bef52fefa619411af02002d721a8c0e7546921bbe673a473a44dac3181
   title: Undocumented update order method may expose server-controlled fields
@@ -405,6 +560,69 @@ hypotheses:
   kind: RESEARCH_TASK
   readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
+  semantics:
+    vulnerability_family: SHADOW_ENDPOINT
+    subject_action: UPDATE_ORDER
+    subject_resource: order
+    violated_property: SERVER_CONTROLLED_FIELDS
+    mutation_type: SHADOW_ENDPOINT
+    actor_dimension: []
+    resource_dimension:
+    - order
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - GET /workshop/api/shop/orders/{id}
+    - PATCH /workshop/api/shop/orders/{id}
+    - PUT /workshop/api/shop/orders/{id}
+    value_dimension:
+    - amount
+    - currency
+    - order_product_price
+    - order_quantity
+    - payment_amount
+    - payment_currency
+    - price
+    - quantity
+    - status
+    label:
+      value: Update order
+      normalized_value: UPDATE_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: 186c5007e5003b7a1111ef0b6e56fd8d78fb4d55cf319b761a6d33f167869630
+    canonical_id: HCL-186C5007E5003B7A
+  qualification:
+    evidence:
+      authenticated: true
+      sensitive_operation: true
+      sensitive_read: true
+      state_changing: false
+      controlled_identifier: true
+      ownership_known: false
+      cross_actor_baseline: true
+      causal_prerequisites_proven: false
+      business_relevant_resource: true
+      independently_identifiable_resource: true
+      cross_workflow_resource: true
+      privileged_or_approval_context: false
+      independent_support_count: 1
+    hypothesis_confidence: MEDIUM
+    evidence_strength: MODERATE
+    promotion: RESEARCH_MEDIUM
+    research_score: 69
+    qualification_reasons:
+    - 1 independent support(s) contribute 2 points.
+    - Authenticated operation contributes 3 points.
+    - Business-relevant resource contributes 3 points.
+    - Controlled identifier contributes 3 points.
+    - Cross-actor baseline contributes 3 points.
+    - Cross-workflow resource contributes 3 points.
+    - High-confidence semantic naming contributes 3 points.
+    - Legacy transparent score contributes 36 points.
+    - Sensitive operation contributes 3 points.
+    suppression_reasons: []
 - id: BLH-64B37A2600729089
   fingerprint: 64b37a260072908965c0e76477b0a056b697b7084a317dfe422389690f97d52b
   title: Create order may accept an amount or quantity inconsistent with the baseline
@@ -567,6 +785,56 @@ hypotheses:
   kind: SECURITY_HYPOTHESIS
   readiness: REVIEW_REQUIRED
   epistemic_status: TEST_CANDIDATE
+  semantics:
+    vulnerability_family: QUANTITY_VALUE_INVARIANT
+    subject_action: CREATE_ORDER
+    subject_resource: order
+    violated_property: VALUE_CONSERVATION
+    mutation_type: QUANTITY_VALUE_INVARIANT
+    actor_dimension: []
+    resource_dimension:
+    - order
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /workshop/api/shop/orders
+    value_dimension: []
+    label:
+      value: Create order
+      normalized_value: CREATE_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: af68259395fa4a89d84388a09a024508df81e7bca00c76339e5c849c411040ea
+    canonical_id: HCL-AF68259395FA4A89
+  qualification:
+    evidence:
+      authenticated: true
+      sensitive_operation: true
+      sensitive_read: false
+      state_changing: true
+      controlled_identifier: false
+      ownership_known: false
+      cross_actor_baseline: true
+      causal_prerequisites_proven: false
+      business_relevant_resource: true
+      independently_identifiable_resource: false
+      cross_workflow_resource: false
+      privileged_or_approval_context: false
+      independent_support_count: 7
+    hypothesis_confidence: HIGH
+    evidence_strength: STRONG
+    promotion: REVIEW_REQUIRED
+    research_score: 75
+    qualification_reasons:
+    - 7 independent support(s) contribute 6 points.
+    - Authenticated operation contributes 3 points.
+    - Business-relevant resource contributes 3 points.
+    - Cross-actor baseline contributes 3 points.
+    - High-confidence semantic naming contributes 3 points.
+    - Legacy transparent score contributes 39 points.
+    - Sensitive operation contributes 3 points.
+    suppression_reasons: []
 - id: BLH-6E78992C4C726EA3
   fingerprint: 6e78992c4c726ea38dde83d04674dcc387734002f3ea5a105841d5161e837fc0
   title: Create order may accept a resource from another controlled workflow
@@ -671,6 +939,61 @@ hypotheses:
   kind: SECURITY_HYPOTHESIS
   readiness: REVIEW_REQUIRED
   epistemic_status: TEST_CANDIDATE
+  semantics:
+    vulnerability_family: RESOURCE_SWITCH
+    subject_action: CREATE_ORDER
+    subject_resource: order
+    violated_property: RESOURCE_BINDING
+    mutation_type: RESOURCE_SWITCH
+    actor_dimension: []
+    resource_dimension:
+    - field:product_id
+    - order
+    - product
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /workshop/api/shop/orders
+    value_dimension: []
+    label:
+      value: Create order
+      normalized_value: CREATE_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: 69c6fcf029c277737997a076f836eef39669e4dc30e53363e538cfc2c20ef095
+    canonical_id: HCL-69C6FCF029C27773
+  qualification:
+    evidence:
+      authenticated: true
+      sensitive_operation: true
+      sensitive_read: false
+      state_changing: true
+      controlled_identifier: false
+      ownership_known: false
+      cross_actor_baseline: true
+      causal_prerequisites_proven: false
+      business_relevant_resource: true
+      independently_identifiable_resource: false
+      cross_workflow_resource: false
+      privileged_or_approval_context: false
+      independent_support_count: 7
+    hypothesis_confidence: LOW
+    evidence_strength: WEAK
+    promotion: SUPPRESSED
+    research_score: 56
+    qualification_reasons:
+    - 7 independent support(s) contribute 6 points.
+    - Authenticated operation contributes 3 points.
+    - Business-relevant resource contributes 3 points.
+    - Cross-actor baseline contributes 3 points.
+    - High-confidence semantic naming contributes 3 points.
+    - Legacy transparent score contributes 30 points.
+    - Resource substitution lacks independently identifiable cross-workflow resources
+      consumed by a sensitive operation.
+    - Sensitive operation contributes 3 points.
+    suppression_reasons:
+    - INSUFFICIENT_RESOURCE_SWITCH_EVIDENCE
 - id: BLH-8CCAE7927D22AA29
   fingerprint: 8ccae7927d22aa29e284ee01ecfa282530bcd79bec56ab8ef965945b288ee7dc
   title: Comment post may not remain bound to the initiating actor
@@ -769,6 +1092,59 @@ hypotheses:
   kind: SECURITY_HYPOTHESIS
   readiness: REVIEW_REQUIRED
   epistemic_status: TEST_CANDIDATE
+  semantics:
+    vulnerability_family: ACTOR_SWITCH
+    subject_action: COMMENT_POST
+    subject_resource: post
+    violated_property: ACTOR_BINDING
+    mutation_type: ACTOR_SWITCH
+    actor_dimension:
+    - role:user
+    resource_dimension:
+    - post
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /community/api/v2/community/posts/{id}/comment
+    value_dimension: []
+    label:
+      value: Comment post
+      normalized_value: COMMENT_POST
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: 5f02c3f0f497f3706be99a4fd10a8505b14ef0fc86666875c15bf4ea793e0476
+    canonical_id: HCL-5F02C3F0F497F370
+  qualification:
+    evidence:
+      authenticated: true
+      sensitive_operation: true
+      sensitive_read: false
+      state_changing: true
+      controlled_identifier: true
+      ownership_known: false
+      cross_actor_baseline: true
+      causal_prerequisites_proven: false
+      business_relevant_resource: true
+      independently_identifiable_resource: true
+      cross_workflow_resource: true
+      privileged_or_approval_context: false
+      independent_support_count: 6
+    hypothesis_confidence: HIGH
+    evidence_strength: STRONG
+    promotion: REVIEW_REQUIRED
+    research_score: 72
+    qualification_reasons:
+    - 6 independent support(s) contribute 6 points.
+    - Authenticated operation contributes 3 points.
+    - Business-relevant resource contributes 3 points.
+    - Controlled identifier contributes 3 points.
+    - Cross-actor baseline contributes 3 points.
+    - Cross-workflow resource contributes 3 points.
+    - High-confidence semantic naming contributes 3 points.
+    - Legacy transparent score contributes 30 points.
+    - Sensitive operation contributes 3 points.
+    suppression_reasons: []
 - id: BLH-941002D8A1B1475A
   fingerprint: 941002d8a1b1475a01a1068b4a326e8cf1393266128f1b26f77f03bb51010571
   title: Immediate duplicate return order may create two business effects
@@ -861,6 +1237,57 @@ hypotheses:
   kind: RESEARCH_TASK
   readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
+  semantics:
+    vulnerability_family: DUPLICATE_ACTION
+    subject_action: RETURN_ORDER
+    subject_resource: order
+    violated_property: SINGLE_EXECUTION
+    mutation_type: DUPLICATE_ACTION
+    actor_dimension: []
+    resource_dimension:
+    - order
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /workshop/api/shop/orders/return-order
+    value_dimension: []
+    label:
+      value: Return order
+      normalized_value: RETURN_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: 324f85786c2ca1d2200232c6a98ce034424f92ca4521c751b35b8d698d041a27
+    canonical_id: HCL-324F85786C2CA1D2
+  qualification:
+    evidence:
+      authenticated: true
+      sensitive_operation: true
+      sensitive_read: false
+      state_changing: true
+      controlled_identifier: true
+      ownership_known: false
+      cross_actor_baseline: false
+      causal_prerequisites_proven: false
+      business_relevant_resource: true
+      independently_identifiable_resource: true
+      cross_workflow_resource: true
+      privileged_or_approval_context: false
+      independent_support_count: 3
+    hypothesis_confidence: HIGH
+    evidence_strength: STRONG
+    promotion: RESEARCH_HIGH
+    research_score: 75
+    qualification_reasons:
+    - 3 independent support(s) contribute 6 points.
+    - Authenticated operation contributes 3 points.
+    - Business-relevant resource contributes 3 points.
+    - Controlled identifier contributes 3 points.
+    - Cross-workflow resource contributes 3 points.
+    - High-confidence semantic naming contributes 3 points.
+    - Legacy transparent score contributes 36 points.
+    - Sensitive operation contributes 3 points.
+    suppression_reasons: []
 - id: BLH-B5B37FA111A42EEF
   fingerprint: b5b37fa111a42eefb34eeb948cdcc60392a8ff365f73c112dac06e9a51f6328c
   title: Immediate duplicate return order may create two business effects
@@ -957,6 +1384,58 @@ hypotheses:
   kind: RESEARCH_TASK
   readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
+  semantics:
+    vulnerability_family: DUPLICATE_ACTION
+    subject_action: RETURN_ORDER
+    subject_resource: order
+    violated_property: SINGLE_EXECUTION
+    mutation_type: DUPLICATE_ACTION
+    actor_dimension: []
+    resource_dimension:
+    - order
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /workshop/api/shop/orders/return-order
+    value_dimension: []
+    label:
+      value: Return order
+      normalized_value: RETURN_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: 324f85786c2ca1d2200232c6a98ce034424f92ca4521c751b35b8d698d041a27
+    canonical_id: HCL-324F85786C2CA1D2
+  qualification:
+    evidence:
+      authenticated: true
+      sensitive_operation: true
+      sensitive_read: false
+      state_changing: true
+      controlled_identifier: true
+      ownership_known: false
+      cross_actor_baseline: true
+      causal_prerequisites_proven: false
+      business_relevant_resource: true
+      independently_identifiable_resource: true
+      cross_workflow_resource: true
+      privileged_or_approval_context: false
+      independent_support_count: 4
+    hypothesis_confidence: HIGH
+    evidence_strength: STRONG
+    promotion: RESEARCH_HIGH
+    research_score: 78
+    qualification_reasons:
+    - 4 independent support(s) contribute 6 points.
+    - Authenticated operation contributes 3 points.
+    - Business-relevant resource contributes 3 points.
+    - Controlled identifier contributes 3 points.
+    - Cross-actor baseline contributes 3 points.
+    - Cross-workflow resource contributes 3 points.
+    - High-confidence semantic naming contributes 3 points.
+    - Legacy transparent score contributes 36 points.
+    - Sensitive operation contributes 3 points.
+    suppression_reasons: []
 - id: BLH-B89B2AF18B43FAD3
   fingerprint: b89b2af18b43fad3d0be53081d9d1bb077bdaf0fef365f2b2ee67a19c392635a
   title: Return order may not remain bound to the initiating actor
@@ -1057,6 +1536,59 @@ hypotheses:
   kind: RESEARCH_TASK
   readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
+  semantics:
+    vulnerability_family: ACTOR_SWITCH
+    subject_action: RETURN_ORDER
+    subject_resource: order
+    violated_property: ACTOR_BINDING
+    mutation_type: ACTOR_SWITCH
+    actor_dimension:
+    - role:user
+    resource_dimension:
+    - order
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /workshop/api/shop/orders/return-order
+    value_dimension: []
+    label:
+      value: Return order
+      normalized_value: RETURN_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: 8e268b04703718d361fc3d54402d4bcc4d23fae090346aaeff62c3948a960672
+    canonical_id: HCL-8E268B04703718D3
+  qualification:
+    evidence:
+      authenticated: true
+      sensitive_operation: true
+      sensitive_read: false
+      state_changing: true
+      controlled_identifier: true
+      ownership_known: false
+      cross_actor_baseline: true
+      causal_prerequisites_proven: false
+      business_relevant_resource: true
+      independently_identifiable_resource: true
+      cross_workflow_resource: true
+      privileged_or_approval_context: false
+      independent_support_count: 4
+    hypothesis_confidence: HIGH
+    evidence_strength: STRONG
+    promotion: RESEARCH_HIGH
+    research_score: 78
+    qualification_reasons:
+    - 4 independent support(s) contribute 6 points.
+    - Authenticated operation contributes 3 points.
+    - Business-relevant resource contributes 3 points.
+    - Controlled identifier contributes 3 points.
+    - Cross-actor baseline contributes 3 points.
+    - Cross-workflow resource contributes 3 points.
+    - High-confidence semantic naming contributes 3 points.
+    - Legacy transparent score contributes 36 points.
+    - Sensitive operation contributes 3 points.
+    suppression_reasons: []
 - id: BLH-C0F3E74D5DF01440
   fingerprint: c0f3e74d5df014408944847d0e9417b1020061710bc94e4687fdde568837f44b
   title: Concurrent return order may bypass single-execution protection
@@ -1149,6 +1681,57 @@ hypotheses:
   kind: RESEARCH_TASK
   readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
+  semantics:
+    vulnerability_family: CONCURRENT_EXECUTION
+    subject_action: RETURN_ORDER
+    subject_resource: order
+    violated_property: SINGLE_EXECUTION
+    mutation_type: CONCURRENT_EXECUTION
+    actor_dimension: []
+    resource_dimension:
+    - order
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /workshop/api/shop/orders/return-order
+    value_dimension: []
+    label:
+      value: Return order
+      normalized_value: RETURN_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: 1727abcfe47da26b9c0fbf7b854b0349688fa319055c4774efb69d76be547df1
+    canonical_id: HCL-1727ABCFE47DA26B
+  qualification:
+    evidence:
+      authenticated: true
+      sensitive_operation: true
+      sensitive_read: false
+      state_changing: true
+      controlled_identifier: true
+      ownership_known: false
+      cross_actor_baseline: false
+      causal_prerequisites_proven: false
+      business_relevant_resource: true
+      independently_identifiable_resource: true
+      cross_workflow_resource: true
+      privileged_or_approval_context: false
+      independent_support_count: 3
+    hypothesis_confidence: HIGH
+    evidence_strength: STRONG
+    promotion: RESEARCH_HIGH
+    research_score: 75
+    qualification_reasons:
+    - 3 independent support(s) contribute 6 points.
+    - Authenticated operation contributes 3 points.
+    - Business-relevant resource contributes 3 points.
+    - Controlled identifier contributes 3 points.
+    - Cross-workflow resource contributes 3 points.
+    - High-confidence semantic naming contributes 3 points.
+    - Legacy transparent score contributes 36 points.
+    - Sensitive operation contributes 3 points.
+    suppression_reasons: []
 - id: BLH-DECB6317F13498FA
   fingerprint: decb6317f13498fa103235bf666dc386b14a0091f1e7532d9fcee0be39752029
   title: Comment post may accept a resource from another controlled workflow
@@ -1253,6 +1836,63 @@ hypotheses:
   kind: RESEARCH_TASK
   readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
+  semantics:
+    vulnerability_family: RESOURCE_SWITCH
+    subject_action: COMMENT_POST
+    subject_resource: post
+    violated_property: RESOURCE_BINDING
+    mutation_type: RESOURCE_SWITCH
+    actor_dimension: []
+    resource_dimension:
+    - author
+    - field:path_postid
+    - post
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /community/api/v2/community/posts/{id}/comment
+    value_dimension: []
+    label:
+      value: Comment post
+      normalized_value: COMMENT_POST
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: 018db12f215d59520b6089dc7972034596502e9b760ec5779f09faf3a8534f35
+    canonical_id: HCL-018DB12F215D5952
+  qualification:
+    evidence:
+      authenticated: true
+      sensitive_operation: true
+      sensitive_read: false
+      state_changing: true
+      controlled_identifier: true
+      ownership_known: false
+      cross_actor_baseline: true
+      causal_prerequisites_proven: false
+      business_relevant_resource: true
+      independently_identifiable_resource: true
+      cross_workflow_resource: true
+      privileged_or_approval_context: false
+      independent_support_count: 6
+    hypothesis_confidence: HIGH
+    evidence_strength: STRONG
+    promotion: SUPPRESSED
+    research_score: 72
+    qualification_reasons:
+    - 6 independent support(s) contribute 6 points.
+    - A stronger endpoint-level object-authorization hypothesis already covers this
+      resource mutation.
+    - Authenticated operation contributes 3 points.
+    - Business-relevant resource contributes 3 points.
+    - Controlled identifier contributes 3 points.
+    - Cross-actor baseline contributes 3 points.
+    - Cross-workflow resource contributes 3 points.
+    - High-confidence semantic naming contributes 3 points.
+    - Legacy transparent score contributes 30 points.
+    - Sensitive operation contributes 3 points.
+    suppression_reasons:
+    - OVERLAPS_STRONGER_ENDPOINT_HYPOTHESIS
 - id: BLH-E6FECFDB34ED47E6
   fingerprint: e6fecfdb34ed47e6fa05aa8d9cd58a07a3b1f2507f0194be50dea4af38d81ca0
   title: Return order may accept a resource from another controlled workflow
@@ -1359,6 +1999,64 @@ hypotheses:
   kind: RESEARCH_TASK
   readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
+  semantics:
+    vulnerability_family: RESOURCE_SWITCH
+    subject_action: RETURN_ORDER
+    subject_resource: order
+    violated_property: RESOURCE_BINDING
+    mutation_type: RESOURCE_SWITCH
+    actor_dimension: []
+    resource_dimension:
+    - field:query_order_id
+    - order
+    - product
+    - transaction
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /workshop/api/shop/orders/return-order
+    value_dimension: []
+    label:
+      value: Return order
+      normalized_value: RETURN_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: f0d13c3eccb3ffac7659a3338432aae25bbca81466af39ee2811347d4ae857a9
+    canonical_id: HCL-F0D13C3ECCB3FFAC
+  qualification:
+    evidence:
+      authenticated: true
+      sensitive_operation: true
+      sensitive_read: false
+      state_changing: true
+      controlled_identifier: true
+      ownership_known: false
+      cross_actor_baseline: true
+      causal_prerequisites_proven: false
+      business_relevant_resource: true
+      independently_identifiable_resource: true
+      cross_workflow_resource: true
+      privileged_or_approval_context: false
+      independent_support_count: 4
+    hypothesis_confidence: HIGH
+    evidence_strength: STRONG
+    promotion: SUPPRESSED
+    research_score: 78
+    qualification_reasons:
+    - 4 independent support(s) contribute 6 points.
+    - A stronger endpoint-level object-authorization hypothesis already covers this
+      resource mutation.
+    - Authenticated operation contributes 3 points.
+    - Business-relevant resource contributes 3 points.
+    - Controlled identifier contributes 3 points.
+    - Cross-actor baseline contributes 3 points.
+    - Cross-workflow resource contributes 3 points.
+    - High-confidence semantic naming contributes 3 points.
+    - Legacy transparent score contributes 36 points.
+    - Sensitive operation contributes 3 points.
+    suppression_reasons:
+    - OVERLAPS_STRONGER_ENDPOINT_HYPOTHESIS
 - id: BLH-ED7AFE8DC06CBBAC
   fingerprint: ed7afe8dc06cbbac493638001ad03e1a48feca4d14dcb69987561e763a7b483d
   title: Create order may not remain bound to the initiating actor
@@ -1459,6 +2157,60 @@ hypotheses:
   kind: SECURITY_HYPOTHESIS
   readiness: REVIEW_REQUIRED
   epistemic_status: TEST_CANDIDATE
+  semantics:
+    vulnerability_family: ACTOR_SWITCH
+    subject_action: CREATE_ORDER
+    subject_resource: order
+    violated_property: ACTOR_BINDING
+    mutation_type: ACTOR_SWITCH
+    actor_dimension:
+    - role:user
+    resource_dimension:
+    - order
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /workshop/api/shop/orders
+    value_dimension: []
+    label:
+      value: Create order
+      normalized_value: CREATE_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: a1d94a3311c50162a53fffc3fb4d31ca9aa3b16e0e48715516356ce4b10bfc46
+    canonical_id: HCL-A1D94A3311C50162
+  qualification:
+    evidence:
+      authenticated: true
+      sensitive_operation: true
+      sensitive_read: false
+      state_changing: true
+      controlled_identifier: false
+      ownership_known: false
+      cross_actor_baseline: true
+      causal_prerequisites_proven: false
+      business_relevant_resource: true
+      independently_identifiable_resource: false
+      cross_workflow_resource: false
+      privileged_or_approval_context: false
+      independent_support_count: 7
+    hypothesis_confidence: LOW
+    evidence_strength: WEAK
+    promotion: SUPPRESSED
+    research_score: 56
+    qualification_reasons:
+    - 7 independent support(s) contribute 6 points.
+    - Actor binding lacks a sensitive authenticated/owned boundary with a controlled
+      identifier and cross-actor baseline.
+    - Authenticated operation contributes 3 points.
+    - Business-relevant resource contributes 3 points.
+    - Cross-actor baseline contributes 3 points.
+    - High-confidence semantic naming contributes 3 points.
+    - Legacy transparent score contributes 30 points.
+    - Sensitive operation contributes 3 points.
+    suppression_reasons:
+    - INSUFFICIENT_ACTOR_BINDING_EVIDENCE
 - id: BLH-F01B99DDD2791B6B
   fingerprint: f01b99ddd2791b6be08fa1ca69d6cfd44b571bbd2bcb71a94d73af36ba628942
   title: Create order may accept an amount or quantity inconsistent with the baseline
@@ -1602,6 +2354,55 @@ hypotheses:
   kind: RESEARCH_TASK
   readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
+  semantics:
+    vulnerability_family: QUANTITY_VALUE_INVARIANT
+    subject_action: CREATE_ORDER
+    subject_resource: order
+    violated_property: VALUE_CONSERVATION
+    mutation_type: QUANTITY_VALUE_INVARIANT
+    actor_dimension: []
+    resource_dimension:
+    - order
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /workshop/api/shop/orders
+    value_dimension: []
+    label:
+      value: Create order
+      normalized_value: CREATE_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: af68259395fa4a89d84388a09a024508df81e7bca00c76339e5c849c411040ea
+    canonical_id: HCL-AF68259395FA4A89
+  qualification:
+    evidence:
+      authenticated: true
+      sensitive_operation: true
+      sensitive_read: false
+      state_changing: true
+      controlled_identifier: false
+      ownership_known: false
+      cross_actor_baseline: false
+      causal_prerequisites_proven: false
+      business_relevant_resource: true
+      independently_identifiable_resource: false
+      cross_workflow_resource: false
+      privileged_or_approval_context: false
+      independent_support_count: 1
+    hypothesis_confidence: MEDIUM
+    evidence_strength: MODERATE
+    promotion: RESEARCH_MEDIUM
+    research_score: 51
+    qualification_reasons:
+    - 1 independent support(s) contribute 2 points.
+    - Authenticated operation contributes 3 points.
+    - Business-relevant resource contributes 3 points.
+    - High-confidence semantic naming contributes 3 points.
+    - Legacy transparent score contributes 27 points.
+    - Sensitive operation contributes 3 points.
+    suppression_reasons: []
 rejections:
 - id: MREJ-002767CF5AAC508C
   workflow_family_id: WFAM-A2057BD76CF39A2A
@@ -2591,3 +3392,3174 @@ rejections:
   evidence:
   - OBS-000036
   - OBS-000068
+clusters:
+- id: HCL-AF68259395FA4A89
+  semantic_fingerprint: af68259395fa4a89d84388a09a024508df81e7bca00c76339e5c849c411040ea
+  semantics:
+    vulnerability_family: QUANTITY_VALUE_INVARIANT
+    subject_action: CREATE_ORDER
+    subject_resource: order
+    violated_property: VALUE_CONSERVATION
+    mutation_type: QUANTITY_VALUE_INVARIANT
+    actor_dimension: []
+    resource_dimension:
+    - order
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /workshop/api/shop/orders
+    value_dimension: []
+    label:
+      value: Create order
+      normalized_value: CREATE_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: af68259395fa4a89d84388a09a024508df81e7bca00c76339e5c849c411040ea
+    canonical_id: HCL-AF68259395FA4A89
+  title: Create order may accept an amount or quantity inconsistent with the baseline
+  representative_hypothesis_id: BLH-64B37A2600729089
+  member_hypothesis_ids:
+  - BLH-64B37A2600729089
+  - BLH-F01B99DDD2791B6B
+  support_contexts:
+  - hypothesis_id: BLH-64B37A2600729089
+    workflow_family_id: WFAM-5256530622A826BE
+    workflow_instance_ids:
+    - WFINST-759C3CEA9044730C
+    - WFINST-8F189CAF8BEEF4D0
+    - WFINST-9E47D459BA09B855
+    - WFINST-C6FD77C6E9FE2A41
+    - WFINST-CB9A40590A62EE44
+    - WFINST-D13955A36A5D0CF3
+    - WFINST-EB7EC8CF3B91C520
+    invariant_id: BINV-54E79FE7DE2BD63A
+    mutation_family: QUANTITY_VALUE_INVARIANT
+    affected_action: CREATE_ORDER
+    observation_ids:
+    - OBS-000002
+    - OBS-000004
+    - OBS-000007
+    - OBS-000010
+    - OBS-000019
+    - OBS-000021
+    - OBS-000024
+    - OBS-000029
+    - OBS-000032
+    - OBS-000047
+    - OBS-000049
+    - OBS-000051
+    - OBS-000054
+    - OBS-000057
+    - OBS-000067
+    - OBS-000071
+    - OBS-000072
+    - OBS-000075
+    - OBS-000089
+    - OBS-000104
+    - OBS-000107
+    - OBS-000109
+    - OBS-000111
+    - OBS-000123
+    - OBS-000269
+    - OBS-000474
+    - OBS-000642
+    - OBS-000695
+    - OBS-000757
+    - OBS-000768
+    - OBS-000774
+    - OBS-000780
+    - OBS-000785
+    - OBS-000786
+    - OBS-000789
+    causal_evidence: []
+    prerequisite_actions: []
+    actors:
+    - mrscargo
+    - saeedmehmandoust
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    - observations/har/mrscargo-crapi-postid-7d646394-redacted.har
+    - observations/har/mrscargo-crapi-product-4828d216-redacted.har
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    - observations/har/mrscargo-crapi-vin-b0d23cf0-redacted.har
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    - observations/har/saeedmehmandoust-crapi-vin-4bf79850-redacted.har
+    resource_types:
+    - Order
+    - account
+    - order
+    - product
+    resource_instance_ids:
+    - RINST-0F839DC2F1382025
+    - RINST-1C98B130BD1A7016
+    - RINST-284A6E2E1F62F33B
+    - RINST-599F2693CCF29203
+    - RINST-A119C0A818FD5535
+    - RINST-C5732DA0C1371D4A
+    - RINST-E6B260A8918184A4
+    - RINST-EDC321333402E24A
+    endpoint_ids:
+    - EP-020
+    score:
+      likelihood: 3
+      impact: 4
+      test_readiness: 2
+      safety_cost: 2
+      confidence: 4
+      breakdown:
+      - reason: Three or more supporting workflows
+        points: 2
+      - reason: Financial operation
+        points: 2
+      - reason: An authoritative baseline state and before-state query are missing.
+        points: -1
+      - reason: 'Target request budget is too low: 4 requests are estimated but only
+          3 are permitted.'
+        points: -1
+      - reason: Workflow segmentation remains ambiguous.
+        points: -1
+    readiness: REVIEW_REQUIRED
+    blockers:
+    - An authoritative baseline state and before-state query are missing.
+    - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
+    - Workflow segmentation remains ambiguous.
+    independent_support_ids:
+    - HSUP-1999B3017FF0A8FB
+    - HSUP-2237AC5B7EA55906
+    - HSUP-63DA6C70EC69C466
+    - HSUP-7B73073229E8000D
+    - HSUP-7F42881F6B2E1F13
+    - HSUP-83587F31FA255FB5
+    - HSUP-C5A4DC222F023CFD
+  - hypothesis_id: BLH-F01B99DDD2791B6B
+    workflow_family_id: WFAM-F57F3F420703E30E
+    workflow_instance_ids:
+    - WFINST-D29B1C836C06BAE8
+    invariant_id: BINV-CB1AEAFFBE2E6607
+    mutation_family: QUANTITY_VALUE_INVARIANT
+    affected_action: CREATE_ORDER
+    observation_ids:
+    - OBS-000002
+    - OBS-000004
+    - OBS-000007
+    - OBS-000010
+    - OBS-000019
+    - OBS-000021
+    - OBS-000024
+    - OBS-000029
+    - OBS-000032
+    - OBS-000047
+    - OBS-000089
+    - OBS-000104
+    - OBS-000107
+    - OBS-000109
+    - OBS-000111
+    - OBS-000695
+    - OBS-000757
+    - OBS-000768
+    - OBS-000774
+    - OBS-000780
+    - OBS-000782
+    - OBS-000785
+    - OBS-000786
+    - OBS-000789
+    causal_evidence: []
+    prerequisite_actions: []
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-product-4828d216-redacted.har
+    resource_types:
+    - Order
+    - account
+    - order
+    - product
+    - transaction
+    resource_instance_ids:
+    - RINST-A6D000710CF63BEE
+    - RINST-D3E9F943FFBB8219
+    - RINST-F6516EA4709007C5
+    endpoint_ids:
+    - EP-020
+    score:
+      likelihood: 1
+      impact: 4
+      test_readiness: 2
+      safety_cost: 2
+      confidence: 2
+      breakdown:
+      - reason: Financial operation
+        points: 2
+      - reason: Insufficient workflow observations to treat the pattern as mandatory.
+        points: -1
+      - reason: 'Target request budget is too low: 4 requests are estimated but only
+          3 are permitted.'
+        points: -1
+      - reason: Workflow segmentation remains ambiguous.
+        points: -1
+    readiness: RESEARCH_ONLY
+    blockers:
+    - Insufficient workflow observations to treat the pattern as mandatory.
+    - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
+    - Workflow segmentation remains ambiguous.
+    independent_support_ids:
+    - HSUP-3CEFB9951548774F
+  independent_supports:
+  - id: HSUP-1999B3017FF0A8FB
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-D13955A36A5D0CF3
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-vin-b0d23cf0-redacted.har
+    resource_instance_ids:
+    - RINST-0F839DC2F1382025
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000269
+  - id: HSUP-2237AC5B7EA55906
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-EB7EC8CF3B91C520
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    resource_instance_ids:
+    - RINST-0F839DC2F1382025
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000642
+  - id: HSUP-3CEFB9951548774F
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-D29B1C836C06BAE8
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-product-4828d216-redacted.har
+    resource_instance_ids:
+    - RINST-A6D000710CF63BEE
+    - RINST-D3E9F943FFBB8219
+    - RINST-F6516EA4709007C5
+    causal_path:
+    - CREATE_ORDER
+    - READ_ORDER
+    observation_ids:
+    - OBS-000780
+    - OBS-000782
+  - id: HSUP-63DA6C70EC69C466
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-CB9A40590A62EE44
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    resource_instance_ids:
+    - RINST-0F839DC2F1382025
+    - RINST-1C98B130BD1A7016
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000010
+  - id: HSUP-7B73073229E8000D
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-759C3CEA9044730C
+    actors:
+    - saeedmehmandoust
+    captures:
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    resource_instance_ids:
+    - RINST-284A6E2E1F62F33B
+    - RINST-C5732DA0C1371D4A
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000057
+  - id: HSUP-7F42881F6B2E1F13
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-C6FD77C6E9FE2A41
+    actors:
+    - saeedmehmandoust
+    captures:
+    - observations/har/saeedmehmandoust-crapi-vin-4bf79850-redacted.har
+    resource_instance_ids:
+    - RINST-284A6E2E1F62F33B
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000474
+  - id: HSUP-83587F31FA255FB5
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-9E47D459BA09B855
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-postid-7d646394-redacted.har
+    resource_instance_ids:
+    - RINST-599F2693CCF29203
+    - RINST-E6B260A8918184A4
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000107
+  - id: HSUP-C5A4DC222F023CFD
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-8F189CAF8BEEF4D0
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-product-4828d216-redacted.har
+    resource_instance_ids:
+    - RINST-A119C0A818FD5535
+    - RINST-EDC321333402E24A
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000786
+  context_count: 2
+  independent_support_count: 8
+  highest_score: 13
+  research_score: 84
+  hypothesis_confidence: HIGH
+  evidence_strength: STRONG
+  promotion: REVIEW_REQUIRED
+  readiness: REVIEW_REQUIRED
+  readiness_blockers:
+  - An authoritative baseline state and before-state query are missing.
+  - Insufficient workflow observations to treat the pattern as mandatory.
+  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
+  ranking_reasons:
+  - Aggregates 2 provenance context(s).
+  - Counts 8 independent support(s).
+  suppression_reasons: []
+  workflow_family_ids:
+  - WFAM-5256530622A826BE
+  - WFAM-F57F3F420703E30E
+  workflow_instance_ids:
+  - WFINST-759C3CEA9044730C
+  - WFINST-8F189CAF8BEEF4D0
+  - WFINST-9E47D459BA09B855
+  - WFINST-C6FD77C6E9FE2A41
+  - WFINST-CB9A40590A62EE44
+  - WFINST-D13955A36A5D0CF3
+  - WFINST-D29B1C836C06BAE8
+  - WFINST-EB7EC8CF3B91C520
+  invariant_ids:
+  - BINV-54E79FE7DE2BD63A
+  - BINV-CB1AEAFFBE2E6607
+  observation_ids:
+  - OBS-000002
+  - OBS-000004
+  - OBS-000007
+  - OBS-000010
+  - OBS-000019
+  - OBS-000021
+  - OBS-000024
+  - OBS-000029
+  - OBS-000032
+  - OBS-000047
+  - OBS-000049
+  - OBS-000051
+  - OBS-000054
+  - OBS-000057
+  - OBS-000067
+  - OBS-000071
+  - OBS-000072
+  - OBS-000075
+  - OBS-000089
+  - OBS-000104
+  - OBS-000107
+  - OBS-000109
+  - OBS-000111
+  - OBS-000123
+  - OBS-000269
+  - OBS-000474
+  - OBS-000642
+  - OBS-000695
+  - OBS-000757
+  - OBS-000768
+  - OBS-000774
+  - OBS-000780
+  - OBS-000782
+  - OBS-000785
+  - OBS-000786
+  - OBS-000789
+- id: HCL-5F02C3F0F497F370
+  semantic_fingerprint: 5f02c3f0f497f3706be99a4fd10a8505b14ef0fc86666875c15bf4ea793e0476
+  semantics:
+    vulnerability_family: ACTOR_SWITCH
+    subject_action: COMMENT_POST
+    subject_resource: post
+    violated_property: ACTOR_BINDING
+    mutation_type: ACTOR_SWITCH
+    actor_dimension:
+    - role:user
+    resource_dimension:
+    - post
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /community/api/v2/community/posts/{id}/comment
+    value_dimension: []
+    label:
+      value: Comment post
+      normalized_value: COMMENT_POST
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: 5f02c3f0f497f3706be99a4fd10a8505b14ef0fc86666875c15bf4ea793e0476
+    canonical_id: HCL-5F02C3F0F497F370
+  title: Comment post may not remain bound to the initiating actor
+  representative_hypothesis_id: BLH-8CCAE7927D22AA29
+  member_hypothesis_ids:
+  - BLH-8CCAE7927D22AA29
+  support_contexts:
+  - hypothesis_id: BLH-8CCAE7927D22AA29
+    workflow_family_id: WFAM-878D2D849FA67A36
+    workflow_instance_ids:
+    - WFINST-28D2F2B58E64E6C2
+    - WFINST-2A76FCCBAEEECC09
+    - WFINST-46C86AFFFFE9B1C8
+    - WFINST-9E0B0A363B975A54
+    - WFINST-DB574CCC16AB8FE5
+    - WFINST-DDAD9A9A2B0F6194
+    invariant_id: BINV-B546DB67A573DBC7
+    mutation_family: ACTOR_SWITCH
+    affected_action: COMMENT_POST
+    observation_ids:
+    - OBS-000045
+    - OBS-000065
+    - OBS-000100
+    - OBS-000103
+    - OBS-000117
+    - OBS-000120
+    causal_evidence: []
+    prerequisite_actions: []
+    actors:
+    - mrscargo
+    - saeedmehmandoust
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    - observations/har/mrscargo-crapi-postid-7d646394-redacted.har
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    - observations/har/saeedmehmandoust-crapi-postid-160b3d8c-redacted.har
+    resource_types:
+    - Post
+    - author
+    - post
+    resource_instance_ids:
+    - RINST-13A71ABAD542E584
+    - RINST-18C80E8BA5E289CA
+    - RINST-51C59FE847DC72B4
+    - RINST-6FD9A5DE397C6B7D
+    - RINST-758B26D5A213FA90
+    - RINST-AEA4F9400D92F3D0
+    - RINST-BD6E57817102D4B6
+    - RINST-FDF4A12668F32C00
+    endpoint_ids:
+    - EP-014
+    score:
+      likelihood: 3
+      impact: 2
+      test_readiness: 1
+      safety_cost: 2
+      confidence: 4
+      breakdown:
+      - reason: Three or more supporting workflows
+        points: 2
+      - reason: An authoritative baseline state and before-state query are missing.
+        points: -1
+      - reason: Controlled resource ownership baseline is missing.
+        points: -2
+      - reason: 'Target request budget is too low: 4 requests are estimated but only
+          3 are permitted.'
+        points: -1
+      - reason: Workflow segmentation remains ambiguous.
+        points: -1
+    readiness: REVIEW_REQUIRED
+    blockers:
+    - An authoritative baseline state and before-state query are missing.
+    - Controlled resource ownership baseline is missing.
+    - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
+    - Workflow segmentation remains ambiguous.
+    independent_support_ids:
+    - HSUP-587552BCDF13BF24
+    - HSUP-843FC6E89C03C821
+    - HSUP-85D8DD6686608600
+    - HSUP-A7334CD3B163991B
+    - HSUP-B142D8ED0F3FEDC0
+    - HSUP-DC3463054BCC9002
+  independent_supports:
+  - id: HSUP-587552BCDF13BF24
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-DDAD9A9A2B0F6194
+    actors:
+    - saeedmehmandoust
+    captures:
+    - observations/har/saeedmehmandoust-crapi-postid-160b3d8c-redacted.har
+    resource_instance_ids:
+    - RINST-13A71ABAD542E584
+    - RINST-18C80E8BA5E289CA
+    causal_path:
+    - COMMENT_POST
+    observation_ids:
+    - OBS-000117
+  - id: HSUP-843FC6E89C03C821
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-9E0B0A363B975A54
+    actors:
+    - saeedmehmandoust
+    captures:
+    - observations/har/saeedmehmandoust-crapi-postid-160b3d8c-redacted.har
+    resource_instance_ids:
+    - RINST-6FD9A5DE397C6B7D
+    - RINST-AEA4F9400D92F3D0
+    causal_path:
+    - COMMENT_POST
+    observation_ids:
+    - OBS-000120
+  - id: HSUP-85D8DD6686608600
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-28D2F2B58E64E6C2
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-postid-7d646394-redacted.har
+    resource_instance_ids:
+    - RINST-758B26D5A213FA90
+    - RINST-BD6E57817102D4B6
+    causal_path:
+    - COMMENT_POST
+    observation_ids:
+    - OBS-000100
+  - id: HSUP-A7334CD3B163991B
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-DB574CCC16AB8FE5
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-postid-7d646394-redacted.har
+    resource_instance_ids:
+    - RINST-51C59FE847DC72B4
+    - RINST-FDF4A12668F32C00
+    causal_path:
+    - COMMENT_POST
+    observation_ids:
+    - OBS-000103
+  - id: HSUP-B142D8ED0F3FEDC0
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-2A76FCCBAEEECC09
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    resource_instance_ids:
+    - RINST-51C59FE847DC72B4
+    - RINST-FDF4A12668F32C00
+    causal_path:
+    - COMMENT_POST
+    observation_ids:
+    - OBS-000045
+  - id: HSUP-DC3463054BCC9002
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-46C86AFFFFE9B1C8
+    actors:
+    - saeedmehmandoust
+    captures:
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    resource_instance_ids:
+    - RINST-6FD9A5DE397C6B7D
+    - RINST-AEA4F9400D92F3D0
+    causal_path:
+    - COMMENT_POST
+    observation_ids:
+    - OBS-000065
+  context_count: 1
+  independent_support_count: 6
+  highest_score: 10
+  research_score: 81
+  hypothesis_confidence: HIGH
+  evidence_strength: STRONG
+  promotion: REVIEW_REQUIRED
+  readiness: REVIEW_REQUIRED
+  readiness_blockers:
+  - An authoritative baseline state and before-state query are missing.
+  - Controlled resource ownership baseline is missing.
+  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
+  ranking_reasons:
+  - Aggregates 1 provenance context(s).
+  - Counts 6 independent support(s).
+  suppression_reasons: []
+  workflow_family_ids:
+  - WFAM-878D2D849FA67A36
+  workflow_instance_ids:
+  - WFINST-28D2F2B58E64E6C2
+  - WFINST-2A76FCCBAEEECC09
+  - WFINST-46C86AFFFFE9B1C8
+  - WFINST-9E0B0A363B975A54
+  - WFINST-DB574CCC16AB8FE5
+  - WFINST-DDAD9A9A2B0F6194
+  invariant_ids:
+  - BINV-B546DB67A573DBC7
+  observation_ids:
+  - OBS-000045
+  - OBS-000065
+  - OBS-000100
+  - OBS-000103
+  - OBS-000117
+  - OBS-000120
+- id: HCL-1727ABCFE47DA26B
+  semantic_fingerprint: 1727abcfe47da26b9c0fbf7b854b0349688fa319055c4774efb69d76be547df1
+  semantics:
+    vulnerability_family: CONCURRENT_EXECUTION
+    subject_action: RETURN_ORDER
+    subject_resource: order
+    violated_property: SINGLE_EXECUTION
+    mutation_type: CONCURRENT_EXECUTION
+    actor_dimension: []
+    resource_dimension:
+    - order
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /workshop/api/shop/orders/return-order
+    value_dimension: []
+    label:
+      value: Return order
+      normalized_value: RETURN_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: 1727abcfe47da26b9c0fbf7b854b0349688fa319055c4774efb69d76be547df1
+    canonical_id: HCL-1727ABCFE47DA26B
+  title: Concurrent return order may bypass single-execution protection
+  representative_hypothesis_id: BLH-1C9987F3CF1E6DBB
+  member_hypothesis_ids:
+  - BLH-1C9987F3CF1E6DBB
+  - BLH-C0F3E74D5DF01440
+  support_contexts:
+  - hypothesis_id: BLH-1C9987F3CF1E6DBB
+    workflow_family_id: WFAM-B18CAB66F33EC59A
+    workflow_instance_ids:
+    - WFINST-2CA4D4BCA84DEEBF
+    - WFINST-8428028A88D2F5C7
+    - WFINST-C559A10900214892
+    - WFINST-EDDB3320FA8E3ED7
+    invariant_id: BINV-94BD310DD5984A4A
+    mutation_family: CONCURRENT_EXECUTION
+    affected_action: RETURN_ORDER
+    observation_ids:
+    - OBS-000012
+    - OBS-000059
+    - OBS-000700
+    - OBS-000711
+    causal_evidence: []
+    prerequisite_actions: []
+    actors:
+    - mrscargo
+    - saeedmehmandoust
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    resource_types:
+    - Order
+    - order
+    - product
+    - transaction
+    resource_instance_ids:
+    - RINST-09910B124C2C29CC
+    - RINST-0D09EF32E8F5FA01
+    - RINST-0F839DC2F1382025
+    - RINST-1C98B130BD1A7016
+    - RINST-284A6E2E1F62F33B
+    - RINST-30CD96FF93E87595
+    - RINST-56A346D641759727
+    - RINST-599F2693CCF29203
+    - RINST-C5732DA0C1371D4A
+    - RINST-C8565BE511BB74E8
+    - RINST-E6B260A8918184A4
+    endpoint_ids:
+    - EP-021
+    score:
+      likelihood: 3
+      impact: 4
+      test_readiness: 1
+      safety_cost: 5
+      confidence: 4
+      breakdown:
+      - reason: Three or more supporting workflows
+        points: 2
+      - reason: Financial operation
+        points: 2
+      - reason: An authoritative baseline state and before-state query are missing.
+        points: -1
+      - reason: Concurrency testing is not permitted by the offline engine.
+        points: -1
+      - reason: 'Target request budget is too low: 5 requests are estimated but only
+          3 are permitted.'
+        points: -1
+      - reason: Workflow segmentation remains ambiguous.
+        points: -1
+    readiness: RESEARCH_ONLY
+    blockers:
+    - An authoritative baseline state and before-state query are missing.
+    - Concurrency testing is not permitted by the offline engine.
+    - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
+    - Workflow segmentation remains ambiguous.
+    independent_support_ids:
+    - HSUP-31180A22FA6D6BCE
+    - HSUP-3189C3E36BDBAA68
+    - HSUP-D8212BF8CA299856
+    - HSUP-EEC50A5B60424125
+  - hypothesis_id: BLH-C0F3E74D5DF01440
+    workflow_family_id: WFAM-A955B9C288A08FC1
+    workflow_instance_ids:
+    - WFINST-66725E48869DC2E7
+    - WFINST-AF62C40FBBC40FDC
+    - WFINST-DCB1CA9ED24B6189
+    invariant_id: BINV-630AD25E7733C1D0
+    mutation_family: CONCURRENT_EXECUTION
+    affected_action: RETURN_ORDER
+    observation_ids:
+    - OBS-000271
+    - OBS-000476
+    - OBS-000644
+    causal_evidence: []
+    prerequisite_actions: []
+    actors:
+    - mrscargo
+    - saeedmehmandoust
+    captures:
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    - observations/har/mrscargo-crapi-vin-b0d23cf0-redacted.har
+    - observations/har/saeedmehmandoust-crapi-vin-4bf79850-redacted.har
+    resource_types:
+    - Order
+    - order
+    resource_instance_ids:
+    - RINST-205FA8E6D40D07E9
+    - RINST-49E3BA20F0C76FD3
+    - RINST-F3F90EA94944D8D7
+    endpoint_ids:
+    - EP-021
+    score:
+      likelihood: 3
+      impact: 4
+      test_readiness: 1
+      safety_cost: 5
+      confidence: 4
+      breakdown:
+      - reason: Three or more supporting workflows
+        points: 2
+      - reason: Financial operation
+        points: 2
+      - reason: An authoritative baseline state and before-state query are missing.
+        points: -1
+      - reason: Concurrency testing is not permitted by the offline engine.
+        points: -1
+      - reason: 'Target request budget is too low: 5 requests are estimated but only
+          3 are permitted.'
+        points: -1
+      - reason: Workflow segmentation remains ambiguous.
+        points: -1
+    readiness: RESEARCH_ONLY
+    blockers:
+    - An authoritative baseline state and before-state query are missing.
+    - Concurrency testing is not permitted by the offline engine.
+    - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
+    - Workflow segmentation remains ambiguous.
+    independent_support_ids:
+    - HSUP-6C9742B3F3E50C71
+    - HSUP-9D67D855CDFCE972
+    - HSUP-CFE06BBFA94888D7
+  independent_supports:
+  - id: HSUP-31180A22FA6D6BCE
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-EDDB3320FA8E3ED7
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    resource_instance_ids:
+    - RINST-09910B124C2C29CC
+    - RINST-0F839DC2F1382025
+    - RINST-30CD96FF93E87595
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000700
+  - id: HSUP-3189C3E36BDBAA68
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-C559A10900214892
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    resource_instance_ids:
+    - RINST-56A346D641759727
+    - RINST-599F2693CCF29203
+    - RINST-E6B260A8918184A4
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000711
+  - id: HSUP-6C9742B3F3E50C71
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-DCB1CA9ED24B6189
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    resource_instance_ids:
+    - RINST-49E3BA20F0C76FD3
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000644
+  - id: HSUP-9D67D855CDFCE972
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-66725E48869DC2E7
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-vin-b0d23cf0-redacted.har
+    resource_instance_ids:
+    - RINST-205FA8E6D40D07E9
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000271
+  - id: HSUP-CFE06BBFA94888D7
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-AF62C40FBBC40FDC
+    actors:
+    - saeedmehmandoust
+    captures:
+    - observations/har/saeedmehmandoust-crapi-vin-4bf79850-redacted.har
+    resource_instance_ids:
+    - RINST-F3F90EA94944D8D7
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000476
+  - id: HSUP-D8212BF8CA299856
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-8428028A88D2F5C7
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    resource_instance_ids:
+    - RINST-0F839DC2F1382025
+    - RINST-1C98B130BD1A7016
+    - RINST-C8565BE511BB74E8
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000012
+  - id: HSUP-EEC50A5B60424125
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-2CA4D4BCA84DEEBF
+    actors:
+    - saeedmehmandoust
+    captures:
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    resource_instance_ids:
+    - RINST-0D09EF32E8F5FA01
+    - RINST-284A6E2E1F62F33B
+    - RINST-C5732DA0C1371D4A
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000059
+  context_count: 2
+  independent_support_count: 7
+  highest_score: 12
+  research_score: 87
+  hypothesis_confidence: HIGH
+  evidence_strength: STRONG
+  promotion: RESEARCH_HIGH
+  readiness: RESEARCH_ONLY
+  readiness_blockers:
+  - An authoritative baseline state and before-state query are missing.
+  - Concurrency testing is not permitted by the offline engine.
+  - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
+  ranking_reasons:
+  - Aggregates 2 provenance context(s).
+  - Counts 7 independent support(s).
+  suppression_reasons: []
+  workflow_family_ids:
+  - WFAM-A955B9C288A08FC1
+  - WFAM-B18CAB66F33EC59A
+  workflow_instance_ids:
+  - WFINST-2CA4D4BCA84DEEBF
+  - WFINST-66725E48869DC2E7
+  - WFINST-8428028A88D2F5C7
+  - WFINST-AF62C40FBBC40FDC
+  - WFINST-C559A10900214892
+  - WFINST-DCB1CA9ED24B6189
+  - WFINST-EDDB3320FA8E3ED7
+  invariant_ids:
+  - BINV-630AD25E7733C1D0
+  - BINV-94BD310DD5984A4A
+  observation_ids:
+  - OBS-000012
+  - OBS-000059
+  - OBS-000271
+  - OBS-000476
+  - OBS-000644
+  - OBS-000700
+  - OBS-000711
+- id: HCL-324F85786C2CA1D2
+  semantic_fingerprint: 324f85786c2ca1d2200232c6a98ce034424f92ca4521c751b35b8d698d041a27
+  semantics:
+    vulnerability_family: DUPLICATE_ACTION
+    subject_action: RETURN_ORDER
+    subject_resource: order
+    violated_property: SINGLE_EXECUTION
+    mutation_type: DUPLICATE_ACTION
+    actor_dimension: []
+    resource_dimension:
+    - order
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /workshop/api/shop/orders/return-order
+    value_dimension: []
+    label:
+      value: Return order
+      normalized_value: RETURN_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: 324f85786c2ca1d2200232c6a98ce034424f92ca4521c751b35b8d698d041a27
+    canonical_id: HCL-324F85786C2CA1D2
+  title: Immediate duplicate return order may create two business effects
+  representative_hypothesis_id: BLH-B5B37FA111A42EEF
+  member_hypothesis_ids:
+  - BLH-941002D8A1B1475A
+  - BLH-B5B37FA111A42EEF
+  support_contexts:
+  - hypothesis_id: BLH-941002D8A1B1475A
+    workflow_family_id: WFAM-A955B9C288A08FC1
+    workflow_instance_ids:
+    - WFINST-66725E48869DC2E7
+    - WFINST-AF62C40FBBC40FDC
+    - WFINST-DCB1CA9ED24B6189
+    invariant_id: BINV-630AD25E7733C1D0
+    mutation_family: DUPLICATE_ACTION
+    affected_action: RETURN_ORDER
+    observation_ids:
+    - OBS-000271
+    - OBS-000476
+    - OBS-000644
+    causal_evidence: []
+    prerequisite_actions: []
+    actors:
+    - mrscargo
+    - saeedmehmandoust
+    captures:
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    - observations/har/mrscargo-crapi-vin-b0d23cf0-redacted.har
+    - observations/har/saeedmehmandoust-crapi-vin-4bf79850-redacted.har
+    resource_types:
+    - Order
+    - order
+    resource_instance_ids:
+    - RINST-205FA8E6D40D07E9
+    - RINST-49E3BA20F0C76FD3
+    - RINST-F3F90EA94944D8D7
+    endpoint_ids:
+    - EP-021
+    score:
+      likelihood: 3
+      impact: 4
+      test_readiness: 1
+      safety_cost: 5
+      confidence: 4
+      breakdown:
+      - reason: Three or more supporting workflows
+        points: 2
+      - reason: Financial operation
+        points: 2
+      - reason: An authoritative baseline state and before-state query are missing.
+        points: -1
+      - reason: Financial State Change requires explicit target policy permission.
+        points: -1
+      - reason: 'Target request budget is too low: 5 requests are estimated but only
+          3 are permitted.'
+        points: -1
+      - reason: Workflow segmentation remains ambiguous.
+        points: -1
+    readiness: RESEARCH_ONLY
+    blockers:
+    - An authoritative baseline state and before-state query are missing.
+    - Financial State Change requires explicit target policy permission.
+    - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
+    - Workflow segmentation remains ambiguous.
+    independent_support_ids:
+    - HSUP-6C9742B3F3E50C71
+    - HSUP-9D67D855CDFCE972
+    - HSUP-CFE06BBFA94888D7
+  - hypothesis_id: BLH-B5B37FA111A42EEF
+    workflow_family_id: WFAM-B18CAB66F33EC59A
+    workflow_instance_ids:
+    - WFINST-2CA4D4BCA84DEEBF
+    - WFINST-8428028A88D2F5C7
+    - WFINST-C559A10900214892
+    - WFINST-EDDB3320FA8E3ED7
+    invariant_id: BINV-94BD310DD5984A4A
+    mutation_family: DUPLICATE_ACTION
+    affected_action: RETURN_ORDER
+    observation_ids:
+    - OBS-000012
+    - OBS-000059
+    - OBS-000700
+    - OBS-000711
+    causal_evidence: []
+    prerequisite_actions: []
+    actors:
+    - mrscargo
+    - saeedmehmandoust
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    resource_types:
+    - Order
+    - order
+    - product
+    - transaction
+    resource_instance_ids:
+    - RINST-09910B124C2C29CC
+    - RINST-0D09EF32E8F5FA01
+    - RINST-0F839DC2F1382025
+    - RINST-1C98B130BD1A7016
+    - RINST-284A6E2E1F62F33B
+    - RINST-30CD96FF93E87595
+    - RINST-56A346D641759727
+    - RINST-599F2693CCF29203
+    - RINST-C5732DA0C1371D4A
+    - RINST-C8565BE511BB74E8
+    - RINST-E6B260A8918184A4
+    endpoint_ids:
+    - EP-021
+    score:
+      likelihood: 3
+      impact: 4
+      test_readiness: 1
+      safety_cost: 5
+      confidence: 4
+      breakdown:
+      - reason: Three or more supporting workflows
+        points: 2
+      - reason: Financial operation
+        points: 2
+      - reason: An authoritative baseline state and before-state query are missing.
+        points: -1
+      - reason: Financial State Change requires explicit target policy permission.
+        points: -1
+      - reason: 'Target request budget is too low: 5 requests are estimated but only
+          3 are permitted.'
+        points: -1
+      - reason: Workflow segmentation remains ambiguous.
+        points: -1
+    readiness: RESEARCH_ONLY
+    blockers:
+    - An authoritative baseline state and before-state query are missing.
+    - Financial State Change requires explicit target policy permission.
+    - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
+    - Workflow segmentation remains ambiguous.
+    independent_support_ids:
+    - HSUP-31180A22FA6D6BCE
+    - HSUP-3189C3E36BDBAA68
+    - HSUP-D8212BF8CA299856
+    - HSUP-EEC50A5B60424125
+  independent_supports:
+  - id: HSUP-31180A22FA6D6BCE
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-EDDB3320FA8E3ED7
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    resource_instance_ids:
+    - RINST-09910B124C2C29CC
+    - RINST-0F839DC2F1382025
+    - RINST-30CD96FF93E87595
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000700
+  - id: HSUP-3189C3E36BDBAA68
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-C559A10900214892
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    resource_instance_ids:
+    - RINST-56A346D641759727
+    - RINST-599F2693CCF29203
+    - RINST-E6B260A8918184A4
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000711
+  - id: HSUP-6C9742B3F3E50C71
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-DCB1CA9ED24B6189
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    resource_instance_ids:
+    - RINST-49E3BA20F0C76FD3
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000644
+  - id: HSUP-9D67D855CDFCE972
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-66725E48869DC2E7
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-vin-b0d23cf0-redacted.har
+    resource_instance_ids:
+    - RINST-205FA8E6D40D07E9
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000271
+  - id: HSUP-CFE06BBFA94888D7
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-AF62C40FBBC40FDC
+    actors:
+    - saeedmehmandoust
+    captures:
+    - observations/har/saeedmehmandoust-crapi-vin-4bf79850-redacted.har
+    resource_instance_ids:
+    - RINST-F3F90EA94944D8D7
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000476
+  - id: HSUP-D8212BF8CA299856
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-8428028A88D2F5C7
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    resource_instance_ids:
+    - RINST-0F839DC2F1382025
+    - RINST-1C98B130BD1A7016
+    - RINST-C8565BE511BB74E8
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000012
+  - id: HSUP-EEC50A5B60424125
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-2CA4D4BCA84DEEBF
+    actors:
+    - saeedmehmandoust
+    captures:
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    resource_instance_ids:
+    - RINST-0D09EF32E8F5FA01
+    - RINST-284A6E2E1F62F33B
+    - RINST-C5732DA0C1371D4A
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000059
+  context_count: 2
+  independent_support_count: 7
+  highest_score: 12
+  research_score: 87
+  hypothesis_confidence: HIGH
+  evidence_strength: STRONG
+  promotion: RESEARCH_HIGH
+  readiness: RESEARCH_ONLY
+  readiness_blockers:
+  - An authoritative baseline state and before-state query are missing.
+  - Financial State Change requires explicit target policy permission.
+  - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
+  ranking_reasons:
+  - Aggregates 2 provenance context(s).
+  - Counts 7 independent support(s).
+  suppression_reasons: []
+  workflow_family_ids:
+  - WFAM-A955B9C288A08FC1
+  - WFAM-B18CAB66F33EC59A
+  workflow_instance_ids:
+  - WFINST-2CA4D4BCA84DEEBF
+  - WFINST-66725E48869DC2E7
+  - WFINST-8428028A88D2F5C7
+  - WFINST-AF62C40FBBC40FDC
+  - WFINST-C559A10900214892
+  - WFINST-DCB1CA9ED24B6189
+  - WFINST-EDDB3320FA8E3ED7
+  invariant_ids:
+  - BINV-630AD25E7733C1D0
+  - BINV-94BD310DD5984A4A
+  observation_ids:
+  - OBS-000012
+  - OBS-000059
+  - OBS-000271
+  - OBS-000476
+  - OBS-000644
+  - OBS-000700
+  - OBS-000711
+- id: HCL-9E7A39B10FBDA8D8
+  semantic_fingerprint: 9e7a39b10fbda8d8120f7855ca2b378629fa1c052f9b9cd79ca2812f68f7f83f
+  semantics:
+    vulnerability_family: REPLAY
+    subject_action: RETURN_ORDER
+    subject_resource: order
+    violated_property: SINGLE_EXECUTION
+    mutation_type: REPLAY
+    actor_dimension: []
+    resource_dimension:
+    - order
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /workshop/api/shop/orders/return-order
+    value_dimension: []
+    label:
+      value: Return order
+      normalized_value: RETURN_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: 9e7a39b10fbda8d8120f7855ca2b378629fa1c052f9b9cd79ca2812f68f7f83f
+    canonical_id: HCL-9E7A39B10FBDA8D8
+  title: Return order may remain replayable after its first successful effect
+  representative_hypothesis_id: BLH-2F40AB26AF496347
+  member_hypothesis_ids:
+  - BLH-042DE49D21BF40CB
+  - BLH-2F40AB26AF496347
+  support_contexts:
+  - hypothesis_id: BLH-042DE49D21BF40CB
+    workflow_family_id: WFAM-A955B9C288A08FC1
+    workflow_instance_ids:
+    - WFINST-66725E48869DC2E7
+    - WFINST-AF62C40FBBC40FDC
+    - WFINST-DCB1CA9ED24B6189
+    invariant_id: BINV-630AD25E7733C1D0
+    mutation_family: REPLAY
+    affected_action: RETURN_ORDER
+    observation_ids:
+    - OBS-000271
+    - OBS-000476
+    - OBS-000644
+    causal_evidence: []
+    prerequisite_actions: []
+    actors:
+    - mrscargo
+    - saeedmehmandoust
+    captures:
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    - observations/har/mrscargo-crapi-vin-b0d23cf0-redacted.har
+    - observations/har/saeedmehmandoust-crapi-vin-4bf79850-redacted.har
+    resource_types:
+    - Order
+    - order
+    resource_instance_ids:
+    - RINST-205FA8E6D40D07E9
+    - RINST-49E3BA20F0C76FD3
+    - RINST-F3F90EA94944D8D7
+    endpoint_ids:
+    - EP-021
+    score:
+      likelihood: 3
+      impact: 4
+      test_readiness: 1
+      safety_cost: 5
+      confidence: 4
+      breakdown:
+      - reason: Three or more supporting workflows
+        points: 2
+      - reason: Financial operation
+        points: 2
+      - reason: An authoritative baseline state and before-state query are missing.
+        points: -1
+      - reason: Financial State Change requires explicit target policy permission.
+        points: -1
+      - reason: 'Target request budget is too low: 5 requests are estimated but only
+          3 are permitted.'
+        points: -1
+      - reason: Workflow segmentation remains ambiguous.
+        points: -1
+    readiness: RESEARCH_ONLY
+    blockers:
+    - An authoritative baseline state and before-state query are missing.
+    - Financial State Change requires explicit target policy permission.
+    - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
+    - Workflow segmentation remains ambiguous.
+    independent_support_ids:
+    - HSUP-6C9742B3F3E50C71
+    - HSUP-9D67D855CDFCE972
+    - HSUP-CFE06BBFA94888D7
+  - hypothesis_id: BLH-2F40AB26AF496347
+    workflow_family_id: WFAM-B18CAB66F33EC59A
+    workflow_instance_ids:
+    - WFINST-2CA4D4BCA84DEEBF
+    - WFINST-8428028A88D2F5C7
+    - WFINST-C559A10900214892
+    - WFINST-EDDB3320FA8E3ED7
+    invariant_id: BINV-94BD310DD5984A4A
+    mutation_family: REPLAY
+    affected_action: RETURN_ORDER
+    observation_ids:
+    - OBS-000012
+    - OBS-000059
+    - OBS-000700
+    - OBS-000711
+    causal_evidence: []
+    prerequisite_actions: []
+    actors:
+    - mrscargo
+    - saeedmehmandoust
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    resource_types:
+    - Order
+    - order
+    - product
+    - transaction
+    resource_instance_ids:
+    - RINST-09910B124C2C29CC
+    - RINST-0D09EF32E8F5FA01
+    - RINST-0F839DC2F1382025
+    - RINST-1C98B130BD1A7016
+    - RINST-284A6E2E1F62F33B
+    - RINST-30CD96FF93E87595
+    - RINST-56A346D641759727
+    - RINST-599F2693CCF29203
+    - RINST-C5732DA0C1371D4A
+    - RINST-C8565BE511BB74E8
+    - RINST-E6B260A8918184A4
+    endpoint_ids:
+    - EP-021
+    score:
+      likelihood: 3
+      impact: 4
+      test_readiness: 1
+      safety_cost: 5
+      confidence: 4
+      breakdown:
+      - reason: Three or more supporting workflows
+        points: 2
+      - reason: Financial operation
+        points: 2
+      - reason: An authoritative baseline state and before-state query are missing.
+        points: -1
+      - reason: Financial State Change requires explicit target policy permission.
+        points: -1
+      - reason: 'Target request budget is too low: 5 requests are estimated but only
+          3 are permitted.'
+        points: -1
+      - reason: Workflow segmentation remains ambiguous.
+        points: -1
+    readiness: RESEARCH_ONLY
+    blockers:
+    - An authoritative baseline state and before-state query are missing.
+    - Financial State Change requires explicit target policy permission.
+    - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
+    - Workflow segmentation remains ambiguous.
+    independent_support_ids:
+    - HSUP-31180A22FA6D6BCE
+    - HSUP-3189C3E36BDBAA68
+    - HSUP-D8212BF8CA299856
+    - HSUP-EEC50A5B60424125
+  independent_supports:
+  - id: HSUP-31180A22FA6D6BCE
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-EDDB3320FA8E3ED7
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    resource_instance_ids:
+    - RINST-09910B124C2C29CC
+    - RINST-0F839DC2F1382025
+    - RINST-30CD96FF93E87595
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000700
+  - id: HSUP-3189C3E36BDBAA68
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-C559A10900214892
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    resource_instance_ids:
+    - RINST-56A346D641759727
+    - RINST-599F2693CCF29203
+    - RINST-E6B260A8918184A4
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000711
+  - id: HSUP-6C9742B3F3E50C71
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-DCB1CA9ED24B6189
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    resource_instance_ids:
+    - RINST-49E3BA20F0C76FD3
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000644
+  - id: HSUP-9D67D855CDFCE972
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-66725E48869DC2E7
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-vin-b0d23cf0-redacted.har
+    resource_instance_ids:
+    - RINST-205FA8E6D40D07E9
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000271
+  - id: HSUP-CFE06BBFA94888D7
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-AF62C40FBBC40FDC
+    actors:
+    - saeedmehmandoust
+    captures:
+    - observations/har/saeedmehmandoust-crapi-vin-4bf79850-redacted.har
+    resource_instance_ids:
+    - RINST-F3F90EA94944D8D7
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000476
+  - id: HSUP-D8212BF8CA299856
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-8428028A88D2F5C7
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    resource_instance_ids:
+    - RINST-0F839DC2F1382025
+    - RINST-1C98B130BD1A7016
+    - RINST-C8565BE511BB74E8
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000012
+  - id: HSUP-EEC50A5B60424125
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-2CA4D4BCA84DEEBF
+    actors:
+    - saeedmehmandoust
+    captures:
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    resource_instance_ids:
+    - RINST-0D09EF32E8F5FA01
+    - RINST-284A6E2E1F62F33B
+    - RINST-C5732DA0C1371D4A
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000059
+  context_count: 2
+  independent_support_count: 7
+  highest_score: 12
+  research_score: 87
+  hypothesis_confidence: HIGH
+  evidence_strength: STRONG
+  promotion: RESEARCH_HIGH
+  readiness: RESEARCH_ONLY
+  readiness_blockers:
+  - An authoritative baseline state and before-state query are missing.
+  - Financial State Change requires explicit target policy permission.
+  - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
+  ranking_reasons:
+  - Aggregates 2 provenance context(s).
+  - Counts 7 independent support(s).
+  suppression_reasons: []
+  workflow_family_ids:
+  - WFAM-A955B9C288A08FC1
+  - WFAM-B18CAB66F33EC59A
+  workflow_instance_ids:
+  - WFINST-2CA4D4BCA84DEEBF
+  - WFINST-66725E48869DC2E7
+  - WFINST-8428028A88D2F5C7
+  - WFINST-AF62C40FBBC40FDC
+  - WFINST-C559A10900214892
+  - WFINST-DCB1CA9ED24B6189
+  - WFINST-EDDB3320FA8E3ED7
+  invariant_ids:
+  - BINV-630AD25E7733C1D0
+  - BINV-94BD310DD5984A4A
+  observation_ids:
+  - OBS-000012
+  - OBS-000059
+  - OBS-000271
+  - OBS-000476
+  - OBS-000644
+  - OBS-000700
+  - OBS-000711
+- id: HCL-186C5007E5003B7A
+  semantic_fingerprint: 186c5007e5003b7a1111ef0b6e56fd8d78fb4d55cf319b761a6d33f167869630
+  semantics:
+    vulnerability_family: SHADOW_ENDPOINT
+    subject_action: UPDATE_ORDER
+    subject_resource: order
+    violated_property: SERVER_CONTROLLED_FIELDS
+    mutation_type: SHADOW_ENDPOINT
+    actor_dimension: []
+    resource_dimension:
+    - order
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - GET /workshop/api/shop/orders/{id}
+    - PATCH /workshop/api/shop/orders/{id}
+    - PUT /workshop/api/shop/orders/{id}
+    value_dimension:
+    - amount
+    - currency
+    - order_product_price
+    - order_quantity
+    - payment_amount
+    - payment_currency
+    - price
+    - quantity
+    - status
+    label:
+      value: Update order
+      normalized_value: UPDATE_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: 186c5007e5003b7a1111ef0b6e56fd8d78fb4d55cf319b761a6d33f167869630
+    canonical_id: HCL-186C5007E5003B7A
+  title: Undocumented update order method may expose server-controlled fields
+  representative_hypothesis_id: BLH-303421BEF52FEFA6
+  member_hypothesis_ids:
+  - BLH-303421BEF52FEFA6
+  support_contexts:
+  - hypothesis_id: BLH-303421BEF52FEFA6
+    workflow_family_id: WFAM-EB22B8E7C91F4402
+    workflow_instance_ids:
+    - WFINST-25260915CD68C736
+    - WFINST-268E0F8DE3C5BEF1
+    - WFINST-56FA681E7409C717
+    - WFINST-5AB01590227FAE56
+    - WFINST-5E116960B8979422
+    - WFINST-60F5344F39C8CF95
+    - WFINST-98AA1C51CB5CE356
+    - WFINST-9FD39C59DC5FAF57
+    - WFINST-A2B2E2DF2030573C
+    - WFINST-B963A542A4E33F3E
+    - WFINST-CA6E13E09CC47372
+    - WFINST-EC44C3FB56B05CC8
+    invariant_id: BINV-8D71BC860E90B5BB
+    mutation_family: SHADOW_ENDPOINT
+    affected_action: UPDATE_ORDER
+    observation_ids:
+    - OBS-000646
+    - OBS-000650
+    - OBS-000702
+    - OBS-000706
+    - OBS-000709
+    - OBS-000782
+    - OBS-000788
+    causal_evidence: []
+    prerequisite_actions: []
+    actors:
+    - mrscargo
+    - saeedmehmandoust
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    - observations/har/mrscargo-crapi-postid-7d646394-redacted.har
+    - observations/har/mrscargo-crapi-product-4828d216-redacted.har
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    resource_types:
+    - Order
+    - order
+    - product
+    - transaction
+    resource_instance_ids:
+    - RINST-066891B0F0DB62B6
+    - RINST-0916DDFF0EF0F651
+    - RINST-09910B124C2C29CC
+    - RINST-0D09EF32E8F5FA01
+    - RINST-0F839DC2F1382025
+    - RINST-19077F9C5D26D490
+    - RINST-1C98B130BD1A7016
+    - RINST-205FA8E6D40D07E9
+    - RINST-284A6E2E1F62F33B
+    - RINST-2CC155D9CE788DAC
+    - RINST-30CD96FF93E87595
+    - RINST-43E61BFD4D3EBE86
+    - RINST-49E3BA20F0C76FD3
+    - RINST-4D93E5C712475510
+    - RINST-56A346D641759727
+    - RINST-599F2693CCF29203
+    - RINST-611FF0D116697899
+    - RINST-678C4EC626A3E9DA
+    - RINST-6805DF4A9C75B5DD
+    - RINST-7A68316D053DF238
+    - RINST-85293324ACA25A4A
+    - RINST-8797BEC37AB0527E
+    - RINST-A119C0A818FD5535
+    - RINST-A6D000710CF63BEE
+    - RINST-C3F44C2012FE4C37
+    - RINST-C5732DA0C1371D4A
+    - RINST-C8565BE511BB74E8
+    - RINST-C9BBFD9AC8619F2C
+    - RINST-CDF6FB28A1C6AFFC
+    - RINST-D3E9F943FFBB8219
+    - RINST-DDDA3838E9A33F9E
+    - RINST-DFCAEAB61376B677
+    - RINST-E6B260A8918184A4
+    - RINST-EDC321333402E24A
+    - RINST-F5A0913064B0FDA8
+    - RINST-F6516EA4709007C5
+    - RINST-FAEA800B2B541517
+    endpoint_ids:
+    - EP-069
+    score:
+      likelihood: 3
+      impact: 4
+      test_readiness: 1
+      safety_cost: 5
+      confidence: 4
+      breakdown:
+      - reason: Three or more supporting workflows
+        points: 2
+      - reason: Financial operation
+        points: 2
+      - reason: Collect passive route evidence or obtain explicit approval before
+          validation.
+        points: -1
+      - reason: Financial State Change requires explicit target policy permission.
+        points: -1
+      - reason: 'Target request budget is too low: 4 requests are estimated but only
+          3 are permitted.'
+        points: -1
+      - reason: The candidate method has not been observed at runtime.
+        points: -1
+      - reason: Workflow segmentation remains ambiguous.
+        points: -1
+    readiness: RESEARCH_ONLY
+    blockers:
+    - Collect passive route evidence or obtain explicit approval before validation.
+    - Financial State Change requires explicit target policy permission.
+    - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
+    - The candidate method has not been observed at runtime.
+    - Workflow segmentation remains ambiguous.
+    independent_support_ids:
+    - HSUP-EDB50531EF348FE4
+  independent_supports:
+  - id: HSUP-EDB50531EF348FE4
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - CAUSAL_PATH
+    workflow_instance_ids: []
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-product-4828d216-redacted.har
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    resource_instance_ids: []
+    causal_path:
+    - UPDATE_ORDER
+    observation_ids:
+    - OBS-000646
+    - OBS-000650
+    - OBS-000702
+    - OBS-000706
+    - OBS-000709
+    - OBS-000782
+    - OBS-000788
+  context_count: 1
+  independent_support_count: 1
+  highest_score: 12
+  research_score: 69
+  hypothesis_confidence: MEDIUM
+  evidence_strength: MODERATE
+  promotion: RESEARCH_MEDIUM
+  readiness: RESEARCH_ONLY
+  readiness_blockers:
+  - Collect passive route evidence or obtain explicit approval before validation.
+  - Financial State Change requires explicit target policy permission.
+  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
+  - The candidate method has not been observed at runtime.
+  - Workflow segmentation remains ambiguous.
+  ranking_reasons:
+  - Aggregates 1 provenance context(s).
+  - Counts 1 independent support(s).
+  suppression_reasons: []
+  workflow_family_ids:
+  - WFAM-EB22B8E7C91F4402
+  workflow_instance_ids:
+  - WFINST-25260915CD68C736
+  - WFINST-268E0F8DE3C5BEF1
+  - WFINST-56FA681E7409C717
+  - WFINST-5AB01590227FAE56
+  - WFINST-5E116960B8979422
+  - WFINST-60F5344F39C8CF95
+  - WFINST-98AA1C51CB5CE356
+  - WFINST-9FD39C59DC5FAF57
+  - WFINST-A2B2E2DF2030573C
+  - WFINST-B963A542A4E33F3E
+  - WFINST-CA6E13E09CC47372
+  - WFINST-EC44C3FB56B05CC8
+  invariant_ids:
+  - BINV-8D71BC860E90B5BB
+  observation_ids:
+  - OBS-000646
+  - OBS-000650
+  - OBS-000702
+  - OBS-000706
+  - OBS-000709
+  - OBS-000782
+  - OBS-000788
+- id: HCL-018DB12F215D5952
+  semantic_fingerprint: 018db12f215d59520b6089dc7972034596502e9b760ec5779f09faf3a8534f35
+  semantics:
+    vulnerability_family: RESOURCE_SWITCH
+    subject_action: COMMENT_POST
+    subject_resource: post
+    violated_property: RESOURCE_BINDING
+    mutation_type: RESOURCE_SWITCH
+    actor_dimension: []
+    resource_dimension:
+    - author
+    - field:path_postid
+    - post
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /community/api/v2/community/posts/{id}/comment
+    value_dimension: []
+    label:
+      value: Comment post
+      normalized_value: COMMENT_POST
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: 018db12f215d59520b6089dc7972034596502e9b760ec5779f09faf3a8534f35
+    canonical_id: HCL-018DB12F215D5952
+  title: Comment post may accept a resource from another controlled workflow
+  representative_hypothesis_id: BLH-DECB6317F13498FA
+  member_hypothesis_ids:
+  - BLH-DECB6317F13498FA
+  support_contexts:
+  - hypothesis_id: BLH-DECB6317F13498FA
+    workflow_family_id: WFAM-878D2D849FA67A36
+    workflow_instance_ids:
+    - WFINST-28D2F2B58E64E6C2
+    - WFINST-2A76FCCBAEEECC09
+    - WFINST-46C86AFFFFE9B1C8
+    - WFINST-9E0B0A363B975A54
+    - WFINST-DB574CCC16AB8FE5
+    - WFINST-DDAD9A9A2B0F6194
+    invariant_id: BINV-1CA50C392D621F86
+    mutation_family: RESOURCE_SWITCH
+    affected_action: COMMENT_POST
+    observation_ids:
+    - OBS-000045
+    - OBS-000065
+    - OBS-000100
+    - OBS-000103
+    - OBS-000117
+    - OBS-000120
+    causal_evidence: []
+    prerequisite_actions: []
+    actors:
+    - mrscargo
+    - saeedmehmandoust
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    - observations/har/mrscargo-crapi-postid-7d646394-redacted.har
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    - observations/har/saeedmehmandoust-crapi-postid-160b3d8c-redacted.har
+    resource_types:
+    - Post
+    - author
+    - post
+    resource_instance_ids:
+    - RINST-13A71ABAD542E584
+    - RINST-18C80E8BA5E289CA
+    - RINST-51C59FE847DC72B4
+    - RINST-6FD9A5DE397C6B7D
+    - RINST-758B26D5A213FA90
+    - RINST-AEA4F9400D92F3D0
+    - RINST-BD6E57817102D4B6
+    - RINST-FDF4A12668F32C00
+    endpoint_ids:
+    - EP-014
+    score:
+      likelihood: 3
+      impact: 2
+      test_readiness: 1
+      safety_cost: 2
+      confidence: 4
+      breakdown:
+      - reason: Three or more supporting workflows
+        points: 2
+      - reason: An authoritative baseline state and before-state query are missing.
+        points: -1
+      - reason: Controlled resource ownership baseline is missing.
+        points: -2
+      - reason: 'Target request budget is too low: 4 requests are estimated but only
+          3 are permitted.'
+        points: -1
+      - reason: Workflow segmentation remains ambiguous.
+        points: -1
+    readiness: RESEARCH_ONLY
+    blockers:
+    - An authoritative baseline state and before-state query are missing.
+    - Controlled resource ownership baseline is missing.
+    - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
+    - Workflow segmentation remains ambiguous.
+    independent_support_ids:
+    - HSUP-587552BCDF13BF24
+    - HSUP-843FC6E89C03C821
+    - HSUP-85D8DD6686608600
+    - HSUP-A7334CD3B163991B
+    - HSUP-B142D8ED0F3FEDC0
+    - HSUP-DC3463054BCC9002
+  independent_supports:
+  - id: HSUP-587552BCDF13BF24
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-DDAD9A9A2B0F6194
+    actors:
+    - saeedmehmandoust
+    captures:
+    - observations/har/saeedmehmandoust-crapi-postid-160b3d8c-redacted.har
+    resource_instance_ids:
+    - RINST-13A71ABAD542E584
+    - RINST-18C80E8BA5E289CA
+    causal_path:
+    - COMMENT_POST
+    observation_ids:
+    - OBS-000117
+  - id: HSUP-843FC6E89C03C821
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-9E0B0A363B975A54
+    actors:
+    - saeedmehmandoust
+    captures:
+    - observations/har/saeedmehmandoust-crapi-postid-160b3d8c-redacted.har
+    resource_instance_ids:
+    - RINST-6FD9A5DE397C6B7D
+    - RINST-AEA4F9400D92F3D0
+    causal_path:
+    - COMMENT_POST
+    observation_ids:
+    - OBS-000120
+  - id: HSUP-85D8DD6686608600
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-28D2F2B58E64E6C2
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-postid-7d646394-redacted.har
+    resource_instance_ids:
+    - RINST-758B26D5A213FA90
+    - RINST-BD6E57817102D4B6
+    causal_path:
+    - COMMENT_POST
+    observation_ids:
+    - OBS-000100
+  - id: HSUP-A7334CD3B163991B
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-DB574CCC16AB8FE5
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-postid-7d646394-redacted.har
+    resource_instance_ids:
+    - RINST-51C59FE847DC72B4
+    - RINST-FDF4A12668F32C00
+    causal_path:
+    - COMMENT_POST
+    observation_ids:
+    - OBS-000103
+  - id: HSUP-B142D8ED0F3FEDC0
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-2A76FCCBAEEECC09
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    resource_instance_ids:
+    - RINST-51C59FE847DC72B4
+    - RINST-FDF4A12668F32C00
+    causal_path:
+    - COMMENT_POST
+    observation_ids:
+    - OBS-000045
+  - id: HSUP-DC3463054BCC9002
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-46C86AFFFFE9B1C8
+    actors:
+    - saeedmehmandoust
+    captures:
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    resource_instance_ids:
+    - RINST-6FD9A5DE397C6B7D
+    - RINST-AEA4F9400D92F3D0
+    causal_path:
+    - COMMENT_POST
+    observation_ids:
+    - OBS-000065
+  context_count: 1
+  independent_support_count: 6
+  highest_score: 10
+  research_score: 81
+  hypothesis_confidence: LOW
+  evidence_strength: INSUFFICIENT
+  promotion: SUPPRESSED
+  readiness: RESEARCH_ONLY
+  readiness_blockers: []
+  ranking_reasons:
+  - Aggregates 1 provenance context(s).
+  - Counts 6 independent support(s).
+  suppression_reasons:
+  - OVERLAPS_STRONGER_ENDPOINT_HYPOTHESIS
+  workflow_family_ids:
+  - WFAM-878D2D849FA67A36
+  workflow_instance_ids:
+  - WFINST-28D2F2B58E64E6C2
+  - WFINST-2A76FCCBAEEECC09
+  - WFINST-46C86AFFFFE9B1C8
+  - WFINST-9E0B0A363B975A54
+  - WFINST-DB574CCC16AB8FE5
+  - WFINST-DDAD9A9A2B0F6194
+  invariant_ids:
+  - BINV-1CA50C392D621F86
+  observation_ids:
+  - OBS-000045
+  - OBS-000065
+  - OBS-000100
+  - OBS-000103
+  - OBS-000117
+  - OBS-000120
+- id: HCL-A1D94A3311C50162
+  semantic_fingerprint: a1d94a3311c50162a53fffc3fb4d31ca9aa3b16e0e48715516356ce4b10bfc46
+  semantics:
+    vulnerability_family: ACTOR_SWITCH
+    subject_action: CREATE_ORDER
+    subject_resource: order
+    violated_property: ACTOR_BINDING
+    mutation_type: ACTOR_SWITCH
+    actor_dimension:
+    - role:user
+    resource_dimension:
+    - order
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /workshop/api/shop/orders
+    value_dimension: []
+    label:
+      value: Create order
+      normalized_value: CREATE_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: a1d94a3311c50162a53fffc3fb4d31ca9aa3b16e0e48715516356ce4b10bfc46
+    canonical_id: HCL-A1D94A3311C50162
+  title: Create order may not remain bound to the initiating actor
+  representative_hypothesis_id: BLH-ED7AFE8DC06CBBAC
+  member_hypothesis_ids:
+  - BLH-ED7AFE8DC06CBBAC
+  support_contexts:
+  - hypothesis_id: BLH-ED7AFE8DC06CBBAC
+    workflow_family_id: WFAM-5256530622A826BE
+    workflow_instance_ids:
+    - WFINST-759C3CEA9044730C
+    - WFINST-8F189CAF8BEEF4D0
+    - WFINST-9E47D459BA09B855
+    - WFINST-C6FD77C6E9FE2A41
+    - WFINST-CB9A40590A62EE44
+    - WFINST-D13955A36A5D0CF3
+    - WFINST-EB7EC8CF3B91C520
+    invariant_id: BINV-D8C763384D371458
+    mutation_family: ACTOR_SWITCH
+    affected_action: CREATE_ORDER
+    observation_ids:
+    - OBS-000010
+    - OBS-000057
+    - OBS-000107
+    - OBS-000269
+    - OBS-000474
+    - OBS-000642
+    - OBS-000786
+    causal_evidence: []
+    prerequisite_actions: []
+    actors:
+    - mrscargo
+    - saeedmehmandoust
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    - observations/har/mrscargo-crapi-postid-7d646394-redacted.har
+    - observations/har/mrscargo-crapi-product-4828d216-redacted.har
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    - observations/har/mrscargo-crapi-vin-b0d23cf0-redacted.har
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    - observations/har/saeedmehmandoust-crapi-vin-4bf79850-redacted.har
+    resource_types:
+    - Order
+    - order
+    - product
+    resource_instance_ids:
+    - RINST-0F839DC2F1382025
+    - RINST-1C98B130BD1A7016
+    - RINST-284A6E2E1F62F33B
+    - RINST-599F2693CCF29203
+    - RINST-A119C0A818FD5535
+    - RINST-C5732DA0C1371D4A
+    - RINST-E6B260A8918184A4
+    - RINST-EDC321333402E24A
+    endpoint_ids:
+    - EP-020
+    score:
+      likelihood: 3
+      impact: 2
+      test_readiness: 1
+      safety_cost: 2
+      confidence: 4
+      breakdown:
+      - reason: Three or more supporting workflows
+        points: 2
+      - reason: An authoritative baseline state and before-state query are missing.
+        points: -1
+      - reason: Controlled resource ownership baseline is missing.
+        points: -2
+      - reason: 'Target request budget is too low: 4 requests are estimated but only
+          3 are permitted.'
+        points: -1
+      - reason: Workflow segmentation remains ambiguous.
+        points: -1
+    readiness: REVIEW_REQUIRED
+    blockers:
+    - An authoritative baseline state and before-state query are missing.
+    - Controlled resource ownership baseline is missing.
+    - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
+    - Workflow segmentation remains ambiguous.
+    independent_support_ids:
+    - HSUP-1999B3017FF0A8FB
+    - HSUP-2237AC5B7EA55906
+    - HSUP-63DA6C70EC69C466
+    - HSUP-7B73073229E8000D
+    - HSUP-7F42881F6B2E1F13
+    - HSUP-83587F31FA255FB5
+    - HSUP-C5A4DC222F023CFD
+  independent_supports:
+  - id: HSUP-1999B3017FF0A8FB
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-D13955A36A5D0CF3
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-vin-b0d23cf0-redacted.har
+    resource_instance_ids:
+    - RINST-0F839DC2F1382025
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000269
+  - id: HSUP-2237AC5B7EA55906
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-EB7EC8CF3B91C520
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    resource_instance_ids:
+    - RINST-0F839DC2F1382025
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000642
+  - id: HSUP-63DA6C70EC69C466
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-CB9A40590A62EE44
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    resource_instance_ids:
+    - RINST-0F839DC2F1382025
+    - RINST-1C98B130BD1A7016
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000010
+  - id: HSUP-7B73073229E8000D
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-759C3CEA9044730C
+    actors:
+    - saeedmehmandoust
+    captures:
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    resource_instance_ids:
+    - RINST-284A6E2E1F62F33B
+    - RINST-C5732DA0C1371D4A
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000057
+  - id: HSUP-7F42881F6B2E1F13
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-C6FD77C6E9FE2A41
+    actors:
+    - saeedmehmandoust
+    captures:
+    - observations/har/saeedmehmandoust-crapi-vin-4bf79850-redacted.har
+    resource_instance_ids:
+    - RINST-284A6E2E1F62F33B
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000474
+  - id: HSUP-83587F31FA255FB5
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-9E47D459BA09B855
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-postid-7d646394-redacted.har
+    resource_instance_ids:
+    - RINST-599F2693CCF29203
+    - RINST-E6B260A8918184A4
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000107
+  - id: HSUP-C5A4DC222F023CFD
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-8F189CAF8BEEF4D0
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-product-4828d216-redacted.har
+    resource_instance_ids:
+    - RINST-A119C0A818FD5535
+    - RINST-EDC321333402E24A
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000786
+  context_count: 1
+  independent_support_count: 7
+  highest_score: 10
+  research_score: 65
+  hypothesis_confidence: LOW
+  evidence_strength: INSUFFICIENT
+  promotion: SUPPRESSED
+  readiness: RESEARCH_ONLY
+  readiness_blockers: []
+  ranking_reasons:
+  - Aggregates 1 provenance context(s).
+  - Counts 7 independent support(s).
+  suppression_reasons:
+  - INSUFFICIENT_ACTOR_BINDING_EVIDENCE
+  workflow_family_ids:
+  - WFAM-5256530622A826BE
+  workflow_instance_ids:
+  - WFINST-759C3CEA9044730C
+  - WFINST-8F189CAF8BEEF4D0
+  - WFINST-9E47D459BA09B855
+  - WFINST-C6FD77C6E9FE2A41
+  - WFINST-CB9A40590A62EE44
+  - WFINST-D13955A36A5D0CF3
+  - WFINST-EB7EC8CF3B91C520
+  invariant_ids:
+  - BINV-D8C763384D371458
+  observation_ids:
+  - OBS-000010
+  - OBS-000057
+  - OBS-000107
+  - OBS-000269
+  - OBS-000474
+  - OBS-000642
+  - OBS-000786
+- id: HCL-69C6FCF029C27773
+  semantic_fingerprint: 69c6fcf029c277737997a076f836eef39669e4dc30e53363e538cfc2c20ef095
+  semantics:
+    vulnerability_family: RESOURCE_SWITCH
+    subject_action: CREATE_ORDER
+    subject_resource: order
+    violated_property: RESOURCE_BINDING
+    mutation_type: RESOURCE_SWITCH
+    actor_dimension: []
+    resource_dimension:
+    - field:product_id
+    - order
+    - product
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /workshop/api/shop/orders
+    value_dimension: []
+    label:
+      value: Create order
+      normalized_value: CREATE_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: 69c6fcf029c277737997a076f836eef39669e4dc30e53363e538cfc2c20ef095
+    canonical_id: HCL-69C6FCF029C27773
+  title: Create order may accept a resource from another controlled workflow
+  representative_hypothesis_id: BLH-6E78992C4C726EA3
+  member_hypothesis_ids:
+  - BLH-6E78992C4C726EA3
+  support_contexts:
+  - hypothesis_id: BLH-6E78992C4C726EA3
+    workflow_family_id: WFAM-5256530622A826BE
+    workflow_instance_ids:
+    - WFINST-759C3CEA9044730C
+    - WFINST-8F189CAF8BEEF4D0
+    - WFINST-9E47D459BA09B855
+    - WFINST-C6FD77C6E9FE2A41
+    - WFINST-CB9A40590A62EE44
+    - WFINST-D13955A36A5D0CF3
+    - WFINST-EB7EC8CF3B91C520
+    invariant_id: BINV-09B2FD1613CBF80C
+    mutation_family: RESOURCE_SWITCH
+    affected_action: CREATE_ORDER
+    observation_ids:
+    - OBS-000010
+    - OBS-000057
+    - OBS-000107
+    - OBS-000269
+    - OBS-000474
+    - OBS-000642
+    - OBS-000786
+    causal_evidence: []
+    prerequisite_actions: []
+    actors:
+    - mrscargo
+    - saeedmehmandoust
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    - observations/har/mrscargo-crapi-postid-7d646394-redacted.har
+    - observations/har/mrscargo-crapi-product-4828d216-redacted.har
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    - observations/har/mrscargo-crapi-vin-b0d23cf0-redacted.har
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    - observations/har/saeedmehmandoust-crapi-vin-4bf79850-redacted.har
+    resource_types:
+    - Order
+    - order
+    - product
+    resource_instance_ids:
+    - RINST-0F839DC2F1382025
+    - RINST-1C98B130BD1A7016
+    - RINST-284A6E2E1F62F33B
+    - RINST-599F2693CCF29203
+    - RINST-A119C0A818FD5535
+    - RINST-C5732DA0C1371D4A
+    - RINST-E6B260A8918184A4
+    - RINST-EDC321333402E24A
+    endpoint_ids:
+    - EP-020
+    score:
+      likelihood: 3
+      impact: 2
+      test_readiness: 1
+      safety_cost: 2
+      confidence: 4
+      breakdown:
+      - reason: Three or more supporting workflows
+        points: 2
+      - reason: An authoritative baseline state and before-state query are missing.
+        points: -1
+      - reason: Controlled resource ownership baseline is missing.
+        points: -2
+      - reason: 'Target request budget is too low: 4 requests are estimated but only
+          3 are permitted.'
+        points: -1
+      - reason: Workflow segmentation remains ambiguous.
+        points: -1
+    readiness: REVIEW_REQUIRED
+    blockers:
+    - An authoritative baseline state and before-state query are missing.
+    - Controlled resource ownership baseline is missing.
+    - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
+    - Workflow segmentation remains ambiguous.
+    independent_support_ids:
+    - HSUP-1999B3017FF0A8FB
+    - HSUP-2237AC5B7EA55906
+    - HSUP-63DA6C70EC69C466
+    - HSUP-7B73073229E8000D
+    - HSUP-7F42881F6B2E1F13
+    - HSUP-83587F31FA255FB5
+    - HSUP-C5A4DC222F023CFD
+  independent_supports:
+  - id: HSUP-1999B3017FF0A8FB
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-D13955A36A5D0CF3
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-vin-b0d23cf0-redacted.har
+    resource_instance_ids:
+    - RINST-0F839DC2F1382025
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000269
+  - id: HSUP-2237AC5B7EA55906
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-EB7EC8CF3B91C520
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    resource_instance_ids:
+    - RINST-0F839DC2F1382025
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000642
+  - id: HSUP-63DA6C70EC69C466
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-CB9A40590A62EE44
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    resource_instance_ids:
+    - RINST-0F839DC2F1382025
+    - RINST-1C98B130BD1A7016
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000010
+  - id: HSUP-7B73073229E8000D
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-759C3CEA9044730C
+    actors:
+    - saeedmehmandoust
+    captures:
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    resource_instance_ids:
+    - RINST-284A6E2E1F62F33B
+    - RINST-C5732DA0C1371D4A
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000057
+  - id: HSUP-7F42881F6B2E1F13
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-C6FD77C6E9FE2A41
+    actors:
+    - saeedmehmandoust
+    captures:
+    - observations/har/saeedmehmandoust-crapi-vin-4bf79850-redacted.har
+    resource_instance_ids:
+    - RINST-284A6E2E1F62F33B
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000474
+  - id: HSUP-83587F31FA255FB5
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-9E47D459BA09B855
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-postid-7d646394-redacted.har
+    resource_instance_ids:
+    - RINST-599F2693CCF29203
+    - RINST-E6B260A8918184A4
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000107
+  - id: HSUP-C5A4DC222F023CFD
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-8F189CAF8BEEF4D0
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-product-4828d216-redacted.har
+    resource_instance_ids:
+    - RINST-A119C0A818FD5535
+    - RINST-EDC321333402E24A
+    causal_path:
+    - CREATE_ORDER
+    observation_ids:
+    - OBS-000786
+  context_count: 1
+  independent_support_count: 7
+  highest_score: 10
+  research_score: 65
+  hypothesis_confidence: LOW
+  evidence_strength: INSUFFICIENT
+  promotion: SUPPRESSED
+  readiness: RESEARCH_ONLY
+  readiness_blockers: []
+  ranking_reasons:
+  - Aggregates 1 provenance context(s).
+  - Counts 7 independent support(s).
+  suppression_reasons:
+  - INSUFFICIENT_RESOURCE_SWITCH_EVIDENCE
+  workflow_family_ids:
+  - WFAM-5256530622A826BE
+  workflow_instance_ids:
+  - WFINST-759C3CEA9044730C
+  - WFINST-8F189CAF8BEEF4D0
+  - WFINST-9E47D459BA09B855
+  - WFINST-C6FD77C6E9FE2A41
+  - WFINST-CB9A40590A62EE44
+  - WFINST-D13955A36A5D0CF3
+  - WFINST-EB7EC8CF3B91C520
+  invariant_ids:
+  - BINV-09B2FD1613CBF80C
+  observation_ids:
+  - OBS-000010
+  - OBS-000057
+  - OBS-000107
+  - OBS-000269
+  - OBS-000474
+  - OBS-000642
+  - OBS-000786
+- id: HCL-8E268B04703718D3
+  semantic_fingerprint: 8e268b04703718d361fc3d54402d4bcc4d23fae090346aaeff62c3948a960672
+  semantics:
+    vulnerability_family: ACTOR_SWITCH
+    subject_action: RETURN_ORDER
+    subject_resource: order
+    violated_property: ACTOR_BINDING
+    mutation_type: ACTOR_SWITCH
+    actor_dimension:
+    - role:user
+    resource_dimension:
+    - order
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /workshop/api/shop/orders/return-order
+    value_dimension: []
+    label:
+      value: Return order
+      normalized_value: RETURN_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: 8e268b04703718d361fc3d54402d4bcc4d23fae090346aaeff62c3948a960672
+    canonical_id: HCL-8E268B04703718D3
+  title: Return order may not remain bound to the initiating actor
+  representative_hypothesis_id: BLH-B89B2AF18B43FAD3
+  member_hypothesis_ids:
+  - BLH-B89B2AF18B43FAD3
+  support_contexts:
+  - hypothesis_id: BLH-B89B2AF18B43FAD3
+    workflow_family_id: WFAM-B18CAB66F33EC59A
+    workflow_instance_ids:
+    - WFINST-2CA4D4BCA84DEEBF
+    - WFINST-8428028A88D2F5C7
+    - WFINST-C559A10900214892
+    - WFINST-EDDB3320FA8E3ED7
+    invariant_id: BINV-2739DAE058615E69
+    mutation_family: ACTOR_SWITCH
+    affected_action: RETURN_ORDER
+    observation_ids:
+    - OBS-000012
+    - OBS-000059
+    - OBS-000700
+    - OBS-000711
+    causal_evidence: []
+    prerequisite_actions: []
+    actors:
+    - mrscargo
+    - saeedmehmandoust
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    resource_types:
+    - Order
+    - order
+    - product
+    - transaction
+    resource_instance_ids:
+    - RINST-09910B124C2C29CC
+    - RINST-0D09EF32E8F5FA01
+    - RINST-0F839DC2F1382025
+    - RINST-1C98B130BD1A7016
+    - RINST-284A6E2E1F62F33B
+    - RINST-30CD96FF93E87595
+    - RINST-56A346D641759727
+    - RINST-599F2693CCF29203
+    - RINST-C5732DA0C1371D4A
+    - RINST-C8565BE511BB74E8
+    - RINST-E6B260A8918184A4
+    endpoint_ids:
+    - EP-021
+    score:
+      likelihood: 3
+      impact: 4
+      test_readiness: 1
+      safety_cost: 5
+      confidence: 4
+      breakdown:
+      - reason: Three or more supporting workflows
+        points: 2
+      - reason: Financial operation
+        points: 2
+      - reason: An authoritative baseline state and before-state query are missing.
+        points: -1
+      - reason: Controlled resource ownership baseline is missing.
+        points: -2
+      - reason: Financial State Change requires explicit target policy permission.
+        points: -1
+      - reason: 'Target request budget is too low: 4 requests are estimated but only
+          3 are permitted.'
+        points: -1
+      - reason: Workflow segmentation remains ambiguous.
+        points: -1
+    readiness: RESEARCH_ONLY
+    blockers:
+    - An authoritative baseline state and before-state query are missing.
+    - Controlled resource ownership baseline is missing.
+    - Financial State Change requires explicit target policy permission.
+    - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
+    - Workflow segmentation remains ambiguous.
+    independent_support_ids:
+    - HSUP-31180A22FA6D6BCE
+    - HSUP-3189C3E36BDBAA68
+    - HSUP-D8212BF8CA299856
+    - HSUP-EEC50A5B60424125
+  independent_supports:
+  - id: HSUP-31180A22FA6D6BCE
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-EDDB3320FA8E3ED7
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    resource_instance_ids:
+    - RINST-09910B124C2C29CC
+    - RINST-0F839DC2F1382025
+    - RINST-30CD96FF93E87595
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000700
+  - id: HSUP-3189C3E36BDBAA68
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-C559A10900214892
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    resource_instance_ids:
+    - RINST-56A346D641759727
+    - RINST-599F2693CCF29203
+    - RINST-E6B260A8918184A4
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000711
+  - id: HSUP-D8212BF8CA299856
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-8428028A88D2F5C7
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    resource_instance_ids:
+    - RINST-0F839DC2F1382025
+    - RINST-1C98B130BD1A7016
+    - RINST-C8565BE511BB74E8
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000012
+  - id: HSUP-EEC50A5B60424125
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-2CA4D4BCA84DEEBF
+    actors:
+    - saeedmehmandoust
+    captures:
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    resource_instance_ids:
+    - RINST-0D09EF32E8F5FA01
+    - RINST-284A6E2E1F62F33B
+    - RINST-C5732DA0C1371D4A
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000059
+  context_count: 1
+  independent_support_count: 4
+  highest_score: 12
+  research_score: 87
+  hypothesis_confidence: HIGH
+  evidence_strength: STRONG
+  promotion: RESEARCH_HIGH
+  readiness: RESEARCH_ONLY
+  readiness_blockers:
+  - An authoritative baseline state and before-state query are missing.
+  - Controlled resource ownership baseline is missing.
+  - Financial State Change requires explicit target policy permission.
+  - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
+  - Workflow segmentation remains ambiguous.
+  ranking_reasons:
+  - Aggregates 1 provenance context(s).
+  - Counts 4 independent support(s).
+  suppression_reasons: []
+  workflow_family_ids:
+  - WFAM-B18CAB66F33EC59A
+  workflow_instance_ids:
+  - WFINST-2CA4D4BCA84DEEBF
+  - WFINST-8428028A88D2F5C7
+  - WFINST-C559A10900214892
+  - WFINST-EDDB3320FA8E3ED7
+  invariant_ids:
+  - BINV-2739DAE058615E69
+  observation_ids:
+  - OBS-000012
+  - OBS-000059
+  - OBS-000700
+  - OBS-000711
+- id: HCL-F0D13C3ECCB3FFAC
+  semantic_fingerprint: f0d13c3eccb3ffac7659a3338432aae25bbca81466af39ee2811347d4ae857a9
+  semantics:
+    vulnerability_family: RESOURCE_SWITCH
+    subject_action: RETURN_ORDER
+    subject_resource: order
+    violated_property: RESOURCE_BINDING
+    mutation_type: RESOURCE_SWITCH
+    actor_dimension: []
+    resource_dimension:
+    - field:query_order_id
+    - order
+    - product
+    - transaction
+    state_dimension: []
+    prerequisite_dimension: []
+    endpoint_dimension:
+    - POST /workshop/api/shop/orders/return-order
+    value_dimension: []
+    label:
+      value: Return order
+      normalized_value: RETURN_ORDER
+      confidence: HIGH
+      basis: ENDPOINT_MODEL
+      hygiene_reasons: []
+    fingerprint: f0d13c3eccb3ffac7659a3338432aae25bbca81466af39ee2811347d4ae857a9
+    canonical_id: HCL-F0D13C3ECCB3FFAC
+  title: Return order may accept a resource from another controlled workflow
+  representative_hypothesis_id: BLH-E6FECFDB34ED47E6
+  member_hypothesis_ids:
+  - BLH-E6FECFDB34ED47E6
+  support_contexts:
+  - hypothesis_id: BLH-E6FECFDB34ED47E6
+    workflow_family_id: WFAM-B18CAB66F33EC59A
+    workflow_instance_ids:
+    - WFINST-2CA4D4BCA84DEEBF
+    - WFINST-8428028A88D2F5C7
+    - WFINST-C559A10900214892
+    - WFINST-EDDB3320FA8E3ED7
+    invariant_id: BINV-8A4E0C10BC17F9EE
+    mutation_family: RESOURCE_SWITCH
+    affected_action: RETURN_ORDER
+    observation_ids:
+    - OBS-000012
+    - OBS-000059
+    - OBS-000700
+    - OBS-000711
+    causal_evidence: []
+    prerequisite_actions: []
+    actors:
+    - mrscargo
+    - saeedmehmandoust
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    resource_types:
+    - Order
+    - order
+    - product
+    - transaction
+    resource_instance_ids:
+    - RINST-09910B124C2C29CC
+    - RINST-0D09EF32E8F5FA01
+    - RINST-0F839DC2F1382025
+    - RINST-1C98B130BD1A7016
+    - RINST-284A6E2E1F62F33B
+    - RINST-30CD96FF93E87595
+    - RINST-56A346D641759727
+    - RINST-599F2693CCF29203
+    - RINST-C5732DA0C1371D4A
+    - RINST-C8565BE511BB74E8
+    - RINST-E6B260A8918184A4
+    endpoint_ids:
+    - EP-021
+    score:
+      likelihood: 3
+      impact: 4
+      test_readiness: 1
+      safety_cost: 5
+      confidence: 4
+      breakdown:
+      - reason: Three or more supporting workflows
+        points: 2
+      - reason: Financial operation
+        points: 2
+      - reason: An authoritative baseline state and before-state query are missing.
+        points: -1
+      - reason: Controlled resource ownership baseline is missing.
+        points: -2
+      - reason: Financial State Change requires explicit target policy permission.
+        points: -1
+      - reason: 'Target request budget is too low: 4 requests are estimated but only
+          3 are permitted.'
+        points: -1
+      - reason: Workflow segmentation remains ambiguous.
+        points: -1
+    readiness: RESEARCH_ONLY
+    blockers:
+    - An authoritative baseline state and before-state query are missing.
+    - Controlled resource ownership baseline is missing.
+    - Financial State Change requires explicit target policy permission.
+    - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
+    - Workflow segmentation remains ambiguous.
+    independent_support_ids:
+    - HSUP-31180A22FA6D6BCE
+    - HSUP-3189C3E36BDBAA68
+    - HSUP-D8212BF8CA299856
+    - HSUP-EEC50A5B60424125
+  independent_supports:
+  - id: HSUP-31180A22FA6D6BCE
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-EDDB3320FA8E3ED7
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    resource_instance_ids:
+    - RINST-09910B124C2C29CC
+    - RINST-0F839DC2F1382025
+    - RINST-30CD96FF93E87595
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000700
+  - id: HSUP-3189C3E36BDBAA68
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-C559A10900214892
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-return-15972e45-redacted.har
+    resource_instance_ids:
+    - RINST-56A346D641759727
+    - RINST-599F2693CCF29203
+    - RINST-E6B260A8918184A4
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000711
+  - id: HSUP-D8212BF8CA299856
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-8428028A88D2F5C7
+    actors:
+    - mrscargo
+    captures:
+    - observations/har/mrscargo-crapi-8adcf28a-redacted.har
+    resource_instance_ids:
+    - RINST-0F839DC2F1382025
+    - RINST-1C98B130BD1A7016
+    - RINST-C8565BE511BB74E8
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000012
+  - id: HSUP-EEC50A5B60424125
+    basis:
+    - CAPTURE
+    - CONTROLLED_ACTOR
+    - RESOURCE_INSTANCE
+    - CAUSAL_PATH
+    workflow_instance_ids:
+    - WFINST-2CA4D4BCA84DEEBF
+    actors:
+    - saeedmehmandoust
+    captures:
+    - observations/har/saeedmehmandoust-crapi-384f929e-redacted.har
+    resource_instance_ids:
+    - RINST-0D09EF32E8F5FA01
+    - RINST-284A6E2E1F62F33B
+    - RINST-C5732DA0C1371D4A
+    causal_path:
+    - RETURN_ORDER
+    observation_ids:
+    - OBS-000059
+  context_count: 1
+  independent_support_count: 4
+  highest_score: 12
+  research_score: 87
+  hypothesis_confidence: LOW
+  evidence_strength: INSUFFICIENT
+  promotion: SUPPRESSED
+  readiness: RESEARCH_ONLY
+  readiness_blockers: []
+  ranking_reasons:
+  - Aggregates 1 provenance context(s).
+  - Counts 4 independent support(s).
+  suppression_reasons:
+  - OVERLAPS_STRONGER_ENDPOINT_HYPOTHESIS
+  workflow_family_ids:
+  - WFAM-B18CAB66F33EC59A
+  workflow_instance_ids:
+  - WFINST-2CA4D4BCA84DEEBF
+  - WFINST-8428028A88D2F5C7
+  - WFINST-C559A10900214892
+  - WFINST-EDDB3320FA8E3ED7
+  invariant_ids:
+  - BINV-8A4E0C10BC17F9EE
+  observation_ids:
+  - OBS-000012
+  - OBS-000059
+  - OBS-000700
+  - OBS-000711

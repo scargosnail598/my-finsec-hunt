@@ -2154,7 +2154,7 @@ hypotheses:
   key: business-logic:042de49d21bf40cb4adbb5c18669563ecdff820894e52372cb989824e6cfda6b
   title: Return order may remain replayable after its first successful effect
   kind: RESEARCH_TASK
-  disposition: NEEDS_RESEARCH
+  disposition: SUPPRESSED_DUPLICATE
   category: business_logic
   component: WFAM-A955B9C288A08FC1
   source:
@@ -2215,9 +2215,11 @@ hypotheses:
   - Financial State Change requires explicit target policy permission.
   - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
   - Workflow segmentation remains ambiguous.
+  - Semantically duplicated by canonical cluster HCL-9E7A39B10FBDA8D8; provenance
+    is retained.
   generation_rule:
     id: BUSINESS_LOGIC_REPLAY
-    version: '2'
+    version: '3'
   priority_rationale:
   - Three or more supporting workflows
   - Financial operation
@@ -2233,6 +2235,8 @@ hypotheses:
   - 'Safety classification: FINANCIAL_STATE_CHANGE.'
   - Offline analysis does not confirm backend acceptance.
   - Human approval and the existing request budget remain mandatory.
+  - Semantically duplicated by canonical cluster HCL-9E7A39B10FBDA8D8; provenance
+    is retained.
   readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
   logic_details:
@@ -2327,11 +2331,78 @@ hypotheses:
     - OBS-000644
     kind: RESEARCH_TASK
     readiness: RESEARCH_ONLY
+    semantics:
+      vulnerability_family: REPLAY
+      subject_action: RETURN_ORDER
+      subject_resource: order
+      violated_property: SINGLE_EXECUTION
+      mutation_type: REPLAY
+      actor_dimension: []
+      resource_dimension:
+      - order
+      state_dimension: []
+      prerequisite_dimension: []
+      endpoint_dimension:
+      - POST /workshop/api/shop/orders/return-order
+      value_dimension: []
+      label:
+        value: Return order
+        normalized_value: RETURN_ORDER
+        confidence: HIGH
+        basis: ENDPOINT_MODEL
+        hygiene_reasons: []
+      fingerprint: 9e7a39b10fbda8d8120f7855ca2b378629fa1c052f9b9cd79ca2812f68f7f83f
+      canonical_id: HCL-9E7A39B10FBDA8D8
+    qualification:
+      evidence:
+        authenticated: true
+        sensitive_operation: true
+        sensitive_read: false
+        state_changing: true
+        controlled_identifier: true
+        ownership_known: false
+        cross_actor_baseline: false
+        causal_prerequisites_proven: false
+        business_relevant_resource: true
+        independently_identifiable_resource: true
+        cross_workflow_resource: true
+        privileged_or_approval_context: false
+        independent_support_count: 3
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      promotion: RESEARCH_HIGH
+      research_score: 75
+      qualification_reasons:
+      - 3 independent support(s) contribute 6 points.
+      - Authenticated operation contributes 3 points.
+      - Business-relevant resource contributes 3 points.
+      - Controlled identifier contributes 3 points.
+      - Cross-workflow resource contributes 3 points.
+      - High-confidence semantic naming contributes 3 points.
+      - Legacy transparent score contributes 36 points.
+      - Sensitive operation contributes 3 points.
+      suppression_reasons: []
+    presentation:
+      canonical_id: HCL-9E7A39B10FBDA8D8
+      semantic_fingerprint: 9e7a39b10fbda8d8120f7855ca2b378629fa1c052f9b9cd79ca2812f68f7f83f
+      representative: false
+      promotion: RESEARCH_HIGH
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      context_count: 2
+      independent_support_count: 7
+      member_hypothesis_ids:
+      - BLH-042DE49D21BF40CB
+      - BLH-2F40AB26AF496347
+      ranking_reasons:
+      - Aggregates 2 provenance context(s).
+      - Counts 7 independent support(s).
+      suppression_reasons: []
   generation:
     managed: true
     generator: business-logic-analysis
-    generated_checksum: 9ad661e0bbbab94bd0d9d73c6130017c2cd2f5dcd3c33729f24e46cb8e422eca
-    source_fingerprint: 79d602af8fda1af48fe0d741ff9afed81474c807495ecf5c1089cfe6048b1921
+    generated_checksum: 0362fa734613d76460ccbb831455cb59ff4808a0deed6205227b4b5a231f50a3
+    source_fingerprint: 293bf4874bf8cc4a0e930e9b76ad1d08e3db0951d5a2ebf64eebf7777d189c2f
 - id: BLH-1C9987F3CF1E6DBB
   key: business-logic:1c9987f3cf1e6dbb9c7fc944b51dd511cfdf3452e722e364c4ea1f184c26bd98
   title: Concurrent return order may bypass single-execution protection
@@ -2406,7 +2477,7 @@ hypotheses:
   - Workflow segmentation remains ambiguous.
   generation_rule:
     id: BUSINESS_LOGIC_CONCURRENT_EXECUTION
-    version: '2'
+    version: '3'
   priority_rationale:
   - Three or more supporting workflows
   - Financial operation
@@ -2520,11 +2591,79 @@ hypotheses:
     - OBS-000711
     kind: RESEARCH_TASK
     readiness: RESEARCH_ONLY
+    semantics:
+      vulnerability_family: CONCURRENT_EXECUTION
+      subject_action: RETURN_ORDER
+      subject_resource: order
+      violated_property: SINGLE_EXECUTION
+      mutation_type: CONCURRENT_EXECUTION
+      actor_dimension: []
+      resource_dimension:
+      - order
+      state_dimension: []
+      prerequisite_dimension: []
+      endpoint_dimension:
+      - POST /workshop/api/shop/orders/return-order
+      value_dimension: []
+      label:
+        value: Return order
+        normalized_value: RETURN_ORDER
+        confidence: HIGH
+        basis: ENDPOINT_MODEL
+        hygiene_reasons: []
+      fingerprint: 1727abcfe47da26b9c0fbf7b854b0349688fa319055c4774efb69d76be547df1
+      canonical_id: HCL-1727ABCFE47DA26B
+    qualification:
+      evidence:
+        authenticated: true
+        sensitive_operation: true
+        sensitive_read: false
+        state_changing: true
+        controlled_identifier: true
+        ownership_known: false
+        cross_actor_baseline: true
+        causal_prerequisites_proven: false
+        business_relevant_resource: true
+        independently_identifiable_resource: true
+        cross_workflow_resource: true
+        privileged_or_approval_context: false
+        independent_support_count: 4
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      promotion: RESEARCH_HIGH
+      research_score: 78
+      qualification_reasons:
+      - 4 independent support(s) contribute 6 points.
+      - Authenticated operation contributes 3 points.
+      - Business-relevant resource contributes 3 points.
+      - Controlled identifier contributes 3 points.
+      - Cross-actor baseline contributes 3 points.
+      - Cross-workflow resource contributes 3 points.
+      - High-confidence semantic naming contributes 3 points.
+      - Legacy transparent score contributes 36 points.
+      - Sensitive operation contributes 3 points.
+      suppression_reasons: []
+    presentation:
+      canonical_id: HCL-1727ABCFE47DA26B
+      semantic_fingerprint: 1727abcfe47da26b9c0fbf7b854b0349688fa319055c4774efb69d76be547df1
+      representative: true
+      promotion: RESEARCH_HIGH
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      context_count: 2
+      independent_support_count: 7
+      member_hypothesis_ids:
+      - BLH-1C9987F3CF1E6DBB
+      - BLH-C0F3E74D5DF01440
+      ranking_reasons:
+      - Aggregates 2 provenance context(s).
+      - Counts 7 independent support(s).
+      suppression_reasons: []
   generation:
     managed: true
     generator: business-logic-analysis
-    generated_checksum: c215da7f94e3015ca6a14cf5f86f1f47899362181eb06244dffac00e6a99e1bc
-    source_fingerprint: 79d602af8fda1af48fe0d741ff9afed81474c807495ecf5c1089cfe6048b1921
+    generated_checksum: cd3de71c3bdccb2c06bb6f72a0f40084bca6a4ee61add24c07ea684a46bd2781
+    source_fingerprint: 293bf4874bf8cc4a0e930e9b76ad1d08e3db0951d5a2ebf64eebf7777d189c2f
 - id: BLH-2F40AB26AF496347
   key: business-logic:2f40ab26af496347a5b8cce5ad0fc5f61b92bdf84a8c9c331b5aa782ea715b87
   title: Return order may remain replayable after its first successful effect
@@ -2597,7 +2736,7 @@ hypotheses:
   - Workflow segmentation remains ambiguous.
   generation_rule:
     id: BUSINESS_LOGIC_REPLAY
-    version: '2'
+    version: '3'
   priority_rationale:
   - Three or more supporting workflows
   - Financial operation
@@ -2711,11 +2850,79 @@ hypotheses:
     - OBS-000711
     kind: RESEARCH_TASK
     readiness: RESEARCH_ONLY
+    semantics:
+      vulnerability_family: REPLAY
+      subject_action: RETURN_ORDER
+      subject_resource: order
+      violated_property: SINGLE_EXECUTION
+      mutation_type: REPLAY
+      actor_dimension: []
+      resource_dimension:
+      - order
+      state_dimension: []
+      prerequisite_dimension: []
+      endpoint_dimension:
+      - POST /workshop/api/shop/orders/return-order
+      value_dimension: []
+      label:
+        value: Return order
+        normalized_value: RETURN_ORDER
+        confidence: HIGH
+        basis: ENDPOINT_MODEL
+        hygiene_reasons: []
+      fingerprint: 9e7a39b10fbda8d8120f7855ca2b378629fa1c052f9b9cd79ca2812f68f7f83f
+      canonical_id: HCL-9E7A39B10FBDA8D8
+    qualification:
+      evidence:
+        authenticated: true
+        sensitive_operation: true
+        sensitive_read: false
+        state_changing: true
+        controlled_identifier: true
+        ownership_known: false
+        cross_actor_baseline: true
+        causal_prerequisites_proven: false
+        business_relevant_resource: true
+        independently_identifiable_resource: true
+        cross_workflow_resource: true
+        privileged_or_approval_context: false
+        independent_support_count: 4
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      promotion: RESEARCH_HIGH
+      research_score: 78
+      qualification_reasons:
+      - 4 independent support(s) contribute 6 points.
+      - Authenticated operation contributes 3 points.
+      - Business-relevant resource contributes 3 points.
+      - Controlled identifier contributes 3 points.
+      - Cross-actor baseline contributes 3 points.
+      - Cross-workflow resource contributes 3 points.
+      - High-confidence semantic naming contributes 3 points.
+      - Legacy transparent score contributes 36 points.
+      - Sensitive operation contributes 3 points.
+      suppression_reasons: []
+    presentation:
+      canonical_id: HCL-9E7A39B10FBDA8D8
+      semantic_fingerprint: 9e7a39b10fbda8d8120f7855ca2b378629fa1c052f9b9cd79ca2812f68f7f83f
+      representative: true
+      promotion: RESEARCH_HIGH
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      context_count: 2
+      independent_support_count: 7
+      member_hypothesis_ids:
+      - BLH-042DE49D21BF40CB
+      - BLH-2F40AB26AF496347
+      ranking_reasons:
+      - Aggregates 2 provenance context(s).
+      - Counts 7 independent support(s).
+      suppression_reasons: []
   generation:
     managed: true
     generator: business-logic-analysis
-    generated_checksum: a2fd5075546baada0d9679e827b0673064a5836bea2b4bf982c160c0383b1324
-    source_fingerprint: 79d602af8fda1af48fe0d741ff9afed81474c807495ecf5c1089cfe6048b1921
+    generated_checksum: 9fb6572b53e863c7f0b842043ffd502d4c6aabbd884ea48e275ac21f4fa2f429
+    source_fingerprint: 293bf4874bf8cc4a0e930e9b76ad1d08e3db0951d5a2ebf64eebf7777d189c2f
 - id: BLH-303421BEF52FEFA6
   key: business-logic:303421bef52fefa619411af02002d721a8c0e7546921bbe673a473a44dac3181
   title: Undocumented update order method may expose server-controlled fields
@@ -2803,7 +3010,7 @@ hypotheses:
   - Workflow segmentation remains ambiguous.
   generation_rule:
     id: BUSINESS_LOGIC_SHADOW_ENDPOINT
-    version: '2'
+    version: '3'
   priority_rationale:
   - Three or more supporting workflows
   - Financial operation
@@ -2944,11 +3151,89 @@ hypotheses:
     - OBS-000788
     kind: RESEARCH_TASK
     readiness: RESEARCH_ONLY
+    semantics:
+      vulnerability_family: SHADOW_ENDPOINT
+      subject_action: UPDATE_ORDER
+      subject_resource: order
+      violated_property: SERVER_CONTROLLED_FIELDS
+      mutation_type: SHADOW_ENDPOINT
+      actor_dimension: []
+      resource_dimension:
+      - order
+      state_dimension: []
+      prerequisite_dimension: []
+      endpoint_dimension:
+      - GET /workshop/api/shop/orders/{id}
+      - PATCH /workshop/api/shop/orders/{id}
+      - PUT /workshop/api/shop/orders/{id}
+      value_dimension:
+      - amount
+      - currency
+      - order_product_price
+      - order_quantity
+      - payment_amount
+      - payment_currency
+      - price
+      - quantity
+      - status
+      label:
+        value: Update order
+        normalized_value: UPDATE_ORDER
+        confidence: HIGH
+        basis: ENDPOINT_MODEL
+        hygiene_reasons: []
+      fingerprint: 186c5007e5003b7a1111ef0b6e56fd8d78fb4d55cf319b761a6d33f167869630
+      canonical_id: HCL-186C5007E5003B7A
+    qualification:
+      evidence:
+        authenticated: true
+        sensitive_operation: true
+        sensitive_read: true
+        state_changing: false
+        controlled_identifier: true
+        ownership_known: false
+        cross_actor_baseline: true
+        causal_prerequisites_proven: false
+        business_relevant_resource: true
+        independently_identifiable_resource: true
+        cross_workflow_resource: true
+        privileged_or_approval_context: false
+        independent_support_count: 1
+      hypothesis_confidence: MEDIUM
+      evidence_strength: MODERATE
+      promotion: RESEARCH_MEDIUM
+      research_score: 69
+      qualification_reasons:
+      - 1 independent support(s) contribute 2 points.
+      - Authenticated operation contributes 3 points.
+      - Business-relevant resource contributes 3 points.
+      - Controlled identifier contributes 3 points.
+      - Cross-actor baseline contributes 3 points.
+      - Cross-workflow resource contributes 3 points.
+      - High-confidence semantic naming contributes 3 points.
+      - Legacy transparent score contributes 36 points.
+      - Sensitive operation contributes 3 points.
+      suppression_reasons: []
+    presentation:
+      canonical_id: HCL-186C5007E5003B7A
+      semantic_fingerprint: 186c5007e5003b7a1111ef0b6e56fd8d78fb4d55cf319b761a6d33f167869630
+      representative: true
+      promotion: RESEARCH_MEDIUM
+      hypothesis_confidence: MEDIUM
+      evidence_strength: MODERATE
+      context_count: 1
+      independent_support_count: 1
+      member_hypothesis_ids:
+      - BLH-303421BEF52FEFA6
+      ranking_reasons:
+      - Aggregates 1 provenance context(s).
+      - Counts 1 independent support(s).
+      suppression_reasons: []
   generation:
     managed: true
     generator: business-logic-analysis
-    generated_checksum: 09d48a1676fbffc8b5edc8227c180718fd532690596aeb5e5f60f0f3cbf450e8
-    source_fingerprint: 79d602af8fda1af48fe0d741ff9afed81474c807495ecf5c1089cfe6048b1921
+    generated_checksum: a166799227e55f12c36fb324f2ce60064909baa9876a3ca2600aa30e3bc8334e
+    source_fingerprint: 293bf4874bf8cc4a0e930e9b76ad1d08e3db0951d5a2ebf64eebf7777d189c2f
 - id: BLH-64B37A2600729089
   key: business-logic:64b37a260072908965c0e76477b0a056b697b7084a317dfe422389690f97d52b
   title: Create order may accept an amount or quantity inconsistent with the baseline
@@ -3119,7 +3404,7 @@ hypotheses:
   - Workflow segmentation remains ambiguous.
   generation_rule:
     id: BUSINESS_LOGIC_QUANTITY_VALUE_INVARIANT
-    version: '2'
+    version: '3'
   priority_rationale:
   - Three or more supporting workflows
   - Financial operation
@@ -3299,16 +3584,82 @@ hypotheses:
     - OBS-000789
     kind: SECURITY_HYPOTHESIS
     readiness: REVIEW_REQUIRED
+    semantics:
+      vulnerability_family: QUANTITY_VALUE_INVARIANT
+      subject_action: CREATE_ORDER
+      subject_resource: order
+      violated_property: VALUE_CONSERVATION
+      mutation_type: QUANTITY_VALUE_INVARIANT
+      actor_dimension: []
+      resource_dimension:
+      - order
+      state_dimension: []
+      prerequisite_dimension: []
+      endpoint_dimension:
+      - POST /workshop/api/shop/orders
+      value_dimension: []
+      label:
+        value: Create order
+        normalized_value: CREATE_ORDER
+        confidence: HIGH
+        basis: ENDPOINT_MODEL
+        hygiene_reasons: []
+      fingerprint: af68259395fa4a89d84388a09a024508df81e7bca00c76339e5c849c411040ea
+      canonical_id: HCL-AF68259395FA4A89
+    qualification:
+      evidence:
+        authenticated: true
+        sensitive_operation: true
+        sensitive_read: false
+        state_changing: true
+        controlled_identifier: false
+        ownership_known: false
+        cross_actor_baseline: true
+        causal_prerequisites_proven: false
+        business_relevant_resource: true
+        independently_identifiable_resource: false
+        cross_workflow_resource: false
+        privileged_or_approval_context: false
+        independent_support_count: 7
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      promotion: REVIEW_REQUIRED
+      research_score: 75
+      qualification_reasons:
+      - 7 independent support(s) contribute 6 points.
+      - Authenticated operation contributes 3 points.
+      - Business-relevant resource contributes 3 points.
+      - Cross-actor baseline contributes 3 points.
+      - High-confidence semantic naming contributes 3 points.
+      - Legacy transparent score contributes 39 points.
+      - Sensitive operation contributes 3 points.
+      suppression_reasons: []
+    presentation:
+      canonical_id: HCL-AF68259395FA4A89
+      semantic_fingerprint: af68259395fa4a89d84388a09a024508df81e7bca00c76339e5c849c411040ea
+      representative: true
+      promotion: REVIEW_REQUIRED
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      context_count: 2
+      independent_support_count: 8
+      member_hypothesis_ids:
+      - BLH-64B37A2600729089
+      - BLH-F01B99DDD2791B6B
+      ranking_reasons:
+      - Aggregates 2 provenance context(s).
+      - Counts 8 independent support(s).
+      suppression_reasons: []
   generation:
     managed: true
     generator: business-logic-analysis
-    generated_checksum: 4af95ef681ab84cf247adbe3b7d83b413a5b839e77248f31b0cc804663a139b2
-    source_fingerprint: 79d602af8fda1af48fe0d741ff9afed81474c807495ecf5c1089cfe6048b1921
+    generated_checksum: 5fdafca6ca0f7cfe6381833ab4b3ab97061aef8580c78a2967de743009a809bf
+    source_fingerprint: 293bf4874bf8cc4a0e930e9b76ad1d08e3db0951d5a2ebf64eebf7777d189c2f
 - id: BLH-6E78992C4C726EA3
   key: business-logic:6e78992c4c726ea38dde83d04674dcc387734002f3ea5a105841d5161e837fc0
   title: Create order may accept a resource from another controlled workflow
   kind: SECURITY_HYPOTHESIS
-  disposition: ACTIVE
+  disposition: SUPPRESSED_INSUFFICIENT_EVIDENCE
   category: business_logic
   component: WFAM-5256530622A826BE
   source:
@@ -3387,9 +3738,10 @@ hypotheses:
   - Controlled resource ownership baseline is missing.
   - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
   - Workflow segmentation remains ambiguous.
+  - INSUFFICIENT_RESOURCE_SWITCH_EVIDENCE
   generation_rule:
     id: BUSINESS_LOGIC_RESOURCE_SWITCH
-    version: '2'
+    version: '3'
   priority_rationale:
   - Three or more supporting workflows
   scores:
@@ -3404,6 +3756,7 @@ hypotheses:
   - 'Safety classification: LOW_RISK_STATE_CHANGE.'
   - Offline analysis does not confirm backend acceptance.
   - Human approval and the existing request budget remain mandatory.
+  - INSUFFICIENT_RESOURCE_SWITCH_EVIDENCE
   readiness: REVIEW_REQUIRED
   epistemic_status: TEST_CANDIDATE
   logic_details:
@@ -3510,11 +3863,82 @@ hypotheses:
     - OBS-000786
     kind: SECURITY_HYPOTHESIS
     readiness: REVIEW_REQUIRED
+    semantics:
+      vulnerability_family: RESOURCE_SWITCH
+      subject_action: CREATE_ORDER
+      subject_resource: order
+      violated_property: RESOURCE_BINDING
+      mutation_type: RESOURCE_SWITCH
+      actor_dimension: []
+      resource_dimension:
+      - field:product_id
+      - order
+      - product
+      state_dimension: []
+      prerequisite_dimension: []
+      endpoint_dimension:
+      - POST /workshop/api/shop/orders
+      value_dimension: []
+      label:
+        value: Create order
+        normalized_value: CREATE_ORDER
+        confidence: HIGH
+        basis: ENDPOINT_MODEL
+        hygiene_reasons: []
+      fingerprint: 69c6fcf029c277737997a076f836eef39669e4dc30e53363e538cfc2c20ef095
+      canonical_id: HCL-69C6FCF029C27773
+    qualification:
+      evidence:
+        authenticated: true
+        sensitive_operation: true
+        sensitive_read: false
+        state_changing: true
+        controlled_identifier: false
+        ownership_known: false
+        cross_actor_baseline: true
+        causal_prerequisites_proven: false
+        business_relevant_resource: true
+        independently_identifiable_resource: false
+        cross_workflow_resource: false
+        privileged_or_approval_context: false
+        independent_support_count: 7
+      hypothesis_confidence: LOW
+      evidence_strength: WEAK
+      promotion: SUPPRESSED
+      research_score: 56
+      qualification_reasons:
+      - 7 independent support(s) contribute 6 points.
+      - Authenticated operation contributes 3 points.
+      - Business-relevant resource contributes 3 points.
+      - Cross-actor baseline contributes 3 points.
+      - High-confidence semantic naming contributes 3 points.
+      - Legacy transparent score contributes 30 points.
+      - Resource substitution lacks independently identifiable cross-workflow resources
+        consumed by a sensitive operation.
+      - Sensitive operation contributes 3 points.
+      suppression_reasons:
+      - INSUFFICIENT_RESOURCE_SWITCH_EVIDENCE
+    presentation:
+      canonical_id: HCL-69C6FCF029C27773
+      semantic_fingerprint: 69c6fcf029c277737997a076f836eef39669e4dc30e53363e538cfc2c20ef095
+      representative: true
+      promotion: SUPPRESSED
+      hypothesis_confidence: LOW
+      evidence_strength: INSUFFICIENT
+      context_count: 1
+      independent_support_count: 7
+      member_hypothesis_ids:
+      - BLH-6E78992C4C726EA3
+      ranking_reasons:
+      - Aggregates 1 provenance context(s).
+      - Counts 7 independent support(s).
+      suppression_reasons:
+      - INSUFFICIENT_RESOURCE_SWITCH_EVIDENCE
   generation:
     managed: true
     generator: business-logic-analysis
-    generated_checksum: 877ab62668300f486b5bbcbf8c4ca4d68a54eb5103e848b0b61b7d07cacc6f9f
-    source_fingerprint: 79d602af8fda1af48fe0d741ff9afed81474c807495ecf5c1089cfe6048b1921
+    generated_checksum: 777363fe3f9060b576c585186c869b6f7c7784441c3c7006943d3075be443957
+    source_fingerprint: 293bf4874bf8cc4a0e930e9b76ad1d08e3db0951d5a2ebf64eebf7777d189c2f
 - id: BLH-8CCAE7927D22AA29
   key: business-logic:8ccae7927d22aa29e284ee01ecfa282530bcd79bec56ab8ef965945b288ee7dc
   title: Comment post may not remain bound to the initiating actor
@@ -3594,7 +4018,7 @@ hypotheses:
   - Workflow segmentation remains ambiguous.
   generation_rule:
     id: BUSINESS_LOGIC_ACTOR_SWITCH
-    version: '2'
+    version: '3'
   priority_rationale:
   - Three or more supporting workflows
   scores:
@@ -3709,16 +4133,84 @@ hypotheses:
     - OBS-000120
     kind: SECURITY_HYPOTHESIS
     readiness: REVIEW_REQUIRED
+    semantics:
+      vulnerability_family: ACTOR_SWITCH
+      subject_action: COMMENT_POST
+      subject_resource: post
+      violated_property: ACTOR_BINDING
+      mutation_type: ACTOR_SWITCH
+      actor_dimension:
+      - role:user
+      resource_dimension:
+      - post
+      state_dimension: []
+      prerequisite_dimension: []
+      endpoint_dimension:
+      - POST /community/api/v2/community/posts/{id}/comment
+      value_dimension: []
+      label:
+        value: Comment post
+        normalized_value: COMMENT_POST
+        confidence: HIGH
+        basis: ENDPOINT_MODEL
+        hygiene_reasons: []
+      fingerprint: 5f02c3f0f497f3706be99a4fd10a8505b14ef0fc86666875c15bf4ea793e0476
+      canonical_id: HCL-5F02C3F0F497F370
+    qualification:
+      evidence:
+        authenticated: true
+        sensitive_operation: true
+        sensitive_read: false
+        state_changing: true
+        controlled_identifier: true
+        ownership_known: false
+        cross_actor_baseline: true
+        causal_prerequisites_proven: false
+        business_relevant_resource: true
+        independently_identifiable_resource: true
+        cross_workflow_resource: true
+        privileged_or_approval_context: false
+        independent_support_count: 6
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      promotion: REVIEW_REQUIRED
+      research_score: 72
+      qualification_reasons:
+      - 6 independent support(s) contribute 6 points.
+      - Authenticated operation contributes 3 points.
+      - Business-relevant resource contributes 3 points.
+      - Controlled identifier contributes 3 points.
+      - Cross-actor baseline contributes 3 points.
+      - Cross-workflow resource contributes 3 points.
+      - High-confidence semantic naming contributes 3 points.
+      - Legacy transparent score contributes 30 points.
+      - Sensitive operation contributes 3 points.
+      suppression_reasons: []
+    presentation:
+      canonical_id: HCL-5F02C3F0F497F370
+      semantic_fingerprint: 5f02c3f0f497f3706be99a4fd10a8505b14ef0fc86666875c15bf4ea793e0476
+      representative: true
+      promotion: REVIEW_REQUIRED
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      context_count: 1
+      independent_support_count: 6
+      member_hypothesis_ids:
+      - BLH-8CCAE7927D22AA29
+      ranking_reasons:
+      - Aggregates 1 provenance context(s).
+      - Counts 6 independent support(s).
+      suppression_reasons: []
   generation:
     managed: true
     generator: business-logic-analysis
-    generated_checksum: eadce896e51603cf6cc02514d7450cf43fb7cde03509ba131a3b53d92d4a3895
-    source_fingerprint: 79d602af8fda1af48fe0d741ff9afed81474c807495ecf5c1089cfe6048b1921
+    generated_checksum: 7259da7ab0b8d3e79b8a3cf63aa76b7425ca330bb7781535191a4113a0b41637
+    source_fingerprint: 293bf4874bf8cc4a0e930e9b76ad1d08e3db0951d5a2ebf64eebf7777d189c2f
 - id: BLH-941002D8A1B1475A
   key: business-logic:941002d8a1b1475a01a1068b4a326e8cf1393266128f1b26f77f03bb51010571
   title: Immediate duplicate return order may create two business effects
   kind: RESEARCH_TASK
-  disposition: NEEDS_RESEARCH
+  disposition: SUPPRESSED_DUPLICATE
   category: business_logic
   component: WFAM-A955B9C288A08FC1
   source:
@@ -3779,9 +4271,11 @@ hypotheses:
   - Financial State Change requires explicit target policy permission.
   - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
   - Workflow segmentation remains ambiguous.
+  - Semantically duplicated by canonical cluster HCL-324F85786C2CA1D2; provenance
+    is retained.
   generation_rule:
     id: BUSINESS_LOGIC_DUPLICATE_ACTION
-    version: '2'
+    version: '3'
   priority_rationale:
   - Three or more supporting workflows
   - Financial operation
@@ -3797,6 +4291,8 @@ hypotheses:
   - 'Safety classification: FINANCIAL_STATE_CHANGE.'
   - Offline analysis does not confirm backend acceptance.
   - Human approval and the existing request budget remain mandatory.
+  - Semantically duplicated by canonical cluster HCL-324F85786C2CA1D2; provenance
+    is retained.
   readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
   logic_details:
@@ -3891,11 +4387,78 @@ hypotheses:
     - OBS-000644
     kind: RESEARCH_TASK
     readiness: RESEARCH_ONLY
+    semantics:
+      vulnerability_family: DUPLICATE_ACTION
+      subject_action: RETURN_ORDER
+      subject_resource: order
+      violated_property: SINGLE_EXECUTION
+      mutation_type: DUPLICATE_ACTION
+      actor_dimension: []
+      resource_dimension:
+      - order
+      state_dimension: []
+      prerequisite_dimension: []
+      endpoint_dimension:
+      - POST /workshop/api/shop/orders/return-order
+      value_dimension: []
+      label:
+        value: Return order
+        normalized_value: RETURN_ORDER
+        confidence: HIGH
+        basis: ENDPOINT_MODEL
+        hygiene_reasons: []
+      fingerprint: 324f85786c2ca1d2200232c6a98ce034424f92ca4521c751b35b8d698d041a27
+      canonical_id: HCL-324F85786C2CA1D2
+    qualification:
+      evidence:
+        authenticated: true
+        sensitive_operation: true
+        sensitive_read: false
+        state_changing: true
+        controlled_identifier: true
+        ownership_known: false
+        cross_actor_baseline: false
+        causal_prerequisites_proven: false
+        business_relevant_resource: true
+        independently_identifiable_resource: true
+        cross_workflow_resource: true
+        privileged_or_approval_context: false
+        independent_support_count: 3
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      promotion: RESEARCH_HIGH
+      research_score: 75
+      qualification_reasons:
+      - 3 independent support(s) contribute 6 points.
+      - Authenticated operation contributes 3 points.
+      - Business-relevant resource contributes 3 points.
+      - Controlled identifier contributes 3 points.
+      - Cross-workflow resource contributes 3 points.
+      - High-confidence semantic naming contributes 3 points.
+      - Legacy transparent score contributes 36 points.
+      - Sensitive operation contributes 3 points.
+      suppression_reasons: []
+    presentation:
+      canonical_id: HCL-324F85786C2CA1D2
+      semantic_fingerprint: 324f85786c2ca1d2200232c6a98ce034424f92ca4521c751b35b8d698d041a27
+      representative: false
+      promotion: RESEARCH_HIGH
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      context_count: 2
+      independent_support_count: 7
+      member_hypothesis_ids:
+      - BLH-941002D8A1B1475A
+      - BLH-B5B37FA111A42EEF
+      ranking_reasons:
+      - Aggregates 2 provenance context(s).
+      - Counts 7 independent support(s).
+      suppression_reasons: []
   generation:
     managed: true
     generator: business-logic-analysis
-    generated_checksum: 512a5a3454389a4fc7183b1aa2f30aad0dcac851b29a5e586dc81275517a0ce9
-    source_fingerprint: 79d602af8fda1af48fe0d741ff9afed81474c807495ecf5c1089cfe6048b1921
+    generated_checksum: 9e55fbf8d4473aae2a6b99e8e65e99139bcb496c7cfcf1a3fafa0b45c2bd1ca2
+    source_fingerprint: 293bf4874bf8cc4a0e930e9b76ad1d08e3db0951d5a2ebf64eebf7777d189c2f
 - id: BLH-B5B37FA111A42EEF
   key: business-logic:b5b37fa111a42eefb34eeb948cdcc60392a8ff365f73c112dac06e9a51f6328c
   title: Immediate duplicate return order may create two business effects
@@ -3968,7 +4531,7 @@ hypotheses:
   - Workflow segmentation remains ambiguous.
   generation_rule:
     id: BUSINESS_LOGIC_DUPLICATE_ACTION
-    version: '2'
+    version: '3'
   priority_rationale:
   - Three or more supporting workflows
   - Financial operation
@@ -4082,11 +4645,79 @@ hypotheses:
     - OBS-000711
     kind: RESEARCH_TASK
     readiness: RESEARCH_ONLY
+    semantics:
+      vulnerability_family: DUPLICATE_ACTION
+      subject_action: RETURN_ORDER
+      subject_resource: order
+      violated_property: SINGLE_EXECUTION
+      mutation_type: DUPLICATE_ACTION
+      actor_dimension: []
+      resource_dimension:
+      - order
+      state_dimension: []
+      prerequisite_dimension: []
+      endpoint_dimension:
+      - POST /workshop/api/shop/orders/return-order
+      value_dimension: []
+      label:
+        value: Return order
+        normalized_value: RETURN_ORDER
+        confidence: HIGH
+        basis: ENDPOINT_MODEL
+        hygiene_reasons: []
+      fingerprint: 324f85786c2ca1d2200232c6a98ce034424f92ca4521c751b35b8d698d041a27
+      canonical_id: HCL-324F85786C2CA1D2
+    qualification:
+      evidence:
+        authenticated: true
+        sensitive_operation: true
+        sensitive_read: false
+        state_changing: true
+        controlled_identifier: true
+        ownership_known: false
+        cross_actor_baseline: true
+        causal_prerequisites_proven: false
+        business_relevant_resource: true
+        independently_identifiable_resource: true
+        cross_workflow_resource: true
+        privileged_or_approval_context: false
+        independent_support_count: 4
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      promotion: RESEARCH_HIGH
+      research_score: 78
+      qualification_reasons:
+      - 4 independent support(s) contribute 6 points.
+      - Authenticated operation contributes 3 points.
+      - Business-relevant resource contributes 3 points.
+      - Controlled identifier contributes 3 points.
+      - Cross-actor baseline contributes 3 points.
+      - Cross-workflow resource contributes 3 points.
+      - High-confidence semantic naming contributes 3 points.
+      - Legacy transparent score contributes 36 points.
+      - Sensitive operation contributes 3 points.
+      suppression_reasons: []
+    presentation:
+      canonical_id: HCL-324F85786C2CA1D2
+      semantic_fingerprint: 324f85786c2ca1d2200232c6a98ce034424f92ca4521c751b35b8d698d041a27
+      representative: true
+      promotion: RESEARCH_HIGH
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      context_count: 2
+      independent_support_count: 7
+      member_hypothesis_ids:
+      - BLH-941002D8A1B1475A
+      - BLH-B5B37FA111A42EEF
+      ranking_reasons:
+      - Aggregates 2 provenance context(s).
+      - Counts 7 independent support(s).
+      suppression_reasons: []
   generation:
     managed: true
     generator: business-logic-analysis
-    generated_checksum: 37d186f523cd56f7ec38527ee7b060f06ed02ec36283abe2c59a6e3063407fb8
-    source_fingerprint: 79d602af8fda1af48fe0d741ff9afed81474c807495ecf5c1089cfe6048b1921
+    generated_checksum: f2440f735a3f0e04698d4202327cf462053e16086286891c29982c7fe14519b2
+    source_fingerprint: 293bf4874bf8cc4a0e930e9b76ad1d08e3db0951d5a2ebf64eebf7777d189c2f
 - id: BLH-B89B2AF18B43FAD3
   key: business-logic:b89b2af18b43fad3d0be53081d9d1bb077bdaf0fef365f2b2ee67a19c392635a
   title: Return order may not remain bound to the initiating actor
@@ -4162,7 +4793,7 @@ hypotheses:
   - Workflow segmentation remains ambiguous.
   generation_rule:
     id: BUSINESS_LOGIC_ACTOR_SWITCH
-    version: '2'
+    version: '3'
   priority_rationale:
   - Three or more supporting workflows
   - Financial operation
@@ -4280,16 +4911,84 @@ hypotheses:
     - OBS-000711
     kind: RESEARCH_TASK
     readiness: RESEARCH_ONLY
+    semantics:
+      vulnerability_family: ACTOR_SWITCH
+      subject_action: RETURN_ORDER
+      subject_resource: order
+      violated_property: ACTOR_BINDING
+      mutation_type: ACTOR_SWITCH
+      actor_dimension:
+      - role:user
+      resource_dimension:
+      - order
+      state_dimension: []
+      prerequisite_dimension: []
+      endpoint_dimension:
+      - POST /workshop/api/shop/orders/return-order
+      value_dimension: []
+      label:
+        value: Return order
+        normalized_value: RETURN_ORDER
+        confidence: HIGH
+        basis: ENDPOINT_MODEL
+        hygiene_reasons: []
+      fingerprint: 8e268b04703718d361fc3d54402d4bcc4d23fae090346aaeff62c3948a960672
+      canonical_id: HCL-8E268B04703718D3
+    qualification:
+      evidence:
+        authenticated: true
+        sensitive_operation: true
+        sensitive_read: false
+        state_changing: true
+        controlled_identifier: true
+        ownership_known: false
+        cross_actor_baseline: true
+        causal_prerequisites_proven: false
+        business_relevant_resource: true
+        independently_identifiable_resource: true
+        cross_workflow_resource: true
+        privileged_or_approval_context: false
+        independent_support_count: 4
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      promotion: RESEARCH_HIGH
+      research_score: 78
+      qualification_reasons:
+      - 4 independent support(s) contribute 6 points.
+      - Authenticated operation contributes 3 points.
+      - Business-relevant resource contributes 3 points.
+      - Controlled identifier contributes 3 points.
+      - Cross-actor baseline contributes 3 points.
+      - Cross-workflow resource contributes 3 points.
+      - High-confidence semantic naming contributes 3 points.
+      - Legacy transparent score contributes 36 points.
+      - Sensitive operation contributes 3 points.
+      suppression_reasons: []
+    presentation:
+      canonical_id: HCL-8E268B04703718D3
+      semantic_fingerprint: 8e268b04703718d361fc3d54402d4bcc4d23fae090346aaeff62c3948a960672
+      representative: true
+      promotion: RESEARCH_HIGH
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      context_count: 1
+      independent_support_count: 4
+      member_hypothesis_ids:
+      - BLH-B89B2AF18B43FAD3
+      ranking_reasons:
+      - Aggregates 1 provenance context(s).
+      - Counts 4 independent support(s).
+      suppression_reasons: []
   generation:
     managed: true
     generator: business-logic-analysis
-    generated_checksum: a2f13c4f7556e65a9f6c163a6676bd59ce127a1fab796079ab55d4e1348e09c6
-    source_fingerprint: 79d602af8fda1af48fe0d741ff9afed81474c807495ecf5c1089cfe6048b1921
+    generated_checksum: 59e55a90ea40f589a9f89643f0497a25ec1fab49652aa3725703599f7f9928f3
+    source_fingerprint: 293bf4874bf8cc4a0e930e9b76ad1d08e3db0951d5a2ebf64eebf7777d189c2f
 - id: BLH-C0F3E74D5DF01440
   key: business-logic:c0f3e74d5df014408944847d0e9417b1020061710bc94e4687fdde568837f44b
   title: Concurrent return order may bypass single-execution protection
   kind: RESEARCH_TASK
-  disposition: NEEDS_RESEARCH
+  disposition: SUPPRESSED_DUPLICATE
   category: business_logic
   component: WFAM-A955B9C288A08FC1
   source:
@@ -4352,9 +5051,11 @@ hypotheses:
   - Concurrency testing is not permitted by the offline engine.
   - 'Target request budget is too low: 5 requests are estimated but only 3 are permitted.'
   - Workflow segmentation remains ambiguous.
+  - Semantically duplicated by canonical cluster HCL-1727ABCFE47DA26B; provenance
+    is retained.
   generation_rule:
     id: BUSINESS_LOGIC_CONCURRENT_EXECUTION
-    version: '2'
+    version: '3'
   priority_rationale:
   - Three or more supporting workflows
   - Financial operation
@@ -4370,6 +5071,8 @@ hypotheses:
   - 'Safety classification: CONCURRENT.'
   - Offline analysis does not confirm backend acceptance.
   - Human approval and the existing request budget remain mandatory.
+  - Semantically duplicated by canonical cluster HCL-1727ABCFE47DA26B; provenance
+    is retained.
   readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
   logic_details:
@@ -4464,16 +5167,83 @@ hypotheses:
     - OBS-000644
     kind: RESEARCH_TASK
     readiness: RESEARCH_ONLY
+    semantics:
+      vulnerability_family: CONCURRENT_EXECUTION
+      subject_action: RETURN_ORDER
+      subject_resource: order
+      violated_property: SINGLE_EXECUTION
+      mutation_type: CONCURRENT_EXECUTION
+      actor_dimension: []
+      resource_dimension:
+      - order
+      state_dimension: []
+      prerequisite_dimension: []
+      endpoint_dimension:
+      - POST /workshop/api/shop/orders/return-order
+      value_dimension: []
+      label:
+        value: Return order
+        normalized_value: RETURN_ORDER
+        confidence: HIGH
+        basis: ENDPOINT_MODEL
+        hygiene_reasons: []
+      fingerprint: 1727abcfe47da26b9c0fbf7b854b0349688fa319055c4774efb69d76be547df1
+      canonical_id: HCL-1727ABCFE47DA26B
+    qualification:
+      evidence:
+        authenticated: true
+        sensitive_operation: true
+        sensitive_read: false
+        state_changing: true
+        controlled_identifier: true
+        ownership_known: false
+        cross_actor_baseline: false
+        causal_prerequisites_proven: false
+        business_relevant_resource: true
+        independently_identifiable_resource: true
+        cross_workflow_resource: true
+        privileged_or_approval_context: false
+        independent_support_count: 3
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      promotion: RESEARCH_HIGH
+      research_score: 75
+      qualification_reasons:
+      - 3 independent support(s) contribute 6 points.
+      - Authenticated operation contributes 3 points.
+      - Business-relevant resource contributes 3 points.
+      - Controlled identifier contributes 3 points.
+      - Cross-workflow resource contributes 3 points.
+      - High-confidence semantic naming contributes 3 points.
+      - Legacy transparent score contributes 36 points.
+      - Sensitive operation contributes 3 points.
+      suppression_reasons: []
+    presentation:
+      canonical_id: HCL-1727ABCFE47DA26B
+      semantic_fingerprint: 1727abcfe47da26b9c0fbf7b854b0349688fa319055c4774efb69d76be547df1
+      representative: false
+      promotion: RESEARCH_HIGH
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      context_count: 2
+      independent_support_count: 7
+      member_hypothesis_ids:
+      - BLH-1C9987F3CF1E6DBB
+      - BLH-C0F3E74D5DF01440
+      ranking_reasons:
+      - Aggregates 2 provenance context(s).
+      - Counts 7 independent support(s).
+      suppression_reasons: []
   generation:
     managed: true
     generator: business-logic-analysis
-    generated_checksum: acf836e5b1dd24a1387d389764baf6d9459fc0f950f227af3591c6024f023aba
-    source_fingerprint: 79d602af8fda1af48fe0d741ff9afed81474c807495ecf5c1089cfe6048b1921
+    generated_checksum: bf16fe6b0c2b38adbfdf37417e167f133af0b6f2ad2efcd275cbac4dd7f91056
+    source_fingerprint: 293bf4874bf8cc4a0e930e9b76ad1d08e3db0951d5a2ebf64eebf7777d189c2f
 - id: BLH-DECB6317F13498FA
   key: business-logic:decb6317f13498fa103235bf666dc386b14a0091f1e7532d9fcee0be39752029
   title: Comment post may accept a resource from another controlled workflow
   kind: RESEARCH_TASK
-  disposition: NEEDS_RESEARCH
+  disposition: SUPPRESSED_INSUFFICIENT_EVIDENCE
   category: business_logic
   component: WFAM-878D2D849FA67A36
   source:
@@ -4549,9 +5319,10 @@ hypotheses:
   - Controlled resource ownership baseline is missing.
   - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
   - Workflow segmentation remains ambiguous.
+  - OVERLAPS_STRONGER_ENDPOINT_HYPOTHESIS
   generation_rule:
     id: BUSINESS_LOGIC_RESOURCE_SWITCH
-    version: '2'
+    version: '3'
   priority_rationale:
   - Three or more supporting workflows
   scores:
@@ -4568,6 +5339,7 @@ hypotheses:
   - Human approval and the existing request budget remain mandatory.
   - A stronger endpoint-level object-authorization hypothesis already covers this
     mutation.
+  - OVERLAPS_STRONGER_ENDPOINT_HYPOTHESIS
   readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
   logic_details:
@@ -4674,16 +5446,89 @@ hypotheses:
     - OBS-000120
     kind: RESEARCH_TASK
     readiness: RESEARCH_ONLY
+    semantics:
+      vulnerability_family: RESOURCE_SWITCH
+      subject_action: COMMENT_POST
+      subject_resource: post
+      violated_property: RESOURCE_BINDING
+      mutation_type: RESOURCE_SWITCH
+      actor_dimension: []
+      resource_dimension:
+      - author
+      - field:path_postid
+      - post
+      state_dimension: []
+      prerequisite_dimension: []
+      endpoint_dimension:
+      - POST /community/api/v2/community/posts/{id}/comment
+      value_dimension: []
+      label:
+        value: Comment post
+        normalized_value: COMMENT_POST
+        confidence: HIGH
+        basis: ENDPOINT_MODEL
+        hygiene_reasons: []
+      fingerprint: 018db12f215d59520b6089dc7972034596502e9b760ec5779f09faf3a8534f35
+      canonical_id: HCL-018DB12F215D5952
+    qualification:
+      evidence:
+        authenticated: true
+        sensitive_operation: true
+        sensitive_read: false
+        state_changing: true
+        controlled_identifier: true
+        ownership_known: false
+        cross_actor_baseline: true
+        causal_prerequisites_proven: false
+        business_relevant_resource: true
+        independently_identifiable_resource: true
+        cross_workflow_resource: true
+        privileged_or_approval_context: false
+        independent_support_count: 6
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      promotion: SUPPRESSED
+      research_score: 72
+      qualification_reasons:
+      - 6 independent support(s) contribute 6 points.
+      - A stronger endpoint-level object-authorization hypothesis already covers this
+        resource mutation.
+      - Authenticated operation contributes 3 points.
+      - Business-relevant resource contributes 3 points.
+      - Controlled identifier contributes 3 points.
+      - Cross-actor baseline contributes 3 points.
+      - Cross-workflow resource contributes 3 points.
+      - High-confidence semantic naming contributes 3 points.
+      - Legacy transparent score contributes 30 points.
+      - Sensitive operation contributes 3 points.
+      suppression_reasons:
+      - OVERLAPS_STRONGER_ENDPOINT_HYPOTHESIS
+    presentation:
+      canonical_id: HCL-018DB12F215D5952
+      semantic_fingerprint: 018db12f215d59520b6089dc7972034596502e9b760ec5779f09faf3a8534f35
+      representative: true
+      promotion: SUPPRESSED
+      hypothesis_confidence: LOW
+      evidence_strength: INSUFFICIENT
+      context_count: 1
+      independent_support_count: 6
+      member_hypothesis_ids:
+      - BLH-DECB6317F13498FA
+      ranking_reasons:
+      - Aggregates 1 provenance context(s).
+      - Counts 6 independent support(s).
+      suppression_reasons:
+      - OVERLAPS_STRONGER_ENDPOINT_HYPOTHESIS
   generation:
     managed: true
     generator: business-logic-analysis
-    generated_checksum: d0d10a5deede26c54de0d6b35e097cbecaf1c22a21aab8362a13f5a5e972493e
-    source_fingerprint: 79d602af8fda1af48fe0d741ff9afed81474c807495ecf5c1089cfe6048b1921
+    generated_checksum: a83d4ee5772e352e2b00ae18e643f27a7ec64d6d2a1b7d0b4b2a1ce83bdd3c86
+    source_fingerprint: 293bf4874bf8cc4a0e930e9b76ad1d08e3db0951d5a2ebf64eebf7777d189c2f
 - id: BLH-E6FECFDB34ED47E6
   key: business-logic:e6fecfdb34ed47e6fa05aa8d9cd58a07a3b1f2507f0194be50dea4af38d81ca0
   title: Return order may accept a resource from another controlled workflow
   kind: RESEARCH_TASK
-  disposition: NEEDS_RESEARCH
+  disposition: SUPPRESSED_INSUFFICIENT_EVIDENCE
   category: business_logic
   component: WFAM-B18CAB66F33EC59A
   source:
@@ -4755,9 +5600,10 @@ hypotheses:
   - Financial State Change requires explicit target policy permission.
   - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
   - Workflow segmentation remains ambiguous.
+  - OVERLAPS_STRONGER_ENDPOINT_HYPOTHESIS
   generation_rule:
     id: BUSINESS_LOGIC_RESOURCE_SWITCH
-    version: '2'
+    version: '3'
   priority_rationale:
   - Three or more supporting workflows
   - Financial operation
@@ -4775,6 +5621,7 @@ hypotheses:
   - Human approval and the existing request budget remain mandatory.
   - A stronger endpoint-level object-authorization hypothesis already covers this
     mutation.
+  - OVERLAPS_STRONGER_ENDPOINT_HYPOTHESIS
   readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
   logic_details:
@@ -4883,16 +5730,90 @@ hypotheses:
     - OBS-000711
     kind: RESEARCH_TASK
     readiness: RESEARCH_ONLY
+    semantics:
+      vulnerability_family: RESOURCE_SWITCH
+      subject_action: RETURN_ORDER
+      subject_resource: order
+      violated_property: RESOURCE_BINDING
+      mutation_type: RESOURCE_SWITCH
+      actor_dimension: []
+      resource_dimension:
+      - field:query_order_id
+      - order
+      - product
+      - transaction
+      state_dimension: []
+      prerequisite_dimension: []
+      endpoint_dimension:
+      - POST /workshop/api/shop/orders/return-order
+      value_dimension: []
+      label:
+        value: Return order
+        normalized_value: RETURN_ORDER
+        confidence: HIGH
+        basis: ENDPOINT_MODEL
+        hygiene_reasons: []
+      fingerprint: f0d13c3eccb3ffac7659a3338432aae25bbca81466af39ee2811347d4ae857a9
+      canonical_id: HCL-F0D13C3ECCB3FFAC
+    qualification:
+      evidence:
+        authenticated: true
+        sensitive_operation: true
+        sensitive_read: false
+        state_changing: true
+        controlled_identifier: true
+        ownership_known: false
+        cross_actor_baseline: true
+        causal_prerequisites_proven: false
+        business_relevant_resource: true
+        independently_identifiable_resource: true
+        cross_workflow_resource: true
+        privileged_or_approval_context: false
+        independent_support_count: 4
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      promotion: SUPPRESSED
+      research_score: 78
+      qualification_reasons:
+      - 4 independent support(s) contribute 6 points.
+      - A stronger endpoint-level object-authorization hypothesis already covers this
+        resource mutation.
+      - Authenticated operation contributes 3 points.
+      - Business-relevant resource contributes 3 points.
+      - Controlled identifier contributes 3 points.
+      - Cross-actor baseline contributes 3 points.
+      - Cross-workflow resource contributes 3 points.
+      - High-confidence semantic naming contributes 3 points.
+      - Legacy transparent score contributes 36 points.
+      - Sensitive operation contributes 3 points.
+      suppression_reasons:
+      - OVERLAPS_STRONGER_ENDPOINT_HYPOTHESIS
+    presentation:
+      canonical_id: HCL-F0D13C3ECCB3FFAC
+      semantic_fingerprint: f0d13c3eccb3ffac7659a3338432aae25bbca81466af39ee2811347d4ae857a9
+      representative: true
+      promotion: SUPPRESSED
+      hypothesis_confidence: LOW
+      evidence_strength: INSUFFICIENT
+      context_count: 1
+      independent_support_count: 4
+      member_hypothesis_ids:
+      - BLH-E6FECFDB34ED47E6
+      ranking_reasons:
+      - Aggregates 1 provenance context(s).
+      - Counts 4 independent support(s).
+      suppression_reasons:
+      - OVERLAPS_STRONGER_ENDPOINT_HYPOTHESIS
   generation:
     managed: true
     generator: business-logic-analysis
-    generated_checksum: 40d9a4bbf4f4b3f4babc44d6b8f534c21d73fd96946ba158a7d4bffc8978e496
-    source_fingerprint: 79d602af8fda1af48fe0d741ff9afed81474c807495ecf5c1089cfe6048b1921
+    generated_checksum: b1f2f620e22bbaea121cd3286e3e4d50e2f3abc6c99ba95898c07df7dc20566c
+    source_fingerprint: 293bf4874bf8cc4a0e930e9b76ad1d08e3db0951d5a2ebf64eebf7777d189c2f
 - id: BLH-ED7AFE8DC06CBBAC
   key: business-logic:ed7afe8dc06cbbac493638001ad03e1a48feca4d14dcb69987561e763a7b483d
   title: Create order may not remain bound to the initiating actor
   kind: SECURITY_HYPOTHESIS
-  disposition: ACTIVE
+  disposition: SUPPRESSED_INSUFFICIENT_EVIDENCE
   category: business_logic
   component: WFAM-5256530622A826BE
   source:
@@ -4968,9 +5889,10 @@ hypotheses:
   - Controlled resource ownership baseline is missing.
   - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
   - Workflow segmentation remains ambiguous.
+  - INSUFFICIENT_ACTOR_BINDING_EVIDENCE
   generation_rule:
     id: BUSINESS_LOGIC_ACTOR_SWITCH
-    version: '2'
+    version: '3'
   priority_rationale:
   - Three or more supporting workflows
   scores:
@@ -4985,6 +5907,7 @@ hypotheses:
   - 'Safety classification: LOW_RISK_STATE_CHANGE.'
   - Offline analysis does not confirm backend acceptance.
   - Human approval and the existing request budget remain mandatory.
+  - INSUFFICIENT_ACTOR_BINDING_EVIDENCE
   readiness: REVIEW_REQUIRED
   epistemic_status: TEST_CANDIDATE
   logic_details:
@@ -5087,16 +6010,86 @@ hypotheses:
     - OBS-000786
     kind: SECURITY_HYPOTHESIS
     readiness: REVIEW_REQUIRED
+    semantics:
+      vulnerability_family: ACTOR_SWITCH
+      subject_action: CREATE_ORDER
+      subject_resource: order
+      violated_property: ACTOR_BINDING
+      mutation_type: ACTOR_SWITCH
+      actor_dimension:
+      - role:user
+      resource_dimension:
+      - order
+      state_dimension: []
+      prerequisite_dimension: []
+      endpoint_dimension:
+      - POST /workshop/api/shop/orders
+      value_dimension: []
+      label:
+        value: Create order
+        normalized_value: CREATE_ORDER
+        confidence: HIGH
+        basis: ENDPOINT_MODEL
+        hygiene_reasons: []
+      fingerprint: a1d94a3311c50162a53fffc3fb4d31ca9aa3b16e0e48715516356ce4b10bfc46
+      canonical_id: HCL-A1D94A3311C50162
+    qualification:
+      evidence:
+        authenticated: true
+        sensitive_operation: true
+        sensitive_read: false
+        state_changing: true
+        controlled_identifier: false
+        ownership_known: false
+        cross_actor_baseline: true
+        causal_prerequisites_proven: false
+        business_relevant_resource: true
+        independently_identifiable_resource: false
+        cross_workflow_resource: false
+        privileged_or_approval_context: false
+        independent_support_count: 7
+      hypothesis_confidence: LOW
+      evidence_strength: WEAK
+      promotion: SUPPRESSED
+      research_score: 56
+      qualification_reasons:
+      - 7 independent support(s) contribute 6 points.
+      - Actor binding lacks a sensitive authenticated/owned boundary with a controlled
+        identifier and cross-actor baseline.
+      - Authenticated operation contributes 3 points.
+      - Business-relevant resource contributes 3 points.
+      - Cross-actor baseline contributes 3 points.
+      - High-confidence semantic naming contributes 3 points.
+      - Legacy transparent score contributes 30 points.
+      - Sensitive operation contributes 3 points.
+      suppression_reasons:
+      - INSUFFICIENT_ACTOR_BINDING_EVIDENCE
+    presentation:
+      canonical_id: HCL-A1D94A3311C50162
+      semantic_fingerprint: a1d94a3311c50162a53fffc3fb4d31ca9aa3b16e0e48715516356ce4b10bfc46
+      representative: true
+      promotion: SUPPRESSED
+      hypothesis_confidence: LOW
+      evidence_strength: INSUFFICIENT
+      context_count: 1
+      independent_support_count: 7
+      member_hypothesis_ids:
+      - BLH-ED7AFE8DC06CBBAC
+      ranking_reasons:
+      - Aggregates 1 provenance context(s).
+      - Counts 7 independent support(s).
+      suppression_reasons:
+      - INSUFFICIENT_ACTOR_BINDING_EVIDENCE
   generation:
     managed: true
     generator: business-logic-analysis
-    generated_checksum: cf82e73b6e4c72630a7d6a6151244fe8933f76cb96dd5c07eb5d42a1af89c407
-    source_fingerprint: 79d602af8fda1af48fe0d741ff9afed81474c807495ecf5c1089cfe6048b1921
+    generated_checksum: 0d2e8d276f594700b5b89d805a6a5fa10d162a4fd8cca1688c653d48b51c8ec4
+    source_fingerprint: 293bf4874bf8cc4a0e930e9b76ad1d08e3db0951d5a2ebf64eebf7777d189c2f
 - id: BLH-F01B99DDD2791B6B
   key: business-logic:f01b99ddd2791b6be08fa1ca69d6cfd44b571bbd2bcb71a94d73af36ba628942
   title: Create order may accept an amount or quantity inconsistent with the baseline
   kind: RESEARCH_TASK
-  disposition: NEEDS_RESEARCH
+  disposition: SUPPRESSED_DUPLICATE
   category: business_logic
   component: WFAM-F57F3F420703E30E
   source:
@@ -5230,9 +6223,11 @@ hypotheses:
   - Insufficient workflow observations to treat the pattern as mandatory.
   - 'Target request budget is too low: 4 requests are estimated but only 3 are permitted.'
   - Workflow segmentation remains ambiguous.
+  - Semantically duplicated by canonical cluster HCL-AF68259395FA4A89; provenance
+    is retained.
   generation_rule:
     id: BUSINESS_LOGIC_QUANTITY_VALUE_INVARIANT
-    version: '2'
+    version: '3'
   priority_rationale:
   - Financial operation
   scores:
@@ -5247,6 +6242,8 @@ hypotheses:
   - 'Safety classification: LOW_RISK_STATE_CHANGE.'
   - Offline analysis does not confirm backend acceptance.
   - Human approval and the existing request budget remain mandatory.
+  - Semantically duplicated by canonical cluster HCL-AF68259395FA4A89; provenance
+    is retained.
   readiness: RESEARCH_ONLY
   epistemic_status: RESEARCH_TASK
   logic_details:
@@ -5392,11 +6389,76 @@ hypotheses:
     - OBS-000789
     kind: RESEARCH_TASK
     readiness: RESEARCH_ONLY
+    semantics:
+      vulnerability_family: QUANTITY_VALUE_INVARIANT
+      subject_action: CREATE_ORDER
+      subject_resource: order
+      violated_property: VALUE_CONSERVATION
+      mutation_type: QUANTITY_VALUE_INVARIANT
+      actor_dimension: []
+      resource_dimension:
+      - order
+      state_dimension: []
+      prerequisite_dimension: []
+      endpoint_dimension:
+      - POST /workshop/api/shop/orders
+      value_dimension: []
+      label:
+        value: Create order
+        normalized_value: CREATE_ORDER
+        confidence: HIGH
+        basis: ENDPOINT_MODEL
+        hygiene_reasons: []
+      fingerprint: af68259395fa4a89d84388a09a024508df81e7bca00c76339e5c849c411040ea
+      canonical_id: HCL-AF68259395FA4A89
+    qualification:
+      evidence:
+        authenticated: true
+        sensitive_operation: true
+        sensitive_read: false
+        state_changing: true
+        controlled_identifier: false
+        ownership_known: false
+        cross_actor_baseline: false
+        causal_prerequisites_proven: false
+        business_relevant_resource: true
+        independently_identifiable_resource: false
+        cross_workflow_resource: false
+        privileged_or_approval_context: false
+        independent_support_count: 1
+      hypothesis_confidence: MEDIUM
+      evidence_strength: MODERATE
+      promotion: RESEARCH_MEDIUM
+      research_score: 51
+      qualification_reasons:
+      - 1 independent support(s) contribute 2 points.
+      - Authenticated operation contributes 3 points.
+      - Business-relevant resource contributes 3 points.
+      - High-confidence semantic naming contributes 3 points.
+      - Legacy transparent score contributes 27 points.
+      - Sensitive operation contributes 3 points.
+      suppression_reasons: []
+    presentation:
+      canonical_id: HCL-AF68259395FA4A89
+      semantic_fingerprint: af68259395fa4a89d84388a09a024508df81e7bca00c76339e5c849c411040ea
+      representative: false
+      promotion: REVIEW_REQUIRED
+      hypothesis_confidence: HIGH
+      evidence_strength: STRONG
+      context_count: 2
+      independent_support_count: 8
+      member_hypothesis_ids:
+      - BLH-64B37A2600729089
+      - BLH-F01B99DDD2791B6B
+      ranking_reasons:
+      - Aggregates 2 provenance context(s).
+      - Counts 8 independent support(s).
+      suppression_reasons: []
   generation:
     managed: true
     generator: business-logic-analysis
-    generated_checksum: db1105a797859de3dde47f8aa097214889084de75d51701d717bf12a083418a5
-    source_fingerprint: 79d602af8fda1af48fe0d741ff9afed81474c807495ecf5c1089cfe6048b1921
+    generated_checksum: 33df721b3bc3fa641d1adc7f08ec35908940b7a86a5cc6ab142f121c8504f16a
+    source_fingerprint: 293bf4874bf8cc4a0e930e9b76ad1d08e3db0951d5a2ebf64eebf7777d189c2f
 - id: BLH-3D79F0659754E611
   key: business-logic:3d79f0659754e6116da484cd175e4ee26c7a93b77a6daaa30eda3cd1e82600cf
   title: Request servicerequest may not remain bound to the initiating actor
