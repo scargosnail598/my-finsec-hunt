@@ -1,0 +1,12 @@
+version: 1
+fixture: corpus.yaml
+thresholds:
+  min_semantic_precision: 1.0
+  min_semantic_recall: 1.0
+  min_suppression_precision: 1.0
+  max_duplicate_semantic_hypotheses: 0
+  max_self_referential_visible: 0
+  max_malformed_label_visible: 0
+  max_evidence_provenance_loss: 0
+  max_test_ready_with_blockers: 0
+  require_deterministic_output: true

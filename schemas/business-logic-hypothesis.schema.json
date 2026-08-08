@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["version", "hypotheses"],
   "properties": {
-    "version": {"enum": [1, 2]},
+    "version": {"enum": [1, 2, 3]},
     "hypotheses": {
       "type": "array",
       "items": {
@@ -84,6 +84,77 @@
           "reasons",
           "evidence"
         ]
+      }
+    },
+    "clusters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "id",
+          "semantic_fingerprint",
+          "semantics",
+          "title",
+          "representative_hypothesis_id",
+          "member_hypothesis_ids",
+          "support_contexts",
+          "independent_supports",
+          "context_count",
+          "independent_support_count",
+          "highest_score",
+          "research_score",
+          "hypothesis_confidence",
+          "evidence_strength",
+          "promotion",
+          "readiness"
+        ],
+        "properties": {
+          "id": {"type": "string", "pattern": "^HCL-[A-F0-9]{16}$"},
+          "semantic_fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "semantics": {
+            "type": "object",
+            "required": [
+              "vulnerability_family",
+              "subject_action",
+              "subject_resource",
+              "violated_property",
+              "mutation_type",
+              "fingerprint",
+              "canonical_id"
+            ]
+          },
+          "title": {"type": "string", "minLength": 1},
+          "representative_hypothesis_id": {
+            "type": "string",
+            "pattern": "^BLH-[A-F0-9]{16}$"
+          },
+          "member_hypothesis_ids": {
+            "type": "array",
+            "items": {"type": "string", "pattern": "^BLH-[A-F0-9]{16}$"}
+          },
+          "support_contexts": {"type": "array", "items": {"type": "object"}},
+          "independent_supports": {"type": "array", "items": {"type": "object"}},
+          "context_count": {"type": "integer", "minimum": 1},
+          "independent_support_count": {"type": "integer", "minimum": 0},
+          "highest_score": {"type": "integer", "minimum": 4, "maximum": 20},
+          "research_score": {"type": "integer", "minimum": 0},
+          "hypothesis_confidence": {"enum": ["HIGH", "MEDIUM", "LOW"]},
+          "evidence_strength": {
+            "enum": ["STRONG", "MODERATE", "WEAK", "INSUFFICIENT"]
+          },
+          "promotion": {
+            "enum": [
+              "SUPPRESSED",
+              "RESEARCH_LOW",
+              "RESEARCH_MEDIUM",
+              "RESEARCH_HIGH",
+              "REVIEW_REQUIRED",
+              "TEST_READY"
+            ]
+          },
+          "readiness": {"enum": ["RESEARCH_ONLY", "REVIEW_REQUIRED", "TEST_READY"]}
+        }
       }
     }
   }

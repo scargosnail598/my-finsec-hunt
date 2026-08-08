@@ -14,7 +14,9 @@ from finsec.behavior.domain import (
     BusinessInvariant,
     BusinessInvariantStore,
     EpistemicStatus,
+    HypothesisCluster,
     HypothesisFamily,
+    HypothesisPromotion,
     HypothesisReadiness,
     InferenceConfidence,
     LogicHypothesis,
@@ -31,6 +33,12 @@ from finsec.behavior.domain import (
     WorkflowFamilyStore,
     WorkflowInstance,
     WorkflowInstanceStore,
+)
+from finsec.behavior.hypothesis_precision import (
+    HypothesisPrecisionInputs,
+    calibrate_hypotheses,
+    cluster_is_visible,
+    find_cluster,
 )
 from finsec.behavior.reconstruction import (
     TERMINAL_STATES,
@@ -99,6 +107,9 @@ class LogicAnalysisResult:
     research_tasks: int
     ready_for_planning: int
     rejected_mutations: int
+    clusters: int
+    visible_research_items: int
+    suppressed_candidates: int
     conflicts: tuple[str, ...]
 
 
@@ -1502,7 +1513,12 @@ def _priority(score: LogicScore) -> str:
     return "P1" if total >= 16 else "P2" if total >= 11 else "P3"
 
 
-def _backlog_draft(item: LogicHypothesis) -> dict[str, Any]:
+def _backlog_draft(
+    item: LogicHypothesis,
+    cluster: HypothesisCluster,
+    *,
+    representative: bool,
+) -> dict[str, Any]:
     score = item.score
     total = score.impact + score.likelihood + score.confidence + score.test_readiness
     mutation_dimensions: list[str] = ["WORKFLOW"]
@@ -1514,13 +1530,43 @@ def _backlog_draft(item: LogicHypothesis) -> dict[str, Any]:
         mutation_dimensions.append("VALUE")
     if item.family == "CONCURRENT_EXECUTION":
         mutation_dimensions.extend(["TIME", "CONCURRENCY"])
+    visible = cluster_is_visible(cluster)
+    disposition = "ACTIVE" if item.kind == "SECURITY_HYPOTHESIS" else "NEEDS_RESEARCH"
+    kind = item.kind
+    readiness = item.readiness
+    presentation_notes: list[str] = []
+    if not representative:
+        disposition = "SUPPRESSED_DUPLICATE"
+        presentation_notes.append(
+            f"Semantically duplicated by canonical cluster {cluster.id}; provenance is retained."
+        )
+    elif not visible:
+        disposition = "SUPPRESSED_INSUFFICIENT_EVIDENCE"
+        presentation_notes.extend(
+            cluster.suppression_reasons
+            or [f"Presentation tier is {cluster.promotion}; hidden from the default queue."]
+        )
+    logic_details = item.model_dump(mode="json", exclude={"epistemic_status"})
+    logic_details["presentation"] = {
+        "canonical_id": cluster.id,
+        "semantic_fingerprint": cluster.semantic_fingerprint,
+        "representative": representative,
+        "promotion": cluster.promotion,
+        "hypothesis_confidence": cluster.hypothesis_confidence,
+        "evidence_strength": cluster.evidence_strength,
+        "context_count": cluster.context_count,
+        "independent_support_count": cluster.independent_support_count,
+        "member_hypothesis_ids": cluster.member_hypothesis_ids,
+        "ranking_reasons": cluster.ranking_reasons,
+        "suppression_reasons": cluster.suppression_reasons,
+    }
     return {
         "id": item.id,
         "key": f"business-logic:{item.fingerprint}",
-        "title": item.title,
-        "kind": item.kind,
-        "disposition": "ACTIVE" if item.kind == "SECURITY_HYPOTHESIS" else "NEEDS_RESEARCH",
-        "readiness": item.readiness,
+        "title": cluster.title if representative else item.title,
+        "kind": kind,
+        "disposition": disposition,
+        "readiness": readiness,
         "category": "business_logic",
         "component": item.workflow_family_id,
         "source": {
@@ -1557,8 +1603,8 @@ def _backlog_draft(item: LogicHypothesis) -> dict[str, Any]:
         },
         "evidence_to_collect": item.state_evidence_requirements,
         "eligibility_evidence": item.supporting_evidence,
-        "missing_evidence": item.readiness_blockers,
-        "generation_rule": {"id": f"BUSINESS_LOGIC_{item.family}", "version": "2"},
+        "missing_evidence": [*item.readiness_blockers, *presentation_notes],
+        "generation_rule": {"id": f"BUSINESS_LOGIC_{item.family}", "version": "3"},
         "priority_rationale": [
             contribution.reason for contribution in item.score.breakdown if contribution.points > 0
         ],
@@ -1576,15 +1622,36 @@ def _backlog_draft(item: LogicHypothesis) -> dict[str, Any]:
             "Offline analysis does not confirm backend acceptance.",
             "Human approval and the existing request budget remain mandatory.",
             *item.suppression_reasons,
+            *presentation_notes,
         ],
         "epistemic_status": item.epistemic_status,
-        "logic_details": item.model_dump(mode="json", exclude={"epistemic_status"}),
+        "logic_details": logic_details,
     }
 
 
-def _sync_backlog(workspace: WorkspacePaths, hypotheses: list[LogicHypothesis]) -> tuple[str, ...]:
-    drafts = [_backlog_draft(item) for item in hypotheses]
-    source_fingerprint = stable_fingerprint([item.model_dump(mode="json") for item in hypotheses])
+def _sync_backlog(
+    workspace: WorkspacePaths,
+    hypotheses: list[LogicHypothesis],
+    clusters: list[HypothesisCluster],
+) -> tuple[str, ...]:
+    cluster_by_member = {
+        member_id: cluster for cluster in clusters for member_id in cluster.member_hypothesis_ids
+    }
+    drafts = [
+        _backlog_draft(
+            item,
+            cluster_by_member[item.id],
+            representative=cluster_by_member[item.id].representative_hypothesis_id == item.id,
+        )
+        for item in hypotheses
+        if item.id in cluster_by_member
+    ]
+    source_fingerprint = stable_fingerprint(
+        {
+            "hypotheses": [item.model_dump(mode="json") for item in hypotheses],
+            "clusters": [item.model_dump(mode="json") for item in clusters],
+        }
+    )
     merge = merge_generated_records(
         workspace.hypotheses,
         "hypotheses",
@@ -1666,15 +1733,35 @@ def analyze_business_logic(
         else item
         for item in hypotheses
     ]
+    precision = calibrate_hypotheses(
+        HypothesisPrecisionInputs(
+            target=inputs.target,
+            observations=inputs.observations,
+            endpoints=inputs.endpoints,
+            actions=inputs.actions,
+            instances=inputs.instances,
+            families=inputs.families,
+            transitions=inputs.transitions,
+            propagation=inputs.propagation,
+            invariants=invariants,
+        ),
+        hypotheses,
+    )
+    hypotheses = precision.hypotheses
+    clusters = precision.clusters
     write_yaml(
         workspace.business_invariants,
         BusinessInvariantStore(business_invariants=invariants).model_dump(mode="json"),
     )
     write_yaml(
         workspace.business_logic_hypotheses,
-        LogicHypothesisStore(hypotheses=hypotheses, rejections=rejections).model_dump(mode="json"),
+        LogicHypothesisStore(
+            hypotheses=hypotheses,
+            rejections=rejections,
+            clusters=clusters,
+        ).model_dump(mode="json"),
     )
-    conflicts = _sync_backlog(workspace, hypotheses)
+    conflicts = _sync_backlog(workspace, hypotheses, clusters)
     return LogicAnalysisResult(
         business_invariants=len(invariants),
         hypotheses=sum(item.kind == "SECURITY_HYPOTHESIS" for item in hypotheses),
@@ -1683,6 +1770,13 @@ def analyze_business_logic(
             item.readiness == HypothesisReadiness.TEST_READY for item in hypotheses
         ),
         rejected_mutations=len(rejections),
+        clusters=len(clusters),
+        visible_research_items=sum(cluster_is_visible(item) for item in clusters),
+        suppressed_candidates=sum(
+            item.qualification is not None
+            and item.qualification.promotion == HypothesisPromotion.SUPPRESSED
+            for item in hypotheses
+        ),
         conflicts=conflicts,
     )
 
@@ -1701,9 +1795,51 @@ def load_logic_hypotheses(workspace: WorkspacePaths) -> LogicHypothesisStore:
         raise FinsecError(f"Cannot load business-logic hypotheses: {error}") from error
 
 
+def load_logic_presentation(workspace: WorkspacePaths) -> LogicHypothesisStore:
+    """Load persisted clusters or derive them in memory for readable legacy artifacts."""
+
+    store = load_logic_hypotheses(workspace)
+    if store.clusters and all(
+        item.semantics is not None and item.qualification is not None for item in store.hypotheses
+    ):
+        return store
+    inputs = _load_inputs(workspace)
+    invariants = load_business_invariants(workspace).business_invariants
+    precision = calibrate_hypotheses(
+        HypothesisPrecisionInputs(
+            target=inputs.target,
+            observations=inputs.observations,
+            endpoints=inputs.endpoints,
+            actions=inputs.actions,
+            instances=inputs.instances,
+            families=inputs.families,
+            transitions=inputs.transitions,
+            propagation=inputs.propagation,
+            invariants=invariants,
+        ),
+        store.hypotheses,
+    )
+    return store.model_copy(
+        update={"version": 3, "hypotheses": precision.hypotheses, "clusters": precision.clusters}
+    )
+
+
+def find_logic_cluster(workspace: WorkspacePaths, cluster_id: str) -> HypothesisCluster:
+    """Find one canonical presentation cluster without mutating legacy artifacts."""
+
+    try:
+        return find_cluster(load_logic_presentation(workspace).clusters, cluster_id)
+    except LookupError as error:
+        raise FinsecError(f"Business-logic cluster not found: {cluster_id}") from error
+
+
 def find_logic_hypothesis(workspace: WorkspacePaths, hypothesis_id: str) -> LogicHypothesis:
     wanted = hypothesis_id.upper()
-    for item in load_logic_hypotheses(workspace).hypotheses:
+    store = load_logic_presentation(workspace)
+    if wanted.startswith("HCL-"):
+        cluster = find_logic_cluster(workspace, wanted)
+        wanted = cluster.representative_hypothesis_id.upper()
+    for item in store.hypotheses:
         if item.id.upper() == wanted:
             return item
     raise FinsecError(f"Business-logic hypothesis not found: {hypothesis_id}")

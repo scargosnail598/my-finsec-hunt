@@ -3,22 +3,22 @@ entries:
 - key: classify
   stage: classify
   producer: endpoint-inventory
-  input_fingerprint: 0df312df69d3db7051577e92fcbb4d54201f74c6cfa1203be89a0e6dc56bda92
-  output_fingerprint: 4daf04ab093df34786497230c9961ff5deb38eb9e05ce3bc8e85140bc97d5d25
+  input_fingerprint: 00062fecde312ad4cec4964165b3d8200d94b1bb245b80f51be3c489e4699d2c
+  output_fingerprint: a5982c075cc69914dbd27695349c025fd72077e8390f1195c697eb855d196c9b
 - key: hypothesize
   stage: hypothesize
   producer: phase3-hypothesis-generator
-  input_fingerprint: c31b5a3ea41462a36e7fb0e34a9a812605c1d7338fbe2eec73ede626ab152df7
+  input_fingerprint: 52c314e83307de13cd731d3a0a70ba6a7499f1d4509f32d02264c190733fc013
 - key: invariants
   stage: invariants
   producer: phase2-invariant-extractor
-  input_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+  input_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - key: model
   stage: model
   producer: phase2-modeler
-  input_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+  input_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - key: normalize
   stage: normalize
   producer: endpoint-inventory
-  input_fingerprint: 0df312df69d3db7051577e92fcbb4d54201f74c6cfa1203be89a0e6dc56bda92
-  output_fingerprint: 4daf04ab093df34786497230c9961ff5deb38eb9e05ce3bc8e85140bc97d5d25
+  input_fingerprint: 00062fecde312ad4cec4964165b3d8200d94b1bb245b80f51be3c489e4699d2c
+  output_fingerprint: a5982c075cc69914dbd27695349c025fd72077e8390f1195c697eb855d196c9b

@@ -31,7 +31,7 @@
   "properties": {
     "id": {
       "type": "string",
-      "pattern": "^HYP-[0-9]+$"
+      "pattern": "^(?:HYP-[0-9]+|BLH-[A-F0-9]{16})$"
     },
     "key": {"type": "string"},
     "title": {"type": "string"},
@@ -48,7 +48,8 @@
         "value_validation",
         "version_parity",
         "channel_parity",
-        "research"
+        "research",
+        "business_logic"
       ]
     },
     "component": {"type": "string"},
@@ -64,7 +65,17 @@
     "mutation_dimensions": {
       "type": "array",
       "items": {
-        "enum": ["ACTOR", "OBJECT", "STATE", "TIME", "VALUE", "CHANNEL", "VERSION"]
+        "enum": [
+          "ACTOR",
+          "OBJECT",
+          "STATE",
+          "TIME",
+          "VALUE",
+          "CHANNEL",
+          "VERSION",
+          "WORKFLOW",
+          "CONCURRENCY"
+        ]
       },
       "minItems": 0
     },

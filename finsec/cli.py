@@ -31,9 +31,11 @@ from finsec.auth.service import (
 from finsec.auth.store import SecretStore
 from finsec.behavior.analysis import (
     analyze_business_logic,
+    find_logic_cluster,
     find_logic_hypothesis,
-    load_logic_hypotheses,
+    load_logic_presentation,
 )
+from finsec.behavior.hypothesis_precision import cluster_is_visible, rank_hypothesis_clusters
 from finsec.behavior.reconstruction import (
     build_behavior_model,
     find_workflow_family,
@@ -166,6 +168,53 @@ def _hypothesis_table(hypotheses: list[HypothesisRecord]) -> Table:
             hypothesis.title,
         )
     return table
+
+
+def _canonical_backlog_presentation(
+    paths: WorkspacePaths,
+    hypotheses: list[HypothesisRecord],
+    *,
+    include_suppressed: bool = False,
+) -> list[HypothesisRecord]:
+    """Overlay canonical BLH clusters without migrating the persisted backlog."""
+
+    if not paths.business_logic_hypotheses.is_file():
+        return hypotheses
+    try:
+        logic = load_logic_presentation(paths)
+    except FinsecError:
+        return hypotheses
+    by_id = {item.id: item for item in hypotheses}
+    presented = [item for item in hypotheses if item.category != "business_logic"]
+    for cluster in rank_hypothesis_clusters(
+        logic.clusters,
+        include_suppressed=True,
+        include_low=True,
+    ):
+        record = by_id.get(cluster.representative_hypothesis_id)
+        if record is None:
+            continue
+        visible = cluster_is_visible(cluster)
+        if not visible and not include_suppressed:
+            continue
+        disposition = (
+            "ACTIVE"
+            if visible and record.kind == "SECURITY_HYPOTHESIS"
+            else "NEEDS_RESEARCH"
+            if visible
+            else "SUPPRESSED_INSUFFICIENT_EVIDENCE"
+        )
+        presented.append(
+            record.model_copy(
+                deep=True,
+                update={
+                    "title": cluster.title,
+                    "disposition": disposition,
+                    "readiness": cluster.readiness,
+                },
+            )
+        )
+    return presented
 
 
 @app.command("init")
@@ -1826,6 +1875,11 @@ def logic_analyze_command(workspace: WorkspaceOption = None) -> None:
     )
     console.print(f"Ready for planning without current blockers: {result.ready_for_planning}")
     console.print(f"Rejected by semantic eligibility gates: {result.rejected_mutations}")
+    console.print(
+        f"Canonical clusters: {result.clusters}; visible research items: "
+        f"{result.visible_research_items}; presentation-suppressed candidates: "
+        f"{result.suppressed_candidates}."
+    )
     console.print("Offline analysis did not confirm any vulnerability or send any request.")
     if result.conflicts:
         console.print(
@@ -1841,32 +1895,126 @@ def logic_hypotheses_command(
         bool,
         typer.Option("--research-tasks", help="Show under-evidenced or unsafe research tasks."),
     ] = False,
+    all_candidates: Annotated[
+        bool,
+        typer.Option("--all-candidates", help="Show retained raw BLH provenance records."),
+    ] = False,
+    show_support: Annotated[
+        bool,
+        typer.Option("--show-support", help="Show cluster membership and support counts."),
+    ] = False,
+    show_suppressed: Annotated[
+        bool,
+        typer.Option(
+            "--show-suppressed",
+            help="Include low-priority and semantically suppressed clusters.",
+        ),
+    ] = False,
 ) -> None:
-    """List generated business-logic hypotheses or research tasks."""
+    """List canonical business-logic questions or retained raw candidates."""
 
     try:
         paths = resolve_workspace(workspace)
-        records = load_logic_hypotheses(paths).hypotheses
+        store = load_logic_presentation(paths)
     except FinsecError as error:
         _abort(error)
-    selected = [item for item in records if (item.kind == "RESEARCH_TASK") == research_tasks]
-    table = Table("ID", "Family", "Status", "Readiness", "Safety", "Title")
-    for item in sorted(selected, key=lambda value: value.id):
-        table.add_row(
-            item.id,
-            item.family,
-            item.epistemic_status,
-            item.readiness,
-            item.safety_classification,
-            item.title,
+    if all_candidates:
+        selected_records = [
+            item for item in store.hypotheses if (item.kind == "RESEARCH_TASK") == research_tasks
+        ]
+        table = Table("BLH ID", "Canonical ID", "Family", "Readiness", "Promotion", "Title")
+        for item in sorted(selected_records, key=lambda value: value.id):
+            semantics = item.semantics
+            qualification = item.qualification
+            table.add_row(
+                item.id,
+                semantics.canonical_id if semantics is not None else "legacy",
+                item.family,
+                item.readiness,
+                qualification.promotion if qualification is not None else "legacy",
+                item.title,
+            )
+        console.print(
+            table if selected_records else "No matching business-logic records are available."
         )
-    console.print(table if selected else "No matching business-logic records are available.")
+        return
+
+    by_id = {item.id: item for item in store.hypotheses}
+    clusters = rank_hypothesis_clusters(
+        store.clusters,
+        include_suppressed=show_suppressed,
+        include_low=show_suppressed,
+    )
+    selected_clusters = [
+        cluster
+        for cluster in clusters
+        if (
+            by_id.get(cluster.representative_hypothesis_id) is not None
+            and (by_id[cluster.representative_hypothesis_id].kind == "RESEARCH_TASK")
+            == research_tasks
+        )
+    ]
+    table = Table(
+        "Canonical ID",
+        "Promotion",
+        "Confidence",
+        "Readiness",
+        "Support",
+        "Title",
+    )
+    for cluster in selected_clusters:
+        table.add_row(
+            cluster.id,
+            cluster.promotion,
+            cluster.hypothesis_confidence,
+            cluster.readiness,
+            f"{cluster.independent_support_count}/{cluster.context_count}",
+            cluster.title,
+        )
+    console.print(
+        table if selected_clusters else "No matching business-logic records are available."
+    )
+    if show_support:
+        for cluster in selected_clusters:
+            console.print(
+                f"\n[bold]{cluster.id} support[/bold]: "
+                f"members {', '.join(cluster.member_hypothesis_ids)}; "
+                f"workflows {', '.join(cluster.workflow_family_ids)}; "
+                f"independent {cluster.independent_support_count}."
+            )
 
 
 def _logic_panel(paths: WorkspacePaths, hypothesis_id: str) -> Panel:
-    item = find_logic_hypothesis(paths, hypothesis_id)
+    store = load_logic_presentation(paths)
+    cluster = None
+    if hypothesis_id.upper().startswith("HCL-"):
+        cluster = find_logic_cluster(paths, hypothesis_id)
+        item = next(
+            value for value in store.hypotheses if value.id == cluster.representative_hypothesis_id
+        )
+    else:
+        item = find_logic_hypothesis(paths, hypothesis_id)
+        cluster = next(
+            (value for value in store.clusters if item.id in value.member_hypothesis_ids),
+            None,
+        )
     score = item.score
     lines = [
+        *(
+            [
+                f"[bold]Canonical ID:[/bold] {cluster.id}",
+                f"[bold]Canonical security question:[/bold] {cluster.title}",
+                f"[bold]Promotion:[/bold] {cluster.promotion}",
+                f"[bold]Security confidence:[/bold] {cluster.hypothesis_confidence}",
+                f"[bold]Evidence strength:[/bold] {cluster.evidence_strength}",
+                f"[bold]Support:[/bold] {cluster.independent_support_count} independent / "
+                f"{cluster.context_count} provenance context(s)",
+                f"[bold]Member BLHs:[/bold] {', '.join(cluster.member_hypothesis_ids)}",
+                "",
+            ]
+            if cluster is not None
+            else []
+        ),
         f"[bold]Epistemic status:[/bold] {item.epistemic_status}",
         f"[bold]Readiness:[/bold] {item.readiness}",
         f"[bold]Family:[/bold] {item.family}",
@@ -1896,6 +2044,46 @@ def _logic_panel(paths: WorkspacePaths, hypothesis_id: str) -> Panel:
         "[bold]Uncertainty[/bold]",
         *[f"- {value}" for value in item.uncertainty],
     ]
+    if item.qualification is not None:
+        evidence = item.qualification.evidence.model_dump(mode="json")
+        lines.extend(
+            [
+                "",
+                "[bold]Evidence predicates[/bold]",
+                *[
+                    f"- {name.replace('_', ' ')}: {str(value).lower()}"
+                    for name, value in evidence.items()
+                ],
+                "",
+                "[bold]Qualification[/bold]",
+                *[f"- {value}" for value in item.qualification.qualification_reasons],
+            ]
+        )
+    if cluster is not None:
+        lines.extend(
+            [
+                "",
+                "[bold]Ranking rationale[/bold]",
+                *[f"- {value}" for value in cluster.ranking_reasons],
+                "",
+                "[bold]Supporting contexts[/bold]",
+                *[
+                    f"- {context.hypothesis_id}: workflow {context.workflow_family_id}; "
+                    f"instances {len(context.workflow_instance_ids)}; invariant "
+                    f"{context.invariant_id}; observations {len(context.observation_ids)}; "
+                    f"readiness {context.readiness}"
+                    for context in cluster.support_contexts
+                ],
+            ]
+        )
+        if cluster.suppression_reasons:
+            lines.extend(
+                [
+                    "",
+                    "[bold]Suppressed[/bold]",
+                    *[f"- {value}" for value in cluster.suppression_reasons],
+                ]
+            )
     return Panel("\n".join(lines), title=f"{item.id}: {item.title}")
 
 
@@ -1944,7 +2132,12 @@ def logic_plan_command(
 ) -> None:
     """Route one active logic hypothesis through the existing safe planner."""
 
-    plan_command(hypothesis_id, workspace)
+    try:
+        paths = resolve_workspace(workspace)
+        resolved = find_logic_hypothesis(paths, hypothesis_id)
+    except FinsecError as error:
+        _abort(error)
+    plan_command(resolved.id, paths.root)
 
 
 @app.command("model")
@@ -2013,14 +2206,35 @@ def hypotheses_command(
     try:
         paths = resolve_workspace(workspace)
         result = generate_hypotheses(paths)
-        hypotheses = load_hypotheses(paths).hypotheses
+        stored_hypotheses = load_hypotheses(paths).hypotheses
     except FinsecError as error:
         _abort(error)
     if explain:
-        hypotheses = [item for item in hypotheses if item.id == explain]
+        explained_id = explain
+        if explain.upper().startswith("HCL-"):
+            try:
+                explained_id = find_logic_cluster(paths, explain).representative_hypothesis_id
+            except FinsecError as error:
+                _abort(error)
+        hypotheses = [item for item in stored_hypotheses if item.id == explained_id]
     elif research_tasks:
-        hypotheses = [item for item in hypotheses if item.kind == "RESEARCH_TASK"]
+        hypotheses = _canonical_backlog_presentation(
+            paths,
+            stored_hypotheses,
+            include_suppressed=include_suppressed,
+        )
+        hypotheses = [
+            item
+            for item in hypotheses
+            if item.kind == "RESEARCH_TASK"
+            and (include_suppressed or not item.disposition.startswith("SUPPRESSED_"))
+        ]
     else:
+        hypotheses = _canonical_backlog_presentation(
+            paths,
+            stored_hypotheses,
+            include_suppressed=include_suppressed,
+        )
         hypotheses = [
             item
             for item in hypotheses
@@ -2035,12 +2249,15 @@ def hypotheses_command(
         ),
         key=lambda item: ({"P1": 0, "P2": 1, "P3": 2}[item.priority], -item.scores.total, item.id),
     )
-    store = load_hypotheses(paths)
+    presented_store = _canonical_backlog_presentation(paths, stored_hypotheses)
     active_count = sum(
         item.kind == "SECURITY_HYPOTHESIS" and item.disposition == "ACTIVE"
-        for item in store.hypotheses
+        for item in presented_store
     )
-    task_count = sum(item.kind == "RESEARCH_TASK" for item in store.hypotheses)
+    task_count = sum(
+        item.kind == "RESEARCH_TASK" and not item.disposition.startswith("SUPPRESSED_")
+        for item in presented_store
+    )
     console.print(
         f"[green]Backlog contains {active_count} active hypotheses and "
         f"{task_count} research tasks.[/green]"
@@ -2052,7 +2269,9 @@ def hypotheses_command(
         )
     if hypotheses:
         console.print(_hypothesis_table(hypotheses))
-        if explain and len(hypotheses) == 1:
+        if explain and explain.upper().startswith("HCL-"):
+            console.print(_logic_panel(paths, explain))
+        elif explain and len(hypotheses) == 1:
             item = hypotheses[0]
             console.print("\n[bold]Eligibility evidence[/bold]")
             console.print(

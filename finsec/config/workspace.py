@@ -198,7 +198,12 @@ EMPTY_YAML_SCAFFOLDS = {
     "behavior/transitions.yaml": {"version": 1, "transitions": []},
     "behavior/propagation-links.yaml": {"version": 2, "propagation_links": []},
     "hypotheses/backlog.yaml": {"version": 2, "hypotheses": []},
-    "hypotheses/business-logic.yaml": {"version": 2, "hypotheses": [], "rejections": []},
+    "hypotheses/business-logic.yaml": {
+        "version": 3,
+        "hypotheses": [],
+        "rejections": [],
+        "clusters": [],
+    },
     "findings/validations.yaml": {"version": 1, "validations": []},
     "observations/mobile/discoveries.yaml": {"version": 1, "discoveries": []},
 }

@@ -33,7 +33,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: 28f8b21a031239ea427fad9f3ca2e88c70bec067afb62366b0d1bfd1a8fde3d7
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-002
   key: authentication:EP-004
   category: authentication
@@ -62,7 +62,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: a2773f740f99e8880d93a8721b36153dd2ad6f1522a3da08a516e6103b18753c
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-003
   key: authentication:EP-005
   category: authentication
@@ -105,6 +105,8 @@ invariants:
   - OBS-000656
   - OBS-000714
   - OBS-000716
+  - OBS-000757
+  - OBS-000789
   confidence: medium
   knowledge_status: INFERRED
   validation_status: NOT_CONFIRMED
@@ -114,8 +116,8 @@ invariants:
   generation:
     managed: true
     generator: phase2-invariant-extractor
-    generated_checksum: 4350d77b610bef4183f0d4368ada13ce9612b4c6265561bd0d0776c3af8156d0
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    generated_checksum: 10d6549587d8ebc237aba513a09c516e51045d4af362cb062e2350e06002b37f
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-005
   key: authentication:EP-007
   category: authentication
@@ -152,6 +154,8 @@ invariants:
   - OBS-000598
   - OBS-000662
   - OBS-000718
+  - OBS-000759
+  - OBS-000791
   confidence: medium
   knowledge_status: INFERRED
   validation_status: NOT_CONFIRMED
@@ -161,8 +165,8 @@ invariants:
   generation:
     managed: true
     generator: phase2-invariant-extractor
-    generated_checksum: 47345a73cedc8b1bc60d9e6d7ec0b6effc3d5241984d01199d8e513683249729
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    generated_checksum: 2e8ab15680d9615824011e27b9ea2fa0edfed7b9a1ecad7f44658f041f5971ab
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-006
   key: authentication:EP-010
   category: authentication
@@ -188,6 +192,9 @@ invariants:
   - OBS-000704
   - OBS-000707
   - OBS-000710
+  - OBS-000781
+  - OBS-000783
+  - OBS-000787
   confidence: medium
   knowledge_status: INFERRED
   validation_status: NOT_CONFIRMED
@@ -197,8 +204,8 @@ invariants:
   generation:
     managed: true
     generator: phase2-invariant-extractor
-    generated_checksum: 4bc5c5a48215282827f4e5117711321ff3fcce2bef3bde2245598d4089618f79
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    generated_checksum: 6114ac994f26386120f1e2d4afd36dc6baccde914cf32084c644c91d5101a44c
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-007
   key: authentication:EP-011
   category: authentication
@@ -221,6 +228,9 @@ invariants:
   - OBS-000471
   - OBS-000639
   - OBS-000695
+  - OBS-000768
+  - OBS-000774
+  - OBS-000785
   confidence: medium
   knowledge_status: INFERRED
   validation_status: NOT_CONFIRMED
@@ -230,8 +240,8 @@ invariants:
   generation:
     managed: true
     generator: phase2-invariant-extractor
-    generated_checksum: 29cc39b25601e86fca21b6a6611d96719a0dc11584c460844184d51535d327a9
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    generated_checksum: d65d1da37dbc5a74b68f0d71d1d7fc976a91e47d2b8d17f6df064bb38edc230b
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-008
   key: authentication:EP-013
   category: authentication
@@ -255,7 +265,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: a44ad95b5882436507278eea372a8e312f9aadbf7ac2ababe3668aea7463596b
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-009
   key: authentication:EP-014
   category: authentication
@@ -284,7 +294,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: ba42182832c1e4734f329df53c8d92e4f013df449cc7b0bda9d34eff133ae37f
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-010
   key: authentication:EP-015
   category: authentication
@@ -309,7 +319,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: 3e5cf6db0c76a201659995f5078fd1ce5ed42d764de016de1d37323d40409d8a
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-011
   key: authentication:EP-018
   category: authentication
@@ -333,7 +343,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: a2a7de259971ab40bbe41e0e1687917c49af878242d2c8bd626bf6a068b8c638
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-012
   key: authentication:EP-019
   category: authentication
@@ -357,7 +367,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: 8c637d326119a01d51681a1313067506f81285f79cec4a519c80ef78ac82f7b9
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-013
   key: authentication:EP-020
   category: authentication
@@ -375,6 +385,8 @@ invariants:
   - OBS-000269
   - OBS-000474
   - OBS-000642
+  - OBS-000780
+  - OBS-000786
   confidence: medium
   knowledge_status: INFERRED
   validation_status: NOT_CONFIRMED
@@ -384,8 +396,8 @@ invariants:
   generation:
     managed: true
     generator: phase2-invariant-extractor
-    generated_checksum: d065144cc1a0efc9a4c5073197c123962daa5cc13c2936c83c3c8ada455bc4e4
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    generated_checksum: 5ef948588402211ef9e44a19f610648dd7be2cf6f24fa39128de53afd7300804
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-014
   key: authentication:EP-021
   category: authentication
@@ -414,7 +426,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: be3171cd00cdd9fce72d8a564a40cfc30dfd78a7ac91c596b33ef637b4ad991f
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-017
   key: authentication:EP-023
   category: authentication
@@ -441,6 +453,7 @@ invariants:
   - OBS-000583
   - OBS-000602
   - OBS-000694
+  - OBS-000779
   confidence: medium
   knowledge_status: INFERRED
   validation_status: NOT_CONFIRMED
@@ -450,8 +463,8 @@ invariants:
   generation:
     managed: true
     generator: phase2-invariant-extractor
-    generated_checksum: c2cae1bad1bc28fdb3e9710e6bf49ba6568d345480f5ac8bdb5ec389393373be
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    generated_checksum: 5ffe130aea041f3af0997154e9c7a39185111617ce5bc887b1bb5a1a80c5004e
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-018
   key: authentication:EP-052
   category: authentication
@@ -476,7 +489,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: 073567a107bd1420c20949acb98d90f829dc4c6265fe27ab7b75baed12b71836
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-019
   key: authentication:EP-053
   category: authentication
@@ -501,7 +514,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: 4b7a01e9cfca37629e6ecfe4b9c14d1533b372c50f744a80538dab39043d0201
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-020
   key: authentication:EP-054
   category: authentication
@@ -530,7 +543,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: 4bad3c64622b1ee03811ad27bb43aa057ee6bf9a1105c147208ee47b81bce4ed
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-023
   key: authentication:EP-062
   category: authentication
@@ -553,7 +566,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: c948a79e7bc8eb7c0ec1b1b6f9fbb34342ae60956cfb3bd04d22a1c72bfe4cb5
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-024
   key: authentication:EP-063
   category: authentication
@@ -576,7 +589,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: 97a41add32a7e70023fe864c1c9b3695e6116a4e7d13705e4202b3a3f2c63870
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-025
   key: authentication:EP-065
   category: authentication
@@ -600,7 +613,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: 8d105919a7275480e08356dda614af9dd6818663d970b7695fe4a6cd349b77f1
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-026
   key: authentication:EP-066
   category: authentication
@@ -628,7 +641,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: 53188d4f9bcd25b20fb398646db9c010bb070a44ac087c690d39fbd7b32b023f
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-027
   key: authentication:EP-067
   category: authentication
@@ -658,7 +671,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: d1780fbb9853a61dda4e304e38d76cc193c9b9ae7705f036807c47721fc12832
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-033
   key: authentication:EP-069
   category: authentication
@@ -675,6 +688,8 @@ invariants:
   - OBS-000702
   - OBS-000706
   - OBS-000709
+  - OBS-000782
+  - OBS-000788
   confidence: medium
   knowledge_status: INFERRED
   validation_status: NOT_CONFIRMED
@@ -684,8 +699,8 @@ invariants:
   generation:
     managed: true
     generator: phase2-invariant-extractor
-    generated_checksum: 77655a5466498deb647e5c0a04b2f98217eed4baf2a614cfbca6b5ab95ef5785
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    generated_checksum: 3a511dd1a1ccfb019611fb06690abcf548b685ef618234bf5988284029da739c
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-015
   key: object-authorization:EP-004:postId
   category: authorization
@@ -714,7 +729,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: ebb308b362e55ce66e17ea0ce39d7fc5fa4bbdc9cd602265a27a02da455e5e6c
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-016
   key: object-authorization:EP-014:postId
   category: authorization
@@ -742,7 +757,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: 48efd50ff46ef395a6663d0af0181afe49939265b8ac4ca2a9df51852b508cb1
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-028
   key: object-authorization:EP-021:order_id
   category: authorization
@@ -771,7 +786,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: 3120d00b108409e994fc1f34e4ccb5c30ef42c103f545a8533cd2d7e36ee5d84
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-029
   key: object-authorization:EP-048:id
   category: authorization
@@ -800,7 +815,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: 57b5bc5d70fc0b34f3d10e10e08dc395b3cc98e901ad88e310dd78b5777b9e3f
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-030
   key: object-authorization:EP-054:report_id
   category: authorization
@@ -829,7 +844,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: 31f2dffc2791bc5a033ab97514ce6535c5d09a1b6815c1883ddfb688df1b5ab9
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-031
   key: object-authorization:EP-066:videoId
   category: authorization
@@ -857,7 +872,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: 1ff150d2d8cfcfd68bcb0bc4b648dc80cb8b34d088a90514256e254e22192339
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-032
   key: object-authorization:EP-067:serviceRequestId
   category: authorization
@@ -886,7 +901,7 @@ invariants:
     managed: true
     generator: phase2-invariant-extractor
     generated_checksum: da5a249c4e344f2eed0cdf01b6374ea134c175ae9ad955f6f65992797240a9b4
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-034
   key: object-authorization:EP-069:orderId
   category: authorization
@@ -903,6 +918,8 @@ invariants:
   - OBS-000702
   - OBS-000706
   - OBS-000709
+  - OBS-000782
+  - OBS-000788
   confidence: low
   knowledge_status: ASSUMED
   validation_status: NOT_CONFIRMED
@@ -912,8 +929,8 @@ invariants:
   generation:
     managed: true
     generator: phase2-invariant-extractor
-    generated_checksum: 5c73b298963cc9f7c33e8edcfa0d7bd46820379c7ad863f8a5bc20eabeef8ecc
-    source_fingerprint: 7c16ba959e75579c8dc3df52f6e50dea6a22cfa702cbf70c72dcafa16781d546
+    generated_checksum: b28dd3b2f69a861d76fa8fef33a9b2474eca2642cd081bd5ed06825055c4a3c3
+    source_fingerprint: 7ffc6b946de3af27f4cb119d8077b6cb85b22b362a44eacbdb21c997f3313151
 - id: INV-004
   key: authentication:EP-006
   category: authentication

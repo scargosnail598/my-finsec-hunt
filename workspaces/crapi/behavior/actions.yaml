@@ -37,6 +37,8 @@ actions:
   - OBS-000594
   - OBS-000657
   - OBS-000717
+  - OBS-000758
+  - OBS-000790
   resource_types:
   - Auth
   state_changing: true
@@ -82,6 +84,9 @@ actions:
   - OBS-000704
   - OBS-000707
   - OBS-000710
+  - OBS-000781
+  - OBS-000783
+  - OBS-000787
   resource_types:
   - Order
   state_changing: false
@@ -172,6 +177,8 @@ actions:
   - OBS-000269
   - OBS-000474
   - OBS-000642
+  - OBS-000780
+  - OBS-000786
   resource_types:
   - Order
   state_changing: true
@@ -258,6 +265,8 @@ actions:
   - OBS-000656
   - OBS-000714
   - OBS-000716
+  - OBS-000757
+  - OBS-000789
   resource_types:
   - Dashboard
   state_changing: false
@@ -276,9 +285,6 @@ actions:
   - OBS-000176
   - OBS-000256
   - OBS-000321
-  - OBS-000462
-  - OBS-000511
-  - OBS-000575
   - OBS-000686
   resource_types:
   - ServiceRequest
@@ -357,6 +363,8 @@ actions:
   - OBS-000702
   - OBS-000706
   - OBS-000709
+  - OBS-000782
+  - OBS-000788
   resource_types:
   - Order
   state_changing: false
@@ -397,6 +405,8 @@ actions:
   - OBS-000598
   - OBS-000662
   - OBS-000718
+  - OBS-000759
+  - OBS-000791
   resource_types:
   - Vehicle
   state_changing: false
@@ -444,6 +454,7 @@ actions:
   - OBS-000583
   - OBS-000602
   - OBS-000694
+  - OBS-000779
   resource_types:
   - State
   state_changing: false
@@ -583,6 +594,9 @@ actions:
   - OBS-000471
   - OBS-000639
   - OBS-000695
+  - OBS-000768
+  - OBS-000774
+  - OBS-000785
   resource_types:
   - Product
   state_changing: false
@@ -639,6 +653,7 @@ actions:
   - OBS-000582
   - OBS-000597
   - OBS-000693
+  - OBS-000776
   resource_types:
   - '%F0%9F%A4%96'
   state_changing: false
@@ -669,6 +684,7 @@ actions:
   - OBS-000579
   - OBS-000592
   - OBS-000690
+  - OBS-000772
   resource_types:
   - Manifest.Json
   state_changing: false
@@ -685,6 +701,7 @@ actions:
   - EP-049
   observation_ids:
   - OBS-000190
+  - OBS-000769
   resource_types:
   - Shop
   state_changing: false

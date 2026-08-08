@@ -21299,3 +21299,2668 @@ observations:
     observed_type: cookie
     knowledge_status: OBSERVED
   knowledge_status: OBSERVED
+- id: OBS-000757
+  timestamp: '2026-08-07T12:28:07.654000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-0
+  source_fingerprint: 14d24a684556be0070e6556ee1840424afab343adb800f1d82ef653e8962e8e0
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 0
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /identity/api/v2/user/dashboard
+  concrete_url: http://crapi.local:8888/identity/api/v2/user/dashboard
+  query_parameters: {}
+  request_fields: []
+  response_fields:
+  - available_credit
+  - email
+  - id
+  - name
+  - number
+  - picture_url
+  - role
+  - video_id
+  - video_name
+  - video_url
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json
+  authentication:
+    present: true
+    observed_type: bearer
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000758
+  timestamp: '2026-08-07T12:28:07.659000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-1
+  source_fingerprint: 6be976f78b53fbb9a66e9a24d5c33149097e123b46fef374a304a0a647c0d779
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 1
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: POST
+  path: /identity/api/auth/verify
+  concrete_url: http://crapi.local:8888/identity/api/auth/verify
+  query_parameters: {}
+  request_fields:
+  - token
+  response_fields:
+  - message
+  - status
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000759
+  timestamp: '2026-08-07T12:28:07.803000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-2
+  source_fingerprint: dfb80a2a28996742749fc0cc2efd8f498b9946b2b17e9dd6524fa92093d0f0f0
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 2
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /identity/api/v2/vehicle/vehicles
+  concrete_url: http://crapi.local:8888/identity/api/v2/vehicle/vehicles
+  query_parameters: {}
+  request_fields: []
+  response_fields:
+  - '[].id'
+  - '[].model'
+  - '[].model.fuel_type'
+  - '[].model.id'
+  - '[].model.model'
+  - '[].model.vehicle_img'
+  - '[].model.vehiclecompany'
+  - '[].model.vehiclecompany.id'
+  - '[].model.vehiclecompany.name'
+  - '[].owner'
+  - '[].pincode'
+  - '[].previousOwners'
+  - '[].status'
+  - '[].uuid'
+  - '[].vehicleLocation'
+  - '[].vehicleLocation.id'
+  - '[].vehicleLocation.latitude'
+  - '[].vehicleLocation.longitude'
+  - '[].vin'
+  - '[].year'
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json
+  authentication:
+    present: true
+    observed_type: bearer
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000760
+  timestamp: '2026-08-07T12:28:08.252000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-3
+  source_fingerprint: 7796d2d891761ee981bff08069cbfdadb17dc26180c219c93e20d878ace6e04d
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 3
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /images/bmw-5.jpg
+  concrete_url: http://crapi.local:8888/images/bmw-5.jpg
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: image/jpeg
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000761
+  timestamp: '2026-08-07T12:28:08.252000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-4
+  source_fingerprint: 8fe90f506e41bf664084b2830efe83aaed57511072b3cffd31a2951b67ac4a51
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 4
+  actor: mrscargo
+  channel: WEB
+  host: maps.google.com
+  scheme: https
+  method: GET
+  path: /maps
+  concrete_url: https://maps.google.com/maps?q=37.746880,-84.301460&output=embed
+  query_parameters:
+    q:
+    - 37.746880,-84.301460
+    output:
+    - embed
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - location
+  - referer
+  redirect_target: https://www.google.com/maps/embed?origin=mfe&pb=!1m2!2m1!1s37.746880,-84.301460
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 301
+  content_type: text/html
+  authentication:
+    present: true
+    observed_type: cookie
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000762
+  timestamp: '2026-08-07T12:28:09.225000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-5
+  source_fingerprint: e4ef56b9cc325f3099789cf93b54dba40dae4f5887f97a567dd34d424c333df4
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 5
+  actor: mrscargo
+  channel: WEB
+  host: www.google.com
+  scheme: https
+  method: GET
+  path: /maps/embed
+  concrete_url: https://www.google.com/maps/embed?origin=mfe&pb=!1m2!2m1!1s37.746880,-84.301460
+  query_parameters:
+    origin:
+    - mfe
+    pb:
+    - '!1m2!2m1!1s37.746880,-84.301460'
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/html
+  authentication:
+    present: true
+    observed_type: cookie
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000763
+  timestamp: '2026-08-07T12:28:09.870000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-6
+  source_fingerprint: 61e44cf1d83c133027865c396d7d8a9390804ac23166a5be1a98a042aa981fc9
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 6
+  actor: mrscargo
+  channel: WEB
+  host: maps.gstatic.com
+  scheme: https
+  method: GET
+  path: /maps-api-v3/embed/js/65/12f/init_embed.js
+  concrete_url: https://maps.gstatic.com/maps-api-v3/embed/js/65/12f/init_embed.js
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/javascript
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000764
+  timestamp: '2026-08-07T12:28:09.871000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-7
+  source_fingerprint: 0fe70a4321b3d1d510e0abca33f5faedbdac2f167715e8a5252c95d9619b49a9
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 7
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: GET
+  path: /maps/api/js
+  concrete_url: https://maps.googleapis.com/maps/api/js?key=AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y&paint_origin=&libraries=geometry,search&v=weekly&loading=async&language=en_US&experimentation=allowed&callback=onApiLoad
+  query_parameters:
+    key:
+    - AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y
+    paint_origin:
+    - ''
+    libraries:
+    - geometry,search
+    v:
+    - weekly
+    loading:
+    - async
+    language:
+    - en_US
+    experimentation:
+    - allowed
+    callback:
+    - onApiLoad
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/javascript
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000765
+  timestamp: '2026-08-07T12:28:10.327000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-8
+  source_fingerprint: 10e1121e91bff2fb2d6924ffc2c78ae6c42d5dd9656e51c0126b7a6ab0cebcf2
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 8
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: GET
+  path: /maps-api-v3/api/js/65/12f/geometry.js
+  concrete_url: https://maps.googleapis.com/maps-api-v3/api/js/65/12f/geometry.js
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/javascript
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000766
+  timestamp: '2026-08-07T12:28:10.327000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-9
+  source_fingerprint: a629d85ef8fa36ae379468862642ca723bc3c966e73d1a664418b5e833829cdf
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 9
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: GET
+  path: /maps-api-v3/api/js/65/12f/search.js
+  concrete_url: https://maps.googleapis.com/maps-api-v3/api/js/65/12f/search.js
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/javascript
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000767
+  timestamp: '2026-08-07T12:28:10.327000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-10
+  source_fingerprint: 1a0be8aaacbef31e926c76f3570e904b1a34c87a06e03121edd7a3bfd4258eb2
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 10
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: GET
+  path: /maps-api-v3/api/js/65/12f/main.js
+  concrete_url: https://maps.googleapis.com/maps-api-v3/api/js/65/12f/main.js
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/javascript
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000768
+  timestamp: '2026-08-07T12:28:11.037000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-11
+  source_fingerprint: 3bf5618d8321cdf6c71d65cfad78b901b83520a53347a91e8ce2c76bc16eabf1
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 11
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /workshop/api/shop/products
+  concrete_url: http://crapi.local:8888/workshop/api/shop/products?limit=30&offset=0
+  query_parameters:
+    limit:
+    - '30'
+    offset:
+    - '0'
+  request_fields: []
+  response_fields:
+  - count
+  - credit
+  - next_offset
+  - previous_offset
+  - products
+  - products[].id
+  - products[].image_url
+  - products[].name
+  - products[].price
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json
+  authentication:
+    present: true
+    observed_type: bearer
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000769
+  timestamp: '2026-08-07T12:28:23.508000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-12
+  source_fingerprint: c78a0c097c1f18a94126cedb2cbe414ac59ce15a67f7ac9a327f2b9ef98004e9
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 12
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /shop
+  concrete_url: http://crapi.local:8888/shop
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/html
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000770
+  timestamp: '2026-08-07T12:28:23.872000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-13
+  source_fingerprint: dec4b341e8b042793b4008b1cd2acc71a5326b3402817925b9f7fb6c031e6a02
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 13
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /static/js/main.8c78208c.js
+  concrete_url: http://crapi.local:8888/static/js/main.8c78208c.js
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/javascript
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000771
+  timestamp: '2026-08-07T12:28:23.873000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-14
+  source_fingerprint: 4d018212e4368ae1d39775ae80de5755598e44bcc3992a7877301feb710d6470
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 14
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /static/css/main.dd33429d.css
+  concrete_url: http://crapi.local:8888/static/css/main.dd33429d.css
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/css
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000772
+  timestamp: '2026-08-07T12:28:24.058000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-15
+  source_fingerprint: 7b7b98a74255511ae0c07250f099a5fecdd39bb04d4aa7b6b5bdba6d7d327be6
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 15
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /manifest.json
+  concrete_url: http://crapi.local:8888/manifest.json
+  query_parameters: {}
+  request_fields: []
+  response_fields:
+  - background_color
+  - display
+  - icons
+  - icons[].sizes
+  - icons[].src
+  - icons[].type
+  - name
+  - short_name
+  - start_url
+  - theme_color
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000773
+  timestamp: '2026-08-07T12:28:24.728000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-16
+  source_fingerprint: 49d9180deb339ceda6a59951557c4b97c02aca9b232e5ac7a26827a6d050c50d
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 16
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /images/favicon.ico
+  concrete_url: http://crapi.local:8888/images/favicon.ico
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: image/x-icon
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000774
+  timestamp: '2026-08-07T12:28:24.953000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-17
+  source_fingerprint: bf69efc434c41cf49e22f0eb246620110304dfcf2769e2685534ab035457c72c
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 17
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /workshop/api/shop/products
+  concrete_url: http://crapi.local:8888/workshop/api/shop/products?limit=30&offset=0
+  query_parameters:
+    limit:
+    - '30'
+    offset:
+    - '0'
+  request_fields: []
+  response_fields:
+  - count
+  - credit
+  - next_offset
+  - previous_offset
+  - products
+  - products[].id
+  - products[].image_url
+  - products[].name
+  - products[].price
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json
+  authentication:
+    present: true
+    observed_type: bearer
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000775
+  timestamp: '2026-08-07T12:28:25.039000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-18
+  source_fingerprint: a7a921a0c72fa41528acb7dfa712ffc10c57e3b7f99bb9a168badbf4548493d9
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 18
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /static/media/chatbot.a61725c2f5501ec93ec086b78faf4499.svg
+  concrete_url: http://crapi.local:8888/static/media/chatbot.a61725c2f5501ec93ec086b78faf4499.svg
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: image/svg+xml
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000776
+  timestamp: '2026-08-07T12:28:25.090000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-19
+  source_fingerprint: 6c2bb6eb3826f20dc223c208e8ace9407e7622bbb59b36d5d860b157cb0284e1
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 19
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /%F0%9F%A4%96
+  concrete_url: http://crapi.local:8888/%F0%9F%A4%96
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 404
+  content_type: text/html
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000777
+  timestamp: '2026-08-07T12:28:25.694000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-20
+  source_fingerprint: c083b4eebc5d4d54ff7e36b3c978642effd08599b92b923d941b320994631fc3
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 20
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /images/seat.svg
+  concrete_url: http://crapi.local:8888/images/seat.svg
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: image/svg+xml
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000778
+  timestamp: '2026-08-07T12:28:25.694000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-21
+  source_fingerprint: 5ad4c3ecf5ebf2edd12d3c5e36c9a4a14f2c4ad4ee24c098557ab8a4870f7e6e
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 21
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /images/wheel.svg
+  concrete_url: http://crapi.local:8888/images/wheel.svg
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: image/svg+xml
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000779
+  timestamp: '2026-08-07T12:28:26.093000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-22
+  source_fingerprint: 8c9289319171bc5b7e242223484529211ef7843999ee0ffb89e1f42e01210761
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 22
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /chatbot/genai/state
+  concrete_url: http://crapi.local:8888/chatbot/genai/state
+  query_parameters: {}
+  request_fields: []
+  response_fields:
+  - initialized
+  - message
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json
+  authentication:
+    present: true
+    observed_type: bearer
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000780
+  timestamp: '2026-08-07T12:28:31.223000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-23
+  source_fingerprint: 562d8001983f8634adca8880d4b77a3560b5aa9c221ab0b1d8ef451ba9b18aa8
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 23
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: POST
+  path: /workshop/api/shop/orders
+  concrete_url: http://crapi.local:8888/workshop/api/shop/orders
+  query_parameters: {}
+  request_fields:
+  - product_id
+  - quantity
+  response_fields:
+  - credit
+  - id
+  - message
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json
+  authentication:
+    present: true
+    observed_type: bearer
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000781
+  timestamp: '2026-08-07T12:28:32.855000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-24
+  source_fingerprint: cfdbb5f774fc485d37c05a694cac4aed4877a14e1c15ae061d6e72933a2f377c
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 24
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /workshop/api/shop/orders/all
+  concrete_url: http://crapi.local:8888/workshop/api/shop/orders/all?limit=30&offset=0
+  query_parameters:
+    limit:
+    - '30'
+    offset:
+    - '0'
+  request_fields: []
+  response_fields:
+  - count
+  - next_offset
+  - orders
+  - orders[].created_on
+  - orders[].id
+  - orders[].product
+  - orders[].product.id
+  - orders[].product.image_url
+  - orders[].product.name
+  - orders[].product.price
+  - orders[].quantity
+  - orders[].status
+  - orders[].transaction_id
+  - orders[].user
+  - orders[].user.email
+  - orders[].user.number
+  - previous_offset
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json
+  authentication:
+    present: true
+    observed_type: bearer
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000782
+  timestamp: '2026-08-07T12:28:35.708000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-25
+  source_fingerprint: 07b2930f74960c900494f637037dcc4951e6ad9491791cf2f24740b710ead974
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 25
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /workshop/api/shop/orders/27
+  concrete_url: http://crapi.local:8888/workshop/api/shop/orders/27
+  query_parameters: {}
+  request_fields: []
+  response_fields:
+  - order
+  - order.created_on
+  - order.id
+  - order.product
+  - order.product.id
+  - order.product.image_url
+  - order.product.name
+  - order.product.price
+  - order.quantity
+  - order.status
+  - order.transaction_id
+  - order.user
+  - order.user.email
+  - order.user.number
+  - payment
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json
+  authentication:
+    present: true
+    observed_type: bearer
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000783
+  timestamp: '2026-08-07T12:28:43.909000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-26
+  source_fingerprint: 0f4a03bcd9ffd764f08538f6947cf53fad3eadf4b404b25de64c824c882e0b45
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 26
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /workshop/api/shop/orders/all
+  concrete_url: http://crapi.local:8888/workshop/api/shop/orders/all?limit=30&offset=0
+  query_parameters:
+    limit:
+    - '30'
+    offset:
+    - '0'
+  request_fields: []
+  response_fields:
+  - count
+  - next_offset
+  - orders
+  - orders[].created_on
+  - orders[].id
+  - orders[].product
+  - orders[].product.id
+  - orders[].product.image_url
+  - orders[].product.name
+  - orders[].product.price
+  - orders[].quantity
+  - orders[].status
+  - orders[].transaction_id
+  - orders[].user
+  - orders[].user.email
+  - orders[].user.number
+  - previous_offset
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json
+  authentication:
+    present: true
+    observed_type: bearer
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000784
+  timestamp: '2026-08-07T12:28:43.939000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-27
+  source_fingerprint: e51aeda1215295ed62b5c07ba1c2e6e3ed10b735b20e00b7c3128e0cac8570ad
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 27
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /images/wheel.svg
+  concrete_url: http://crapi.local:8888/images/wheel.svg
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: image/svg+xml
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000785
+  timestamp: '2026-08-07T12:28:46.332000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-28
+  source_fingerprint: 27979080d58a8a482a0e6a9bc7fb8b18a19dab39dfc16515a1895d704f1d7f6b
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 28
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /workshop/api/shop/products
+  concrete_url: http://crapi.local:8888/workshop/api/shop/products?limit=30&offset=0
+  query_parameters:
+    limit:
+    - '30'
+    offset:
+    - '0'
+  request_fields: []
+  response_fields:
+  - count
+  - credit
+  - next_offset
+  - previous_offset
+  - products
+  - products[].id
+  - products[].image_url
+  - products[].name
+  - products[].price
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json
+  authentication:
+    present: true
+    observed_type: bearer
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000786
+  timestamp: '2026-08-07T12:28:50.417000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-29
+  source_fingerprint: da5004a0315c5f7b95f00deaf751d14a09d837aa073ca792f0e5f10b0f23391f
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 29
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: POST
+  path: /workshop/api/shop/orders
+  concrete_url: http://crapi.local:8888/workshop/api/shop/orders
+  query_parameters: {}
+  request_fields:
+  - product_id
+  - quantity
+  response_fields:
+  - credit
+  - id
+  - message
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json
+  authentication:
+    present: true
+    observed_type: bearer
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000787
+  timestamp: '2026-08-07T12:28:52.166000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-30
+  source_fingerprint: e3de27cb9ccc5a8085f18bf31e1a023439b857c4f7ed2e6ad9947f9a09fb1e06
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 30
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /workshop/api/shop/orders/all
+  concrete_url: http://crapi.local:8888/workshop/api/shop/orders/all?limit=30&offset=0
+  query_parameters:
+    limit:
+    - '30'
+    offset:
+    - '0'
+  request_fields: []
+  response_fields:
+  - count
+  - next_offset
+  - orders
+  - orders[].created_on
+  - orders[].id
+  - orders[].product
+  - orders[].product.id
+  - orders[].product.image_url
+  - orders[].product.name
+  - orders[].product.price
+  - orders[].quantity
+  - orders[].status
+  - orders[].transaction_id
+  - orders[].user
+  - orders[].user.email
+  - orders[].user.number
+  - previous_offset
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json
+  authentication:
+    present: true
+    observed_type: bearer
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000788
+  timestamp: '2026-08-07T12:29:02.810000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-31
+  source_fingerprint: 05613b517cc7173c88c4557adc728c99ff88848974f9c25664781da98544d2d1
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 31
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /workshop/api/shop/orders/10
+  concrete_url: http://crapi.local:8888/workshop/api/shop/orders/10
+  query_parameters: {}
+  request_fields: []
+  response_fields:
+  - order
+  - order.created_on
+  - order.id
+  - order.product
+  - order.product.id
+  - order.product.image_url
+  - order.product.name
+  - order.product.price
+  - order.quantity
+  - order.status
+  - order.transaction_id
+  - order.user
+  - order.user.email
+  - order.user.number
+  - payment
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json
+  authentication:
+    present: true
+    observed_type: bearer
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000789
+  timestamp: '2026-08-07T12:30:01.799000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-32
+  source_fingerprint: b16586d9476b80dfbeabf83401730b00a2bebe2eda04a0827b47e6183b13dd78
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 32
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /identity/api/v2/user/dashboard
+  concrete_url: http://crapi.local:8888/identity/api/v2/user/dashboard
+  query_parameters: {}
+  request_fields: []
+  response_fields:
+  - available_credit
+  - email
+  - id
+  - name
+  - number
+  - picture_url
+  - role
+  - video_id
+  - video_name
+  - video_url
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json
+  authentication:
+    present: true
+    observed_type: bearer
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000790
+  timestamp: '2026-08-07T12:30:01.806000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-33
+  source_fingerprint: 874cb864278d19afd0906f8be95f4bae9d48bbe33a4c5d5d2461809005145004
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 33
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: POST
+  path: /identity/api/auth/verify
+  concrete_url: http://crapi.local:8888/identity/api/auth/verify
+  query_parameters: {}
+  request_fields:
+  - token
+  response_fields:
+  - message
+  - status
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000791
+  timestamp: '2026-08-07T12:30:02.053000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-34
+  source_fingerprint: 25ad0484078737fc40888e4e4c685d82c0fe84ed9905f74a384e4034002c85bd
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 34
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /identity/api/v2/vehicle/vehicles
+  concrete_url: http://crapi.local:8888/identity/api/v2/vehicle/vehicles
+  query_parameters: {}
+  request_fields: []
+  response_fields:
+  - '[].id'
+  - '[].model'
+  - '[].model.fuel_type'
+  - '[].model.id'
+  - '[].model.model'
+  - '[].model.vehicle_img'
+  - '[].model.vehiclecompany'
+  - '[].model.vehiclecompany.id'
+  - '[].model.vehiclecompany.name'
+  - '[].owner'
+  - '[].pincode'
+  - '[].previousOwners'
+  - '[].status'
+  - '[].uuid'
+  - '[].vehicleLocation'
+  - '[].vehicleLocation.id'
+  - '[].vehicleLocation.latitude'
+  - '[].vehicleLocation.longitude'
+  - '[].vin'
+  - '[].year'
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json
+  authentication:
+    present: true
+    observed_type: bearer
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000792
+  timestamp: '2026-08-07T12:30:02.674000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-35
+  source_fingerprint: 7b681e79069d360a54d28580c1fbcb74a43fc5872c49b65223eb968b4b3fa72f
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 35
+  actor: mrscargo
+  channel: WEB
+  host: maps.google.com
+  scheme: https
+  method: GET
+  path: /maps
+  concrete_url: https://maps.google.com/maps?q=37.746880,-84.301460&output=embed
+  query_parameters:
+    q:
+    - 37.746880,-84.301460
+    output:
+    - embed
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - location
+  - referer
+  redirect_target: https://www.google.com/maps/embed?origin=mfe&pb=!1m2!2m1!1s37.746880,-84.301460
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 301
+  content_type: text/html
+  authentication:
+    present: true
+    observed_type: cookie
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000793
+  timestamp: '2026-08-07T12:30:02.675000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-36
+  source_fingerprint: b15d318b72f8d8bea05b5b3cfa0acf26378e31c8c6dc1d1820994c6c0f8d59db
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 36
+  actor: mrscargo
+  channel: WEB
+  host: crapi.local
+  scheme: http
+  method: GET
+  path: /images/bmw-5.jpg
+  concrete_url: http://crapi.local:8888/images/bmw-5.jpg
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: image/jpeg
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000794
+  timestamp: '2026-08-07T12:30:03.031000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-37
+  source_fingerprint: e8648700c6e22c831f8b46765c0993c3c784ab2adab1541c2d87aa01227b44dc
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 37
+  actor: mrscargo
+  channel: WEB
+  host: www.google.com
+  scheme: https
+  method: GET
+  path: /maps/embed
+  concrete_url: https://www.google.com/maps/embed?origin=mfe&pb=!1m2!2m1!1s37.746880,-84.301460
+  query_parameters:
+    origin:
+    - mfe
+    pb:
+    - '!1m2!2m1!1s37.746880,-84.301460'
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/html
+  authentication:
+    present: true
+    observed_type: cookie
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000795
+  timestamp: '2026-08-07T12:30:03.620000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-38
+  source_fingerprint: 7362c07dec99f2a5e83c5c4705f9a695c2fd397bd15b66c4e96c904d24b2f330
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 38
+  actor: mrscargo
+  channel: WEB
+  host: maps.gstatic.com
+  scheme: https
+  method: GET
+  path: /maps-api-v3/embed/js/65/12f/init_embed.js
+  concrete_url: https://maps.gstatic.com/maps-api-v3/embed/js/65/12f/init_embed.js
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/javascript
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000796
+  timestamp: '2026-08-07T12:30:03.621000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-39
+  source_fingerprint: 476acc839cd8cfa898feed4b7b505b3346fac675b9d903e77793c28b90d356b1
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 39
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: GET
+  path: /maps/api/js
+  concrete_url: https://maps.googleapis.com/maps/api/js?key=AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y&paint_origin=&libraries=geometry,search&v=weekly&loading=async&language=en_US&experimentation=allowed&callback=onApiLoad
+  query_parameters:
+    key:
+    - AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y
+    paint_origin:
+    - ''
+    libraries:
+    - geometry,search
+    v:
+    - weekly
+    loading:
+    - async
+    language:
+    - en_US
+    experimentation:
+    - allowed
+    callback:
+    - onApiLoad
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/javascript
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000797
+  timestamp: '2026-08-07T12:30:04.035000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-40
+  source_fingerprint: ac348c19da5ba0a210f9691d05d31df59321f90f35b9cdba92bd3fbc621ef703
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 40
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: GET
+  path: /maps-api-v3/api/js/65/12f/search.js
+  concrete_url: https://maps.googleapis.com/maps-api-v3/api/js/65/12f/search.js
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/javascript
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000798
+  timestamp: '2026-08-07T12:30:04.035000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-41
+  source_fingerprint: dbaef2bc01e8bb700f0b8bf2886e114c94d0fd763006a56ebfbf8b7d576b8deb
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 41
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: GET
+  path: /maps-api-v3/api/js/65/12f/geometry.js
+  concrete_url: https://maps.googleapis.com/maps-api-v3/api/js/65/12f/geometry.js
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/javascript
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000799
+  timestamp: '2026-08-07T12:30:04.036000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-42
+  source_fingerprint: c9ad34bc65b04903bbd499cf3f275cdff33316b945ca5845c5f9e77e91ef7f23
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 42
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: GET
+  path: /maps-api-v3/api/js/65/12f/main.js
+  concrete_url: https://maps.googleapis.com/maps-api-v3/api/js/65/12f/main.js
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/javascript
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000800
+  timestamp: '2026-08-07T12:30:04.411000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-43
+  source_fingerprint: d5fae281a13773fd96a51622324741f0132beb5f232ceca54195abf870b86e0e
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 43
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: GET
+  path: /maps/api/mapsjs/gen_204
+  concrete_url: https://maps.googleapis.com/maps/api/mapsjs/gen_204?csp_test=true
+  query_parameters:
+    csp_test:
+    - 'true'
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000801
+  timestamp: '2026-08-07T12:30:04.432000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-44
+  source_fingerprint: f41bfbe502186fa1ccebb4b4eb5c76c4e6bf34d594c83f7fa1df89e19699918d
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 44
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: GET
+  path: /maps-api-v3/api/js/65/12f/common.js
+  concrete_url: https://maps.googleapis.com/maps-api-v3/api/js/65/12f/common.js
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/javascript
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000802
+  timestamp: '2026-08-07T12:30:04.432000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-45
+  source_fingerprint: a6310d116439f7bffbccb7fda6016a1a6377d4f225a49f1dd41bb57343f925ad
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 45
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: GET
+  path: /maps-api-v3/api/js/65/12f/util.js
+  concrete_url: https://maps.googleapis.com/maps-api-v3/api/js/65/12f/util.js
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/javascript
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000803
+  timestamp: '2026-08-07T12:30:04.445000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-46
+  source_fingerprint: e645d9649181668c2f79f0418824d585f523777c13a47b2c3c6c0ff70f724453
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 46
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: GET
+  path: /maps-api-v3/api/js/65/12f/map.js
+  concrete_url: https://maps.googleapis.com/maps-api-v3/api/js/65/12f/map.js
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/javascript
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000804
+  timestamp: '2026-08-07T12:30:04.483000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-47
+  source_fingerprint: 517f99abe301fe78ab1de0b466f0ffc6ebff98184c4c63fe22928f19671921cc
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 47
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: GET
+  path: /maps-api-v3/api/js/65/12f/controls.js
+  concrete_url: https://maps.googleapis.com/maps-api-v3/api/js/65/12f/controls.js
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/javascript
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000805
+  timestamp: '2026-08-07T12:30:04.484000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-48
+  source_fingerprint: 60a3a851767b85f599e0b4098dfcc176fc16f60edaa7c4336a54e3895b30d445
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 48
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: GET
+  path: /maps-api-v3/api/js/65/12f/places_impl.js
+  concrete_url: https://maps.googleapis.com/maps-api-v3/api/js/65/12f/places_impl.js
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/javascript
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000806
+  timestamp: '2026-08-07T12:30:04.486000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-49
+  source_fingerprint: 7967445169f10f356d00234cbe9def1d9a065aad161e892521f2551b61ec2ead
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 49
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: GET
+  path: /maps-api-v3/api/js/65/12f/places.js
+  concrete_url: https://maps.googleapis.com/maps-api-v3/api/js/65/12f/places.js
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/javascript
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000807
+  timestamp: '2026-08-07T12:30:04.510000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-50
+  source_fingerprint: 6aea5b93967924c5161dc1dcf9fbc9ebab1ecef854403261ee9b5822ff0d3c6b
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 50
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: GET
+  path: /maps-api-v3/api/js/65/12f/onion.js
+  concrete_url: https://maps.googleapis.com/maps-api-v3/api/js/65/12f/onion.js
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/javascript
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000808
+  timestamp: '2026-08-07T12:30:04.511000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-51
+  source_fingerprint: 9ee246f106c8f163ea947b02c4b19e2ba4a1aaf4f42904cd6b1e6865d904d3b1
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 51
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: GET
+  path: /maps-api-v3/api/js/65/12f/search_impl.js
+  concrete_url: https://maps.googleapis.com/maps-api-v3/api/js/65/12f/search_impl.js
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/javascript
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000809
+  timestamp: '2026-08-07T12:30:04.911000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-52
+  source_fingerprint: 017c7fdfd7fa04ebaa250b920f79888b8d8ee96d0abe41acc3699527909301c6
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 52
+  actor: mrscargo
+  channel: WEB
+  host: maps.gstatic.com
+  scheme: https
+  method: GET
+  path: /mapfiles/openhand_8_8.cur
+  concrete_url: https://maps.gstatic.com/mapfiles/openhand_8_8.cur
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: image/bmp
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000810
+  timestamp: '2026-08-07T12:30:05.167000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-53
+  source_fingerprint: 843ffaafb86acd1a09e68e9339e28cec64bc2239f348ef045e78f4ff016df681
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 53
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: GET
+  path: /maps-api-v3/api/js/65/12f/log.js
+  concrete_url: https://maps.googleapis.com/maps-api-v3/api/js/65/12f/log.js
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/javascript
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000811
+  timestamp: '2026-08-07T12:30:05.315000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-54
+  source_fingerprint: 4457b64bc045b297caeadf032c665b08762ba84bc2ae9f1914643f7317e1cd09
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 54
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: POST
+  path: /$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/GetViewportInfo
+  concrete_url: https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/GetViewportInfo
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json+protobuf
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000812
+  timestamp: '2026-08-07T12:30:05.316000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-55
+  source_fingerprint: cbbc4bcbb3bd5c9f41057aa1389369112376730fb6bb746706eec2f6636cfe27
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 55
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: OPTIONS
+  path: /$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/GetViewportInfo
+  concrete_url: https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/GetViewportInfo
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/html
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000813
+  timestamp: '2026-08-07T12:30:33.745000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-56
+  source_fingerprint: d3198ea96e12d78af7388564284d2cbc2e8721448627b70a90a17113732e26c8
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 56
+  actor: mrscargo
+  channel: WEB
+  host: www.google.com
+  scheme: https
+  method: GET
+  path: /maps/vt
+  concrete_url: https://www.google.com/maps/vt?pb=%211m5%211m4%211i15%212i8710%213i12669%214i256%212m3%211e0%212sm%213i789555332%212m3%211e2%212sspotlit%215i1%213m13%212sen-US%213sUS%215e289%2112m5%211e68%212m2%211sset%212sRoadmap%214e2%2112m3%211e37%212m1%211ssmartmaps%214e0%215m2%211e3%215f2%2123i47083502%2127m14%21299174093m13%2114m12%211m8%211m2%211y0%212y15267456718488781015%212s%2Ffake_latlng_mid%214m2%211x377468800%212x3451952696%218b1%212b0%216b0%218b0&key=AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y&token=[REDACTED]
+  query_parameters:
+    pb:
+    - '!1m5!1m4!1i15!2i8710!3i12669!4i256!2m3!1e0!2sm!3i789555332!2m3!1e2!2sspotlit!5i1!3m13!2sen-US!3sUS!5e289!12m5!1e68!2m2!1sset!2sRoadmap!4e2!12m3!1e37!2m1!1ssmartmaps!4e0!5m2!1e3!5f2!23i47083502!27m14!299174093m13!14m12!1m8!1m2!1y0!2y15267456718488781015!2s%2Ffake_latlng_mid!4m2!1x377468800!2x3451952696!8b1!2b0!6b0!8b0'
+    key:
+    - AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y
+    token:
+    - '[REDACTED]'
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: image/webp
+  authentication:
+    present: true
+    observed_type: cookie
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000814
+  timestamp: '2026-08-07T12:30:33.746000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-57
+  source_fingerprint: 766de133927d0c7f38559a4a6feded3af8146f506d2d18bc21fb21c6f279edb2
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 57
+  actor: mrscargo
+  channel: WEB
+  host: www.google.com
+  scheme: https
+  method: GET
+  path: /maps/vt
+  concrete_url: https://www.google.com/maps/vt?pb=%211m5%211m4%211i15%212i8709%213i12669%214i256%212m3%211e0%212sm%213i789555452%212m3%211e2%212sspotlit%215i1%213m13%212sen-US%213sUS%215e289%2112m5%211e68%212m2%211sset%212sRoadmap%214e2%2112m3%211e37%212m1%211ssmartmaps%214e0%215m2%211e3%215f2%2123i47083502%2127m14%21299174093m13%2114m12%211m8%211m2%211y0%212y15267456718488781015%212s%2Ffake_latlng_mid%214m2%211x377468800%212x3451952696%218b1%212b0%216b0%218b0&key=AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y&token=[REDACTED]
+  query_parameters:
+    pb:
+    - '!1m5!1m4!1i15!2i8709!3i12669!4i256!2m3!1e0!2sm!3i789555452!2m3!1e2!2sspotlit!5i1!3m13!2sen-US!3sUS!5e289!12m5!1e68!2m2!1sset!2sRoadmap!4e2!12m3!1e37!2m1!1ssmartmaps!4e0!5m2!1e3!5f2!23i47083502!27m14!299174093m13!14m12!1m8!1m2!1y0!2y15267456718488781015!2s%2Ffake_latlng_mid!4m2!1x377468800!2x3451952696!8b1!2b0!6b0!8b0'
+    key:
+    - AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y
+    token:
+    - '[REDACTED]'
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: image/webp
+  authentication:
+    present: true
+    observed_type: cookie
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000815
+  timestamp: '2026-08-07T12:30:33.746000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-58
+  source_fingerprint: 122668f809f06df6bfeeb3aee33303d3bb2b825bee0bb4582ad5cb471aa0b2de
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 58
+  actor: mrscargo
+  channel: WEB
+  host: www.google.com
+  scheme: https
+  method: GET
+  path: /maps/vt
+  concrete_url: https://www.google.com/maps/vt?pb=%211m5%211m4%211i15%212i8709%213i12668%214i256%212m3%211e0%212sm%213i789555452%212m3%211e2%212sspotlit%215i1%213m13%212sen-US%213sUS%215e289%2112m5%211e68%212m2%211sset%212sRoadmap%214e2%2112m3%211e37%212m1%211ssmartmaps%214e0%215m2%211e3%215f2%2123i47083502%2127m14%21299174093m13%2114m12%211m8%211m2%211y0%212y15267456718488781015%212s%2Ffake_latlng_mid%214m2%211x377468800%212x3451952696%218b1%212b0%216b0%218b0&key=AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y&token=[REDACTED]
+  query_parameters:
+    pb:
+    - '!1m5!1m4!1i15!2i8709!3i12668!4i256!2m3!1e0!2sm!3i789555452!2m3!1e2!2sspotlit!5i1!3m13!2sen-US!3sUS!5e289!12m5!1e68!2m2!1sset!2sRoadmap!4e2!12m3!1e37!2m1!1ssmartmaps!4e0!5m2!1e3!5f2!23i47083502!27m14!299174093m13!14m12!1m8!1m2!1y0!2y15267456718488781015!2s%2Ffake_latlng_mid!4m2!1x377468800!2x3451952696!8b1!2b0!6b0!8b0'
+    key:
+    - AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y
+    token:
+    - '[REDACTED]'
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: image/webp
+  authentication:
+    present: true
+    observed_type: cookie
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000816
+  timestamp: '2026-08-07T12:30:33.746000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-59
+  source_fingerprint: 885532569714b9782bbf26501bf9b0cedd48202410160b0deae9420ddbdde953
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 59
+  actor: mrscargo
+  channel: WEB
+  host: www.google.com
+  scheme: https
+  method: GET
+  path: /maps/vt
+  concrete_url: https://www.google.com/maps/vt?pb=%211m5%211m4%211i15%212i8710%213i12668%214i256%212m3%211e0%212sm%213i789555332%212m3%211e2%212sspotlit%215i1%213m13%212sen-US%213sUS%215e289%2112m5%211e68%212m2%211sset%212sRoadmap%214e2%2112m3%211e37%212m1%211ssmartmaps%214e0%215m2%211e3%215f2%2123i47083502%2127m14%21299174093m13%2114m12%211m8%211m2%211y0%212y15267456718488781015%212s%2Ffake_latlng_mid%214m2%211x377468800%212x3451952696%218b1%212b0%216b0%218b0&key=AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y&token=[REDACTED]
+  query_parameters:
+    pb:
+    - '!1m5!1m4!1i15!2i8710!3i12668!4i256!2m3!1e0!2sm!3i789555332!2m3!1e2!2sspotlit!5i1!3m13!2sen-US!3sUS!5e289!12m5!1e68!2m2!1sset!2sRoadmap!4e2!12m3!1e37!2m1!1ssmartmaps!4e0!5m2!1e3!5f2!23i47083502!27m14!299174093m13!14m12!1m8!1m2!1y0!2y15267456718488781015!2s%2Ffake_latlng_mid!4m2!1x377468800!2x3451952696!8b1!2b0!6b0!8b0'
+    key:
+    - AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y
+    token:
+    - '[REDACTED]'
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: image/webp
+  authentication:
+    present: true
+    observed_type: cookie
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000817
+  timestamp: '2026-08-07T12:30:33.746000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-60
+  source_fingerprint: a8a675f23c1f1d592c30c248d88418b1b350c8ae6acdff4525c0462fb665b0f6
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 60
+  actor: mrscargo
+  channel: WEB
+  host: www.google.com
+  scheme: https
+  method: GET
+  path: /maps/vt
+  concrete_url: https://www.google.com/maps/vt?pb=%211m5%211m4%211i15%212i8711%213i12668%214i256%212m3%211e0%212sm%213i789555332%212m3%211e2%212sspotlit%215i1%213m13%212sen-US%213sUS%215e289%2112m5%211e68%212m2%211sset%212sRoadmap%214e2%2112m3%211e37%212m1%211ssmartmaps%214e0%215m2%211e3%215f2%2123i47083502%2127m14%21299174093m13%2114m12%211m8%211m2%211y0%212y15267456718488781015%212s%2Ffake_latlng_mid%214m2%211x377468800%212x3451952696%218b1%212b0%216b0%218b0&key=AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y&token=[REDACTED]
+  query_parameters:
+    pb:
+    - '!1m5!1m4!1i15!2i8711!3i12668!4i256!2m3!1e0!2sm!3i789555332!2m3!1e2!2sspotlit!5i1!3m13!2sen-US!3sUS!5e289!12m5!1e68!2m2!1sset!2sRoadmap!4e2!12m3!1e37!2m1!1ssmartmaps!4e0!5m2!1e3!5f2!23i47083502!27m14!299174093m13!14m12!1m8!1m2!1y0!2y15267456718488781015!2s%2Ffake_latlng_mid!4m2!1x377468800!2x3451952696!8b1!2b0!6b0!8b0'
+    key:
+    - AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y
+    token:
+    - '[REDACTED]'
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: image/webp
+  authentication:
+    present: true
+    observed_type: cookie
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000818
+  timestamp: '2026-08-07T12:30:33.746000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-61
+  source_fingerprint: 93c1de4a16499def62339f74239c03a09fbf848687ad18b615dd3ceba2f6ea54
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 61
+  actor: mrscargo
+  channel: WEB
+  host: www.google.com
+  scheme: https
+  method: GET
+  path: /maps/vt
+  concrete_url: https://www.google.com/maps/vt?pb=%211m5%211m4%211i15%212i8711%213i12669%214i256%212m3%211e0%212sm%213i789555452%212m3%211e2%212sspotlit%215i1%213m13%212sen-US%213sUS%215e289%2112m5%211e68%212m2%211sset%212sRoadmap%214e2%2112m3%211e37%212m1%211ssmartmaps%214e0%215m2%211e3%215f2%2123i47083502%2127m14%21299174093m13%2114m12%211m8%211m2%211y0%212y15267456718488781015%212s%2Ffake_latlng_mid%214m2%211x377468800%212x3451952696%218b1%212b0%216b0%218b0&key=AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y&token=[REDACTED]
+  query_parameters:
+    pb:
+    - '!1m5!1m4!1i15!2i8711!3i12669!4i256!2m3!1e0!2sm!3i789555452!2m3!1e2!2sspotlit!5i1!3m13!2sen-US!3sUS!5e289!12m5!1e68!2m2!1sset!2sRoadmap!4e2!12m3!1e37!2m1!1ssmartmaps!4e0!5m2!1e3!5f2!23i47083502!27m14!299174093m13!14m12!1m8!1m2!1y0!2y15267456718488781015!2s%2Ffake_latlng_mid!4m2!1x377468800!2x3451952696!8b1!2b0!6b0!8b0'
+    key:
+    - AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y
+    token:
+    - '[REDACTED]'
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: image/webp
+  authentication:
+    present: true
+    observed_type: cookie
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000819
+  timestamp: '2026-08-07T12:30:33.747000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-62
+  source_fingerprint: 9ed4d5c8c7791af50778e601923dd1da3f0fc7775d6c4cd2758b964c989c8c2f
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 62
+  actor: mrscargo
+  channel: WEB
+  host: www.google.com
+  scheme: https
+  method: GET
+  path: /maps/vt
+  concrete_url: https://www.google.com/maps/vt?pb=%211m5%211m4%211i15%212i8708%213i12669%214i256%212m3%211e0%212sm%213i789555452%212m3%211e2%212sspotlit%215i1%213m13%212sen-US%213sUS%215e289%2112m5%211e68%212m2%211sset%212sRoadmap%214e2%2112m3%211e37%212m1%211ssmartmaps%214e0%215m2%211e3%215f2%2123i47083502%2127m14%21299174093m13%2114m12%211m8%211m2%211y0%212y15267456718488781015%212s%2Ffake_latlng_mid%214m2%211x377468800%212x3451952696%218b1%212b0%216b0%218b0&key=AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y&token=[REDACTED]
+  query_parameters:
+    pb:
+    - '!1m5!1m4!1i15!2i8708!3i12669!4i256!2m3!1e0!2sm!3i789555452!2m3!1e2!2sspotlit!5i1!3m13!2sen-US!3sUS!5e289!12m5!1e68!2m2!1sset!2sRoadmap!4e2!12m3!1e37!2m1!1ssmartmaps!4e0!5m2!1e3!5f2!23i47083502!27m14!299174093m13!14m12!1m8!1m2!1y0!2y15267456718488781015!2s%2Ffake_latlng_mid!4m2!1x377468800!2x3451952696!8b1!2b0!6b0!8b0'
+    key:
+    - AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y
+    token:
+    - '[REDACTED]'
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: image/webp
+  authentication:
+    present: true
+    observed_type: cookie
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000820
+  timestamp: '2026-08-07T12:30:33.747000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-63
+  source_fingerprint: 94a9f8d59a48955cf0fbdc04bab34443dc5257e22ee3b4124ef29ec8baf0e983
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 63
+  actor: mrscargo
+  channel: WEB
+  host: www.google.com
+  scheme: https
+  method: GET
+  path: /maps/vt
+  concrete_url: https://www.google.com/maps/vt?pb=%211m5%211m4%211i15%212i8708%213i12668%214i256%212m3%211e0%212sm%213i789555452%212m3%211e2%212sspotlit%215i1%213m13%212sen-US%213sUS%215e289%2112m5%211e68%212m2%211sset%212sRoadmap%214e2%2112m3%211e37%212m1%211ssmartmaps%214e0%215m2%211e3%215f2%2123i47083502%2127m14%21299174093m13%2114m12%211m8%211m2%211y0%212y15267456718488781015%212s%2Ffake_latlng_mid%214m2%211x377468800%212x3451952696%218b1%212b0%216b0%218b0&key=AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y&token=[REDACTED]
+  query_parameters:
+    pb:
+    - '!1m5!1m4!1i15!2i8708!3i12668!4i256!2m3!1e0!2sm!3i789555452!2m3!1e2!2sspotlit!5i1!3m13!2sen-US!3sUS!5e289!12m5!1e68!2m2!1sset!2sRoadmap!4e2!12m3!1e37!2m1!1ssmartmaps!4e0!5m2!1e3!5f2!23i47083502!27m14!299174093m13!14m12!1m8!1m2!1y0!2y15267456718488781015!2s%2Ffake_latlng_mid!4m2!1x377468800!2x3451952696!8b1!2b0!6b0!8b0'
+    key:
+    - AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y
+    token:
+    - '[REDACTED]'
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: image/webp
+  authentication:
+    present: true
+    observed_type: cookie
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000821
+  timestamp: '2026-08-07T12:30:33.747000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-64
+  source_fingerprint: 1b3bd9c45f07f1a35c4a32ae66a6f2093004f0832357063cfe236c746d908cdf
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 64
+  actor: mrscargo
+  channel: WEB
+  host: www.google.com
+  scheme: https
+  method: GET
+  path: /maps/vt
+  concrete_url: https://www.google.com/maps/vt?pb=%211m5%211m4%211i15%212i8712%213i12668%214i256%212m3%211e0%212sm%213i789555452%212m3%211e2%212sspotlit%215i1%213m13%212sen-US%213sUS%215e289%2112m5%211e68%212m2%211sset%212sRoadmap%214e2%2112m3%211e37%212m1%211ssmartmaps%214e0%215m2%211e3%215f2%2123i47083502%2127m14%21299174093m13%2114m12%211m8%211m2%211y0%212y15267456718488781015%212s%2Ffake_latlng_mid%214m2%211x377468800%212x3451952696%218b1%212b0%216b0%218b0&key=AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y&token=[REDACTED]
+  query_parameters:
+    pb:
+    - '!1m5!1m4!1i15!2i8712!3i12668!4i256!2m3!1e0!2sm!3i789555452!2m3!1e2!2sspotlit!5i1!3m13!2sen-US!3sUS!5e289!12m5!1e68!2m2!1sset!2sRoadmap!4e2!12m3!1e37!2m1!1ssmartmaps!4e0!5m2!1e3!5f2!23i47083502!27m14!299174093m13!14m12!1m8!1m2!1y0!2y15267456718488781015!2s%2Ffake_latlng_mid!4m2!1x377468800!2x3451952696!8b1!2b0!6b0!8b0'
+    key:
+    - AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y
+    token:
+    - '[REDACTED]'
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: image/webp
+  authentication:
+    present: true
+    observed_type: cookie
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000822
+  timestamp: '2026-08-07T12:30:33.748000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-65
+  source_fingerprint: b9285c3e863615dde27c33ac5870566b705f0f94be4b3a1095f7b068d3190c6b
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 65
+  actor: mrscargo
+  channel: WEB
+  host: www.google.com
+  scheme: https
+  method: GET
+  path: /maps/vt
+  concrete_url: https://www.google.com/maps/vt?pb=%211m5%211m4%211i15%212i8712%213i12669%214i256%212m3%211e0%212sm%213i789555452%212m3%211e2%212sspotlit%215i1%213m13%212sen-US%213sUS%215e289%2112m5%211e68%212m2%211sset%212sRoadmap%214e2%2112m3%211e37%212m1%211ssmartmaps%214e0%215m2%211e3%215f2%2123i47083502%2127m14%21299174093m13%2114m12%211m8%211m2%211y0%212y15267456718488781015%212s%2Ffake_latlng_mid%214m2%211x377468800%212x3451952696%218b1%212b0%216b0%218b0&key=AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y&token=[REDACTED]
+  query_parameters:
+    pb:
+    - '!1m5!1m4!1i15!2i8712!3i12669!4i256!2m3!1e0!2sm!3i789555452!2m3!1e2!2sspotlit!5i1!3m13!2sen-US!3sUS!5e289!12m5!1e68!2m2!1sset!2sRoadmap!4e2!12m3!1e37!2m1!1ssmartmaps!4e0!5m2!1e3!5f2!23i47083502!27m14!299174093m13!14m12!1m8!1m2!1y0!2y15267456718488781015!2s%2Ffake_latlng_mid!4m2!1x377468800!2x3451952696!8b1!2b0!6b0!8b0'
+    key:
+    - AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y
+    token:
+    - '[REDACTED]'
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: image/webp
+  authentication:
+    present: true
+    observed_type: cookie
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000823
+  timestamp: '2026-08-07T12:30:33.766000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-66
+  source_fingerprint: 08628ba28a20762bfb4a73cdc86784bb323dd89175a3ca662b54b5bbea24da42
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 66
+  actor: mrscargo
+  channel: WEB
+  host: www.google.com
+  scheme: https
+  method: GET
+  path: /maps/vt
+  concrete_url: https://www.google.com/maps/vt?pb=%211m4%211m3%211i15%212i8708%213i12668%211m4%211m3%211i15%212i8708%213i12669%211m4%211m3%211i15%212i8709%213i12668%211m4%211m3%211i15%212i8709%213i12669%211m4%211m3%211i15%212i8710%213i12668%211m4%211m3%211i15%212i8710%213i12669%211m4%211m3%211i15%212i8711%213i12668%211m4%211m3%211i15%212i8711%213i12669%211m4%211m3%211i15%212i8712%213i12668%211m4%211m3%211i15%212i8712%213i12669%212m3%211e0%212sm%213i789555476%212m3%211e2%212sspotlit%215i1%213m13%212sen-US%213sUS%215e289%2112m5%211e68%212m2%211sset%212sRoadmap%214e2%2112m3%211e37%212m1%211ssmartmaps%214e3%2112m2%215b1%216b1%2127m14%21299174093m13%2114m12%211m8%211m2%211y0%212y15267456718488781015%212s%2Ffake_latlng_mid%214m2%211x377468800%212x3451952696%218b1%212b0%216b0%218b0&key=AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y&token=[REDACTED]
+  query_parameters:
+    pb:
+    - '!1m4!1m3!1i15!2i8708!3i12668!1m4!1m3!1i15!2i8708!3i12669!1m4!1m3!1i15!2i8709!3i12668!1m4!1m3!1i15!2i8709!3i12669!1m4!1m3!1i15!2i8710!3i12668!1m4!1m3!1i15!2i8710!3i12669!1m4!1m3!1i15!2i8711!3i12668!1m4!1m3!1i15!2i8711!3i12669!1m4!1m3!1i15!2i8712!3i12668!1m4!1m3!1i15!2i8712!3i12669!2m3!1e0!2sm!3i789555476!2m3!1e2!2sspotlit!5i1!3m13!2sen-US!3sUS!5e289!12m5!1e68!2m2!1sset!2sRoadmap!4e2!12m3!1e37!2m1!1ssmartmaps!4e3!12m2!5b1!6b1!27m14!299174093m13!14m12!1m8!1m2!1y0!2y15267456718488781015!2s%2Ffake_latlng_mid!4m2!1x377468800!2x3451952696!8b1!2b0!6b0!8b0'
+    key:
+    - AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y
+    token:
+    - '[REDACTED]'
+  request_fields: []
+  response_fields:
+  - '[].base'
+  - '[].features'
+  - '[].features[].a'
+  - '[].features[].bb'
+  - '[].features[].c'
+  - '[].features[].id'
+  - '[].features[].io'
+  - '[].id'
+  - '[].layer'
+  - '[].zrange'
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json
+  authentication:
+    present: true
+    observed_type: cookie
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000824
+  timestamp: '2026-08-07T12:30:35.065000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-67
+  source_fingerprint: a47aa8e7f4dcd564d884dc6995a961fd259a8b6f5c2db6f45ebe18507139d5d4
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 67
+  actor: mrscargo
+  channel: WEB
+  host: fonts.googleapis.com
+  scheme: https
+  method: GET
+  path: /css
+  concrete_url: https://fonts.googleapis.com/css?family=Google+Sans+Text:400&text=%E2%86%90%E2%86%92%E2%86%91%E2%86%93&lang=en
+  query_parameters:
+    family:
+    - Google+Sans+Text:400
+    text:
+    - '%E2%86%90%E2%86%92%E2%86%91%E2%86%93'
+    lang:
+    - en
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/css
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000825
+  timestamp: '2026-08-07T12:30:35.066000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-68
+  source_fingerprint: f50c694cbfa7660a17ab4340628532bbf8c32f384e50c1d23cfe743ff2810ea5
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 68
+  actor: mrscargo
+  channel: WEB
+  host: fonts.googleapis.com
+  scheme: https
+  method: GET
+  path: /css
+  concrete_url: https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Google+Sans:400,500,700|Google+Sans+Text:400,500,700&lang=en
+  query_parameters:
+    family:
+    - Roboto:300,400,500,700|Google+Sans:400,500,700|Google+Sans+Text:400,500,700
+    lang:
+    - en
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/css
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000826
+  timestamp: '2026-08-07T12:30:35.066000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-69
+  source_fingerprint: 8227ae2e8b3806d376110e3ae35ac570ab19135620e100817170ddff6268e652
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 69
+  actor: mrscargo
+  channel: WEB
+  host: fonts.googleapis.com
+  scheme: https
+  method: GET
+  path: /css2
+  concrete_url: https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&text=%EE%97%8C%EE%94%AF%EE%BF%B7%EE%94%B6%EE%A7%B9&lang=en
+  query_parameters:
+    family:
+    - Material+Symbols+Outlined
+    text:
+    - '%EE%97%8C%EE%94%AF%EE%BF%B7%EE%94%B6%EE%A7%B9'
+    lang:
+    - en
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/css
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000827
+  timestamp: '2026-08-07T12:30:35.381000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-70
+  source_fingerprint: 946f216bd8662e99d4b7a158a38f07838ca7154a261a907c1d3ab284e10c0f91
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 70
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: POST
+  path: /$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/GetViewportInfo
+  concrete_url: https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/GetViewportInfo
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: application/json+protobuf
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000828
+  timestamp: '2026-08-07T12:30:35.385000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-71
+  source_fingerprint: 84e793ab85732bf9f87c43ae14aec7e67ad82e7fab7b34dd85c30bb57bde9dfd
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 71
+  actor: mrscargo
+  channel: WEB
+  host: maps.googleapis.com
+  scheme: https
+  method: OPTIONS
+  path: /$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/GetViewportInfo
+  concrete_url: https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/GetViewportInfo
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: text/html
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000829
+  timestamp: '2026-08-07T12:30:35.397000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-72
+  source_fingerprint: 54878cb53bacd58f41d5c42b9fcc035aee4d662f27c1dae9959d5ec3c4dca605
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 72
+  actor: mrscargo
+  channel: WEB
+  host: www.google.com
+  scheme: https
+  method: GET
+  path: /maps/vt
+  concrete_url: https://www.google.com/maps/vt?pb=%211m5%211m4%211i13%212i2177%213i3167%214i256%212m1%211e1%213m12%212sen-US%213sUS%215e289%2112m3%211e37%212m1%211ssmartmaps%2112m4%211e26%212m2%211sstyles%212zcy5lOmx8cC52Om9mZg%214e0%215m2%211e3%215f2%2123i47083502&key=AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y&token=[REDACTED]
+  query_parameters:
+    pb:
+    - '!1m5!1m4!1i13!2i2177!3i3167!4i256!2m1!1e1!3m12!2sen-US!3sUS!5e289!12m3!1e37!2m1!1ssmartmaps!12m4!1e26!2m2!1sstyles!2zcy5lOmx8cC52Om9mZg!4e0!5m2!1e3!5f2!23i47083502'
+    key:
+    - AIzaSyCmL18misQw9KdwqGaw3zHkitj8vG6QF2Y
+    token:
+    - '[REDACTED]'
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: image/webp
+  authentication:
+    present: true
+    observed_type: cookie
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED
+- id: OBS-000830
+  timestamp: '2026-08-07T12:30:36.209000Z'
+  source: HAR
+  source_reference: observations/har/mrscargo-crapi-product-4828d216-redacted.har#entry-73
+  source_fingerprint: 58b75bf2f60639ff18ed20de7130813775325747f8bbb53b54ac64214fd86d7b
+  capture_identity: observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  session_identity: mrscargo:observations/har/mrscargo-crapi-product-4828d216-redacted.har
+  sequence_position: 73
+  actor: mrscargo
+  channel: WEB
+  host: fonts.gstatic.com
+  scheme: https
+  method: GET
+  path: /s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+  concrete_url: https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBA.woff2
+  query_parameters: {}
+  request_fields: []
+  response_fields: []
+  relevant_header_names:
+  - content-type
+  - referer
+  redaction_metadata:
+  - capture redacted before persistence
+  - credential values removed
+  status_code: 200
+  content_type: font/woff2
+  authentication:
+    present: false
+    observed_type: none
+    knowledge_status: OBSERVED
+  knowledge_status: OBSERVED

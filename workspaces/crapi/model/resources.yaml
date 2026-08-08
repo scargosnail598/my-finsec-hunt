@@ -37,7 +37,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 094158cbe45cdf8a85b381f49a76ea92144cc0884931a6868df41f917040b284
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-002
   key: resource:%f0%9f%a4%96
   name: '%F0%9F%A4%96'
@@ -80,6 +80,7 @@ resources:
     - OBS-000582
     - OBS-000597
     - OBS-000693
+    - OBS-000776
     knowledge_status: INFERRED
   states: []
   sensitive_fields: []
@@ -110,14 +111,15 @@ resources:
   - OBS-000582
   - OBS-000597
   - OBS-000693
+  - OBS-000776
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 909c5375035dbe0d30b83375855edccc7f430c1fdaf6538b15a3093c9c5fdf59
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    generated_checksum: 684a8bba2509cbf9d7f52152851e7954a90fe4cdf9b86324ccd4f2812c40b070
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-004
   key: resource:auth
   name: Auth
@@ -165,6 +167,8 @@ resources:
     - OBS-000594
     - OBS-000657
     - OBS-000717
+    - OBS-000758
+    - OBS-000790
     knowledge_status: INFERRED
   states: []
   sensitive_fields:
@@ -201,14 +205,16 @@ resources:
   - OBS-000594
   - OBS-000657
   - OBS-000717
+  - OBS-000758
+  - OBS-000790
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 08b619ac7419e6fc373b9011df8e64d15372ab96f717fd4e85ec40b481aafb8e
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    generated_checksum: e6f04ddf77257c7eb1c70de6c569a5735d5fa558a0ff3425439f4686992e6df4
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-028
   key: resource:coupon
   name: Coupon
@@ -244,7 +250,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: bc16a9f7cdc6817f7bc0962b4da5026c3dfc3859dfd0f20ac6a0270a7e9a4ba9
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-006
   key: resource:dashboard
   name: Dashboard
@@ -302,6 +308,8 @@ resources:
     - OBS-000656
     - OBS-000714
     - OBS-000716
+    - OBS-000757
+    - OBS-000789
     knowledge_status: INFERRED
   states: []
   sensitive_fields: []
@@ -340,14 +348,16 @@ resources:
   - OBS-000656
   - OBS-000714
   - OBS-000716
+  - OBS-000757
+  - OBS-000789
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: d039e6bbb2fb70463083c6a54c1ab29a8783589ac4fa8477046f5866c955e6c8
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    generated_checksum: eed42765c4a383e0cc42456f620400a30604bc7723da88676ae11aefffc8fe4c
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-029
   key: resource:email
   name: Email
@@ -379,7 +389,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: f03d63b1cdc0c05f3670805b8c2beaf8d1056cfde99f6a4b55319f0a4557e9d6
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-016
   key: resource:manifest.json
   name: Manifest.Json
@@ -412,6 +422,7 @@ resources:
     - OBS-000579
     - OBS-000592
     - OBS-000690
+    - OBS-000772
     knowledge_status: INFERRED
   states: []
   sensitive_fields: []
@@ -432,14 +443,15 @@ resources:
   - OBS-000579
   - OBS-000592
   - OBS-000690
+  - OBS-000772
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 6335fac2007dcf1fc2564f8f203c1b28cac8507b00c1052fcf2acddd230678bc
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    generated_checksum: 12274d9d240c7bdc6d4080743be7e85eb745c4fd576c03e7e73777ddb470c9ba
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-022
   key: resource:mechanic
   name: Mechanic
@@ -503,7 +515,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 45b17a6c4b4313bd7fb06a3a64ad3b1f2de27c02a853c4dfa47eac08fc8e315b
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-023
   key: resource:mechanicreport
   name: MechanicReport
@@ -549,7 +561,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: df4a01f978e1372a0c2d7ba8f440098e823fb68a44d04dd228e7142827e57c33
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-007
   key: resource:order
   name: Order
@@ -575,6 +587,8 @@ resources:
     - OBS-000269
     - OBS-000474
     - OBS-000642
+    - OBS-000780
+    - OBS-000786
     knowledge_status: INFERRED
   - endpoint: EP-010
     action: all
@@ -597,6 +611,9 @@ resources:
     - OBS-000704
     - OBS-000707
     - OBS-000710
+    - OBS-000781
+    - OBS-000783
+    - OBS-000787
     knowledge_status: INFERRED
   - endpoint: EP-021
     action: return
@@ -625,6 +642,8 @@ resources:
     - OBS-000702
     - OBS-000706
     - OBS-000709
+    - OBS-000782
+    - OBS-000788
     knowledge_status: INFERRED
   states: []
   sensitive_fields:
@@ -673,14 +692,21 @@ resources:
   - OBS-000709
   - OBS-000710
   - OBS-000711
+  - OBS-000780
+  - OBS-000781
+  - OBS-000782
+  - OBS-000783
+  - OBS-000786
+  - OBS-000787
+  - OBS-000788
   confidence: medium
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 1cd47264640fa677a61dd5815bf5834e70ff59b6395b526bfd49a846dd6a5704
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    generated_checksum: a1a686dc8c72625ca77929064e3da077e6a496626602605fa04610b32ed09a46
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-030
   key: resource:phonenumber
   name: PhoneNumber
@@ -715,7 +741,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 41a33c7c3b58dbb75fa85f2933fda1ff39b804476ca70e83f2bfe2536b7c64ed
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-008
   key: resource:picture
   name: Picture
@@ -750,7 +776,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: db2960f84d8c93a05f4cf2bb6a93a9352810b208026f4cb2d7d25c6cecbe803d
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-009
   key: resource:post
   name: Post
@@ -862,7 +888,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 4954e6fb4ed75de4eb067e2e4995b456873d48bcd6e1013f56c146dc3e1587d2
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-010
   key: resource:product
   name: Product
@@ -891,6 +917,9 @@ resources:
     - OBS-000471
     - OBS-000639
     - OBS-000695
+    - OBS-000768
+    - OBS-000774
+    - OBS-000785
     knowledge_status: INFERRED
   states: []
   sensitive_fields: []
@@ -907,14 +936,17 @@ resources:
   - OBS-000471
   - OBS-000639
   - OBS-000695
+  - OBS-000768
+  - OBS-000774
+  - OBS-000785
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: d058d0faae439ff92d64ed8c533ad2d8c8881653c37e2a004f3d35f166c9f157
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    generated_checksum: a7dadd25956f9f7a711cb6c34f9e2e0c1a4c307fad49b8c6b35209e5bbbacec0
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-025
   key: resource:servicereport
   name: ServiceReport
@@ -959,7 +991,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: bb79d83e856652c5396dee31ef1b9f6231aa684778853535040899a63c93194d
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-031
   key: resource:servicerequest
   name: ServiceRequest
@@ -1004,7 +1036,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: d7271779078620b48bf65cddff625c53b20e6e44c2b2d059e06ee6ddb2d07c8a
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-026
   key: resource:shop
   name: Shop
@@ -1023,20 +1055,22 @@ resources:
     authentication_required: false
     evidence:
     - OBS-000190
+    - OBS-000769
     knowledge_status: INFERRED
   states: []
   sensitive_fields: []
   evidence:
   - EP-049
   - OBS-000190
+  - OBS-000769
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 998e72cb48400fe4055e2ac9843e5b666530737d214f414fb2d762aa5ca6993c
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    generated_checksum: 9a4beb86e874aed7eda86d122d28d36a50fcca31adb16799743aedff47b3922c
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-017
   key: resource:state
   name: State
@@ -1069,6 +1103,7 @@ resources:
     - OBS-000583
     - OBS-000602
     - OBS-000694
+    - OBS-000779
     knowledge_status: INFERRED
   states: []
   sensitive_fields: []
@@ -1089,14 +1124,15 @@ resources:
   - OBS-000583
   - OBS-000602
   - OBS-000694
+  - OBS-000779
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: bca2fcdaa9819bedda5462241a9eb7653157ad3c7727bb066a57543606f97dd9
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    generated_checksum: 844747d824617c556f3ad41f05cd8411245f74c40820870dcd159fd0afa541b9
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-014
   key: resource:vehicle
   name: Vehicle
@@ -1148,9 +1184,12 @@ resources:
     - OBS-000598
     - OBS-000662
     - OBS-000718
+    - OBS-000759
+    - OBS-000791
     knowledge_status: INFERRED
   states: []
-  sensitive_fields: []
+  sensitive_fields:
+  - '[].status'
   evidence:
   - EP-007
   - EP-062
@@ -1180,14 +1219,16 @@ resources:
   - OBS-000598
   - OBS-000662
   - OBS-000718
+  - OBS-000759
+  - OBS-000791
   confidence: low
   knowledge_status: INFERRED
   disposition: ACTIVE
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 366fab92cb071b5f3aef161eeb5ce6ae9a4f1e76610129585f7fc082c9253ca8
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    generated_checksum: 7eb3bb181d0eedff84fb6c2a6c30c7c4f5c6c7a53cd6c5860d7baa11c26018ec
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-027
   key: resource:vehicleservicedashboard
   name: VehicleServiceDashboard
@@ -1219,7 +1260,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: e5d7da26c8a2f1d9b1497b641bdb231751dcdb550aed1d21739c776a1eaae719
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-015
   key: resource:video
   name: Video
@@ -1263,7 +1304,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 392dfb4c7d5c0d03872cb9cb44bd87a7be50bb7f1c01dbd7e3d3ba963d7e12e0
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: RES-018
   key: resource:0p96308cfvj2b8j9g
   name: 0P96308Cfvj2B8J9G

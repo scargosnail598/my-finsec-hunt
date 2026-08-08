@@ -16,54 +16,10 @@ business_invariants:
   - OBS-000269
   - OBS-000474
   - OBS-000642
+  - OBS-000786
   contradicting_observations: []
   source_of_inference:
   - 'Observed typed client-controlled identifier fields: $.product_id.'
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  prerequisite_action: null
-  dependent_action: null
-  prerequisite_position: null
-  dependent_position: null
-  support_count: 0
-  support_ratio: 0.0
-  causal_evidence: []
-  counterexamples: []
-  confidence: MODERATE_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 6 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-0DB798612BAFAB6C
-  statement: Each state-changing step in ServiceRequest lifecycle should remain bound
-    to an authorized workflow actor.
-  invariant_type: ACTOR_BINDING
-  workflow_family_id: WFAM-250D444EC7F95DCE
-  resource_types:
-  - ServiceRequest
-  - servicerequest
-  supporting_observations:
-  - OBS-000176
-  - OBS-000256
-  - OBS-000321
-  - OBS-000462
-  - OBS-000511
-  - OBS-000575
-  - OBS-000686
-  contradicting_observations: []
-  source_of_inference:
-  - 'Observed actors: mrscargo, saeedmehmandoust.'
-  - 'Cross-actor comparison links: 1.'
   mutable_value_fields: []
   authoritative_value_fields: []
   source_endpoint_ids: []
@@ -142,6 +98,7 @@ business_invariants:
   - Order
   - order
   - product
+  - transaction
   supporting_observations:
   - OBS-000012
   - OBS-000059
@@ -215,6 +172,13 @@ business_invariants:
   - OBS-000474
   - OBS-000642
   - OBS-000695
+  - OBS-000757
+  - OBS-000768
+  - OBS-000774
+  - OBS-000780
+  - OBS-000785
+  - OBS-000786
+  - OBS-000789
   contradicting_observations: []
   source_of_inference:
   - 'Observed value fields: $.credit, $.quantity.'
@@ -236,7 +200,7 @@ business_invariants:
   counterexamples: []
   confidence: MODERATE_EVIDENCE
   confidence_explanation:
-  - The rule is derived from 6 workflow instance(s).
+  - The rule is derived from 7 workflow instance(s).
   - Observed frequency is evidence of a pattern, not proof that the backend requires
     it.
   validation_requirements:
@@ -285,50 +249,6 @@ business_invariants:
   - Capture authoritative state before and after the mutation.
   state_changing_validation: true
   epistemic_status: INFERRED_PATTERN
-- id: BINV-7F5E2F6223F789E8
-  statement: Identifiers used by ServiceRequest lifecycle should remain bound to the
-    same controlled resource lifecycle.
-  invariant_type: RESOURCE_BINDING
-  workflow_family_id: WFAM-250D444EC7F95DCE
-  resource_types:
-  - ServiceRequest
-  - servicerequest
-  supporting_observations:
-  - OBS-000176
-  - OBS-000256
-  - OBS-000321
-  - OBS-000462
-  - OBS-000511
-  - OBS-000575
-  - OBS-000686
-  contradicting_observations: []
-  source_of_inference:
-  - 'Observed typed client-controlled identifier fields: path.serviceRequestId.'
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  prerequisite_action: null
-  dependent_action: null
-  prerequisite_position: null
-  dependent_position: null
-  support_count: 0
-  support_ratio: 0.0
-  causal_evidence: []
-  counterexamples: []
-  confidence: MODERATE_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 7 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
 - id: BINV-8A4E0C10BC17F9EE
   statement: Identifiers used by order lifecycle should remain bound to the same controlled
     resource lifecycle.
@@ -338,6 +258,7 @@ business_invariants:
   - Order
   - order
   - product
+  - transaction
   supporting_observations:
   - OBS-000012
   - OBS-000059
@@ -384,6 +305,8 @@ business_invariants:
   - OBS-000702
   - OBS-000706
   - OBS-000709
+  - OBS-000782
+  - OBS-000788
   contradicting_observations: []
   source_of_inference:
   - 'Observed readable item route: GET /workshop/api/shop/orders/{orderId}.'
@@ -418,7 +341,7 @@ business_invariants:
   counterexamples: []
   confidence: MODERATE_EVIDENCE
   confidence_explanation:
-  - The rule is derived from 9 workflow instance(s).
+  - The rule is derived from 12 workflow instance(s).
   - Observed frequency is evidence of a pattern, not proof that the backend requires
     it.
   validation_requirements:
@@ -436,6 +359,7 @@ business_invariants:
   - Order
   - order
   - product
+  - transaction
   supporting_observations:
   - OBS-000012
   - OBS-000059
@@ -514,6 +438,75 @@ business_invariants:
   - Capture authoritative state before and after the mutation.
   state_changing_validation: true
   epistemic_status: INFERRED_PATTERN
+- id: BINV-CB1AEAFFBE2E6607
+  statement: Amounts, quantities, and linked financial effects in order lifecycle
+    should remain internally consistent.
+  invariant_type: VALUE_CONSERVATION
+  workflow_family_id: WFAM-F57F3F420703E30E
+  resource_types:
+  - Order
+  - account
+  - order
+  - product
+  - transaction
+  supporting_observations:
+  - OBS-000002
+  - OBS-000004
+  - OBS-000007
+  - OBS-000010
+  - OBS-000019
+  - OBS-000021
+  - OBS-000024
+  - OBS-000029
+  - OBS-000032
+  - OBS-000047
+  - OBS-000089
+  - OBS-000104
+  - OBS-000107
+  - OBS-000109
+  - OBS-000111
+  - OBS-000695
+  - OBS-000757
+  - OBS-000768
+  - OBS-000774
+  - OBS-000780
+  - OBS-000782
+  - OBS-000785
+  - OBS-000786
+  - OBS-000789
+  contradicting_observations: []
+  source_of_inference:
+  - 'Observed value fields: $.credit, $.order.product.price, $.order.quantity, $.quantity.'
+  mutable_value_fields:
+  - $.quantity
+  authoritative_value_fields:
+  - $.credit
+  - $.order.product.price
+  - $.order.quantity
+  source_endpoint_ids: []
+  candidate_methods: []
+  candidate_paths: []
+  candidate_fields: []
+  prerequisite_action: null
+  dependent_action: null
+  prerequisite_position: null
+  dependent_position: null
+  support_count: 0
+  support_ratio: 0.0
+  causal_evidence: []
+  counterexamples: []
+  confidence: WEAK_EVIDENCE
+  confidence_explanation:
+  - The rule is derived from 1 workflow instance(s).
+  - Observed frequency is evidence of a pattern, not proof that the backend requires
+    it.
+  - One workflow instance cannot establish a mandatory business rule.
+  validation_requirements:
+  - Use only researcher-controlled actors and resources.
+  - Capture the mutation request and immediate response.
+  - Capture authoritative state before and after the mutation.
+  state_changing_validation: true
+  epistemic_status: INFERRED_PATTERN
 - id: BINV-D8C763384D371458
   statement: Each state-changing step in order lifecycle should remain bound to an
     authorized workflow actor.
@@ -530,6 +523,7 @@ business_invariants:
   - OBS-000269
   - OBS-000474
   - OBS-000642
+  - OBS-000786
   contradicting_observations: []
   source_of_inference:
   - 'Observed actors: mrscargo, saeedmehmandoust.'
@@ -550,7 +544,7 @@ business_invariants:
   counterexamples: []
   confidence: MODERATE_EVIDENCE
   confidence_explanation:
-  - The rule is derived from 6 workflow instance(s).
+  - The rule is derived from 7 workflow instance(s).
   - Observed frequency is evidence of a pattern, not proof that the backend requires
     it.
   validation_requirements:

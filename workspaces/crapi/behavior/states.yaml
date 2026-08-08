@@ -28,6 +28,10 @@ states:
   - OBS-000707
   - OBS-000710
   - OBS-000711
+  - OBS-000781
+  - OBS-000783
+  - OBS-000787
+  - OBS-000788
   confidence: HIGH_EVIDENCE
   epistemic_status: OBSERVED_FACT
 - id: STATE-62C57DA6278C7CD2
@@ -46,6 +50,10 @@ states:
   - OBS-000707
   - OBS-000709
   - OBS-000710
+  - OBS-000781
+  - OBS-000782
+  - OBS-000783
+  - OBS-000787
   confidence: HIGH_EVIDENCE
   epistemic_status: OBSERVED_FACT
 - id: STATE-67ECA7DF8F872590
@@ -56,6 +64,15 @@ states:
   - OBS-000326
   - OBS-000580
   - OBS-000691
+  confidence: HIGH_EVIDENCE
+  epistemic_status: OBSERVED_FACT
+- id: STATE-79075F9E3E0CE597
+  resource_type: vehicle
+  name: INACTIVE
+  derivation: EXPLICIT_FIELD
+  observations:
+  - OBS-000759
+  - OBS-000791
   confidence: HIGH_EVIDENCE
   epistemic_status: OBSERVED_FACT
 - id: STATE-7A0D9A8EFB58D7F4
@@ -75,6 +92,8 @@ states:
   - OBS-000124
   - OBS-000330
   - OBS-000584
+  - OBS-000758
+  - OBS-000790
   confidence: HIGH_EVIDENCE
   epistemic_status: OBSERVED_FACT
 - id: STATE-AAAAD6E36CC2A2B1
@@ -144,6 +163,8 @@ states:
   - OBS-000269
   - OBS-000474
   - OBS-000642
+  - OBS-000780
+  - OBS-000786
   confidence: WEAK_EVIDENCE
   epistemic_status: INFERRED_PATTERN
 - id: STATE-FB2E4A915C158CE7

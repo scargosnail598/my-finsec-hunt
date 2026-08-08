@@ -281,6 +281,110 @@ HypothesisFamily = Literal[
 ]
 
 
+class SemanticLabelConfidence(StrEnum):
+    """Deterministic quality level for researcher-facing semantic names."""
+
+    HIGH = "HIGH"
+    MEDIUM = "MEDIUM"
+    LOW = "LOW"
+
+
+class SemanticLabelBasis(StrEnum):
+    """Evidence used to derive a researcher-facing action or resource label."""
+
+    ENDPOINT_MODEL = "ENDPOINT_MODEL"
+    ROUTE_AND_METHOD = "ROUTE_AND_METHOD"
+    ACTION_STRUCTURE = "ACTION_STRUCTURE"
+    NEUTRAL_FALLBACK = "NEUTRAL_FALLBACK"
+
+
+class HypothesisConfidence(StrEnum):
+    """Security-question confidence, kept separate from test readiness."""
+
+    HIGH = "HIGH"
+    MEDIUM = "MEDIUM"
+    LOW = "LOW"
+
+
+class HypothesisEvidenceStrength(StrEnum):
+    """Named-evidence sufficiency independent from the legacy numeric score."""
+
+    STRONG = "STRONG"
+    MODERATE = "MODERATE"
+    WEAK = "WEAK"
+    INSUFFICIENT = "INSUFFICIENT"
+
+
+class HypothesisPromotion(StrEnum):
+    """Research presentation tier; this never grants execution authority."""
+
+    SUPPRESSED = "SUPPRESSED"
+    RESEARCH_LOW = "RESEARCH_LOW"
+    RESEARCH_MEDIUM = "RESEARCH_MEDIUM"
+    RESEARCH_HIGH = "RESEARCH_HIGH"
+    REVIEW_REQUIRED = "REVIEW_REQUIRED"
+    TEST_READY = "TEST_READY"
+
+
+class SemanticLabel(BehaviorModel):
+    """A normalized display label with deterministic quality provenance."""
+
+    value: str
+    normalized_value: str
+    confidence: SemanticLabelConfidence
+    basis: SemanticLabelBasis
+    hygiene_reasons: list[str] = Field(default_factory=list)
+
+
+class HypothesisSemantics(BehaviorModel):
+    """Canonical identity for one distinct researcher security question."""
+
+    vulnerability_family: HypothesisFamily
+    subject_action: str
+    subject_resource: str
+    violated_property: str
+    mutation_type: HypothesisFamily
+    actor_dimension: list[str] = Field(default_factory=list)
+    resource_dimension: list[str] = Field(default_factory=list)
+    state_dimension: list[str] = Field(default_factory=list)
+    prerequisite_dimension: list[str] = Field(default_factory=list)
+    endpoint_dimension: list[str] = Field(default_factory=list)
+    value_dimension: list[str] = Field(default_factory=list)
+    label: SemanticLabel
+    fingerprint: str
+    canonical_id: str
+
+
+class HypothesisEvidence(BehaviorModel):
+    """Named predicates explaining why a hypothesis deserves visibility."""
+
+    authenticated: bool = False
+    sensitive_operation: bool = False
+    sensitive_read: bool = False
+    state_changing: bool = False
+    controlled_identifier: bool = False
+    ownership_known: bool = False
+    cross_actor_baseline: bool = False
+    causal_prerequisites_proven: bool = False
+    business_relevant_resource: bool = False
+    independently_identifiable_resource: bool = False
+    cross_workflow_resource: bool = False
+    privileged_or_approval_context: bool = False
+    independent_support_count: int = Field(default=0, ge=0)
+
+
+class HypothesisQualification(BehaviorModel):
+    """Evidence-driven presentation decision for a retained raw candidate."""
+
+    evidence: HypothesisEvidence
+    hypothesis_confidence: HypothesisConfidence
+    evidence_strength: HypothesisEvidenceStrength
+    promotion: HypothesisPromotion
+    research_score: int = Field(ge=0)
+    qualification_reasons: list[str] = Field(default_factory=list)
+    suppression_reasons: list[str] = Field(default_factory=list)
+
+
 class ActionRecord(BehaviorModel):
     """A deterministic semantic operation inferred from factual observations."""
 
@@ -678,6 +782,80 @@ class LogicHypothesis(BehaviorModel):
     kind: Literal["SECURITY_HYPOTHESIS", "RESEARCH_TASK"]
     readiness: HypothesisReadiness = HypothesisReadiness.REVIEW_REQUIRED
     epistemic_status: EpistemicStatus
+    semantics: HypothesisSemantics | None = None
+    qualification: HypothesisQualification | None = None
+
+
+class HypothesisSupportContext(BehaviorModel):
+    """Complete provenance retained for one member of a semantic cluster."""
+
+    hypothesis_id: str
+    workflow_family_id: str
+    workflow_instance_ids: list[str] = Field(default_factory=list)
+    invariant_id: str
+    mutation_family: HypothesisFamily
+    affected_action: str
+    observation_ids: list[str] = Field(default_factory=list)
+    causal_evidence: list[str] = Field(default_factory=list)
+    prerequisite_actions: list[str] = Field(default_factory=list)
+    actors: list[str] = Field(default_factory=list)
+    captures: list[str] = Field(default_factory=list)
+    resource_types: list[str] = Field(default_factory=list)
+    resource_instance_ids: list[str] = Field(default_factory=list)
+    endpoint_ids: list[str] = Field(default_factory=list)
+    score: LogicScore
+    readiness: HypothesisReadiness
+    blockers: list[str] = Field(default_factory=list)
+    independent_support_ids: list[str] = Field(default_factory=list)
+
+
+class IndependentHypothesisSupport(BehaviorModel):
+    """One non-duplicative support unit and the boundary used to count it."""
+
+    id: str
+    basis: list[
+        Literal[
+            "CAPTURE",
+            "CONTROLLED_ACTOR",
+            "RESOURCE_INSTANCE",
+            "CAUSAL_PATH",
+            "WORKFLOW_INSTANCE_FALLBACK",
+        ]
+    ] = Field(default_factory=list)
+    workflow_instance_ids: list[str] = Field(default_factory=list)
+    actors: list[str] = Field(default_factory=list)
+    captures: list[str] = Field(default_factory=list)
+    resource_instance_ids: list[str] = Field(default_factory=list)
+    causal_path: list[str] = Field(default_factory=list)
+    observation_ids: list[str] = Field(default_factory=list)
+
+
+class HypothesisCluster(BehaviorModel):
+    """Research-facing aggregation of raw candidates sharing one semantic identity."""
+
+    id: str
+    semantic_fingerprint: str
+    semantics: HypothesisSemantics
+    title: str
+    representative_hypothesis_id: str
+    member_hypothesis_ids: list[str] = Field(default_factory=list)
+    support_contexts: list[HypothesisSupportContext] = Field(default_factory=list)
+    independent_supports: list[IndependentHypothesisSupport] = Field(default_factory=list)
+    context_count: int = Field(ge=1)
+    independent_support_count: int = Field(ge=0)
+    highest_score: int = Field(ge=4, le=20)
+    research_score: int = Field(ge=0)
+    hypothesis_confidence: HypothesisConfidence
+    evidence_strength: HypothesisEvidenceStrength
+    promotion: HypothesisPromotion
+    readiness: HypothesisReadiness
+    readiness_blockers: list[str] = Field(default_factory=list)
+    ranking_reasons: list[str] = Field(default_factory=list)
+    suppression_reasons: list[str] = Field(default_factory=list)
+    workflow_family_ids: list[str] = Field(default_factory=list)
+    workflow_instance_ids: list[str] = Field(default_factory=list)
+    invariant_ids: list[str] = Field(default_factory=list)
+    observation_ids: list[str] = Field(default_factory=list)
 
 
 class MutationRejection(BehaviorModel):
@@ -760,6 +938,7 @@ class BusinessInvariantStore(BehaviorModel):
 
 
 class LogicHypothesisStore(BehaviorModel):
-    version: Literal[1, 2] = 2
+    version: Literal[1, 2, 3] = 3
     hypotheses: list[LogicHypothesis] = Field(default_factory=list)
     rejections: list[MutationRejection] = Field(default_factory=list)
+    clusters: list[HypothesisCluster] = Field(default_factory=list)

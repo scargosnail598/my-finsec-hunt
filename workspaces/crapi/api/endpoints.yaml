@@ -181,6 +181,7 @@ endpoints:
   - OBS-000582
   - OBS-000597
   - OBS-000693
+  - OBS-000776
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -650,6 +651,7 @@ endpoints:
     - OBS-000329
     - OBS-000583
     - OBS-000694
+    - OBS-000779
     knowledge_status: OBSERVED
     json_path: $.initialized
     semantic_type: unknown
@@ -667,6 +669,7 @@ endpoints:
     - OBS-000329
     - OBS-000583
     - OBS-000694
+    - OBS-000779
     knowledge_status: OBSERVED
     json_path: $.message
     semantic_type: unknown
@@ -706,6 +709,7 @@ endpoints:
   - OBS-000583
   - OBS-000602
   - OBS-000694
+  - OBS-000779
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -1884,6 +1888,8 @@ endpoints:
     - OBS-000633
     - OBS-000751
     - OBS-000752
+    - OBS-000824
+    - OBS-000825
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -1911,6 +1917,8 @@ endpoints:
     - OBS-000633
     - OBS-000751
     - OBS-000752
+    - OBS-000824
+    - OBS-000825
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -1930,6 +1938,7 @@ endpoints:
     - OBS-000556
     - OBS-000632
     - OBS-000751
+    - OBS-000824
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -1967,6 +1976,8 @@ endpoints:
   - OBS-000633
   - OBS-000751
   - OBS-000752
+  - OBS-000824
+  - OBS-000825
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -2017,6 +2028,7 @@ endpoints:
     - OBS-000558
     - OBS-000634
     - OBS-000753
+    - OBS-000826
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -2036,6 +2048,7 @@ endpoints:
     - OBS-000558
     - OBS-000634
     - OBS-000753
+    - OBS-000826
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -2055,6 +2068,7 @@ endpoints:
     - OBS-000558
     - OBS-000634
     - OBS-000753
+    - OBS-000826
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -2084,6 +2098,7 @@ endpoints:
   - OBS-000558
   - OBS-000634
   - OBS-000753
+  - OBS-000826
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -2242,6 +2257,8 @@ endpoints:
     - OBS-000089
     - OBS-000111
     - OBS-000123
+    - OBS-000757
+    - OBS-000789
     knowledge_status: OBSERVED
     json_path: $.available_credit
     semantic_type: unknown
@@ -2267,6 +2284,8 @@ endpoints:
     - OBS-000089
     - OBS-000111
     - OBS-000123
+    - OBS-000757
+    - OBS-000789
     knowledge_status: OBSERVED
     json_path: $.email
     semantic_type: unknown
@@ -2292,6 +2311,8 @@ endpoints:
     - OBS-000089
     - OBS-000111
     - OBS-000123
+    - OBS-000757
+    - OBS-000789
     knowledge_status: OBSERVED
     json_path: $.id
     semantic_type: object_identifier
@@ -2317,6 +2338,8 @@ endpoints:
     - OBS-000089
     - OBS-000111
     - OBS-000123
+    - OBS-000757
+    - OBS-000789
     knowledge_status: OBSERVED
     json_path: $.name
     semantic_type: unknown
@@ -2342,6 +2365,8 @@ endpoints:
     - OBS-000089
     - OBS-000111
     - OBS-000123
+    - OBS-000757
+    - OBS-000789
     knowledge_status: OBSERVED
     json_path: $.number
     semantic_type: unknown
@@ -2367,6 +2392,8 @@ endpoints:
     - OBS-000089
     - OBS-000111
     - OBS-000123
+    - OBS-000757
+    - OBS-000789
     knowledge_status: OBSERVED
     json_path: $.picture_url
     semantic_type: unknown
@@ -2392,6 +2419,8 @@ endpoints:
     - OBS-000089
     - OBS-000111
     - OBS-000123
+    - OBS-000757
+    - OBS-000789
     knowledge_status: OBSERVED
     json_path: $.role
     semantic_type: unknown
@@ -2417,6 +2446,8 @@ endpoints:
     - OBS-000089
     - OBS-000111
     - OBS-000123
+    - OBS-000757
+    - OBS-000789
     knowledge_status: OBSERVED
     json_path: $.video_id
     semantic_type: unknown
@@ -2442,6 +2473,8 @@ endpoints:
     - OBS-000089
     - OBS-000111
     - OBS-000123
+    - OBS-000757
+    - OBS-000789
     knowledge_status: OBSERVED
     json_path: $.video_name
     semantic_type: unknown
@@ -2467,6 +2500,8 @@ endpoints:
     - OBS-000089
     - OBS-000111
     - OBS-000123
+    - OBS-000757
+    - OBS-000789
     knowledge_status: OBSERVED
     json_path: $.video_url
     semantic_type: unknown
@@ -2522,6 +2557,8 @@ endpoints:
   - OBS-000656
   - OBS-000714
   - OBS-000716
+  - OBS-000757
+  - OBS-000789
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -2678,7 +2715,307 @@ endpoints:
     confidence: high
     reasons:
     - GET is a safe HTTP method
-  parameters: []
+  parameters:
+  - name: id
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000759
+    - OBS-000791
+    knowledge_status: OBSERVED
+    json_path: $.[*].id
+    semantic_type: object_identifier
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].id
+  - name: model
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000759
+    - OBS-000791
+    knowledge_status: OBSERVED
+    json_path: $.[*].model
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].model
+  - name: fuel_type
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000759
+    - OBS-000791
+    knowledge_status: OBSERVED
+    json_path: $.[*].model.fuel_type
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].model.fuel_type
+  - name: id
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000759
+    - OBS-000791
+    knowledge_status: OBSERVED
+    json_path: $.[*].model.id
+    semantic_type: object_identifier
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].model.id
+  - name: model
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000759
+    - OBS-000791
+    knowledge_status: OBSERVED
+    json_path: $.[*].model.model
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].model.model
+  - name: vehicle_img
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000759
+    - OBS-000791
+    knowledge_status: OBSERVED
+    json_path: $.[*].model.vehicle_img
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].model.vehicle_img
+  - name: vehiclecompany
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000759
+    - OBS-000791
+    knowledge_status: OBSERVED
+    json_path: $.[*].model.vehiclecompany
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].model.vehiclecompany
+  - name: id
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000759
+    - OBS-000791
+    knowledge_status: OBSERVED
+    json_path: $.[*].model.vehiclecompany.id
+    semantic_type: object_identifier
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].model.vehiclecompany.id
+  - name: name
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000759
+    - OBS-000791
+    knowledge_status: OBSERVED
+    json_path: $.[*].model.vehiclecompany.name
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].model.vehiclecompany.name
+  - name: owner
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000759
+    - OBS-000791
+    knowledge_status: OBSERVED
+    json_path: $.[*].owner
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].owner
+  - name: pincode
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000759
+    - OBS-000791
+    knowledge_status: OBSERVED
+    json_path: $.[*].pincode
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].pincode
+  - name: previousOwners
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000759
+    - OBS-000791
+    knowledge_status: OBSERVED
+    json_path: $.[*].previousOwners
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].previousOwners
+  - name: status
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000759
+    - OBS-000791
+    knowledge_status: OBSERVED
+    json_path: $.[*].status
+    semantic_type: state
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].status
+  - name: uuid
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000759
+    - OBS-000791
+    knowledge_status: OBSERVED
+    json_path: $.[*].uuid
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].uuid
+  - name: vehicleLocation
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000759
+    - OBS-000791
+    knowledge_status: OBSERVED
+    json_path: $.[*].vehicleLocation
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].vehicleLocation
+  - name: id
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000759
+    - OBS-000791
+    knowledge_status: OBSERVED
+    json_path: $.[*].vehicleLocation.id
+    semantic_type: object_identifier
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].vehicleLocation.id
+  - name: latitude
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000759
+    - OBS-000791
+    knowledge_status: OBSERVED
+    json_path: $.[*].vehicleLocation.latitude
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].vehicleLocation.latitude
+  - name: longitude
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000759
+    - OBS-000791
+    knowledge_status: OBSERVED
+    json_path: $.[*].vehicleLocation.longitude
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].vehicleLocation.longitude
+  - name: vin
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000759
+    - OBS-000791
+    knowledge_status: OBSERVED
+    json_path: $.[*].vin
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].vin
+  - name: year
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000759
+    - OBS-000791
+    knowledge_status: OBSERVED
+    json_path: $.[*].year
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].year
   object_access: []
   ownership_inference: []
   state_change: false
@@ -2721,6 +3058,8 @@ endpoints:
   - OBS-000598
   - OBS-000662
   - OBS-000718
+  - OBS-000759
+  - OBS-000791
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -2813,6 +3152,12 @@ endpoints:
     - OBS-000705
     - OBS-000708
     - OBS-000720
+    - OBS-000760
+    - OBS-000773
+    - OBS-000777
+    - OBS-000778
+    - OBS-000784
+    - OBS-000793
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -2885,6 +3230,12 @@ endpoints:
   - OBS-000705
   - OBS-000708
   - OBS-000720
+  - OBS-000760
+  - OBS-000773
+  - OBS-000777
+  - OBS-000778
+  - OBS-000784
+  - OBS-000793
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -2935,6 +3286,7 @@ endpoints:
     - OBS-000325
     - OBS-000579
     - OBS-000690
+    - OBS-000772
     knowledge_status: OBSERVED
     json_path: $.background_color
     semantic_type: unknown
@@ -2952,6 +3304,7 @@ endpoints:
     - OBS-000325
     - OBS-000579
     - OBS-000690
+    - OBS-000772
     knowledge_status: OBSERVED
     json_path: $.display
     semantic_type: unknown
@@ -2969,6 +3322,7 @@ endpoints:
     - OBS-000325
     - OBS-000579
     - OBS-000690
+    - OBS-000772
     knowledge_status: OBSERVED
     json_path: $.icons
     semantic_type: unknown
@@ -2986,6 +3340,7 @@ endpoints:
     - OBS-000325
     - OBS-000579
     - OBS-000690
+    - OBS-000772
     knowledge_status: OBSERVED
     json_path: $.icons[*].sizes
     semantic_type: unknown
@@ -3003,6 +3358,7 @@ endpoints:
     - OBS-000325
     - OBS-000579
     - OBS-000690
+    - OBS-000772
     knowledge_status: OBSERVED
     json_path: $.icons[*].src
     semantic_type: unknown
@@ -3020,6 +3376,7 @@ endpoints:
     - OBS-000325
     - OBS-000579
     - OBS-000690
+    - OBS-000772
     knowledge_status: OBSERVED
     json_path: $.icons[*].type
     semantic_type: state
@@ -3037,6 +3394,7 @@ endpoints:
     - OBS-000325
     - OBS-000579
     - OBS-000690
+    - OBS-000772
     knowledge_status: OBSERVED
     json_path: $.name
     semantic_type: unknown
@@ -3054,6 +3412,7 @@ endpoints:
     - OBS-000325
     - OBS-000579
     - OBS-000690
+    - OBS-000772
     knowledge_status: OBSERVED
     json_path: $.short_name
     semantic_type: unknown
@@ -3071,6 +3430,7 @@ endpoints:
     - OBS-000325
     - OBS-000579
     - OBS-000690
+    - OBS-000772
     knowledge_status: OBSERVED
     json_path: $.start_url
     semantic_type: unknown
@@ -3088,6 +3448,7 @@ endpoints:
     - OBS-000325
     - OBS-000579
     - OBS-000690
+    - OBS-000772
     knowledge_status: OBSERVED
     json_path: $.theme_color
     semantic_type: unknown
@@ -3127,6 +3488,7 @@ endpoints:
   - OBS-000579
   - OBS-000592
   - OBS-000690
+  - OBS-000772
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -3190,6 +3552,7 @@ endpoints:
   - OBS-000617
   - OBS-000675
   - OBS-000736
+  - OBS-000809
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -3247,6 +3610,8 @@ endpoints:
     - OBS-000599
     - OBS-000655
     - OBS-000719
+    - OBS-000761
+    - OBS-000792
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -3274,6 +3639,8 @@ endpoints:
     - OBS-000599
     - OBS-000655
     - OBS-000719
+    - OBS-000761
+    - OBS-000792
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -3311,6 +3678,8 @@ endpoints:
   - OBS-000599
   - OBS-000655
   - OBS-000719
+  - OBS-000761
+  - OBS-000792
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -3366,6 +3735,8 @@ endpoints:
     - OBS-000604
     - OBS-000661
     - OBS-000723
+    - OBS-000764
+    - OBS-000796
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -3390,6 +3761,8 @@ endpoints:
     - OBS-000604
     - OBS-000661
     - OBS-000723
+    - OBS-000764
+    - OBS-000796
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -3414,6 +3787,8 @@ endpoints:
     - OBS-000604
     - OBS-000661
     - OBS-000723
+    - OBS-000764
+    - OBS-000796
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -3438,6 +3813,8 @@ endpoints:
     - OBS-000604
     - OBS-000661
     - OBS-000723
+    - OBS-000764
+    - OBS-000796
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -3462,6 +3839,8 @@ endpoints:
     - OBS-000604
     - OBS-000661
     - OBS-000723
+    - OBS-000764
+    - OBS-000796
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -3486,6 +3865,8 @@ endpoints:
     - OBS-000604
     - OBS-000661
     - OBS-000723
+    - OBS-000764
+    - OBS-000796
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -3510,6 +3891,8 @@ endpoints:
     - OBS-000604
     - OBS-000661
     - OBS-000723
+    - OBS-000764
+    - OBS-000796
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -3534,6 +3917,8 @@ endpoints:
     - OBS-000604
     - OBS-000661
     - OBS-000723
+    - OBS-000764
+    - OBS-000796
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -3568,6 +3953,8 @@ endpoints:
   - OBS-000604
   - OBS-000661
   - OBS-000723
+  - OBS-000764
+  - OBS-000796
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -3620,6 +4007,7 @@ endpoints:
     - OBS-000608
     - OBS-000666
     - OBS-000727
+    - OBS-000800
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -3651,6 +4039,7 @@ endpoints:
   - OBS-000608
   - OBS-000666
   - OBS-000727
+  - OBS-000800
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -3705,6 +4094,8 @@ endpoints:
     - OBS-000601
     - OBS-000659
     - OBS-000721
+    - OBS-000762
+    - OBS-000794
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -3729,6 +4120,8 @@ endpoints:
     - OBS-000601
     - OBS-000659
     - OBS-000721
+    - OBS-000762
+    - OBS-000794
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -3763,6 +4156,8 @@ endpoints:
   - OBS-000601
   - OBS-000659
   - OBS-000721
+  - OBS-000762
+  - OBS-000794
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -3908,6 +4303,18 @@ endpoints:
     - OBS-000749
     - OBS-000750
     - OBS-000756
+    - OBS-000813
+    - OBS-000814
+    - OBS-000815
+    - OBS-000816
+    - OBS-000817
+    - OBS-000818
+    - OBS-000819
+    - OBS-000820
+    - OBS-000821
+    - OBS-000822
+    - OBS-000823
+    - OBS-000829
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -4021,6 +4428,18 @@ endpoints:
     - OBS-000749
     - OBS-000750
     - OBS-000756
+    - OBS-000813
+    - OBS-000814
+    - OBS-000815
+    - OBS-000816
+    - OBS-000817
+    - OBS-000818
+    - OBS-000819
+    - OBS-000820
+    - OBS-000821
+    - OBS-000822
+    - OBS-000823
+    - OBS-000829
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -4134,12 +4553,164 @@ endpoints:
     - OBS-000749
     - OBS-000750
     - OBS-000756
+    - OBS-000813
+    - OBS-000814
+    - OBS-000815
+    - OBS-000816
+    - OBS-000817
+    - OBS-000818
+    - OBS-000819
+    - OBS-000820
+    - OBS-000821
+    - OBS-000822
+    - OBS-000823
+    - OBS-000829
     knowledge_status: INFERRED
     semantic_type: authentication
     client_controlled: true
     original_examples: []
     normalization_reasons:
     - query parameter name token has recognized security semantics
+  - name: base
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000823
+    knowledge_status: OBSERVED
+    json_path: $.[*].base
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].base
+  - name: features
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000823
+    knowledge_status: OBSERVED
+    json_path: $.[*].features
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].features
+  - name: a
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000823
+    knowledge_status: OBSERVED
+    json_path: $.[*].features[*].a
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].features[*].a
+  - name: bb
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000823
+    knowledge_status: OBSERVED
+    json_path: $.[*].features[*].bb
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].features[*].bb
+  - name: c
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000823
+    knowledge_status: OBSERVED
+    json_path: $.[*].features[*].c
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].features[*].c
+  - name: id
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000823
+    knowledge_status: OBSERVED
+    json_path: $.[*].features[*].id
+    semantic_type: object_identifier
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].features[*].id
+  - name: io
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000823
+    knowledge_status: OBSERVED
+    json_path: $.[*].features[*].io
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].features[*].io
+  - name: id
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000823
+    knowledge_status: OBSERVED
+    json_path: $.[*].id
+    semantic_type: object_identifier
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].id
+  - name: layer
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000823
+    knowledge_status: OBSERVED
+    json_path: $.[*].layer
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].layer
+  - name: zrange
+    location: response_body
+    source: response
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000823
+    knowledge_status: OBSERVED
+    json_path: $.[*].zrange
+    semantic_type: unknown
+    client_controlled: false
+    original_examples: []
+    normalization_reasons:
+    - response JSON contains field $.[*].zrange
   object_access: []
   ownership_inference: []
   state_change: false
@@ -4259,6 +4830,18 @@ endpoints:
   - OBS-000749
   - OBS-000750
   - OBS-000756
+  - OBS-000813
+  - OBS-000814
+  - OBS-000815
+  - OBS-000816
+  - OBS-000817
+  - OBS-000818
+  - OBS-000819
+  - OBS-000820
+  - OBS-000821
+  - OBS-000822
+  - OBS-000823
+  - OBS-000829
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -4426,6 +5009,7 @@ endpoints:
   - OBS-000461
   - OBS-000562
   - OBS-000638
+  - OBS-000830
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -4554,6 +5138,7 @@ endpoints:
   - mrscargo
   sources:
   - OBS-000190
+  - OBS-000769
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -4623,6 +5208,7 @@ endpoints:
   - OBS-000578
   - OBS-000591
   - OBS-000689
+  - OBS-000771
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -4692,6 +5278,7 @@ endpoints:
   - OBS-000577
   - OBS-000590
   - OBS-000688
+  - OBS-000770
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -4762,6 +5349,7 @@ endpoints:
     - OBS-000654
     - OBS-000692
     - OBS-000715
+    - OBS-000775
     knowledge_status: INFERRED
     semantic_type: unknown
     client_controlled: true
@@ -4811,6 +5399,7 @@ endpoints:
   - OBS-000654
   - OBS-000692
   - OBS-000715
+  - OBS-000775
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -5691,6 +6280,9 @@ endpoints:
     - OBS-000704
     - OBS-000707
     - OBS-000710
+    - OBS-000781
+    - OBS-000783
+    - OBS-000787
     knowledge_status: INFERRED
     semantic_type: pagination
     client_controlled: true
@@ -5717,6 +6309,9 @@ endpoints:
     - OBS-000704
     - OBS-000707
     - OBS-000710
+    - OBS-000781
+    - OBS-000783
+    - OBS-000787
     knowledge_status: INFERRED
     semantic_type: pagination
     client_controlled: true
@@ -5738,6 +6333,9 @@ endpoints:
     - OBS-000704
     - OBS-000707
     - OBS-000710
+    - OBS-000781
+    - OBS-000783
+    - OBS-000787
     knowledge_status: OBSERVED
     json_path: $.count
     semantic_type: unknown
@@ -5760,6 +6358,9 @@ endpoints:
     - OBS-000704
     - OBS-000707
     - OBS-000710
+    - OBS-000781
+    - OBS-000783
+    - OBS-000787
     knowledge_status: OBSERVED
     json_path: $.next_offset
     semantic_type: unknown
@@ -5782,6 +6383,9 @@ endpoints:
     - OBS-000704
     - OBS-000707
     - OBS-000710
+    - OBS-000781
+    - OBS-000783
+    - OBS-000787
     knowledge_status: OBSERVED
     json_path: $.orders
     semantic_type: unknown
@@ -5804,6 +6408,9 @@ endpoints:
     - OBS-000704
     - OBS-000707
     - OBS-000710
+    - OBS-000781
+    - OBS-000783
+    - OBS-000787
     knowledge_status: OBSERVED
     json_path: $.orders[*].created_on
     semantic_type: unknown
@@ -5826,6 +6433,9 @@ endpoints:
     - OBS-000704
     - OBS-000707
     - OBS-000710
+    - OBS-000781
+    - OBS-000783
+    - OBS-000787
     knowledge_status: OBSERVED
     json_path: $.orders[*].id
     semantic_type: object_identifier
@@ -5848,6 +6458,9 @@ endpoints:
     - OBS-000704
     - OBS-000707
     - OBS-000710
+    - OBS-000781
+    - OBS-000783
+    - OBS-000787
     knowledge_status: OBSERVED
     json_path: $.orders[*].product
     semantic_type: unknown
@@ -5870,6 +6483,9 @@ endpoints:
     - OBS-000704
     - OBS-000707
     - OBS-000710
+    - OBS-000781
+    - OBS-000783
+    - OBS-000787
     knowledge_status: OBSERVED
     json_path: $.orders[*].product.id
     semantic_type: object_identifier
@@ -5892,6 +6508,9 @@ endpoints:
     - OBS-000704
     - OBS-000707
     - OBS-000710
+    - OBS-000781
+    - OBS-000783
+    - OBS-000787
     knowledge_status: OBSERVED
     json_path: $.orders[*].product.image_url
     semantic_type: unknown
@@ -5914,6 +6533,9 @@ endpoints:
     - OBS-000704
     - OBS-000707
     - OBS-000710
+    - OBS-000781
+    - OBS-000783
+    - OBS-000787
     knowledge_status: OBSERVED
     json_path: $.orders[*].product.name
     semantic_type: unknown
@@ -5936,6 +6558,9 @@ endpoints:
     - OBS-000704
     - OBS-000707
     - OBS-000710
+    - OBS-000781
+    - OBS-000783
+    - OBS-000787
     knowledge_status: OBSERVED
     json_path: $.orders[*].product.price
     semantic_type: monetary_value
@@ -5958,6 +6583,9 @@ endpoints:
     - OBS-000704
     - OBS-000707
     - OBS-000710
+    - OBS-000781
+    - OBS-000783
+    - OBS-000787
     knowledge_status: OBSERVED
     json_path: $.orders[*].quantity
     semantic_type: monetary_value
@@ -5980,6 +6608,9 @@ endpoints:
     - OBS-000704
     - OBS-000707
     - OBS-000710
+    - OBS-000781
+    - OBS-000783
+    - OBS-000787
     knowledge_status: OBSERVED
     json_path: $.orders[*].status
     semantic_type: state
@@ -6002,6 +6633,9 @@ endpoints:
     - OBS-000704
     - OBS-000707
     - OBS-000710
+    - OBS-000781
+    - OBS-000783
+    - OBS-000787
     knowledge_status: OBSERVED
     json_path: $.orders[*].transaction_id
     semantic_type: object_identifier
@@ -6024,6 +6658,9 @@ endpoints:
     - OBS-000704
     - OBS-000707
     - OBS-000710
+    - OBS-000781
+    - OBS-000783
+    - OBS-000787
     knowledge_status: OBSERVED
     json_path: $.orders[*].user
     semantic_type: unknown
@@ -6046,6 +6683,9 @@ endpoints:
     - OBS-000704
     - OBS-000707
     - OBS-000710
+    - OBS-000781
+    - OBS-000783
+    - OBS-000787
     knowledge_status: OBSERVED
     json_path: $.orders[*].user.email
     semantic_type: unknown
@@ -6068,6 +6708,9 @@ endpoints:
     - OBS-000704
     - OBS-000707
     - OBS-000710
+    - OBS-000781
+    - OBS-000783
+    - OBS-000787
     knowledge_status: OBSERVED
     json_path: $.orders[*].user.number
     semantic_type: unknown
@@ -6090,6 +6733,9 @@ endpoints:
     - OBS-000704
     - OBS-000707
     - OBS-000710
+    - OBS-000781
+    - OBS-000783
+    - OBS-000787
     knowledge_status: OBSERVED
     json_path: $.previous_offset
     semantic_type: unknown
@@ -6127,6 +6773,9 @@ endpoints:
   - OBS-000704
   - OBS-000707
   - OBS-000710
+  - OBS-000781
+  - OBS-000783
+  - OBS-000787
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -6173,12 +6822,16 @@ endpoints:
     - OBS-000702
     - OBS-000706
     - OBS-000709
+    - OBS-000782
+    - OBS-000788
     knowledge_status: INFERRED
     semantic_type: object_identifier
     client_controlled: true
     original_examples:
+    - '10'
     - '12'
     - '16'
+    - '27'
     normalization_reasons:
     - same route structure observed with multiple integer values
   - name: order
@@ -6190,6 +6843,8 @@ endpoints:
     - OBS-000702
     - OBS-000706
     - OBS-000709
+    - OBS-000782
+    - OBS-000788
     knowledge_status: OBSERVED
     json_path: $.order
     semantic_type: unknown
@@ -6206,6 +6861,8 @@ endpoints:
     - OBS-000702
     - OBS-000706
     - OBS-000709
+    - OBS-000782
+    - OBS-000788
     knowledge_status: OBSERVED
     json_path: $.order.created_on
     semantic_type: unknown
@@ -6222,6 +6879,8 @@ endpoints:
     - OBS-000702
     - OBS-000706
     - OBS-000709
+    - OBS-000782
+    - OBS-000788
     knowledge_status: OBSERVED
     json_path: $.order.id
     semantic_type: object_identifier
@@ -6238,6 +6897,8 @@ endpoints:
     - OBS-000702
     - OBS-000706
     - OBS-000709
+    - OBS-000782
+    - OBS-000788
     knowledge_status: OBSERVED
     json_path: $.order.product
     semantic_type: unknown
@@ -6254,6 +6915,8 @@ endpoints:
     - OBS-000702
     - OBS-000706
     - OBS-000709
+    - OBS-000782
+    - OBS-000788
     knowledge_status: OBSERVED
     json_path: $.order.product.id
     semantic_type: object_identifier
@@ -6270,6 +6933,8 @@ endpoints:
     - OBS-000702
     - OBS-000706
     - OBS-000709
+    - OBS-000782
+    - OBS-000788
     knowledge_status: OBSERVED
     json_path: $.order.product.image_url
     semantic_type: unknown
@@ -6286,6 +6951,8 @@ endpoints:
     - OBS-000702
     - OBS-000706
     - OBS-000709
+    - OBS-000782
+    - OBS-000788
     knowledge_status: OBSERVED
     json_path: $.order.product.name
     semantic_type: unknown
@@ -6302,6 +6969,8 @@ endpoints:
     - OBS-000702
     - OBS-000706
     - OBS-000709
+    - OBS-000782
+    - OBS-000788
     knowledge_status: OBSERVED
     json_path: $.order.product.price
     semantic_type: monetary_value
@@ -6318,6 +6987,8 @@ endpoints:
     - OBS-000702
     - OBS-000706
     - OBS-000709
+    - OBS-000782
+    - OBS-000788
     knowledge_status: OBSERVED
     json_path: $.order.quantity
     semantic_type: monetary_value
@@ -6334,6 +7005,8 @@ endpoints:
     - OBS-000702
     - OBS-000706
     - OBS-000709
+    - OBS-000782
+    - OBS-000788
     knowledge_status: OBSERVED
     json_path: $.order.status
     semantic_type: state
@@ -6350,6 +7023,8 @@ endpoints:
     - OBS-000702
     - OBS-000706
     - OBS-000709
+    - OBS-000782
+    - OBS-000788
     knowledge_status: OBSERVED
     json_path: $.order.transaction_id
     semantic_type: object_identifier
@@ -6366,6 +7041,8 @@ endpoints:
     - OBS-000702
     - OBS-000706
     - OBS-000709
+    - OBS-000782
+    - OBS-000788
     knowledge_status: OBSERVED
     json_path: $.order.user
     semantic_type: unknown
@@ -6382,6 +7059,8 @@ endpoints:
     - OBS-000702
     - OBS-000706
     - OBS-000709
+    - OBS-000782
+    - OBS-000788
     knowledge_status: OBSERVED
     json_path: $.order.user.email
     semantic_type: unknown
@@ -6398,6 +7077,8 @@ endpoints:
     - OBS-000702
     - OBS-000706
     - OBS-000709
+    - OBS-000782
+    - OBS-000788
     knowledge_status: OBSERVED
     json_path: $.order.user.number
     semantic_type: unknown
@@ -6414,6 +7095,8 @@ endpoints:
     - OBS-000702
     - OBS-000706
     - OBS-000709
+    - OBS-000782
+    - OBS-000788
     knowledge_status: OBSERVED
     json_path: $.payment
     semantic_type: unknown
@@ -6594,12 +7277,16 @@ endpoints:
   - OBS-000702
   - OBS-000706
   - OBS-000709
+  - OBS-000782
+  - OBS-000788
   confidence: medium
   knowledge_status: INFERRED
   normalization:
     observed_paths:
+    - /workshop/api/shop/orders/10
     - /workshop/api/shop/orders/12
     - /workshop/api/shop/orders/16
+    - /workshop/api/shop/orders/27
     rules:
     - repeated_numeric
 - id: EP-011
@@ -6648,6 +7335,9 @@ endpoints:
     - OBS-000471
     - OBS-000639
     - OBS-000695
+    - OBS-000768
+    - OBS-000774
+    - OBS-000785
     knowledge_status: INFERRED
     semantic_type: pagination
     client_controlled: true
@@ -6671,6 +7361,9 @@ endpoints:
     - OBS-000471
     - OBS-000639
     - OBS-000695
+    - OBS-000768
+    - OBS-000774
+    - OBS-000785
     knowledge_status: INFERRED
     semantic_type: pagination
     client_controlled: true
@@ -6691,6 +7384,9 @@ endpoints:
     - OBS-000104
     - OBS-000109
     - OBS-000695
+    - OBS-000768
+    - OBS-000774
+    - OBS-000785
     knowledge_status: OBSERVED
     json_path: $.count
     semantic_type: unknown
@@ -6712,6 +7408,9 @@ endpoints:
     - OBS-000104
     - OBS-000109
     - OBS-000695
+    - OBS-000768
+    - OBS-000774
+    - OBS-000785
     knowledge_status: OBSERVED
     json_path: $.credit
     semantic_type: monetary_value
@@ -6733,6 +7432,9 @@ endpoints:
     - OBS-000104
     - OBS-000109
     - OBS-000695
+    - OBS-000768
+    - OBS-000774
+    - OBS-000785
     knowledge_status: OBSERVED
     json_path: $.next_offset
     semantic_type: unknown
@@ -6754,6 +7456,9 @@ endpoints:
     - OBS-000104
     - OBS-000109
     - OBS-000695
+    - OBS-000768
+    - OBS-000774
+    - OBS-000785
     knowledge_status: OBSERVED
     json_path: $.previous_offset
     semantic_type: unknown
@@ -6775,6 +7480,9 @@ endpoints:
     - OBS-000104
     - OBS-000109
     - OBS-000695
+    - OBS-000768
+    - OBS-000774
+    - OBS-000785
     knowledge_status: OBSERVED
     json_path: $.products
     semantic_type: unknown
@@ -6796,6 +7504,9 @@ endpoints:
     - OBS-000104
     - OBS-000109
     - OBS-000695
+    - OBS-000768
+    - OBS-000774
+    - OBS-000785
     knowledge_status: OBSERVED
     json_path: $.products[*].id
     semantic_type: object_identifier
@@ -6817,6 +7528,9 @@ endpoints:
     - OBS-000104
     - OBS-000109
     - OBS-000695
+    - OBS-000768
+    - OBS-000774
+    - OBS-000785
     knowledge_status: OBSERVED
     json_path: $.products[*].image_url
     semantic_type: unknown
@@ -6838,6 +7552,9 @@ endpoints:
     - OBS-000104
     - OBS-000109
     - OBS-000695
+    - OBS-000768
+    - OBS-000774
+    - OBS-000785
     knowledge_status: OBSERVED
     json_path: $.products[*].name
     semantic_type: unknown
@@ -6859,6 +7576,9 @@ endpoints:
     - OBS-000104
     - OBS-000109
     - OBS-000695
+    - OBS-000768
+    - OBS-000774
+    - OBS-000785
     knowledge_status: OBSERVED
     json_path: $.products[*].price
     semantic_type: monetary_value
@@ -6893,6 +7613,9 @@ endpoints:
   - OBS-000471
   - OBS-000639
   - OBS-000695
+  - OBS-000768
+  - OBS-000774
+  - OBS-000785
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -7440,6 +8163,162 @@ endpoints:
     rules:
     - static_filename
     - structured_opaque
+- id: EP-070
+  method: GET
+  path: /{opaqueId}/api/js/65/12f/{filename}
+  hosts:
+  - maps.googleapis.com
+  channels:
+  - WEB
+  authentication:
+    required: false
+    observed_type: none
+    anonymous_success_observed: false
+    knowledge_status: INFERRED
+  classification:
+    primary: STATIC_ASSET
+    tags:
+    - THIRD_PARTY
+    confidence: high
+    reasons:
+    - path ends with .js
+    - response content type is text/javascript
+  resource:
+    type: StaticAsset
+    confidence: high
+    knowledge_status: INFERRED
+  action:
+    name: read
+    type: read
+    confidence: high
+    reasons:
+    - GET is a safe HTTP method
+  parameters:
+  - name: opaqueId
+    location: path
+    source: request
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000765
+    - OBS-000766
+    - OBS-000767
+    - OBS-000797
+    - OBS-000798
+    - OBS-000799
+    - OBS-000801
+    - OBS-000802
+    - OBS-000803
+    - OBS-000804
+    - OBS-000805
+    - OBS-000806
+    - OBS-000807
+    - OBS-000808
+    - OBS-000810
+    knowledge_status: INFERRED
+    semantic_type: object_identifier
+    client_controlled: true
+    original_examples:
+    - maps-api-v3
+    normalization_reasons:
+    - segment matches structured_opaque pattern
+  - name: filename
+    location: path
+    source: request
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000765
+    - OBS-000766
+    - OBS-000767
+    - OBS-000797
+    - OBS-000798
+    - OBS-000799
+    - OBS-000801
+    - OBS-000802
+    - OBS-000803
+    - OBS-000804
+    - OBS-000805
+    - OBS-000806
+    - OBS-000807
+    - OBS-000808
+    - OBS-000810
+    knowledge_status: INFERRED
+    semantic_type: unknown
+    client_controlled: true
+    original_examples:
+    - common.js
+    - controls.js
+    - geometry.js
+    - log.js
+    - main.js
+    - map.js
+    - onion.js
+    - places.js
+    - places_impl.js
+    - search.js
+    - search_impl.js
+    - util.js
+    normalization_reasons:
+    - static asset filename grouped into one route family
+  object_access: []
+  ownership_inference:
+  - parameter: opaqueId
+    classification: UNCLASSIFIED
+    status: REJECTED
+    controlled_actors: 0
+    distinct_scope_values: 0
+    observations: []
+    reasons:
+    - opaqueId is not allowlisted as a trusted ownership scope parameter.
+  state_change: false
+  state_change_confidence: INFERRED
+  state_change_reasons:
+  - GET is a safe HTTP method
+  financial_impact: none
+  security_relevance: 0
+  relevance_reasons:
+  - client-controlled object identifier observed
+  - static asset
+  - no authentication requirement observed
+  disposition: SUPPRESSED_STATIC_ASSET
+  observed_by:
+  - mrscargo
+  sources:
+  - OBS-000765
+  - OBS-000766
+  - OBS-000767
+  - OBS-000797
+  - OBS-000798
+  - OBS-000799
+  - OBS-000801
+  - OBS-000802
+  - OBS-000803
+  - OBS-000804
+  - OBS-000805
+  - OBS-000806
+  - OBS-000807
+  - OBS-000808
+  - OBS-000810
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /maps-api-v3/api/js/65/12f/common.js
+    - /maps-api-v3/api/js/65/12f/controls.js
+    - /maps-api-v3/api/js/65/12f/geometry.js
+    - /maps-api-v3/api/js/65/12f/log.js
+    - /maps-api-v3/api/js/65/12f/main.js
+    - /maps-api-v3/api/js/65/12f/map.js
+    - /maps-api-v3/api/js/65/12f/onion.js
+    - /maps-api-v3/api/js/65/12f/places.js
+    - /maps-api-v3/api/js/65/12f/places_impl.js
+    - /maps-api-v3/api/js/65/12f/search.js
+    - /maps-api-v3/api/js/65/12f/search_impl.js
+    - /maps-api-v3/api/js/65/12f/util.js
+    rules:
+    - static_filename
+    - structured_opaque
 - id: EP-058
   method: GET
   path: /{opaqueId}/embed/js/65/11b/init_embed.js
@@ -7540,6 +8419,85 @@ endpoints:
     - /maps-api-v3/embed/js/65/11b/init_embed.js
     rules:
     - structured_opaque
+- id: EP-071
+  method: GET
+  path: /{opaqueId}/embed/js/65/12f/init_embed.js
+  hosts:
+  - maps.gstatic.com
+  channels:
+  - WEB
+  authentication:
+    required: false
+    observed_type: none
+    anonymous_success_observed: false
+    knowledge_status: INFERRED
+  classification:
+    primary: STATIC_ASSET
+    tags:
+    - THIRD_PARTY
+    confidence: high
+    reasons:
+    - path ends with .js
+    - response content type is text/javascript
+  resource:
+    type: StaticAsset
+    confidence: high
+    knowledge_status: INFERRED
+  action:
+    name: read
+    type: read
+    confidence: high
+    reasons:
+    - GET is a safe HTTP method
+  parameters:
+  - name: opaqueId
+    location: path
+    source: request
+    inferred_type: string
+    confidence: high
+    evidence:
+    - OBS-000763
+    - OBS-000795
+    knowledge_status: INFERRED
+    semantic_type: object_identifier
+    client_controlled: true
+    original_examples:
+    - maps-api-v3
+    normalization_reasons:
+    - segment matches structured_opaque pattern
+  object_access: []
+  ownership_inference:
+  - parameter: opaqueId
+    classification: UNCLASSIFIED
+    status: REJECTED
+    controlled_actors: 0
+    distinct_scope_values: 0
+    observations: []
+    reasons:
+    - opaqueId is not allowlisted as a trusted ownership scope parameter.
+  state_change: false
+  state_change_confidence: INFERRED
+  state_change_reasons:
+  - GET is a safe HTTP method
+  financial_impact: none
+  security_relevance: 0
+  relevance_reasons:
+  - client-controlled object identifier observed
+  - static asset
+  - no authentication requirement observed
+  disposition: SUPPRESSED_STATIC_ASSET
+  observed_by:
+  - mrscargo
+  sources:
+  - OBS-000763
+  - OBS-000795
+  confidence: high
+  knowledge_status: INFERRED
+  normalization:
+    observed_paths:
+    - /maps-api-v3/embed/js/65/12f/init_embed.js
+    rules:
+    - structured_opaque
 - id: EP-059
   method: OPTIONS
   path: /$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/GetViewportInfo
@@ -7604,6 +8562,8 @@ endpoints:
   - OBS-000678
   - OBS-000739
   - OBS-000755
+  - OBS-000812
+  - OBS-000828
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -7760,6 +8720,8 @@ endpoints:
   - OBS-000677
   - OBS-000738
   - OBS-000754
+  - OBS-000811
+  - OBS-000827
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -8837,6 +9799,8 @@ endpoints:
     - OBS-000594
     - OBS-000657
     - OBS-000717
+    - OBS-000758
+    - OBS-000790
     knowledge_status: OBSERVED
     json_path: $.token
     semantic_type: authentication
@@ -8862,6 +9826,8 @@ endpoints:
     - OBS-000124
     - OBS-000330
     - OBS-000584
+    - OBS-000758
+    - OBS-000790
     knowledge_status: OBSERVED
     json_path: $.message
     semantic_type: unknown
@@ -8887,6 +9853,8 @@ endpoints:
     - OBS-000124
     - OBS-000330
     - OBS-000584
+    - OBS-000758
+    - OBS-000790
     knowledge_status: OBSERVED
     json_path: $.status
     semantic_type: state
@@ -8943,6 +9911,8 @@ endpoints:
   - OBS-000594
   - OBS-000657
   - OBS-000717
+  - OBS-000758
+  - OBS-000790
   confidence: high
   knowledge_status: INFERRED
   normalization:
@@ -9628,6 +10598,8 @@ endpoints:
     - OBS-000269
     - OBS-000474
     - OBS-000642
+    - OBS-000780
+    - OBS-000786
     knowledge_status: OBSERVED
     json_path: $.product_id
     semantic_type: unknown
@@ -9647,6 +10619,8 @@ endpoints:
     - OBS-000269
     - OBS-000474
     - OBS-000642
+    - OBS-000780
+    - OBS-000786
     knowledge_status: OBSERVED
     json_path: $.quantity
     semantic_type: monetary_value
@@ -9663,6 +10637,8 @@ endpoints:
     - OBS-000010
     - OBS-000057
     - OBS-000107
+    - OBS-000780
+    - OBS-000786
     knowledge_status: OBSERVED
     json_path: $.credit
     semantic_type: monetary_value
@@ -9679,6 +10655,8 @@ endpoints:
     - OBS-000010
     - OBS-000057
     - OBS-000107
+    - OBS-000780
+    - OBS-000786
     knowledge_status: OBSERVED
     json_path: $.id
     semantic_type: object_identifier
@@ -9695,6 +10673,8 @@ endpoints:
     - OBS-000010
     - OBS-000057
     - OBS-000107
+    - OBS-000780
+    - OBS-000786
     knowledge_status: OBSERVED
     json_path: $.message
     semantic_type: unknown
@@ -9726,6 +10706,8 @@ endpoints:
   - OBS-000269
   - OBS-000474
   - OBS-000642
+  - OBS-000780
+  - OBS-000786
   confidence: high
   knowledge_status: INFERRED
   normalization:

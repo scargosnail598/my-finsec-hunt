@@ -428,14 +428,88 @@ actors:
   - OBS-000710
   - OBS-000711
   - OBS-000712
+  - OBS-000757
+  - OBS-000758
+  - OBS-000759
+  - OBS-000760
+  - OBS-000761
+  - OBS-000762
+  - OBS-000763
+  - OBS-000764
+  - OBS-000765
+  - OBS-000766
+  - OBS-000767
+  - OBS-000768
+  - OBS-000769
+  - OBS-000770
+  - OBS-000771
+  - OBS-000772
+  - OBS-000773
+  - OBS-000774
+  - OBS-000775
+  - OBS-000776
+  - OBS-000777
+  - OBS-000778
+  - OBS-000779
+  - OBS-000780
+  - OBS-000781
+  - OBS-000782
+  - OBS-000783
+  - OBS-000784
+  - OBS-000785
+  - OBS-000786
+  - OBS-000787
+  - OBS-000788
+  - OBS-000789
+  - OBS-000790
+  - OBS-000791
+  - OBS-000792
+  - OBS-000793
+  - OBS-000794
+  - OBS-000795
+  - OBS-000796
+  - OBS-000797
+  - OBS-000798
+  - OBS-000799
+  - OBS-000800
+  - OBS-000801
+  - OBS-000802
+  - OBS-000803
+  - OBS-000804
+  - OBS-000805
+  - OBS-000806
+  - OBS-000807
+  - OBS-000808
+  - OBS-000809
+  - OBS-000810
+  - OBS-000811
+  - OBS-000812
+  - OBS-000813
+  - OBS-000814
+  - OBS-000815
+  - OBS-000816
+  - OBS-000817
+  - OBS-000818
+  - OBS-000819
+  - OBS-000820
+  - OBS-000821
+  - OBS-000822
+  - OBS-000823
+  - OBS-000824
+  - OBS-000825
+  - OBS-000826
+  - OBS-000827
+  - OBS-000828
+  - OBS-000829
+  - OBS-000830
   - target.yaml#accounts:mrscargo
   confidence: high
   knowledge_status: OBSERVED
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 1417c81b1d2964e286b0b7643bb97426231e4c6be37b968f8b9b54f2348f0364
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    generated_checksum: ded6a65004fc5adf6d13bfaa195374e0654a2b1321baf9e69545bd73b7d5b299
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f
 - id: ACT-002
   key: actor:saeedmehmandoust
   name: saeedmehmandoust
@@ -808,4 +882,4 @@ actors:
     managed: true
     generator: phase2-modeler
     generated_checksum: a986ebcbf4eaad6850c7d6d08bd6101371843b02c93aa166a8fdf6257020eb75
-    source_fingerprint: b0d06564ee51b9f298deef8b9025292b1e082a4c6b1783d47f59e9da7352fe87
+    source_fingerprint: 1fe42767422f0c5ae3680444a9b424e3f00fcab8e39a28eb14714419e136836f

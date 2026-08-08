@@ -1,0 +1,213 @@
+version: 1
+datasets:
+  - id: blh-precision-core
+    host: api.hypothesis.test
+    accounts:
+      ACCOUNT_A: requester
+      ACCOUNT_B: requester
+    candidates:
+      - id: replay-return-a
+        mutation: REPLAY
+        action: RETURN_ORDER
+        resource: order
+        invariant_type: SINGLE_EXECUTION
+        path: /api/orders/{orderId}/return
+        contexts:
+          - actor: ACCOUNT_A
+            capture: shared-return-capture
+            resource_instance: ORDER-1
+      - id: replay-return-b
+        mutation: REPLAY
+        action: RETURN_ORDER
+        resource: order
+        invariant_type: SINGLE_EXECUTION
+        path: /api/orders/{orderId}/return
+        contexts:
+          - actor: ACCOUNT_A
+            capture: shared-return-capture
+            resource_instance: ORDER-1
+      - id: concurrent-return
+        mutation: CONCURRENT_EXECUTION
+        action: RETURN_ORDER
+        resource: order
+        invariant_type: SINGLE_EXECUTION
+        path: /api/orders/{orderId}/return
+        contexts:
+          - actor: ACCOUNT_A
+            capture: return-concurrency
+            resource_instance: ORDER-1
+      - id: actor-return
+        mutation: ACTOR_SWITCH
+        action: RETURN_ORDER
+        resource: order
+        invariant_type: ACTOR_BINDING
+        path: /api/orders/{orderId}/return
+        ownership_known: true
+        contexts:
+          - actor: ACCOUNT_A
+            capture: actor-a-return
+            resource_instance: ORDER-A
+          - actor: ACCOUNT_B
+            capture: actor-b-return
+            resource_instance: ORDER-B
+      - id: redundant-resource-return
+        mutation: RESOURCE_SWITCH
+        action: RETURN_ORDER
+        resource: order
+        invariant_type: RESOURCE_BINDING
+        path: /api/orders/{orderId}/return
+        ownership_known: true
+        overlap_stronger_endpoint_hypothesis: true
+        contexts:
+          - actor: ACCOUNT_A
+            capture: resource-a-return
+            resource_instance: ORDER-A
+          - actor: ACCOUNT_B
+            capture: resource-b-return
+            resource_instance: ORDER-B
+      - id: static-manifest-actor
+        mutation: ACTOR_SWITCH
+        action: READ_MANIFEST
+        resource: manifest
+        invariant_type: ACTOR_BINDING
+        method: GET
+        path: /static/manifest.json
+        authenticated: false
+        state_changing: false
+        object_identifier: false
+        classification: STATIC_ASSET
+        contexts:
+          - actor: ACCOUNT_A
+            capture: static-a
+            resource_instance: STATIC-A
+          - actor: ACCOUNT_B
+            capture: static-b
+            resource_instance: STATIC-B
+      - id: scalar-create-resource
+        mutation: RESOURCE_SWITCH
+        action: CREATE_ORDER
+        resource: order
+        invariant_type: RESOURCE_BINDING
+        path: /api/orders
+        object_identifier: false
+        contexts:
+          - actor: ACCOUNT_A
+            capture: scalar-a
+            resource_instance: ORDER-A
+          - actor: ACCOUNT_B
+            capture: scalar-b
+            resource_instance: ORDER-B
+      - id: self-read-ordering
+        mutation: OUT_OF_ORDER_EXECUTION
+        action: READ_DASHBOARD
+        resource: dashboard
+        invariant_type: ORDERING
+        method: GET
+        path: /api/dashboard
+        authenticated: false
+        state_changing: false
+        object_identifier: false
+        prerequisite: READ_DASHBOARD
+        dependent: READ_DASHBOARD
+        contexts:
+          - actor: ACCOUNT_A
+            capture: dashboard
+            resource_instance: DASHBOARD-A
+      - id: malformed-actor-label
+        mutation: ACTOR_SWITCH
+        action: READ_F0_9F_A4_96
+        resource: f0-9f-a4-96
+        invariant_type: ACTOR_BINDING
+        method: GET
+        path: /api/%F0%9F%A4%96
+        authenticated: false
+        state_changing: false
+        object_identifier: false
+        contexts:
+          - actor: ACCOUNT_A
+            capture: garbage-a
+            resource_instance: OPAQUE-A
+          - actor: ACCOUNT_B
+            capture: garbage-b
+            resource_instance: OPAQUE-B
+      - id: controlled-wallet-resource
+        mutation: RESOURCE_SWITCH
+        action: WITHDRAW_WALLET
+        resource: wallet
+        invariant_type: RESOURCE_BINDING
+        path: /api/wallets/{walletId}/withdraw
+        ownership_known: true
+        contexts:
+          - actor: ACCOUNT_A
+            capture: wallet-a
+            resource_instance: WALLET-A
+          - actor: ACCOUNT_B
+            capture: wallet-b
+            resource_instance: WALLET-B
+      - id: value-create-a
+        mutation: QUANTITY_VALUE_INVARIANT
+        action: CREATE_ORDER
+        resource: order
+        invariant_type: VALUE_CONSERVATION
+        path: /api/orders
+        contexts:
+          - actor: ACCOUNT_A
+            capture: value-shared
+            resource_instance: ORDER-VALUE
+      - id: value-create-b
+        mutation: QUANTITY_VALUE_INVARIANT
+        action: CREATE_ORDER
+        resource: order
+        invariant_type: VALUE_CONSERVATION
+        path: /api/orders
+        contexts:
+          - actor: ACCOUNT_A
+            capture: value-shared
+            resource_instance: ORDER-VALUE
+    expected_clusters:
+      - key: return-replay
+        mutation: REPLAY
+        subject_action: RETURN_ORDER
+        context_count: 2
+        independent_support_count: 1
+      - key: return-concurrency
+        mutation: CONCURRENT_EXECUTION
+        subject_action: RETURN_ORDER
+        context_count: 1
+        independent_support_count: 1
+      - key: return-actor-binding
+        mutation: ACTOR_SWITCH
+        subject_action: RETURN_ORDER
+        context_count: 1
+        independent_support_count: 2
+      - key: wallet-resource-switch
+        mutation: RESOURCE_SWITCH
+        subject_action: WITHDRAW_WALLET
+        context_count: 1
+        independent_support_count: 2
+      - key: create-order-value
+        mutation: QUANTITY_VALUE_INVARIANT
+        subject_action: CREATE_ORDER
+        context_count: 2
+        independent_support_count: 1
+    forbidden_clusters:
+      - key: redundant-return-resource-switch
+        mutation: RESOURCE_SWITCH
+        subject_action: RETURN_ORDER
+        suppression_reason: OVERLAPS_STRONGER_ENDPOINT_HYPOTHESIS
+      - key: static-manifest-actor-binding
+        mutation: ACTOR_SWITCH
+        subject_action: READ_MANIFEST
+        suppression_reason: LOW_SECURITY_RELEVANCE
+      - key: scalar-create-resource-switch
+        mutation: RESOURCE_SWITCH
+        subject_action: CREATE_ORDER
+        suppression_reason: INSUFFICIENT_RESOURCE_SWITCH_EVIDENCE
+      - key: self-dashboard-ordering
+        mutation: OUT_OF_ORDER_EXECUTION
+        subject_action: READ_DASHBOARD
+        suppression_reason: SELF_REFERENTIAL_ORDERING
+      - key: malformed-actor-binding
+        mutation: ACTOR_SWITCH
+        subject_action: READ_RESOURCE
+        suppression_reason: MALFORMED_SEMANTIC_LABEL
