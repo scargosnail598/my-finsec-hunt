@@ -4,6 +4,7 @@
     {
       "name": "api-service-capture",
       "actor": "FINTECH_SERVICE_A",
+      "session": "payment-flow-1",
       "entries": [
         {
           "label": "create_transaction",
@@ -57,6 +58,7 @@
     {
       "name": "payment-service-capture",
       "actor": "FINTECH_SERVICE_A",
+      "session": "payment-flow-1",
       "entries": [
         {
           "label": "call_payments",

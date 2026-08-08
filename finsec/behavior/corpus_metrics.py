@@ -1,207 +1,186 @@
-"""Recall/precision metrics for realistic corpus evaluation."""
+"""Deterministic metrics and diagnostics for the production-backed realistic corpus."""
 
-from dataclasses import dataclass, field
-from enum import Enum
+from __future__ import annotations
 
-from finsec.behavior.domain import CausalBasis
+from pydantic import BaseModel, ConfigDict, Field
 
-
-class EdgeResult(Enum):
-    """Classification of edge reconstruction result."""
-
-    TRUE_POSITIVE = "TP"
-    FALSE_POSITIVE = "FP"
-    FALSE_NEGATIVE = "FN"
-    TRUE_NEGATIVE = "TN"
+from finsec.behavior.domain import CausalBasis, CausalEvidence, RelationshipType
 
 
-@dataclass
-class EdgeEvaluation:
-    """Per-edge evaluation result."""
+class CorpusMetricModel(BaseModel):
+    """Reject accidental report drift so repeated runs remain byte-comparable."""
 
+    model_config = ConfigDict(extra="forbid")
+
+
+class ClassificationMetrics(CorpusMetricModel):
+    expected: int = Field(ge=0)
+    actual: int = Field(ge=0)
+    true_positive: int = Field(ge=0)
+    false_positive: int = Field(ge=0)
+    false_negative: int = Field(ge=0)
+    precision: float = Field(ge=0, le=1)
+    recall: float = Field(ge=0, le=1)
+    f1: float = Field(ge=0, le=1)
+
+
+class MissedEdgeDiagnostic(CorpusMetricModel):
     edge_id: str
-    journey_id: str
-    producer_obs: str
-    consumer_obs: str
-    field_name: str
-    expected_basis: CausalBasis | None
-    result: EdgeResult
-    created_relationship: str = ""
-    expected_relationship: str = "CAUSAL_HARD"
-    reason: str = ""
-
-    @property
-    def is_correct(self) -> bool:
-        """True if edge result is TP."""
-        return self.result == EdgeResult.TRUE_POSITIVE
+    journey: str
+    producer: str
+    consumer: str
+    producer_field: str
+    consumer_field: str
+    expected_basis: CausalBasis
+    expected_relationship: RelationshipType
+    actual_basis: CausalBasis | None = None
+    actual_relationship: RelationshipType | None = None
+    evidence: CausalEvidence = Field(default_factory=CausalEvidence)
+    rejection_reasons: list[str] = Field(default_factory=list)
 
 
-@dataclass
-class JourneyEvaluation:
-    """Per-journey evaluation result."""
+class FragmentationBreak(CorpusMetricModel):
+    producer: str
+    consumer: str
+    expected_basis: CausalBasis | None = None
+    actual_basis: CausalBasis | None = None
+    actual_relationship: RelationshipType | None = None
+    evidence: CausalEvidence = Field(default_factory=CausalEvidence)
+    rejection_reasons: list[str] = Field(default_factory=list)
 
+
+class FragmentationDiagnostic(CorpusMetricModel):
+    journey: str
+    expected_components: int
+    actual_components: int
+    breaks: list[FragmentationBreak] = Field(default_factory=list)
+
+
+class JourneyEvaluation(CorpusMetricModel):
     journey_id: str
     name: str
-    expected_edges: int
-    expected_observations: int
-    expected_components: int
-    edge_results: list[EdgeEvaluation] = field(default_factory=list)
-    found_observations: int = 0
-    workflow_components: int = 0
-
-    @property
-    def true_positives(self) -> int:
-        """Count of correctly found edges."""
-        return sum(1 for e in self.edge_results if e.result == EdgeResult.TRUE_POSITIVE)
-
-    @property
-    def false_positives(self) -> int:
-        """Count of incorrect edges found."""
-        return sum(1 for e in self.edge_results if e.result == EdgeResult.FALSE_POSITIVE)
-
-    @property
-    def false_negatives(self) -> int:
-        """Count of missed expected edges."""
-        return sum(1 for e in self.edge_results if e.result == EdgeResult.FALSE_NEGATIVE)
-
-    @property
-    def recall(self) -> float:
-        """Fraction of expected edges that were found."""
-        if self.expected_edges == 0:
-            return 1.0
-        return self.true_positives / self.expected_edges
-
-    @property
-    def precision(self) -> float:
-        """Fraction of found edges that were expected."""
-        found = self.true_positives + self.false_positives
-        if found == 0:
-            return 1.0 if self.expected_edges == 0 else 0.0
-        return self.true_positives / found
-
-    @property
-    def component_correctness(self) -> bool:
-        """True if workflow reconstructed with correct number of components."""
-        return self.workflow_components == self.expected_components
-
-    @property
-    def f1_score(self) -> float:
-        """Harmonic mean of precision and recall."""
-        if self.recall + self.precision == 0:
-            return 0.0
-        return 2 * (self.precision * self.recall) / (self.precision + self.recall)
+    category: str
+    difficulty: str
+    observation_count: int
+    causal_edges: ClassificationMetrics
+    forbidden_hard_edges: int = Field(ge=0)
+    unexpected_hard_edges: int = Field(ge=0)
+    labeled_precision: float = Field(ge=0, le=1)
+    label_coverage: float = Field(ge=0, le=1)
+    unknown_rate: float = Field(ge=0, le=1)
+    precision_lower_bound: float = Field(ge=0, le=1)
+    expected_components: int = Field(ge=0)
+    actual_components: int = Field(ge=0)
+    component_membership: ClassificationMetrics
+    expected_component_groups: int = Field(ge=0)
+    retained_component_groups: int = Field(ge=0)
+    fragmented: bool
+    incorrect_merges: int = Field(ge=0)
+    order_pairs_expected: int = Field(ge=0)
+    order_pairs_recovered: int = Field(ge=0)
+    order_retention: float = Field(ge=0, le=1)
+    prerequisites: ClassificationMetrics
+    forbidden_prerequisites: int = Field(ge=0)
+    unexpected_prerequisites: int = Field(ge=0)
+    state_transitions: ClassificationMetrics
+    hard_link_count: int = Field(ge=0)
+    soft_link_count: int = Field(ge=0)
+    workflow_instance_count: int = Field(ge=0)
+    workflow_family_count: int = Field(ge=0)
+    singleton_count: int = Field(ge=0)
+    singleton_rate: float = Field(ge=0, le=1)
+    invariant_count: int = Field(ge=0)
+    hypothesis_count: int = Field(ge=0)
+    test_ready_with_blockers: int = Field(ge=0)
+    missed_edges: list[MissedEdgeDiagnostic] = Field(default_factory=list)
+    fragmentation: FragmentationDiagnostic | None = None
 
 
-@dataclass
-class CorpusEvaluation:
-    """Aggregate metrics across all journeys."""
+class CorpusStatistics(CorpusMetricModel):
+    journey_count: int = Field(ge=0)
+    observation_count: int = Field(ge=0)
+    expected_hard_edges: int = Field(ge=0)
+    expected_soft_edges: int = Field(ge=0)
+    forbidden_edges: int = Field(ge=0)
+    expected_prerequisites: int = Field(ge=0)
+    expected_state_transitions: int = Field(ge=0)
 
-    journey_evaluations: list[JourneyEvaluation] = field(default_factory=list)
 
-    @property
-    def total_journeys(self) -> int:
-        """Total number of journeys evaluated."""
-        return len(self.journey_evaluations)
+class AggregateMetrics(CorpusMetricModel):
+    causal_edges: ClassificationMetrics
+    recovered_hard_edges: int = Field(ge=0)
+    missed_hard_edges: int = Field(ge=0)
+    forbidden_hard_edges: int = Field(ge=0)
+    unexpected_hard_edges: int = Field(ge=0)
+    labeled_precision: float = Field(ge=0, le=1)
+    label_coverage: float = Field(ge=0, le=1)
+    unknown_rate: float = Field(ge=0, le=1)
+    precision_lower_bound: float = Field(ge=0, le=1)
+    metrics_by_causal_category: dict[str, ClassificationMetrics]
+    expected_components: int = Field(ge=0)
+    actual_components: int = Field(ge=0)
+    component_membership: ClassificationMetrics
+    expected_component_groups: int = Field(ge=0)
+    retained_component_groups: int = Field(ge=0)
+    journey_retention: float = Field(ge=0, le=1)
+    fragmented_journeys: int = Field(ge=0)
+    incorrect_merges: int = Field(ge=0)
+    forbidden_merges: int = Field(ge=0)
+    order_pairs_expected: int = Field(ge=0)
+    order_pairs_recovered: int = Field(ge=0)
+    order_retention: float = Field(ge=0, le=1)
+    prerequisites: ClassificationMetrics
+    forbidden_prerequisites: int = Field(ge=0)
+    unexpected_prerequisites: int = Field(ge=0)
+    state_transitions: ClassificationMetrics
+    singleton_count: int = Field(ge=0)
+    workflow_instance_count: int = Field(ge=0)
+    singleton_rate: float = Field(ge=0, le=1)
+    hard_link_count: int = Field(ge=0)
+    soft_link_count: int = Field(ge=0)
+    invariant_count: int = Field(ge=0)
+    hypothesis_count: int = Field(ge=0)
+    test_ready_with_blockers: int = Field(ge=0)
+    cross_actor_violations: int = Field(ge=0)
+    cross_session_violations: int = Field(ge=0)
+    request_echo_violations: int = Field(ge=0)
+    read_existing_id_violations: int = Field(ge=0)
+    deterministic_output: bool = False
 
-    @property
-    def total_expected_edges(self) -> int:
-        """Sum of expected edges across all journeys."""
-        return sum(j.expected_edges for j in self.journey_evaluations)
 
-    @property
-    def total_true_positives(self) -> int:
-        """Sum of TP across all journeys."""
-        return sum(j.true_positives for j in self.journey_evaluations)
+class CorpusEvaluation(CorpusMetricModel):
+    version: int = 1
+    statistics: CorpusStatistics
+    journeys: list[JourneyEvaluation]
+    aggregate: AggregateMetrics
 
-    @property
-    def total_false_positives(self) -> int:
-        """Sum of FP across all journeys."""
-        return sum(j.false_positives for j in self.journey_evaluations)
 
-    @property
-    def total_false_negatives(self) -> int:
-        """Sum of FN across all journeys."""
-        return sum(j.false_negatives for j in self.journey_evaluations)
+class RealisticQualityGateThresholds(CorpusMetricModel):
+    min_causal_edge_precision: float = Field(default=1.0, ge=0, le=1)
+    min_causal_edge_recall: float = Field(default=1.0, ge=0, le=1)
+    min_label_coverage: float = Field(default=1.0, ge=0, le=1)
+    min_component_precision: float = Field(default=1.0, ge=0, le=1)
+    min_component_recall: float = Field(default=1.0, ge=0, le=1)
+    min_prerequisite_precision: float = Field(default=1.0, ge=0, le=1)
+    min_prerequisite_recall: float = Field(default=1.0, ge=0, le=1)
+    min_state_transition_precision: float = Field(default=1.0, ge=0, le=1)
+    min_state_transition_recall: float = Field(default=1.0, ge=0, le=1)
+    min_order_retention: float = Field(default=1.0, ge=0, le=1)
+    max_forbidden_hard_edges: int = Field(default=0, ge=0)
+    max_forbidden_merges: int = Field(default=0, ge=0)
+    max_forbidden_prerequisites: int = Field(default=0, ge=0)
+    max_fragmented_journeys: int = Field(default=0, ge=0)
+    max_test_ready_with_blockers: int = Field(default=0, ge=0)
+    max_cross_actor_violations: int = Field(default=0, ge=0)
+    max_cross_session_violations: int = Field(default=0, ge=0)
+    max_request_echo_violations: int = Field(default=0, ge=0)
+    max_read_existing_id_violations: int = Field(default=0, ge=0)
+    require_deterministic_output: bool = True
 
-    @property
-    def overall_recall(self) -> float:
-        """Recall across corpus."""
-        if self.total_expected_edges == 0:
-            return 1.0
-        return self.total_true_positives / self.total_expected_edges
 
-    @property
-    def overall_precision(self) -> float:
-        """Precision across corpus."""
-        found = self.total_true_positives + self.total_false_positives
-        if found == 0:
-            return 1.0 if self.total_expected_edges == 0 else 0.0
-        return self.total_true_positives / found
-
-    @property
-    def overall_f1(self) -> float:
-        """F1 score across corpus."""
-        if self.overall_recall + self.overall_precision == 0:
-            return 0.0
-        return (
-            2
-            * (self.overall_precision * self.overall_recall)
-            / (self.overall_precision + self.overall_recall)
-        )
-
-    @property
-    def perfect_component_journeys(self) -> int:
-        """Count of journeys with correct component count."""
-        return sum(
-            1 for j in self.journey_evaluations if j.component_correctness
-        )
-
-    def recall_by_category(self, category: str) -> float | None:
-        """Recall for journeys in given category."""
-        journeys = [j for j in self.journey_evaluations if category in j.journey_id]
-        if not journeys:
-            return None
-        total_expected = sum(j.expected_edges for j in journeys)
-        if total_expected == 0:
-            return 1.0
-        total_tp = sum(j.true_positives for j in journeys)
-        return total_tp / total_expected
-
-    def recall_by_difficulty(self, difficulty: str) -> float | None:
-        """Recall for journeys of given difficulty."""
-        # Difficulty would need to be stored in JourneyEvaluation
-        # This is a placeholder for future enhancement
-        return None
-
-    def format_report(self) -> str:
-        """Generate human-readable report."""
-        lines = [
-            "╔════════════════════════════════════════════════════════════╗",
-            "║           REALISTIC CORPUS EVALUATION REPORT               ║",
-            "╚════════════════════════════════════════════════════════════╝",
-            "",
-            f"Total Journeys:        {self.total_journeys}",
-            f"Expected Edges:        {self.total_expected_edges}",
-            f"Found Edges (TP+FP):   {self.total_true_positives + self.total_false_positives}",
-            f"True Positives:        {self.total_true_positives}",
-            f"False Positives:       {self.total_false_positives}",
-            f"False Negatives:       {self.total_false_negatives}",
-            "",
-            f"Overall Recall:        {self.overall_recall:.2%}",
-            f"Overall Precision:     {self.overall_precision:.2%}",
-            f"Overall F1 Score:      {self.overall_f1:.3f}",
-            "",
-            f"Perfect Components:    {self.perfect_component_journeys}/{self.total_journeys}",
-            "",
-            "Per-Journey Breakdown:",
-            "─" * 60,
-        ]
-
-        for j in self.journey_evaluations:
-            lines.append(
-                f"{j.journey_id:30} Recall:{j.recall:5.1%} "
-                f"Precision:{j.precision:5.1%} F1:{j.f1_score:.3f} "
-                f"Components:{'✓' if j.component_correctness else '✗'}"
-            )
-
-        return "\n".join(lines)
+class RealisticQualityGateConfiguration(CorpusMetricModel):
+    version: int = 1
+    corpus: str = "."
+    thresholds: RealisticQualityGateThresholds = Field(
+        default_factory=RealisticQualityGateThresholds
+    )

@@ -15,7 +15,7 @@
       },
       "response": {
         "paymentId": "PAY-UNFAM-A1B2C3D4E5F6",
-        "state": "CREATED",
+        "state": "FROZEN",
         "timestamp": "2026-08-05T10:00:00Z"
       },
       "request_headers": {
@@ -37,7 +37,7 @@
       },
       "response": {
         "paymentId": "PAY-UNFAM-A1B2C3D4E5F6",
-        "state": "RESERVED",
+        "state": "CRYSTALLIZED",
         "holdExpires": "2026-08-05T10:05:00Z"
       },
       "request_headers": {
@@ -58,7 +58,7 @@
       "request": {},
       "response": {
         "paymentId": "PAY-UNFAM-A1B2C3D4E5F6",
-        "state": "CAPTURED",
+        "state": "SEALED",
         "capturedAt": "2026-08-05T10:00:05Z"
       },
       "request_headers": {
@@ -78,7 +78,7 @@
       "host": "api.payment.test",
       "response": {
         "paymentId": "PAY-UNFAM-A1B2C3D4E5F6",
-        "state": "CAPTURED",
+        "state": "SEALED",
         "amount": 1500.00,
         "currency": "USD"
       },
@@ -101,7 +101,7 @@
       },
       "response": {
         "paymentId": "PAY-UNFAM-A1B2C3D4E5F6",
-        "state": "SETTLED",
+        "state": "ARCHIVED",
         "settledAt": "2026-08-05T10:00:10Z"
       },
       "request_headers": {

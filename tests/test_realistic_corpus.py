@@ -6,28 +6,28 @@ from pathlib import Path
 
 import pytest
 
-from finsec.behavior.realistic_corpus import load_realistic_corpus
+from finsec.behavior.realistic_corpus import RealisticCorpusLoader, load_realistic_corpus
 
-
-CORPUS_ROOT = Path(__file__).parent.parent / "tests" / "fixtures" / "workflow_realistic"
+CORPUS_ROOT = Path(__file__).parent / "fixtures" / "workflow_realistic"
 
 
 @pytest.fixture(scope="module")
-def corpus():
+def corpus() -> RealisticCorpusLoader:
     """Load the realistic corpus once per module."""
     return load_realistic_corpus(CORPUS_ROOT)
 
 
-def test_corpus_structure_is_valid(corpus):
+def test_corpus_structure_is_valid(corpus: RealisticCorpusLoader) -> None:
     """Verify corpus directories and files exist."""
     assert (CORPUS_ROOT / "journeys").is_dir()
     assert (CORPUS_ROOT / "labels").is_dir()
     assert (CORPUS_ROOT / "labels" / "causal-edges.yaml").exists()
     assert (CORPUS_ROOT / "labels" / "journeys.yaml").exists()
     assert (CORPUS_ROOT / "labels" / "prerequisites.yaml").exists()
+    assert (CORPUS_ROOT / "labels" / "state-transitions.yaml").exists()
 
 
-def test_all_journey_directories_exist(corpus):
+def test_all_journey_directories_exist(corpus: RealisticCorpusLoader) -> None:
     """Verify each expected journey has a directory with fixtures."""
     journey_labels = corpus.load_journey_labels()
     assert len(journey_labels) > 0, "Corpus has no journeys"
@@ -35,10 +35,12 @@ def test_all_journey_directories_exist(corpus):
     for journey in journey_labels:
         journey_dir = CORPUS_ROOT / "journeys" / journey.id
         assert journey_dir.is_dir(), f"Missing journey directory: {journey.id}"
-        assert (journey_dir / "journeys.json").exists(), f"Missing fixture for journey: {journey.id}"
+        assert (journey_dir / "journeys.json").exists(), (
+            f"Missing fixture for journey: {journey.id}"
+        )
 
 
-def test_all_journeys_have_readmes(corpus):
+def test_all_journeys_have_readmes(corpus: RealisticCorpusLoader) -> None:
     """Verify each journey directory has a README."""
     journey_labels = corpus.load_journey_labels()
     for journey in journey_labels:
@@ -46,7 +48,7 @@ def test_all_journeys_have_readmes(corpus):
         assert readme.exists(), f"Missing README for journey: {journey.id}"
 
 
-def test_causal_edges_load_successfully(corpus):
+def test_causal_edges_load_successfully(corpus: RealisticCorpusLoader) -> None:
     """Verify all causal edges can be parsed."""
     edges = corpus.load_causal_edges()
     assert len(edges) > 0, "Corpus has no causal edges"
@@ -55,7 +57,7 @@ def test_causal_edges_load_successfully(corpus):
     assert all(e.consumer for e in edges), "Some edges have no consumer"
 
 
-def test_journey_labels_load_successfully(corpus):
+def test_journey_labels_load_successfully(corpus: RealisticCorpusLoader) -> None:
     """Verify all journey labels can be parsed."""
     journeys = corpus.load_journey_labels()
     assert len(journeys) > 0, "Corpus has no journeys"
@@ -63,14 +65,22 @@ def test_journey_labels_load_successfully(corpus):
     assert all(j.expected_observations for j in journeys), "Some journeys have no observations"
 
 
-def test_prerequisites_load_successfully(corpus):
+def test_prerequisites_load_successfully(corpus: RealisticCorpusLoader) -> None:
     """Verify all prerequisites can be parsed."""
     prereqs = corpus.load_prerequisites()
     assert len(prereqs) > 0, "Corpus has no prerequisites"
     assert all(p.id for p in prereqs), "Some prerequisites have no ID"
 
 
-def test_expected_edges_count():
+def test_state_transitions_load_successfully(corpus: RealisticCorpusLoader) -> None:
+    transitions = corpus.load_state_transitions()
+
+    assert len(transitions) == 3
+    assert all(item.id for item in transitions)
+    assert all(item.from_state != item.to_state for item in transitions)
+
+
+def test_expected_edges_count() -> None:
     """Verify expected edges count matches corpus statistics."""
     corpus = load_realistic_corpus(CORPUS_ROOT)
     edges = corpus.load_causal_edges()
@@ -78,12 +88,11 @@ def test_expected_edges_count():
     expected = [e for e in edges if e.status == "expected"]
     forbidden = [e for e in edges if e.status == "forbidden"]
 
-    # Sanity check: should have both expected and forbidden edges
-    assert len(expected) > 0, "Corpus should have expected edges"
-    assert len(forbidden) > 0, "Corpus should have forbidden edges"
+    assert len(expected) == 28
+    assert len(forbidden) == 9
 
 
-def test_journey_categories():
+def test_journey_categories() -> None:
     """Verify journeys are properly categorized."""
     corpus = load_realistic_corpus(CORPUS_ROOT)
     categories = corpus.get_journey_categories()
@@ -96,7 +105,7 @@ def test_journey_categories():
         assert len(journeys) > 0, f"Category {category} has no journeys"
 
 
-def test_load_journey_fixtures():
+def test_load_journey_fixtures() -> None:
     """Verify journey fixtures can be loaded as JSON."""
     corpus = load_realistic_corpus(CORPUS_ROOT)
     journeys = corpus.load_journey_labels()
@@ -107,21 +116,42 @@ def test_load_journey_fixtures():
         assert "name" in fixture or "entries" in fixture or "captures" in fixture
 
 
-def test_corpus_statistics():
+def test_journey_inputs_include_actor_session_host_and_order_metadata() -> None:
+    corpus = load_realistic_corpus(CORPUS_ROOT)
+
+    for label in corpus.load_journey_labels():
+        journey = corpus.load_journey(label.id)
+        assert journey.first_party_hosts
+        assert journey.captures
+        for capture in journey.captures:
+            assert capture.actor
+            assert capture.session
+            assert capture.entries
+            assert all(entry.host for entry in capture.entries)
+            assert all(entry.method for entry in capture.entries)
+            assert all(entry.path.startswith("/") for entry in capture.entries)
+            assert [entry.offset_seconds for entry in capture.entries] == sorted(
+                entry.offset_seconds for entry in capture.entries
+            )
+
+
+def test_corpus_statistics() -> None:
     """Verify corpus has expected statistics from labels."""
     corpus = load_realistic_corpus(CORPUS_ROOT)
 
     journeys = corpus.load_journey_labels()
     edges = corpus.load_causal_edges()
     prereqs = corpus.load_prerequisites()
+    transitions = corpus.load_state_transitions()
 
-    # Expected counts from corpus README (9 categories: 8 + adversarial)
-    assert len(journeys) == 9, f"Expected 9 journeys, got {len(journeys)}"
-    assert len(edges) >= 27, f"Expected at least 27 edges, got {len(edges)}"
-    assert len(prereqs) >= 18, f"Expected at least 18 prerequisites, got {len(prereqs)}"
+    assert len(journeys) == 9
+    assert sum(len(item.expected_observations) for item in journeys) == 36
+    assert len(edges) == 37
+    assert len(prereqs) == 26
+    assert len(transitions) == 3
 
 
-def test_adversarial_corpus_included():
+def test_adversarial_corpus_included() -> None:
     """Verify adversarial journey is included."""
     corpus = load_realistic_corpus(CORPUS_ROOT)
     journeys = corpus.load_journey_labels()
@@ -139,7 +169,7 @@ def test_adversarial_corpus_included():
     assert len(adversarial_journeys) >= 1, "Should have at least one adversarial journey"
 
 
-def test_no_duplicate_edge_ids():
+def test_no_duplicate_edge_ids() -> None:
     """Verify all edge IDs are unique."""
     corpus = load_realistic_corpus(CORPUS_ROOT)
     edges = corpus.load_causal_edges()
@@ -148,7 +178,7 @@ def test_no_duplicate_edge_ids():
     assert len(edge_ids) == len(set(edge_ids)), "Duplicate edge IDs found"
 
 
-def test_all_edges_reference_valid_journeys():
+def test_all_edges_reference_valid_journeys() -> None:
     """Verify all edges reference journeys that exist."""
     corpus = load_realistic_corpus(CORPUS_ROOT)
     edges = corpus.load_causal_edges()
@@ -158,11 +188,13 @@ def test_all_edges_reference_valid_journeys():
         assert edge.journey in journeys, f"Edge {edge.id} references unknown journey {edge.journey}"
 
 
-def test_all_prerequisites_reference_valid_journeys():
+def test_all_prerequisites_reference_valid_journeys() -> None:
     """Verify all prerequisites reference journeys that exist."""
     corpus = load_realistic_corpus(CORPUS_ROOT)
     prereqs = corpus.load_prerequisites()
     journeys = {j.id for j in corpus.load_journey_labels()}
 
     for prereq in prereqs:
-        assert prereq.journey in journeys, f"Prerequisite {prereq.id} references unknown journey {prereq.journey}"
+        assert prereq.journey in journeys, (
+            f"Prerequisite {prereq.id} references unknown journey {prereq.journey}"
+        )

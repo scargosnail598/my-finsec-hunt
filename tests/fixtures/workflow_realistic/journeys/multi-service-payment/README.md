@@ -2,10 +2,11 @@
 
 ## Scenario
 
-A fintech application initiates a payment transaction on the main API, which creates a distinctive workflow token. The token is then used to call a dedicated payment service, which returns a payment ID. Finally, the main API is notified and stores the payment status.
+A fintech application creates a persistent transaction on the main API. That transaction identity
+is consumed by a dedicated payment service, which creates a payment identity used by settlement.
 
 ### Business Flow
-1. **api.example.test POST /transactions** → Creates transaction + returns transactionId (distinctive workflow token)
+1. **api.example.test POST /transactions** → Creates transaction + returns transactionId
 2. **payments.example.test POST /payments** → Submit transactionId → Receive paymentId
 3. **api.example.test POST /transactions/{transactionId}/settle** → Supply paymentId to settle
 
@@ -13,8 +14,8 @@ A fintech application initiates a payment transaction on the main API, which cre
 
 ### 1. Cross-Service Token Continuation
 - Same actor, different hosts
-- transactionId is a **distinctive workflow token**, not just a business value
-- Capability-based: proves authorization to continue workflow on payment service
+- transactionId is a typed persistent resource identity, not a generic business value
+- The payment service consumes that created transaction identity
 - Must bridge captures across service boundaries using token
 
 ### 2. Service Boundaries Are Not Actor Boundaries
@@ -37,8 +38,9 @@ A fintech application initiates a payment transaction on the main API, which cre
 
 | Relationship | Producer Obs | Consumer Obs | Expected Basis | Status |
 |---|---|---|---|---|
-| transactionId creation | create_transaction | call_payments | CAPABILITY_ISSUED | expected |
-| paymentId creation | call_payments | settle_transaction | CAPABILITY_ISSUED | expected |
+| transactionId creation | create_transaction | call_payments | RESOURCE_CREATED | expected |
+| transactionId lineage | create_transaction | settle_transaction | RESOURCE_CREATED | expected |
+| paymentId creation | call_payments | settle_transaction | RESOURCE_CREATED | expected |
 | transactionId path param echo | call_payments | call_payments (response) | REQUEST_VALUE_ECHOED | forbidden (if echoed) |
 
 ## Validation
@@ -50,6 +52,7 @@ A fintech application initiates a payment transaction on the main API, which cre
 
 ## Notes
 
-- This tests that the reconstruction engine can follow workflows across service boundaries using workflow tokens.
-- Session and capture boundaries are flexible if the token is deemed distinctive and capable-based.
+- This tests that the reconstruction engine can follow typed resource lineage across reviewed
+  first-party service boundaries.
+- Cross-host continuation still requires the same controlled actor and logical session.
 - Same actor is key; different authenticated identities would break the flow.

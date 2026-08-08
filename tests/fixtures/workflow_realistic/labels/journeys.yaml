@@ -110,7 +110,7 @@ journeys:
 
   - id: "unfamiliar-state-transitions"
     name: "Unfamiliar State Machine"
-    description: "Payment moves through CREATED → RESERVED → CAPTURED → SETTLED states"
+    description: "Payment moves through unfamiliar FROZEN, CRYSTALLIZED, SEALED, and ARCHIVED states"
     expected_observations:
       - create_payment
       - reserve_payment
@@ -125,14 +125,14 @@ journeys:
       - capture_payment
       - settle_payment
     expected_state_transitions:
-      - from: "CREATED"
-        to: "RESERVED"
+      - from: "FROZEN"
+        to: "CRYSTALLIZED"
         evidence: [create_payment, reserve_payment]
-      - from: "RESERVED"
-        to: "CAPTURED"
+      - from: "CRYSTALLIZED"
+        to: "SEALED"
         evidence: [reserve_payment, capture_payment]
-      - from: "CAPTURED"
-        to: "SETTLED"
+      - from: "SEALED"
+        to: "ARCHIVED"
         evidence: [capture_payment, settle_payment]
     state_names_unknown: true
     status: "fully_labeled"
@@ -214,18 +214,20 @@ journeys:
       - post_transfer
       - payment_customer_b
       - payment_customer_a
-    expected_components: 5
+    expected_components: 6
     expected_order: false
     status: "fully_labeled"
     difficulty: "ambiguous"
     category: "adversarial"
-    note: "Contains 5 independent workflows designed to test precision against false merges"
+    note: "Contains 6 independent workflows designed to test precision against false merges"
     independent_workflows:
       - observations: [post_order, post_shipment]
         expected_components: 1
       - observations: [post_report, get_report_details]
         expected_components: 1
-      - observations: [get_account, post_transfer]
+      - observations: [get_account]
+        expected_components: 1
+      - observations: [post_transfer]
         expected_components: 1
       - observations: [payment_customer_b]
         expected_components: 1
@@ -236,7 +238,7 @@ journeys:
 summary:
   total_journeys: 9
   fully_labeled_journeys: 9
-  total_expected_observations: 43
+  total_expected_observations: 36
   categories:
     resource-lifecycle: 1
     capability-handoff: 1
@@ -247,5 +249,5 @@ summary:
     replay-and-fanout: 1
     cross-capture-continuation: 1
     adversarial: 1
-  expected_components: 9
-  expected_total_edges: 27
+  expected_components: 14
+  expected_total_edges: 28

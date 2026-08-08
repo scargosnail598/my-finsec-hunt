@@ -17,6 +17,7 @@ from finsec.behavior.domain import (
     ActionRecord,
     ActionStore,
     CausalBasis,
+    CausalEvidence,
     EpistemicStatus,
     GraphEdge,
     GraphNode,
@@ -170,7 +171,15 @@ def _session_identity(facts: ExchangeFacts) -> str | None:
 
 
 def _is_read(facts: ExchangeFacts) -> bool:
-    return facts.endpoint is not None and facts.endpoint.action.type == "read"
+    if facts.endpoint is None:
+        return False
+    if facts.observation.method in {"GET", "HEAD", "OPTIONS"}:
+        return True
+    return (
+        facts.endpoint.action.type == "read"
+        and facts.observation.status_code != 201
+        and not facts.endpoint.state_change
+    )
 
 
 def _noise_observations(facts: list[ExchangeFacts]) -> set[str]:
@@ -426,40 +435,72 @@ def _state_transition_evidence(
     destination: ExchangeFacts,
     signal: ScalarSignal,
     destination_signal: ScalarSignal,
+    *,
+    direct_transition: bool,
 ) -> str | None:
     if (
         source.endpoint is None
         or destination.endpoint is None
-        or not source.endpoint.state_change
-        or not destination.endpoint.state_change
+        or not _consumer_advances_workflow(source)
+        or not _consumer_advances_workflow(destination)
         or signal.kind != "RESOURCE_IDENTIFIER"
         or destination_signal.kind != "RESOURCE_IDENTIFIER"
         or signal.resource_type is None
         or signal.resource_type != destination_signal.resource_type
+        or not direct_transition
     ):
         return None
-    source_states = _states_for_resource(source, signal.resource_type)
-    destination_states = _states_for_resource(destination, destination_signal.resource_type)
+    source_states = [
+        state
+        for state in source.states
+        if state.resource_type.lower() == signal.resource_type.lower()
+    ]
+    destination_states = [
+        state
+        for state in destination.states
+        if state.resource_type.lower() == destination_signal.resource_type.lower()
+    ]
     for source_state in source_states:
-        if source_state in TERMINAL_STATES or not _action_matches_state(
-            source.action_name, source_state
-        ):
-            continue
         for destination_state in destination_states:
-            if source_state == destination_state or not _action_matches_state(
-                destination.action_name, destination_state
+            if (
+                _normalized_state_field(source_state.field)
+                != _normalized_state_field(destination_state.field)
+                or source_state.value == destination_state.value
             ):
                 continue
             return (
-                f"STATE_TRANSITION_PRODUCED: {source.action_name} produced explicit "
-                f"{signal.resource_type} state {source_state}, followed by compatible "
-                f"{destination.action_name} state {destination_state}."
+                f"STATE_TRANSITION_PRODUCED: the same typed {signal.resource_type} identity "
+                f"changed {source_state.field} from {source_state.value} to "
+                f"{destination_state.value} across consecutive mutations."
             )
     return None
 
 
+def _normalized_state_field(value: str) -> str:
+    return value.rsplit(".", 1)[-1].replace("[]", "").lower()
+
+
+def _successful_response(facts: ExchangeFacts) -> bool:
+    status = facts.observation.status_code
+    return status is not None and 200 <= status < 300
+
+
 def _resource_creation_evidence(source: ExchangeFacts, signal: ScalarSignal) -> bool:
-    if source.endpoint is None or not source.endpoint.state_change:
+    if (
+        source.endpoint is None
+        or signal.kind != "RESOURCE_IDENTIFIER"
+        or not _successful_response(source)
+    ):
+        return False
+    if source.observation.status_code == 201 and source.observation.method not in {
+        "GET",
+        "HEAD",
+        "OPTIONS",
+    }:
+        return True
+    if _is_read(source):
+        return False
+    if not source.endpoint.state_change:
         return False
     verb = source.action_name.split("_", 1)[0]
     if verb in PRODUCER_VERBS:
@@ -471,67 +512,190 @@ def _resource_creation_evidence(source: ExchangeFacts, signal: ScalarSignal) -> 
     )
 
 
-def _producer_semantics(
+def _signals_compatible(source: ScalarSignal, destination: ScalarSignal) -> bool:
+    if source.kind == destination.kind == "RESOURCE_IDENTIFIER":
+        return source.resource_type == destination.resource_type
+    if source.kind == destination.kind == "WORKFLOW_TOKEN":
+        return source.primitive_type == destination.primitive_type == "STRING"
+    if source.primitive_type != destination.primitive_type:
+        return False
+    return (
+        source.kind == destination.kind
+        and source.semantic_role == destination.semantic_role
+        and source.resource_type == destination.resource_type
+    )
+
+
+def _persistent_resource_identity(
+    source: ExchangeFacts,
+    signal: ScalarSignal,
+    destination_signal: ScalarSignal,
+) -> bool:
+    if signal.kind != "RESOURCE_IDENTIFIER":
+        return False
+    source_resource = source.endpoint.resource.type.lower() if source.endpoint is not None else None
+    return (
+        source.observation.status_code == 201
+        or destination_signal.location == "PATH_PARAMETER"
+        or (signal.resource_type or "").lower() == source_resource
+    )
+
+
+def _capability_semantics(
     source: ExchangeFacts,
     destination: ExchangeFacts,
     signal: ScalarSignal,
     destination_signal: ScalarSignal,
+    *,
+    output_only: bool,
+    persistent_resource_identity: bool,
+) -> bool:
+    if (
+        not output_only
+        or not signal.distinctive
+        or not destination_signal.distinctive
+        or not _successful_response(source)
+        or not _consumer_advances_workflow(destination)
+        or persistent_resource_identity
+    ):
+        return False
+    if signal.kind == destination_signal.kind == "WORKFLOW_TOKEN":
+        return True
+    if signal.kind == destination_signal.kind == "RESOURCE_IDENTIFIER":
+        source_resource = (
+            source.endpoint.resource.type.lower() if source.endpoint is not None else None
+        )
+        return (
+            destination_signal.location != "PATH_PARAMETER"
+            and signal.resource_type is not None
+            and signal.resource_type != source_resource
+        )
+    return False
+
+
+def _consumer_advances_workflow(facts: ExchangeFacts) -> bool:
+    return bool(
+        facts.endpoint
+        and (
+            facts.endpoint.state_change
+            or (
+                facts.observation.method in {"POST", "PUT", "PATCH", "DELETE"}
+                and not _is_read(facts)
+            )
+        )
+    )
+
+
+def _causal_evidence(
+    source: ExchangeFacts,
+    destination: ExchangeFacts,
+    signal: ScalarSignal,
+    destination_signal: ScalarSignal,
+    *,
+    previously_observed: bool,
+    direct_state_transition: bool,
+) -> tuple[CausalEvidence, str | None]:
+    same_actor = (
+        source.observation.actor != "UNKNOWN"
+        and source.observation.actor == destination.observation.actor
+    )
+    same_session = _session_identity(source) is not None and _session_identity(
+        source
+    ) == _session_identity(destination)
+    same_capture = _capture_identity(source) == _capture_identity(destination)
+    same_host = source.observation.host == destination.observation.host
+    output_only = not _request_contains_response_value(source, signal)
+    persistent_identity = _persistent_resource_identity(source, signal, destination_signal)
+    state_reason = _state_transition_evidence(
+        source,
+        destination,
+        signal,
+        destination_signal,
+        direct_transition=direct_state_transition,
+    )
+    evidence = CausalEvidence(
+        output_only=output_only,
+        later_consumed=True,
+        compatible_resource_type=_signals_compatible(signal, destination_signal),
+        temporal_order=_temporal_order_known(source, destination),
+        same_controlled_actor=same_actor,
+        distinctive_value=signal.distinctive and destination_signal.distinctive,
+        same_session=same_session,
+        same_capture=same_capture,
+        same_host=same_host,
+        session_compatible=same_session,
+        capture_compatible=same_capture or same_session,
+        host_compatible=same_host
+        or (
+            same_session
+            and source.endpoint is not None
+            and destination.endpoint is not None
+            and source.endpoint.disposition == "ACTIVE"
+            and destination.endpoint.disposition == "ACTIVE"
+        ),
+        request_echo=not output_only,
+        previously_observed=previously_observed,
+        source_is_read=_is_read(source),
+        source_successful=_successful_response(source),
+        source_created_resource=output_only and _resource_creation_evidence(source, signal),
+        consumer_state_changing=_consumer_advances_workflow(destination),
+        consumed_as_path_identifier=destination_signal.location == "PATH_PARAMETER",
+        persistent_resource_identity=persistent_identity,
+        collection_member="[]" in signal.field,
+        direct_state_transition=direct_state_transition,
+        capability_semantics=_capability_semantics(
+            source,
+            destination,
+            signal,
+            destination_signal,
+            output_only=output_only,
+            persistent_resource_identity=persistent_identity,
+        ),
+        state_transition_evidence=state_reason is not None,
+        distinctive_semantic_role=signal.semantic_role == destination_signal.semantic_role,
+        field_alias_compatible=(
+            signal.kind == destination_signal.kind == "WORKFLOW_TOKEN"
+            and signal.semantic_role != destination_signal.semantic_role
+        ),
+    )
+    return evidence, state_reason
+
+
+def _producer_semantics(
+    signal: ScalarSignal,
+    evidence: CausalEvidence,
+    state_reason: str | None,
 ) -> tuple[CausalBasis, str]:
-    if "[]" in signal.field:
+    if evidence.collection_member:
         return (
             CausalBasis.EXISTING_VALUE_OBSERVED,
             "OBSERVED_EXISTING_VALUE: a response collection exposed an existing member value.",
         )
-    transition_reason = _state_transition_evidence(source, destination, signal, destination_signal)
-    if transition_reason is not None:
-        return CausalBasis.STATE_TRANSITION_PRODUCED, transition_reason
-    echoed = _request_contains_response_value(source, signal)
-    if signal.kind == "WORKFLOW_TOKEN":
-        if echoed:
-            return (
-                CausalBasis.REQUEST_VALUE_ECHOED,
-                "ECHOED_REQUEST_VALUE: the response repeated a token supplied by the source "
-                "request; no new capability was issued.",
-            )
-        if signal.distinctive and signal.semantic_role == destination_signal.semantic_role:
-            return (
-                CausalBasis.CAPABILITY_ISSUED,
-                "CAPABILITY_ISSUED: the source returned an output-only distinctive token or "
-                "nonce consumed by the later request.",
-            )
-        return (
-            CausalBasis.AMBIGUOUS_ORIGIN,
-            "AMBIGUOUS_PRODUCER: token origin is not distinctive or semantically compatible.",
-        )
-    if signal.kind == "RESOURCE_IDENTIFIER":
-        if _is_read(source):
-            return (
-                CausalBasis.EXISTING_VALUE_OBSERVED,
-                "OBSERVED_EXISTING_VALUE: a read operation returned an existing resource "
-                "identifier; observation does not establish production.",
-            )
-        if echoed:
-            return (
-                CausalBasis.REQUEST_VALUE_ECHOED,
-                "ECHOED_REQUEST_VALUE: the response repeated an identifier supplied by the "
-                "source request. NO_CAUSAL_STATE_TRANSITION: no compatible explicit state "
-                "progression was observed.",
-            )
-        if _resource_creation_evidence(source, signal):
-            return (
-                CausalBasis.RESOURCE_CREATED,
-                "RESOURCE_CREATED: a state-changing producer returned an output-only typed "
-                "resource identifier consumed by the later request.",
-            )
-        return (
-            CausalBasis.AMBIGUOUS_ORIGIN,
-            "AMBIGUOUS_PRODUCER: the output-only identifier lacks explicit creation, issuance, "
-            "or compatible state-transition evidence.",
-        )
-    if echoed:
+    if evidence.request_echo:
+        if evidence.state_transition_evidence and state_reason is not None:
+            return CausalBasis.STATE_TRANSITION_PRODUCED, state_reason
         return (
             CausalBasis.REQUEST_VALUE_ECHOED,
             "ECHOED_REQUEST_VALUE: the response repeated a value supplied by the source request.",
+        )
+    if evidence.source_created_resource:
+        return (
+            CausalBasis.RESOURCE_CREATED,
+            "RESOURCE_CREATED: a successful producer returned an output-only typed resource "
+            "identifier consumed by the later request.",
+        )
+    if evidence.state_transition_evidence and state_reason is not None:
+        return CausalBasis.STATE_TRANSITION_PRODUCED, state_reason
+    if evidence.capability_semantics:
+        return (
+            CausalBasis.CAPABILITY_ISSUED,
+            "CAPABILITY_ISSUED: an output-only distinctive value is later consumed by a "
+            "workflow-advancing action without persistent-resource behavior.",
+        )
+    if evidence.source_is_read or evidence.previously_observed:
+        return (
+            CausalBasis.EXISTING_VALUE_OBSERVED,
+            "OBSERVED_EXISTING_VALUE: passive evidence shows observation rather than production.",
         )
     return (
         CausalBasis.AMBIGUOUS_ORIGIN,
@@ -544,31 +708,33 @@ def _relationship_type(
     destination: ExchangeFacts,
     signal: ScalarSignal,
     destination_signal: ScalarSignal,
-) -> tuple[RelationshipType, bool, CausalBasis, str]:
-    same_actor = (
-        source.observation.actor != "UNKNOWN"
-        and source.observation.actor == destination.observation.actor
+    *,
+    previously_observed: bool,
+    direct_state_transition: bool,
+) -> tuple[RelationshipType, bool, CausalBasis, str, CausalEvidence, list[str]]:
+    evidence, state_reason = _causal_evidence(
+        source,
+        destination,
+        signal,
+        destination_signal,
+        previously_observed=previously_observed,
+        direct_state_transition=direct_state_transition,
     )
-    same_session = _session_identity(source) is not None and _session_identity(
-        source
-    ) == _session_identity(destination)
-    same_capture = _capture_identity(source) == _capture_identity(destination)
-    causal_basis, producer_reason = _producer_semantics(
-        source, destination, signal, destination_signal
-    )
-    explicit_workflow_continuity = causal_basis == CausalBasis.CAPABILITY_ISSUED
-    temporal_known = _temporal_order_known(source, destination)
+    causal_basis, producer_reason = _producer_semantics(signal, evidence, state_reason)
+    same_capture = evidence.same_capture
     same_action_replay = (
         source.action_name == destination.action_name
         and source.endpoint is not None
         and source.endpoint.state_change
     )
-    if not same_actor:
+    if not evidence.same_controlled_actor:
         return (
             RelationshipType.CROSS_ACTOR_COMPARISON,
             False,
             causal_basis,
             "Typed values cross actor boundaries and are retained only for controlled comparison.",
+            evidence,
+            ["controlled_actor_mismatch"],
         )
     if (
         same_action_replay
@@ -584,6 +750,8 @@ def _relationship_type(
             same_capture,
             CausalBasis.EXISTING_VALUE_OBSERVED,
             "Repeated action or idempotency evidence is replay-related, not a prerequisite edge.",
+            evidence,
+            ["replay_relationship_display_only"],
         )
     if signal.kind == "CORRELATION_ID":
         return (
@@ -591,63 +759,43 @@ def _relationship_type(
             same_capture,
             causal_basis,
             "Correlation identifiers provide context but do not prove producer-consumer causality.",
+            evidence,
+            ["correlation_identifier_display_only"],
         )
-    if "[]" in signal.field:
+    if evidence.collection_member:
         return (
             RelationshipType.CONTEXT_SOFT,
             same_capture,
             causal_basis,
             "An identifier observed inside a response collection is selection context and does "
             "not prove one workflow boundary.",
+            evidence,
+            ["response_collection_member_observed"],
         )
-    if not signal.distinctive or not destination_signal.distinctive:
-        return (
-            RelationshipType.CONTEXT_SOFT,
-            same_capture,
-            causal_basis,
-            signal.suppression_reason
-            or destination_signal.suppression_reason
-            or "The matched value is not distinctive enough for causal use.",
-        )
-    if not temporal_known:
-        return (
-            RelationshipType.CONTEXT_SOFT,
-            same_capture,
-            causal_basis,
-            "Temporal direction is not established by timestamps or capture sequence.",
-        )
-    if causal_basis not in {
+    merge_capable_basis = causal_basis in {
         CausalBasis.RESOURCE_CREATED,
         CausalBasis.CAPABILITY_ISSUED,
         CausalBasis.STATE_TRANSITION_PRODUCED,
-    }:
-        return RelationshipType.CONTEXT_SOFT, same_capture, causal_basis, producer_reason
-    if not same_session and not explicit_workflow_continuity:
+    }
+    if merge_capable_basis and evidence.hard_causal_admissibility(causal_basis):
         return (
-            RelationshipType.CONTEXT_SOFT,
-            same_capture,
+            RelationshipType.CAUSAL_HARD,
+            evidence.capture_compatible,
             causal_basis,
-            "Session continuity is absent and missing session data is not treated as a wildcard.",
+            producer_reason,
+            evidence,
+            [],
         )
-    if not same_capture and not explicit_workflow_continuity:
-        return (
-            RelationshipType.CONTEXT_SOFT,
-            False,
-            causal_basis,
-            "Capture continuity is absent and a matching scalar cannot bridge captures.",
-        )
-    if source.observation.host != destination.observation.host and not explicit_workflow_continuity:
-        return (
-            RelationshipType.CONTEXT_SOFT,
-            same_capture,
-            causal_basis,
-            "Cross-service correlation requires an explicit distinctive workflow token.",
-        )
+    rejection_reasons = evidence.rejection_reasons(causal_basis)
     return (
-        RelationshipType.CAUSAL_HARD,
-        same_capture or explicit_workflow_continuity,
+        RelationshipType.CONTEXT_SOFT,
+        same_capture,
         causal_basis,
-        producer_reason,
+        producer_reason
+        if rejection_reasons
+        else "The candidate is retained as display-only context.",
+        evidence,
+        rejection_reasons or ["hard_causal_admissibility_not_met"],
     )
 
 
@@ -660,6 +808,8 @@ def _relationship_link(
     causal_basis: CausalBasis,
     capture_continuity: bool,
     reason: str,
+    causal_evidence: CausalEvidence | None = None,
+    rejection_reasons: list[str] | None = None,
 ) -> PropagationLink:
     payload = {
         "relationship": relationship_type,
@@ -702,6 +852,8 @@ def _relationship_link(
         temporal_order_known=_temporal_order_known(source, destination),
         capture_continuity=capture_continuity,
         distinctive_value=signal.distinctive and destination_signal.distinctive,
+        causal_evidence=causal_evidence or CausalEvidence(),
+        rejection_reasons=rejection_reasons or [],
         evidence_reason=reason,
         evidence=[source.observation.id, destination.observation.id],
         confidence=(
@@ -748,6 +900,14 @@ def _replay_relationships(facts: list[ExchangeFacts]) -> list[PropagationLink]:
                 if (signal.resource_type, signal.fingerprint)
                 in _request_primary_resource_identifiers(destination)
             )
+            causal_evidence, _state_reason = _causal_evidence(
+                source,
+                destination,
+                source_signal,
+                destination_signal,
+                previously_observed=True,
+                direct_state_transition=False,
+            )
             links.append(
                 _relationship_link(
                     source,
@@ -758,6 +918,8 @@ def _replay_relationships(facts: list[ExchangeFacts]) -> list[PropagationLink]:
                     CausalBasis.EXISTING_VALUE_OBSERVED,
                     _capture_identity(source) == _capture_identity(destination),
                     "The same state-changing action reused the same typed primary resource.",
+                    causal_evidence,
+                    ["replay_relationship_display_only"],
                 )
             )
     return links
@@ -820,6 +982,14 @@ def _cross_actor_relationships(facts: list[ExchangeFacts]) -> list[PropagationLi
                     if _order_key(left_facts) <= _order_key(right_facts)
                     else (right_facts, right_signal, left_facts, left_signal)
                 )
+                causal_evidence, _state_reason = _causal_evidence(
+                    source,
+                    destination,
+                    source_signal,
+                    destination_signal,
+                    previously_observed=True,
+                    direct_state_transition=False,
+                )
                 links.append(
                     _relationship_link(
                         source,
@@ -831,6 +1001,8 @@ def _cross_actor_relationships(facts: list[ExchangeFacts]) -> list[PropagationLi
                         False,
                         "Different controlled actors supplied compatible typed resource fields on "
                         "the same normalized action; journeys remain separate.",
+                        causal_evidence,
+                        ["controlled_actor_mismatch"],
                     )
                 )
     return links
@@ -838,33 +1010,64 @@ def _cross_actor_relationships(facts: list[ExchangeFacts]) -> list[PropagationLi
 
 def _propagation(facts: list[ExchangeFacts]) -> list[PropagationLink]:
     ordered = sorted(facts, key=_order_key)
-    request_by_value: dict[
-        tuple[str, str, str | None, str], list[tuple[int, ExchangeFacts, ScalarSignal]]
-    ] = defaultdict(list)
+    request_by_value: dict[str, list[tuple[int, ExchangeFacts, ScalarSignal]]] = defaultdict(list)
     for index, item in enumerate(ordered):
         for signal in item.request_signals:
             if signal.kind == "BUSINESS_VALUE":
                 continue
-            request_by_value[
-                (signal.kind, signal.semantic_role, signal.resource_type, signal.fingerprint)
-            ].append((index, item, signal))
+            request_by_value[signal.fingerprint].append((index, item, signal))
     links: list[PropagationLink] = []
     for source_index, source in enumerate(ordered):
         for signal in source.response_signals:
             if signal.kind == "BUSINESS_VALUE":
                 continue
             for destination_index, destination, destination_signal in request_by_value.get(
-                (signal.kind, signal.semantic_role, signal.resource_type, signal.fingerprint), []
+                signal.fingerprint, []
             ):
                 if destination_index <= source_index:
+                    continue
+                if not _signals_compatible(signal, destination_signal):
                     continue
                 elapsed = _elapsed(source, destination)
                 if elapsed is not None and elapsed < 0:
                     continue
                 if elapsed is not None and elapsed > 86400:
                     continue
-                relationship_type, continuity, causal_basis, reason = _relationship_type(
-                    source, destination, signal, destination_signal
+                previously_observed = any(
+                    earlier.observation.actor == source.observation.actor
+                    and any(
+                        earlier_signal.fingerprint == signal.fingerprint
+                        and _signals_compatible(earlier_signal, signal)
+                        for earlier_signal in earlier.signals
+                    )
+                    for earlier in ordered[:source_index]
+                )
+                intervening_mutation = any(
+                    item.observation.actor == source.observation.actor
+                    and _session_identity(item) == _session_identity(source)
+                    and _consumer_advances_workflow(item)
+                    and any(
+                        item_signal.fingerprint == signal.fingerprint
+                        and item_signal.kind == "RESOURCE_IDENTIFIER"
+                        and item_signal.resource_type == signal.resource_type
+                        for item_signal in item.signals
+                    )
+                    for item in ordered[source_index + 1 : destination_index]
+                )
+                (
+                    relationship_type,
+                    continuity,
+                    causal_basis,
+                    reason,
+                    causal_evidence,
+                    rejection_reasons,
+                ) = _relationship_type(
+                    source,
+                    destination,
+                    signal,
+                    destination_signal,
+                    previously_observed=previously_observed,
+                    direct_state_transition=not intervening_mutation,
                 )
                 links.append(
                     _relationship_link(
@@ -876,11 +1079,30 @@ def _propagation(facts: list[ExchangeFacts]) -> list[PropagationLink]:
                         causal_basis,
                         continuity,
                         reason,
+                        causal_evidence,
+                        rejection_reasons,
                     )
                 )
     links.extend(_replay_relationships(facts))
     links.extend(_cross_actor_relationships(facts))
-    return sorted({item.id: item for item in links}.values(), key=lambda item: item.id)
+    deduplicated: dict[tuple[str, ...], PropagationLink] = {}
+    location_rank = {"PATH_PARAMETER": 0, "BODY": 1, "HEADER": 2, "QUERY_PARAMETER": 3}
+    for link in sorted(links, key=lambda item: item.id):
+        key = (
+            link.relationship_type.value,
+            link.causal_basis.value,
+            link.value_fingerprint,
+            link.source_observation_id,
+            link.destination_observation_id,
+            link.source_semantic_role or "",
+            link.destination_semantic_role or "",
+        )
+        current = deduplicated.get(key)
+        if current is None or location_rank.get(
+            link.destination_location or "", 9
+        ) < location_rank.get(current.destination_location or "", 9):
+            deduplicated[key] = link
+    return sorted(deduplicated.values(), key=lambda item: item.id)
 
 
 def _elapsed(left: ExchangeFacts, right: ExchangeFacts) -> float | None:
@@ -894,11 +1116,16 @@ def _elapsed(left: ExchangeFacts, right: ExchangeFacts) -> float | None:
 def is_merge_capable_relationship(link: PropagationLink) -> bool:
     """Return whether a persisted relationship may union workflow components."""
 
-    return link.relationship_type == RelationshipType.CAUSAL_HARD and link.causal_basis in {
-        CausalBasis.RESOURCE_CREATED,
-        CausalBasis.CAPABILITY_ISSUED,
-        CausalBasis.STATE_TRANSITION_PRODUCED,
-    }
+    return (
+        link.relationship_type == RelationshipType.CAUSAL_HARD
+        and link.causal_basis
+        in {
+            CausalBasis.RESOURCE_CREATED,
+            CausalBasis.CAPABILITY_ISSUED,
+            CausalBasis.STATE_TRANSITION_PRODUCED,
+        }
+        and link.causal_evidence.hard_causal_admissibility(link.causal_basis)
+    )
 
 
 def _components(
@@ -1264,6 +1491,32 @@ def _workflow_instances(
     return sorted(instances, key=lambda item: item.id)
 
 
+def _has_alternative_causal_path(
+    candidate: PropagationLink,
+    links: list[PropagationLink],
+) -> bool:
+    adjacency: dict[str, set[str]] = defaultdict(set)
+    for link in links:
+        if link.id != candidate.id and is_merge_capable_relationship(link):
+            adjacency[link.source_observation_id].add(link.destination_observation_id)
+    pending = list(
+        sorted(
+            adjacency.get(candidate.source_observation_id, set())
+            - {candidate.destination_observation_id}
+        )
+    )
+    visited: set[str] = set()
+    while pending:
+        observation_id = pending.pop()
+        if observation_id == candidate.destination_observation_id:
+            return True
+        if observation_id in visited:
+            continue
+        visited.add(observation_id)
+        pending.extend(sorted(adjacency.get(observation_id, set()) - visited))
+    return False
+
+
 def _workflow_families(
     instances: list[WorkflowInstance], propagation: list[PropagationLink]
 ) -> list[WorkflowFamily]:
@@ -1299,7 +1552,11 @@ def _workflow_families(
                 continue
             source_instance, source_step = source
             _destination_instance, destination_step = destination
-            if source_step.position >= destination_step.position:
+            if (
+                source_step.position >= destination_step.position
+                or destination_step.method in {"GET", "HEAD", "OPTIONS"}
+                or _has_alternative_causal_path(link, propagation)
+            ):
                 continue
             key = (
                 source_step.action_name,

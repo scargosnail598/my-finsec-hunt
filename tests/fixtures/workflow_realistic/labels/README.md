@@ -96,6 +96,11 @@ prerequisites:
 - `status`: Whether this is a true prerequisite or a forbidden false adjacency
 - `confidence`: How strong the evidence is
 
+### state-transitions.yaml
+
+Defines lifecycle transitions independently from causal-edge labels. Each record names the
+producer and consumer observations, typed resource, state field, and exact before/after values.
+
 ---
 
 ## Labeling Conventions
@@ -169,6 +174,7 @@ To validate that the engine correctly reconstructs a journey:
 4. Check each forbidden edge is NOT created as CAUSAL_HARD
 5. Verify all observations are in the expected number of components
 6. Verify observation order is maintained
+7. Compare resource-scoped lifecycle transitions with `state-transitions.yaml`
 
 ---
 
@@ -194,6 +200,7 @@ To validate that the engine correctly reconstructs a journey:
 4. Update `causal-edges.yaml` with all edges
 5. Update `journeys.yaml` with journey metadata
 6. Update `prerequisites.yaml` with prerequisites
+7. Update `state-transitions.yaml` with any reviewed lifecycle transitions
 
 ### Adding New Categories
 
@@ -208,11 +215,15 @@ New categories should be added to `journeys/` following the same pattern. They s
 ## Statistics
 
 Current corpus:
-- **Journeys**: 14 (1 per category + 6 adversarial variants)
+- **Journeys**: 9
 - **Categories**: 9 (resource-lifecycle, capability-handoff, multi-service, nested, state-transitions, aliases, fanout, cross-capture, adversarial)
-- **Observations**: 43 total
-- **Expected edges**: 27+
-- **Forbidden edges**: 6+
+- **Observations**: 36 total
+- **Expected hard edges**: 28
+- **Expected soft edges**: 0
+- **Forbidden edges**: 9
+- **Expected prerequisites**: 19
+- **Forbidden prerequisites**: 7
+- **Expected state transitions**: 3
 - **Expected components**: 14
 - **Fully labeled coverage**: 100%
 

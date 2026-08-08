@@ -48,12 +48,11 @@ workflow_realistic/
 │       └── journeys.json
 ├── labels/
 │   ├── README.md
-│   ├── causal-edges.yaml            (ground truth for all edges)
-│   ├── journeys.yaml                (ground truth for journey membership)
-│   ├── prerequisites.yaml           (ground truth for ordering)
-│   └── resources.yaml               (ground truth for resource relationships)
-└── metrics/
-    └── .gitkeep                      (output dir for benchmark results)
+│   ├── causal-edges.yaml            (ground truth for hard and forbidden edges)
+│   ├── journeys.yaml                (ground truth for component membership and order)
+│   ├── prerequisites.yaml           (ground truth for causal prerequisites)
+│   └── state-transitions.yaml       (independent lifecycle ground truth)
+└── quality-gates.yaml               (reviewed CI thresholds)
 ```
 
 ## Corpus Categories
@@ -129,12 +128,7 @@ POST /accounts/{accountId}/orders/{orderId}/items -> itemId
 ### 5. unfamiliar-state-transitions/
 **Tests:** State transitions using verbs and state names NOT in the current ACTION_STATE_HINTS hardcoded list.
 
-Examples:
-- `CREATED → RESERVED → CAPTURED`
-- `DRAFT → SUBMITTED → SETTLED`
-- `OPEN → LOCKED → RELEASED`
-- `INITIATED → VERIFIED → FINALIZED`
-- `REQUESTED → ACCEPTED → COMPLETED`
+Example: `FROZEN → CRYSTALLIZED → SEALED → ARCHIVED`
 
 **Challenges:**
 - The engine must infer state transitions from observed values, not verb matching
@@ -180,11 +174,11 @@ Examples:
 
 Example:
 ```
-Capture 1: actor=A, session=S1
+Capture 1: actor=A, session=logical-flow-1
   POST /orders -> orderId
 
-Capture 2: actor=A, session=S2
-  POST /orders/{orderId}/pay <- orderId (different capture, same actor)
+Capture 2: actor=A, session=logical-flow-1
+  POST /orders/{orderId}/pay <- orderId (different capture, same logical session)
 ```
 
 **Challenges:**
@@ -271,20 +265,21 @@ prerequisites:
     reason: "orderId flows from creation to confirmation"
 ```
 
-### resources.yaml
-Specifies resource relationships and ownership.
+### state-transitions.yaml
+Specifies independent resource-scoped lifecycle transitions.
 
 Structure:
 ```yaml
-resources:
-  - id: "rinst-001"
-    type: "order"
-    instances: ["obs-001_value", "obs-003_value"]
-    expected_state_transitions:
-      - from: "PENDING"
-        to: "CONFIRMED"
-        evidence: "obs-003"
-    owned_by: "account"  # or null
+state_transitions:
+  - id: "transition-001"
+    journey: "payment-lifecycle"
+    producer: "reserve_payment"
+    consumer: "capture_payment"
+    resource_type: "payment"
+    field: "state"
+    from: "CRYSTALLIZED"
+    to: "SEALED"
+    status: "expected"
 ```
 
 ---
@@ -309,40 +304,23 @@ resources:
 
 ## Metrics
 
-After running the benchmark, `metrics/` will contain:
+The evaluator returns a deterministic `CorpusEvaluation` containing:
 
 ```
-workflow_realistic_report.json
-├── corpus_statistics
-│   ├── total_journeys
-│   ├── total_observations
-│   ├── total_expected_hard_edges
-│   ├── total_expected_soft_edges
-│   ├── total_forbidden_edges
-├── precision_recall_by_category
-│   ├── resource-lifecycle
-│   │   ├── hard_edge_precision
-│   │   ├── hard_edge_recall
-│   │   ├── forbidden_edges_found
-│   ├── capability-handoff
-│   │   ├── ...
-├── missed_edges
-│   ├── - producer: obs-id
-│   │   consumer: obs-id
-│   │   expected_basis: CAPABILITY_ISSUED
-│   │   actual_basis: AMBIGUOUS_ORIGIN
-│   │   reason_rejected: "capability_semantics_not_proven"
-├── false_merges
-│   ├── - left: component-1
-│   │   right: component-2
-│   │   forbidden_merge_reason: "different_actors"
-├── journey_fragmentation_analysis
-│   ├── - journey_id: "checkout"
-│   │   expected_components: 1
-│   │   observed_components: 3
-│   │   breaks:
-│   │     - between: [obs-id, obs-id]
-│   │       reason: "missing_causal_basis"
+CorpusEvaluation
+├── statistics
+├── journeys[]
+│   ├── causal_edges
+│   ├── component_membership
+│   ├── prerequisites
+│   ├── state_transitions
+│   ├── missed_edges[]
+│   └── fragmentation
+└── aggregate
+    ├── metrics_by_causal_category
+    ├── label_coverage / unknown_rate / precision_lower_bound
+    ├── order_retention / journey_retention / singleton_rate
+    └── adversarial and blocker-safety counters
 ```
 
 ---
@@ -367,27 +345,26 @@ workflow_realistic_report.json
 
 ### Load and evaluate:
 ```python
-from finsec.behavior.benchmark import load_realistic_benchmark, evaluate_realistic_benchmark
+from finsec.behavior.corpus_evaluator import evaluate_realistic_corpus
 
-benchmark = load_realistic_benchmark(Path(__file__).parent / "workflow_realistic")
-report = evaluate_realistic_benchmark(benchmark, tmp_path)
+report = evaluate_realistic_corpus(
+    Path("tests/fixtures/workflow_realistic"),
+    tmp_path,
+)
 ```
 
 ### Inspect missed edges:
 ```python
-for edge in report.missed_edges:
-    print(f"Producer: {edge.producer}")
-    print(f"Consumer: {edge.consumer}")
-    print(f"Expected: {edge.expected_basis}")
-    print(f"Actual: {edge.actual_basis}")
-    print(f"Reason: {edge.rejection_reason}")
+for journey in report.journeys:
+    for edge in journey.missed_edges:
+        print(edge.producer, edge.consumer, edge.rejection_reasons)
 ```
 
 ### Check safety gates:
 ```python
-assert report.forbidden_hard_edges == 0
-assert report.forbidden_merges == 0
-assert report.test_ready_with_blockers == 0
+assert report.aggregate.forbidden_hard_edges == 0
+assert report.aggregate.forbidden_merges == 0
+assert report.aggregate.test_ready_with_blockers == 0
 ```
 
 ---

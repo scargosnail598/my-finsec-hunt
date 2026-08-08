@@ -421,7 +421,23 @@ def _distinctive_value(field_name: str, value: str, kind: SignalKind) -> tuple[b
     return True, None
 
 
-def _signal_kind(field_name: str, location: str) -> SignalKind | None:
+def _opaque_token_candidate(field_name: str, value: Any, location: str) -> bool:
+    if location not in {"BODY", "HEADER"} or not isinstance(value, str):
+        return False
+    normalized = _normalized_name(field_name)
+    if normalized in STATE_FIELDS or normalized in VALUE_FIELDS:
+        return False
+    candidate = value.strip()
+    if not 12 <= len(candidate) <= 128 or any(character.isspace() for character in candidate):
+        return False
+    if _timestamp_like(field_name, candidate) or len(set(candidate.lower())) < 8:
+        return False
+    return any(character.isalpha() for character in candidate) and any(
+        character.isdigit() for character in candidate
+    )
+
+
+def _signal_kind(field_name: str, location: str, value: Any) -> SignalKind | None:
     normalized = _normalized_name(field_name)
     if normalized in {"page", "pagenumber", "pagesize", "offset", "cursor"} or (
         normalized == "limit" and location == "QUERY_PARAMETER"
@@ -429,13 +445,18 @@ def _signal_kind(field_name: str, location: str) -> SignalKind | None:
         return None
     if normalized == "idempotencykey":
         return "IDEMPOTENCY_KEY"
-    if normalized in {"correlationid", "requestid", "traceid", "transactionid"}:
+    if normalized in {"correlationid", "requestid", "traceid"} or (
+        location == "HEADER"
+        and any(token in normalized for token in ("correlation", "requestid", "traceid"))
+    ):
         return "CORRELATION_ID"
     if normalized in VALUE_FIELDS or any(normalized.endswith(item) for item in VALUE_FIELDS):
         return "BUSINESS_VALUE"
     if normalized.endswith(("id", "identifier")) or location == "PATH_PARAMETER":
         return "RESOURCE_IDENTIFIER"
     if any(hint in normalized for hint in TOKEN_HINTS):
+        return "WORKFLOW_TOKEN"
+    if _opaque_token_candidate(field_name, value, location):
         return "WORKFLOW_TOKEN"
     return None
 
@@ -454,7 +475,7 @@ def _signal(
     if not value or value == REDACTED or len(value) > 256:
         return None
     field_name = _terminal_field(field_path)
-    kind = _signal_kind(field_name, location)
+    kind = _signal_kind(field_name, location, raw_value)
     if kind is None:
         return None
     resource_type = (

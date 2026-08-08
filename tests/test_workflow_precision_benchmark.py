@@ -21,6 +21,7 @@ from finsec.behavior.benchmark import (
 )
 from finsec.behavior.domain import (
     CausalBasis,
+    CausalEvidence,
     InferenceConfidence,
     PropagationLink,
     PropagationStore,
@@ -163,7 +164,11 @@ def test_soft_and_cross_actor_relationships_do_not_merge(tmp_path: Path) -> None
 
     assert soft.relationship_type == RelationshipType.CONTEXT_SOFT
     assert "Correlation identifiers" in soft.evidence_reason
+    assert soft.causal_evidence.later_consumed
+    assert soft.rejection_reasons == ["correlation_identifier_display_only"]
     assert comparison.evidence_reason
+    assert not comparison.causal_evidence.same_controlled_actor
+    assert comparison.rejection_reasons == ["controlled_actor_mismatch"]
     assert (
         observation_instance[labels["payment_for_comment"]]
         != observation_instance[labels["comment_create"]]
@@ -305,6 +310,24 @@ def test_v1_relationship_store_loads_while_new_store_defaults_to_v2() -> None:
 
 
 def test_v2_relationship_store_round_trips_deterministically() -> None:
+    evidence = CausalEvidence(
+        output_only=True,
+        later_consumed=True,
+        compatible_resource_type=True,
+        temporal_order=True,
+        same_controlled_actor=True,
+        distinctive_value=True,
+        same_session=True,
+        same_capture=True,
+        same_host=True,
+        session_compatible=True,
+        capture_compatible=True,
+        host_compatible=True,
+        source_successful=True,
+        source_created_resource=True,
+        consumed_as_path_identifier=True,
+        persistent_resource_identity=True,
+    )
     link = PropagationLink(
         id="PROP-MODERN",
         relationship_type=RelationshipType.CAUSAL_HARD,
@@ -315,6 +338,7 @@ def test_v2_relationship_store_round_trips_deterministically() -> None:
         source_field="$.orderId",
         destination_observation_id="OBS-2",
         destination_field="$.orderId",
+        causal_evidence=evidence,
         evidence_reason="RESOURCE_CREATED: output-only identifier.",
         confidence=InferenceConfidence.MODERATE_EVIDENCE,
     )
@@ -323,3 +347,20 @@ def test_v2_relationship_store_round_trips_deterministically() -> None:
 
     assert first == second
     assert is_merge_capable_relationship(link)
+
+
+def test_v2_hard_relationship_without_canonical_evidence_cannot_merge() -> None:
+    link = PropagationLink(
+        id="PROP-UNSUPPORTED",
+        relationship_type=RelationshipType.CAUSAL_HARD,
+        causal_basis=CausalBasis.RESOURCE_CREATED,
+        value_fingerprint="c" * 64,
+        value_kind="RESOURCE_IDENTIFIER",
+        source_observation_id="OBS-1",
+        source_field="$.orderId",
+        destination_observation_id="OBS-2",
+        destination_field="$.orderId",
+        confidence=InferenceConfidence.MODERATE_EVIDENCE,
+    )
+
+    assert not is_merge_capable_relationship(link)

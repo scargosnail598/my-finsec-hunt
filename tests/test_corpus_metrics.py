@@ -1,243 +1,121 @@
-"""Test metrics module."""
+"""Tests for realistic-corpus metric contracts and diagnostics."""
+
+from __future__ import annotations
 
 import pytest
+from pydantic import ValidationError
 
 from finsec.behavior.corpus_metrics import (
-    EdgeEvaluation,
-    EdgeResult,
-    JourneyEvaluation,
-    CorpusEvaluation,
+    ClassificationMetrics,
+    FragmentationBreak,
+    FragmentationDiagnostic,
+    MissedEdgeDiagnostic,
+    RealisticQualityGateThresholds,
 )
+from finsec.behavior.domain import CausalBasis, CausalEvidence, RelationshipType
 
 
-def test_edge_evaluation_correct():
-    """Test TP edge is marked correct."""
-    edge = EdgeEvaluation(
-        edge_id="e-001",
-        journey_id="resource-lifecycle",
-        producer_obs="create_order",
-        consumer_obs="read_order",
-        field_name="order_id",
-        expected_basis=None,
-        result=EdgeResult.TRUE_POSITIVE,
-    )
-    assert edge.is_correct
-
-
-def test_edge_evaluation_incorrect():
-    """Test non-TP edge is not marked correct."""
-    edge = EdgeEvaluation(
-        edge_id="e-002",
-        journey_id="resource-lifecycle",
-        producer_obs="create_order",
-        consumer_obs="read_order",
-        field_name="order_id",
-        expected_basis=None,
-        result=EdgeResult.FALSE_POSITIVE,
-    )
-    assert not edge.is_correct
-
-
-def test_journey_evaluation_perfect():
-    """Test perfect journey evaluation."""
-    edges = [
-        EdgeEvaluation(
-            edge_id="e-001",
-            journey_id="test",
-            producer_obs="a",
-            consumer_obs="b",
-            field_name="id",
-            expected_basis=None,
-            result=EdgeResult.TRUE_POSITIVE,
-        ),
-        EdgeEvaluation(
-            edge_id="e-002",
-            journey_id="test",
-            producer_obs="b",
-            consumer_obs="c",
-            field_name="id",
-            expected_basis=None,
-            result=EdgeResult.TRUE_POSITIVE,
-        ),
-    ]
-
-    j = JourneyEvaluation(
-        journey_id="test",
-        name="Test Journey",
-        expected_edges=2,
-        expected_observations=3,
-        expected_components=1,
-        edge_results=edges,
-        workflow_components=1,
+def test_classification_metrics_preserve_explicit_denominators() -> None:
+    metrics = ClassificationMetrics(
+        expected=3,
+        actual=2,
+        true_positive=2,
+        false_positive=0,
+        false_negative=1,
+        precision=1.0,
+        recall=2 / 3,
+        f1=0.8,
     )
 
-    assert j.true_positives == 2
-    assert j.false_positives == 0
-    assert j.false_negatives == 0
-    assert j.recall == 1.0
-    assert j.precision == 1.0
-    assert j.f1_score == 1.0
-    assert j.component_correctness
+    assert metrics.model_dump(mode="json") == {
+        "expected": 3,
+        "actual": 2,
+        "true_positive": 2,
+        "false_positive": 0,
+        "false_negative": 1,
+        "precision": 1.0,
+        "recall": 2 / 3,
+        "f1": 0.8,
+    }
 
 
-def test_journey_evaluation_partial_recall():
-    """Test journey with missed edges."""
-    edges = [
-        EdgeEvaluation(
-            edge_id="e-001",
-            journey_id="test",
-            producer_obs="a",
-            consumer_obs="b",
-            field_name="id",
-            expected_basis=None,
-            result=EdgeResult.TRUE_POSITIVE,
-        ),
-        EdgeEvaluation(
-            edge_id="e-002",
-            journey_id="test",
-            producer_obs="b",
-            consumer_obs="c",
-            field_name="id",
-            expected_basis=None,
-            result=EdgeResult.FALSE_NEGATIVE,
-        ),
-    ]
-
-    j = JourneyEvaluation(
-        journey_id="test",
-        name="Test Journey",
-        expected_edges=2,
-        expected_observations=3,
-        expected_components=1,
-        edge_results=edges,
-        workflow_components=1,
-    )
-
-    assert j.true_positives == 1
-    assert j.recall == 0.5
-    assert j.false_negatives == 1
-
-
-def test_journey_evaluation_false_positives():
-    """Test journey with incorrect edges."""
-    edges = [
-        EdgeEvaluation(
-            edge_id="e-001",
-            journey_id="test",
-            producer_obs="a",
-            consumer_obs="b",
-            field_name="id",
-            expected_basis=None,
-            result=EdgeResult.TRUE_POSITIVE,
-        ),
-        EdgeEvaluation(
-            edge_id="e-002",
-            journey_id="test",
-            producer_obs="x",
-            consumer_obs="y",
-            field_name="id",
-            expected_basis=None,
-            result=EdgeResult.FALSE_POSITIVE,
-        ),
-    ]
-
-    j = JourneyEvaluation(
-        journey_id="test",
-        name="Test Journey",
-        expected_edges=1,
-        expected_observations=2,
-        expected_components=1,
-        edge_results=edges,
-        workflow_components=2,
-    )
-
-    assert j.true_positives == 1
-    assert j.false_positives == 1
-    assert j.precision == 0.5
-    assert not j.component_correctness
-
-
-def test_corpus_evaluation_aggregate():
-    """Test corpus aggregates journey metrics correctly."""
-    journey1_edges = [
-        EdgeEvaluation(
-            edge_id="e-001",
-            journey_id="j1",
-            producer_obs="a",
-            consumer_obs="b",
-            field_name="id",
-            expected_basis=None,
-            result=EdgeResult.TRUE_POSITIVE,
+def test_metric_contracts_reject_out_of_range_and_unknown_fields() -> None:
+    with pytest.raises(ValidationError):
+        ClassificationMetrics(
+            expected=1,
+            actual=1,
+            true_positive=1,
+            false_positive=0,
+            false_negative=0,
+            precision=1.1,
+            recall=1.0,
+            f1=1.0,
         )
-    ]
 
-    journey2_edges = [
-        EdgeEvaluation(
-            edge_id="e-002",
-            journey_id="j2",
-            producer_obs="x",
-            consumer_obs="y",
-            field_name="id",
-            expected_basis=None,
-            result=EdgeResult.TRUE_POSITIVE,
-        ),
-        EdgeEvaluation(
-            edge_id="e-003",
-            journey_id="j2",
-            producer_obs="y",
-            consumer_obs="z",
-            field_name="id",
-            expected_basis=None,
-            result=EdgeResult.FALSE_NEGATIVE,
-        ),
-    ]
+    with pytest.raises(ValidationError):
+        RealisticQualityGateThresholds(unreviewed_threshold=0)  # type: ignore[call-arg]
 
-    j1 = JourneyEvaluation(
-        journey_id="j1",
-        name="J1",
-        expected_edges=1,
-        expected_observations=2,
-        expected_components=1,
-        edge_results=journey1_edges,
-        workflow_components=1,
+
+def test_missed_edge_diagnostic_persists_canonical_evidence_and_reasons() -> None:
+    evidence = CausalEvidence(
+        output_only=True,
+        later_consumed=True,
+        temporal_order=True,
+        same_controlled_actor=True,
+        session_compatible=True,
+        capture_compatible=True,
+        host_compatible=True,
+        distinctive_value=True,
+        consumer_state_changing=False,
+    )
+    diagnostic = MissedEdgeDiagnostic(
+        edge_id="edge-1",
+        journey="checkout",
+        producer="issue",
+        consumer="consume",
+        producer_field="challenge",
+        consumer_field="authorization_reference",
+        expected_basis=CausalBasis.CAPABILITY_ISSUED,
+        expected_relationship=RelationshipType.CAUSAL_HARD,
+        actual_basis=CausalBasis.AMBIGUOUS_ORIGIN,
+        actual_relationship=RelationshipType.CONTEXT_SOFT,
+        evidence=evidence,
+        rejection_reasons=["consumer_does_not_advance_workflow"],
     )
 
-    j2 = JourneyEvaluation(
-        journey_id="j2",
-        name="J2",
-        expected_edges=2,
-        expected_observations=3,
+    payload = diagnostic.model_dump(mode="json")
+    assert payload["evidence"]["output_only"] is True
+    assert payload["evidence"]["consumer_state_changing"] is False
+    assert payload["rejection_reasons"] == ["consumer_does_not_advance_workflow"]
+
+
+def test_fragmentation_diagnostic_records_each_structural_break() -> None:
+    diagnostic = FragmentationDiagnostic(
+        journey="payment-confirmation",
         expected_components=1,
-        edge_results=journey2_edges,
-        workflow_components=1,
+        actual_components=2,
+        breaks=[
+            FragmentationBreak(
+                producer="issue",
+                consumer="confirm",
+                expected_basis=CausalBasis.CAPABILITY_ISSUED,
+                actual_basis=CausalBasis.AMBIGUOUS_ORIGIN,
+                actual_relationship=RelationshipType.CONTEXT_SOFT,
+                rejection_reasons=["capability_semantics_not_proven"],
+            )
+        ],
     )
 
-    corpus = CorpusEvaluation(journey_evaluations=[j1, j2])
-
-    assert corpus.total_journeys == 2
-    assert corpus.total_expected_edges == 3
-    assert corpus.total_true_positives == 2
-    assert corpus.total_false_negatives == 1
-    assert corpus.overall_recall == pytest.approx(2 / 3)
-    assert corpus.overall_precision == 1.0
-    assert corpus.perfect_component_journeys == 2
+    assert diagnostic.breaks[0].rejection_reasons == ["capability_semantics_not_proven"]
 
 
-def test_corpus_evaluation_report_formatting():
-    """Test report formatting doesn't crash."""
-    j = JourneyEvaluation(
-        journey_id="test",
-        name="Test",
-        expected_edges=1,
-        expected_observations=2,
-        expected_components=1,
-        edge_results=[],
-        workflow_components=1,
-    )
+def test_quality_gate_defaults_keep_precision_and_safety_strict() -> None:
+    thresholds = RealisticQualityGateThresholds()
 
-    corpus = CorpusEvaluation(journey_evaluations=[j])
-    report = corpus.format_report()
-
-    assert "REALISTIC CORPUS EVALUATION REPORT" in report
-    assert "Overall Recall:" in report
-    assert "Overall Precision:" in report
+    assert thresholds.min_causal_edge_precision == 1.0
+    assert thresholds.min_causal_edge_recall == 1.0
+    assert thresholds.max_forbidden_hard_edges == 0
+    assert thresholds.max_forbidden_merges == 0
+    assert thresholds.max_forbidden_prerequisites == 0
+    assert thresholds.max_test_ready_with_blockers == 0
+    assert thresholds.require_deterministic_output is True

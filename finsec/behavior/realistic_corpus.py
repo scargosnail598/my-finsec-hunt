@@ -7,16 +7,58 @@ reconstruction engine output.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import json
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 import yaml
+from pydantic import BaseModel, ConfigDict, Field
 
 from finsec.behavior.domain import CausalBasis, RelationshipType
 
 
-@dataclass
+class CorpusTrafficModel(BaseModel):
+    """Reject accidental drift in traffic inputs consumed before labels are loaded."""
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class CorpusTrafficEntry(CorpusTrafficModel):
+    """One sanitized HTTP exchange supplied to the production ingestion path."""
+
+    label: str
+    offset_seconds: int = Field(ge=0)
+    method: str
+    path: str
+    host: str
+    query: dict[str, list[str]] = Field(default_factory=dict)
+    request: dict[str, Any] | None = None
+    response: dict[str, Any]
+    request_headers: dict[str, str] = Field(default_factory=dict)
+    response_headers: dict[str, str] = Field(default_factory=dict)
+    status: int = Field(default=200, ge=100, le=599)
+
+
+class CorpusCapture(CorpusTrafficModel):
+    """One capture with explicit actor and logical-session context."""
+
+    name: str
+    actor: str
+    session: str
+    entries: list[CorpusTrafficEntry]
+
+
+class CorpusJourney(CorpusTrafficModel):
+    """Traffic-only realistic journey; ground-truth labels are deliberately absent."""
+
+    id: str
+    name: str
+    captures: list[CorpusCapture]
+    first_party_hosts: list[str]
+
+
+@dataclass(frozen=True)
 class CausalEdgeLabel:
     """Ground truth label for a single expected or forbidden causal edge."""
 
@@ -44,9 +86,12 @@ class CausalEdgeLabel:
     read_before_write: bool = False
     reuse_legitimate: bool = False
     alias_handling: bool = False
+    same_value_different_semantics: bool = False
+    value_from: str | None = None
+    value_to: str | None = None
 
 
-@dataclass
+@dataclass(frozen=True)
 class JourneyLabel:
     """Ground truth label for a journey's expected structure."""
 
@@ -60,9 +105,10 @@ class JourneyLabel:
     status: str = "fully_labeled"
     difficulty: str = "obvious"
     category: str = ""
+    expected_component_groups: list[list[str]] = field(default_factory=list)
 
 
-@dataclass
+@dataclass(frozen=True)
 class PrerequisiteLabel:
     """Ground truth label for prerequisites and false adjacencies."""
 
@@ -73,6 +119,22 @@ class PrerequisiteLabel:
     field: str = ""
     status: str = "expected"  # expected, forbidden
     confidence: str = "HIGH_EVIDENCE"
+    reason: str = ""
+
+
+@dataclass(frozen=True)
+class StateTransitionLabel:
+    """Ground truth for one resource-scoped lifecycle transition."""
+
+    id: str
+    journey: str
+    producer: str
+    consumer: str
+    resource_type: str
+    field: str
+    from_state: str
+    to_state: str
+    status: str = "expected"
     reason: str = ""
 
 
@@ -102,6 +164,8 @@ class RealisticCorpusLoader:
             raise FileNotFoundError("Missing journeys.yaml")
         if not (self.labels_root / "prerequisites.yaml").exists():
             raise FileNotFoundError("Missing prerequisites.yaml")
+        if not (self.labels_root / "state-transitions.yaml").exists():
+            raise FileNotFoundError("Missing state-transitions.yaml")
 
     def load_causal_edges(self) -> list[CausalEdgeLabel]:
         """Load all causal edge labels from causal-edges.yaml."""
@@ -136,6 +200,28 @@ class RealisticCorpusLoader:
             prerequisites.append(self._parse_prerequisite_label(prereq_dict))
         return prerequisites
 
+    def load_state_transitions(self) -> list[StateTransitionLabel]:
+        """Load lifecycle labels independently from causal-edge reconstruction."""
+
+        transitions_file = self.labels_root / "state-transitions.yaml"
+        with transitions_file.open(encoding="utf-8") as handle:
+            data = yaml.safe_load(handle) or {}
+        return [
+            StateTransitionLabel(
+                id=item.get("id", ""),
+                journey=item.get("journey", ""),
+                producer=item.get("producer", ""),
+                consumer=item.get("consumer", ""),
+                resource_type=item.get("resource_type", ""),
+                field=item.get("field", ""),
+                from_state=item.get("from", ""),
+                to_state=item.get("to", ""),
+                status=item.get("status", "expected"),
+                reason=item.get("reason", ""),
+            )
+            for item in data.get("state_transitions", [])
+        ]
+
     def load_journey_fixtures(self, journey_id: str) -> dict[str, Any]:
         """Load raw fixture data for a journey.
 
@@ -151,11 +237,43 @@ class RealisticCorpusLoader:
         if not journey_file.exists():
             raise FileNotFoundError(f"Missing fixture for journey: {journey_id}")
 
-        import json
-
-        with open(journey_file) as f:
+        with journey_file.open(encoding="utf-8") as f:
             data: dict[str, Any] = json.load(f)
             return data
+
+    def load_journey(self, journey_id: str) -> CorpusJourney:
+        """Load only traffic input; this method never opens the labels directory."""
+
+        data = self.load_journey_fixtures(journey_id)
+        raw_captures = data.get("captures")
+        if raw_captures is None:
+            raw_captures = [
+                {
+                    "name": data.get("capture", journey_id),
+                    "actor": data.get("actor"),
+                    "session": data.get("session", f"{journey_id}-session"),
+                    "entries": data.get("entries", []),
+                }
+            ]
+        captures = [
+            CorpusCapture.model_validate(
+                {
+                    **capture,
+                    "session": capture.get("session", f"{journey_id}-{capture['name']}-session"),
+                }
+            )
+            for capture in raw_captures
+        ]
+        hosts = sorted(
+            set(data.get("first_party_hosts", []))
+            | {entry.host for capture in captures for entry in capture.entries}
+        )
+        return CorpusJourney(
+            id=journey_id,
+            name=str(data.get("name", journey_id)),
+            captures=captures,
+            first_party_hosts=hosts,
+        )
 
     def _parse_edge_label(self, edge_dict: dict[str, Any]) -> CausalEdgeLabel:
         """Parse a single edge label from dictionary."""
@@ -188,21 +306,32 @@ class RealisticCorpusLoader:
             read_before_write=edge_dict.get("read_before_write", False),
             reuse_legitimate=edge_dict.get("reuse_legitimate", False),
             alias_handling=edge_dict.get("alias_handling", False),
+            same_value_different_semantics=edge_dict.get("same_value_different_semantics", False),
+            value_from=edge_dict.get("value_from"),
+            value_to=edge_dict.get("value_to"),
         )
 
     def _parse_journey_label(self, journey_dict: dict[str, Any]) -> JourneyLabel:
         """Parse a single journey label from dictionary."""
+        independent_workflows = journey_dict.get("independent_workflows", [])
+        component_groups = [
+            list(item.get("observations", []))
+            for item in independent_workflows
+            if isinstance(item, dict)
+        ]
+        expected_observations = journey_dict.get("expected_observations", [])
         return JourneyLabel(
             id=journey_dict.get("id", ""),
             name=journey_dict.get("name", ""),
             description=journey_dict.get("description", ""),
-            expected_observations=journey_dict.get("expected_observations", []),
+            expected_observations=expected_observations,
             expected_components=journey_dict.get("expected_components", 1),
             expected_order=journey_dict.get("expected_order", True),
             expected_steps=journey_dict.get("expected_steps"),
             status=journey_dict.get("status", "fully_labeled"),
             difficulty=journey_dict.get("difficulty", "obvious"),
             category=journey_dict.get("category", ""),
+            expected_component_groups=component_groups or [expected_observations],
         )
 
     def _parse_prerequisite_label(self, prereq_dict: dict[str, Any]) -> PrerequisiteLabel:

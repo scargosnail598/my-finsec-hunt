@@ -55,6 +55,28 @@ prerequisites:
     reason: "authorizationId must be obtained before payment can be confirmed"
 
   # ========================================================================
+  # MULTI-SERVICE-PAYMENT
+  # ========================================================================
+
+  - id: "mp-p-001"
+    journey: "multi-service-payment"
+    dependent_action: "call_payments"
+    prerequisite_action: "create_transaction"
+    field: "transactionId"
+    status: "expected"
+    confidence: "HIGH_EVIDENCE"
+    reason: "The payment service consumes the created transaction identity"
+
+  - id: "mp-p-002"
+    journey: "multi-service-payment"
+    dependent_action: "settle_transaction"
+    prerequisite_action: "call_payments"
+    field: "paymentId"
+    status: "expected"
+    confidence: "HIGH_EVIDENCE"
+    reason: "Settlement consumes the payment identity created by the payment service"
+
+  # ========================================================================
   # NESTED-RESOURCE
   # ========================================================================
 
@@ -201,6 +223,15 @@ prerequisites:
     confidence: "HIGH_EVIDENCE"
     reason: "Payment must be completed before order can be confirmed (cross-capture)"
 
+  - id: "ccc-p-003"
+    journey: "cross-capture-continuation"
+    dependent_action: "confirm_order"
+    prerequisite_action: "pay_order"
+    field: "orderId"
+    status: "expected"
+    confidence: "HIGH_EVIDENCE"
+    reason: "The payment mutation produces the order state consumed by confirmation"
+
   # ========================================================================
   # ADVERSARIAL
   # ========================================================================
@@ -219,9 +250,9 @@ prerequisites:
     dependent_action: "get_report_details"
     prerequisite_action: "post_report"
     field: "reportId"
-    status: "expected"
+    status: "forbidden"
     confidence: "HIGH_EVIDENCE"
-    reason: "Legitimate prerequisite: report must be created before details can be fetched"
+    reason: "Read-only detail retrieval is component evidence but not a mutation prerequisite"
 
   - id: "adv-p-003"
     journey: "adversarial"
@@ -252,6 +283,6 @@ prerequisites:
 
 # Summary
 summary:
-  total_prerequisites: 24
-  expected_prerequisites: 18
-  forbidden_adjacencies: 6
+  total_prerequisites: 26
+  expected_prerequisites: 19
+  forbidden_adjacencies: 7

@@ -590,9 +590,9 @@ def test_echoed_and_ambiguous_identifiers_are_soft_with_explicit_reasons(
             _entry(1, "POST", "/api/orders/42/adjust", {"ticketId": "TICKET-AMBIGUOUS"}),
             _entry(
                 2,
-                "POST",
-                "/api/orders/42/confirm",
-                {"status": "confirmed"},
+                "GET",
+                "/api/orders/42/confirmation-preview",
+                {"preview": "available"},
                 request={"ticketId": "TICKET-AMBIGUOUS"},
             ),
         ],

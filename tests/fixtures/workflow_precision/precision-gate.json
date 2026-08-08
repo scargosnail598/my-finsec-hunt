@@ -129,6 +129,7 @@
         {
           "name": "async-issuer",
           "actor": "ACCOUNT_A",
+          "session": "async-settlement-flow",
           "entries": [
             {
               "label": "async_issue",
@@ -142,6 +143,7 @@
         {
           "name": "async-consumer",
           "actor": "ACCOUNT_A",
+          "session": "async-settlement-flow",
           "entries": [
             {
               "label": "async_consume",

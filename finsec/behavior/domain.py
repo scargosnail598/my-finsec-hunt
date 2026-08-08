@@ -70,7 +70,7 @@ class CausalBasis(StrEnum):
 
 class CausalEvidence(BehaviorModel):
     """Evidence-based predicate set for deterministic causal reasoning.
-    
+
     Tracks which evidence conditions are met for a candidate causal edge.
     Used to explain why a relationship was or was not classified as CAUSAL_HARD.
     All fields are boolean predicates; final causal basis is deterministically derived.
@@ -92,7 +92,7 @@ class CausalEvidence(BehaviorModel):
     """Producer and consumer share the same authenticated principal."""
 
     distinctive_value: bool = False
-    """Value is distinctive (low entropy, not a generic enum)."""
+    """Value is distinctive rather than low-entropy or a generic enum."""
 
     same_session: bool = False
     """Producer and consumer share explicit session identity."""
@@ -103,11 +103,44 @@ class CausalEvidence(BehaviorModel):
     same_host: bool = False
     """Producer and consumer are on the same service endpoint."""
 
+    session_compatible: bool = False
+    """Session metadata permits this producer-consumer continuation."""
+
+    capture_compatible: bool = False
+    """Capture boundaries are identical or joined by an explicit logical session."""
+
+    host_compatible: bool = False
+    """Hosts are identical or are explicit first-party services in one logical session."""
+
     request_echo: bool = False
     """Value was supplied in the producer's request (not produced)."""
 
     previously_observed: bool = False
     """Value was observed in prior operations (read, not produced)."""
+
+    source_is_read: bool = False
+    """The candidate producer is a read-only observation."""
+
+    source_successful: bool = False
+    """The source response has a successful HTTP status."""
+
+    source_created_resource: bool = False
+    """Structural response evidence proves creation of a persistent resource identity."""
+
+    consumer_state_changing: bool = False
+    """The consumer advances or authorizes workflow state."""
+
+    consumed_as_path_identifier: bool = False
+    """The destination uses the value as a persistent path-scoped resource identifier."""
+
+    persistent_resource_identity: bool = False
+    """Observed behavior is consistent with a durable resource rather than a capability."""
+
+    collection_member: bool = False
+    """The response exposed the value as an existing member of a collection."""
+
+    direct_state_transition: bool = False
+    """No intervening mutation supersedes the source state before the destination."""
 
     capability_semantics: bool = False
     """Evidence suggests the value is a workflow token/capability."""
@@ -118,56 +151,109 @@ class CausalEvidence(BehaviorModel):
     distinctive_semantic_role: bool = False
     """Field semantic role (e.g., WORKFLOW_TOKEN) is distinctive."""
 
-    def hard_causal_admissibility(self) -> bool:
+    field_alias_compatible: bool = False
+    """Different field names carry the same structurally admissible capability value."""
+
+    def hard_causal_admissibility(self, basis: CausalBasis | None = None) -> bool:
         """Deterministically derive whether this evidence supports CAUSAL_HARD."""
-        # Must have output-only or state transition evidence
-        produced = self.output_only or self.state_transition_evidence
-
-        if not produced:
+        if not (
+            self.later_consumed
+            and self.temporal_order
+            and self.same_controlled_actor
+            and self.distinctive_value
+            and self.session_compatible
+            and self.capture_compatible
+            and self.host_compatible
+        ):
             return False
+        if basis == CausalBasis.RESOURCE_CREATED:
+            return (
+                self.output_only
+                and self.source_created_resource
+                and self.compatible_resource_type
+                and not self.request_echo
+                and not self.previously_observed
+                and not self.collection_member
+            )
+        if basis == CausalBasis.CAPABILITY_ISSUED:
+            return (
+                self.output_only
+                and self.capability_semantics
+                and self.consumer_state_changing
+                and not self.request_echo
+                and not self.previously_observed
+                and not self.persistent_resource_identity
+            )
+        if basis == CausalBasis.STATE_TRANSITION_PRODUCED:
+            return self.state_transition_evidence and self.direct_state_transition
+        return (
+            self.output_only
+            and not self.request_echo
+            and not self.previously_observed
+            and (
+                self.source_created_resource
+                or self.capability_semantics
+                or self.state_transition_evidence
+            )
+        )
 
-        # Must have evidence of consumption
+    def rejection_reasons(self, basis: CausalBasis | None = None) -> list[str]:
+        """Return stable structural reasons preventing a hard causal relationship."""
+
+        reasons: list[str] = []
+        if self.request_echo:
+            reasons.append("request_value_echoed")
+        if self.collection_member:
+            reasons.append("response_collection_member_observed")
+        if self.source_is_read:
+            reasons.append("source_is_read_only")
+        if self.previously_observed and basis != CausalBasis.STATE_TRANSITION_PRODUCED:
+            reasons.append("value_previously_observed")
+        if not self.output_only and basis != CausalBasis.STATE_TRANSITION_PRODUCED:
+            reasons.append("output_only_production_not_proven")
         if not self.later_consumed:
-            return False
-
-        # If cross-host or cross-capture, must have capability-like evidence
-        cross_boundary = not (self.same_capture and self.same_host)
-        if cross_boundary and not self.capability_semantics:
-            return False
-
-        # If cross-session, must have very strong evidence
-        cross_session = not self.same_session
-        if cross_session and not self.capability_semantics:
-            return False
-
-        # Must have temporal order or be capability-based
-        return self.temporal_order or self.capability_semantics
+            reasons.append("later_request_consumption_not_observed")
+        if not self.distinctive_value:
+            reasons.append("value_not_distinctive")
+        if not self.same_controlled_actor:
+            reasons.append("controlled_actor_mismatch")
+        if not self.temporal_order:
+            reasons.append("temporal_order_not_proven")
+        if not self.session_compatible:
+            reasons.append("session_incompatible")
+        if not self.capture_compatible:
+            reasons.append("capture_incompatible")
+        if not self.host_compatible:
+            reasons.append("host_incompatible")
+        if basis == CausalBasis.RESOURCE_CREATED:
+            if not self.compatible_resource_type:
+                reasons.append("resource_type_incompatible")
+            if not self.source_created_resource:
+                reasons.append("resource_creation_semantics_not_proven")
+        elif basis == CausalBasis.CAPABILITY_ISSUED:
+            if not self.consumer_state_changing:
+                reasons.append("consumer_does_not_advance_workflow")
+            if self.persistent_resource_identity:
+                reasons.append("persistent_resource_behavior_observed")
+            if not self.capability_semantics:
+                reasons.append("capability_semantics_not_proven")
+        elif basis == CausalBasis.STATE_TRANSITION_PRODUCED:
+            if not self.state_transition_evidence:
+                reasons.append("state_transition_structure_not_proven")
+            if not self.direct_state_transition:
+                reasons.append("intervening_resource_mutation_observed")
+        elif not (
+            self.source_created_resource
+            or self.capability_semantics
+            or self.state_transition_evidence
+        ):
+            reasons.append("admissible_producer_semantics_not_proven")
+        return list(dict.fromkeys(reasons))
 
     def context_soft_reason(self) -> str:
         """Explain why this edge is CONTEXT_SOFT, if not admissible for CAUSAL_HARD."""
-        if self.request_echo:
-            return "Value was echoed from the request, not newly produced"
-        if self.previously_observed:
-            return "Value was observed in a prior read operation, not produced"
-        if not self.output_only and not self.state_transition_evidence:
-            return "No evidence of value production"
-        if not self.later_consumed:
-            return "Value is not explicitly consumed in a later request"
-        if self.request_echo:
-            return "Value is a request echo, not production"
-        if not self.distinctive_value:
-            return "Value is not distinctive (may be generic enum or business value)"
-        if not self.same_controlled_actor:
-            return "Producer and consumer have different actors"
-        if not self.temporal_order:
-            return "Temporal order cannot be established"
-        if not self.same_session and not self.capability_semantics:
-            return "Session continuity is absent without capability evidence"
-        if not self.same_capture and not self.capability_semantics:
-            return "Capture continuity is absent without capability evidence"
-        if not self.same_host and not self.capability_semantics:
-            return "Cross-service without distinctive capability evidence"
-        return "Evidence does not reach CAUSAL_HARD threshold"
+        reasons = self.rejection_reasons()
+        return reasons[0].replace("_", " ") if reasons else "hard causal evidence is incomplete"
 
 
 class HypothesisReadiness(StrEnum):
@@ -293,6 +379,8 @@ class PropagationLink(BehaviorModel):
     temporal_order_known: bool = False
     capture_continuity: bool = False
     distinctive_value: bool = False
+    causal_evidence: CausalEvidence = Field(default_factory=CausalEvidence)
+    rejection_reasons: list[str] = Field(default_factory=list)
     evidence_reason: str = (
         "LEGACY_UNTYPED: causal provenance is unavailable; rebuild workflows from factual "
         "observations to obtain typed producer evidence."

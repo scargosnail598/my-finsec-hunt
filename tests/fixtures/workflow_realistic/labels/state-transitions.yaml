@@ -1,0 +1,34 @@
+# Independent lifecycle ground truth. The runner never opens this file.
+state_transitions:
+  - id: ust-t-001
+    journey: unfamiliar-state-transitions
+    producer: create_payment
+    consumer: reserve_payment
+    resource_type: payment
+    field: state
+    from: FROZEN
+    to: CRYSTALLIZED
+    status: expected
+    reason: The same payment changes lifecycle state after the reserve mutation.
+
+  - id: ust-t-002
+    journey: unfamiliar-state-transitions
+    producer: reserve_payment
+    consumer: capture_payment
+    resource_type: payment
+    field: state
+    from: CRYSTALLIZED
+    to: SEALED
+    status: expected
+    reason: The same payment changes lifecycle state after the capture mutation.
+
+  - id: ust-t-003
+    journey: unfamiliar-state-transitions
+    producer: capture_payment
+    consumer: settle_payment
+    resource_type: payment
+    field: state
+    from: SEALED
+    to: ARCHIVED
+    status: expected
+    reason: An intervening read does not produce the final lifecycle state.

@@ -65,6 +65,7 @@ class BenchmarkEntry(BenchmarkModel):
 class BenchmarkCapture(BenchmarkModel):
     name: str
     actor: str
+    session: str | None = None
     entries: list[BenchmarkEntry]
 
 
@@ -419,6 +420,7 @@ def _build_dataset(dataset: BenchmarkDataset, root: Path) -> tuple[WorkspacePath
     captures_root = root / "captures"
     captures_root.mkdir(parents=True, exist_ok=True)
     label_references: dict[str, tuple[str, int]] = {}
+    capture_sessions: dict[str, tuple[str, str]] = {}
     for capture in dataset.captures:
         document = {
             "log": {
@@ -432,8 +434,30 @@ def _build_dataset(dataset: BenchmarkDataset, root: Path) -> tuple[WorkspacePath
             json.dumps(document, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )
         result = ingest_har(capture_path, workspace, actor=capture.actor, channel="WEB")
+        capture_sessions[result.redacted_har.name] = (
+            capture.actor,
+            capture.session or f"{dataset.id}:{capture.name}",
+        )
         for index, entry in enumerate(capture.entries):
             label_references[entry.label] = (result.redacted_har.name, index)
+
+    observation_store = ObservationStore.model_validate(load_yaml(workspace.observations))
+    observations_with_sessions = [
+        observation.model_copy(
+            update={
+                "session_identity": ":".join(
+                    capture_sessions[Path(observation.source_reference.split("#", 1)[0]).name]
+                )
+            }
+        )
+        for observation in observation_store.observations
+    ]
+    write_yaml(
+        workspace.observations,
+        ObservationStore(observations=observations_with_sessions).model_dump(
+            mode="json", exclude_none=True
+        ),
+    )
 
     build_inventory(workspace)
     generate_model(workspace)
