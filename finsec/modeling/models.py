@@ -25,6 +25,11 @@ ParameterSource = Literal[
 OwnershipEvidenceSource = Literal["RESPONSE_BODY", "PATH_PARENT_SCOPE"]
 OwnershipInferenceStatus = Literal["APPLIED", "REJECTED", "NOT_NEEDED"]
 EndpointActionType = Literal["read", "mutation", "financial_mutation", "authentication", "unknown"]
+SideEffectEvidenceKind = Literal[
+    "CORRELATED_STATE_DELTA",
+    "TRUSTED_CONTRACT_ANNOTATION",
+    "HIGH_CONFIDENCE_SIGNAL",
+]
 EndpointDisposition = Literal[
     "ACTIVE",
     "SUPPRESSED_STATIC_ASSET",
@@ -93,6 +98,16 @@ class EndpointAction(StrictModel):
     type: EndpointActionType = "unknown"
     confidence: Confidence = Confidence.LOW
     reasons: list[str] = Field(default_factory=list)
+
+
+class SideEffectEvidence(StrictModel):
+    """Explicit evidence allowed to override the safe-method read-only default."""
+
+    kind: SideEffectEvidenceKind
+    action: str
+    references: list[str] = Field(default_factory=list)
+    reason: str
+    confidence: Confidence = Confidence.HIGH
 
 
 class AuthenticationObservation(StrictModel):
@@ -244,6 +259,7 @@ class Endpoint(StrictModel):
     state_change: bool
     state_change_confidence: KnowledgeStatus = KnowledgeStatus.INFERRED
     state_change_reasons: list[str] = Field(default_factory=list)
+    side_effect_evidence: list[SideEffectEvidence] = Field(default_factory=list)
     financial_impact: Literal["none", "unknown"] = "unknown"
     security_relevance: int = Field(default=0, ge=0, le=10)
     relevance_reasons: list[str] = Field(default_factory=list)

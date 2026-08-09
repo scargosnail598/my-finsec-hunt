@@ -30,8 +30,8 @@ def test_hypotheses_are_specific_traceable_and_transparently_prioritized(
     payment = next(
         item for item in store.hypotheses if item.generation_rule.get("id") == "AUTH_OBJECT_ACCESS"
     )
-    assert payment.priority == "P1"
-    assert payment.scores.total == 14
+    assert payment.priority == "P2"
+    assert payment.scores.total == 10
     assert payment.scores.total == (
         payment.scores.impact
         + payment.scores.likelihood
@@ -49,6 +49,11 @@ def test_hypotheses_are_specific_traceable_and_transparently_prioritized(
     assert payment.generation_rule == {"id": "AUTH_OBJECT_ACCESS", "version": "3"}
     assert payment.eligibility_evidence
     assert payment.missing_evidence
+    assert payment.domain_intent.visibility == "UNKNOWN"
+    assert payment.readiness == "REVIEW_REQUIRED"
+    assert {item.code for item in payment.readiness_assessment.blockers}.issuperset(
+        {"MISSING_BASELINE", "MISSING_OWNERSHIP"}
+    )
     assert sum(item.kind == "SECURITY_HYPOTHESIS" for item in store.hypotheses) == 1
     assert sum(item.kind == "RESEARCH_TASK" for item in store.hypotheses) == 3
     assert all(item.status == "NOT_TESTED" for item in store.hypotheses)

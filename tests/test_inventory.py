@@ -165,3 +165,61 @@ def test_inventory_recognizes_crapi_style_identifiers_and_local_lab_mutations(
     assert order.action.name == "create"
     assert order.action.type == "mutation"
     assert order.state_change is True
+
+
+def test_inventory_applies_reviewed_safe_method_side_effect_rule(tmp_path: Path) -> None:
+    workspace = create_workspace("safe-side-effect", tmp_path / "workspaces")
+    target = load_yaml(workspace.target)
+    target["scope"]["hosts"] = ["api.example.test"]
+    target["analysis"]["endpoint_side_effect_rules"] = [
+        {
+            "method": "GET",
+            "path": "/api/cache/update",
+            "action": "refresh",
+            "rationale": "Reviewed contract records an authoritative cache-state transition.",
+            "evidence_refs": ["CONTRACT-STATE-1"],
+        }
+    ]
+    write_yaml(workspace.target, target)
+    capture = tmp_path / "safe-side-effect.har"
+    capture.write_text(
+        json.dumps(
+            {
+                "log": {
+                    "version": "1.2",
+                    "creator": {"name": "inventory-tests", "version": "1"},
+                    "entries": [
+                        {
+                            "startedDateTime": "2026-02-01T11:00:00Z",
+                            "request": {
+                                "method": "GET",
+                                "url": "https://api.example.test/api/cache/update",
+                                "headers": [],
+                            },
+                            "response": {
+                                "status": 200,
+                                "headers": [{"name": "Content-Type", "value": "application/json"}],
+                                "content": {
+                                    "mimeType": "application/json",
+                                    "text": json.dumps({"status": "refreshed"}),
+                                },
+                            },
+                        }
+                    ],
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    ingest_har(capture, workspace, actor="ACCOUNT_A")
+
+    build_inventory(workspace)
+    endpoint = EndpointStore.model_validate(load_yaml(workspace.endpoints)).endpoints[0]
+
+    assert endpoint.method == "GET"
+    assert endpoint.action.name == "refresh"
+    assert endpoint.action.type == "mutation"
+    assert endpoint.state_change is True
+    assert endpoint.side_effect_evidence[0].kind == "TRUSTED_CONTRACT_ANNOTATION"
+    assert endpoint.side_effect_evidence[0].references == ["CONTRACT-STATE-1"]
+    assert "trusted contract annotation" in " ".join(endpoint.state_change_reasons)

@@ -13,6 +13,7 @@ from finsec.behavior.analysis import analyze_business_logic
 from finsec.config.models import TargetDocument
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
+from finsec.hypotheses.clustering import presentation_visible
 from finsec.hypotheses.domain import HypothesisStore
 from finsec.hypotheses.generator import generate_hypotheses
 from finsec.ingest.har import ingest_har
@@ -291,10 +292,15 @@ def run_offline_workflow(
     behavior_transitions = load_yaml(workspace.behavior_transitions) or {}
 
     active_hypotheses = sum(
-        item.kind == "SECURITY_HYPOTHESIS" and item.disposition == "ACTIVE"
+        presentation_visible(item)
+        and item.kind == "SECURITY_HYPOTHESIS"
+        and item.disposition == "ACTIVE"
         for item in hypotheses.hypotheses
     )
-    research_tasks = sum(item.kind == "RESEARCH_TASK" for item in hypotheses.hypotheses)
+    research_tasks = sum(
+        presentation_visible(item) and item.kind == "RESEARCH_TASK"
+        for item in hypotheses.hypotheses
+    )
     conflicts = tuple(
         dict.fromkeys(
             [

@@ -64,14 +64,14 @@ def test_full_cli_flow(tmp_path: Path, sample_har: tuple[Path, dict[str, Any]]) 
     assert "Generated 3 invariants" in invariants.output
 
     hypotheses = runner.invoke(
-        app, ["hypotheses", "--workspace", str(workspace), "--priority", "P1"]
+        app, ["hypotheses", "--workspace", str(workspace), "--priority", "P2"]
     )
     assert hypotheses.exit_code == 0, hypotheses.output
     assert "HYP-002" in hypotheses.output
-    assert "Potential cross-account Payment" in hypotheses.output
 
     shown = runner.invoke(app, ["show", "HYP-002", "--workspace", str(workspace)])
     assert shown.exit_code == 0, shown.output
+    assert "Potential cross-account Payment access" in shown.output
     assert "Mutations: ACTOR, OBJECT" in shown.output
 
     planned = runner.invoke(app, ["plan", "HYP-002", "--workspace", str(workspace)])

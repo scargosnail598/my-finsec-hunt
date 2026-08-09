@@ -133,6 +133,14 @@ class HypothesisSummary(McpModel):
     lifecycle_status: str
     evidence_status: str
     disposition: str
+    readiness: str
+    protected_subject: str
+    operation: str
+    visibility: str
+    binding: str
+    cluster_id: str | None = None
+    campaign_id: str | None = None
+    relationship: str
 
 
 class HypothesisList(McpModel):
@@ -338,6 +346,11 @@ class HypothesisClaims(McpModel):
     eligibility_evidence: list[str]
     missing_evidence: list[str]
     safety_notes: list[str]
+    domain_ambiguity: list[str]
+    claim_strength_current: str
+    claim_strength_target: str
+    readiness_blockers: list[str]
+    approval_and_execution_gates: list[str]
 
 
 class HypothesisContext(McpModel):

@@ -31,7 +31,7 @@ def test_plan_is_review_only_and_uses_researcher_controlled_accounts(
     assert plan.execution_default == "DO_NOT_EXECUTE"
     assert plan.human_approval_required is True
     assert plan.approval_status == "NOT_REQUESTED"
-    assert plan.risk.decision == "REQUIRES_HUMAN_APPROVAL"
+    assert plan.risk.decision == "BLOCKED"
     assert plan.risk.request_budget == 2
     assert plan.risk.affects_external_user is False
     assert plan.accounts.object_owner == "ACCOUNT_A"

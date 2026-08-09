@@ -4,6 +4,15 @@ from typing import Literal, Self
 
 from pydantic import Field, model_validator
 
+from finsec.hypotheses.contracts import (
+    ClaimStrengthAssessment,
+    DomainIntentAssessment,
+    HypothesisCampaign,
+    HypothesisGrouping,
+    HypothesisPresentation,
+    HypothesisReadinessAssessment,
+    SemanticDescriptor,
+)
 from finsec.modeling.domain import EditableModel, GenerationMetadata
 from finsec.modeling.models import KnowledgeStatus
 
@@ -125,15 +134,50 @@ class HypothesisRecord(EditableModel):
     priority: HypothesisPriority
     status: HypothesisStatus = "NOT_TESTED"
     safety_notes: list[str] = Field(default_factory=list)
-    readiness: HypothesisReadiness = "TEST_READY"
+    readiness: HypothesisReadiness = "REVIEW_REQUIRED"
+    readiness_assessment: HypothesisReadinessAssessment = Field(
+        default_factory=HypothesisReadinessAssessment
+    )
+    domain_intent: DomainIntentAssessment = Field(default_factory=DomainIntentAssessment)
+    claim_strength: ClaimStrengthAssessment = Field(default_factory=ClaimStrengthAssessment)
+    semantic_descriptor: SemanticDescriptor | None = None
+    grouping: HypothesisGrouping = Field(default_factory=HypothesisGrouping)
+    presentation: HypothesisPresentation = Field(default_factory=HypothesisPresentation)
     epistemic_status: BusinessEpistemicStatus | None = None
     logic_details: dict[str, object] | None = None
     notes: str | None = None
     generation: GenerationMetadata | None = None
 
+    @model_validator(mode="before")
+    @classmethod
+    def conservative_legacy_readiness(cls, value: object) -> object:
+        """Load old records without preserving an unevaluated TEST_READY default."""
+
+        if not isinstance(value, dict) or "readiness_assessment" in value:
+            return value
+        normalized = dict(value)
+        readiness = "RESEARCH_ONLY" if value.get("kind") == "RESEARCH_TASK" else "REVIEW_REQUIRED"
+        normalized["readiness"] = readiness
+        normalized["readiness_assessment"] = {
+            "readiness": readiness,
+            "actionable_plan": False,
+            "reasons": [
+                "Legacy record loaded conservatively; regenerate to evaluate unified readiness."
+            ],
+            "warnings": [
+                {
+                    "code": "LEGACY_READINESS_REEVALUATION_REQUIRED",
+                    "stage": "HYPOTHESIS_EVIDENCE",
+                    "summary": "The serialized record predates unified readiness assessment.",
+                }
+            ],
+        }
+        return normalized
+
 
 class HypothesisStore(EditableModel):
     """Versioned hypothesis backlog."""
 
-    version: int = 2
+    version: int = 3
     hypotheses: list[HypothesisRecord] = Field(default_factory=list)
+    campaigns: list[HypothesisCampaign] = Field(default_factory=list)

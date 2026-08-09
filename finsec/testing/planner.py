@@ -8,11 +8,13 @@ from pydantic import ValidationError
 
 from finsec.auth.service import actor_preflight
 from finsec.config.models import TargetDocument
-from finsec.config.scope import hosts_are_covered
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
+from finsec.hypotheses.contracts import HypothesisReadinessAssessment
 from finsec.hypotheses.domain import HypothesisRecord
 from finsec.hypotheses.generator import find_hypothesis, update_hypothesis_status
+from finsec.hypotheses.readiness import assess_record_readiness, readiness_blocking_issues
+from finsec.hypotheses.semantics import assess_claim_strength, assess_domain_intent
 from finsec.modeling.domain import ResourceStore
 from finsec.modeling.invariants import FINANCIAL_RESOURCES
 from finsec.modeling.merge import merge_generated_records, stable_fingerprint
@@ -29,6 +31,16 @@ class PlanResult:
     plan: TestPlanRecord
     path: Path
     conflict: bool
+
+
+@dataclass(frozen=True)
+class PlanAlignment:
+    """Read-only agreement check between persisted readiness and planner constructability."""
+
+    readiness: HypothesisReadinessAssessment
+    plan_status: str
+    agrees: bool
+    violation: str | None
 
 
 def plan_source_fingerprint(
@@ -230,6 +242,38 @@ def _steps(
     return setup, actions, assertions
 
 
+def _readiness_assessment(
+    target: TargetDocument,
+    observations: ObservationStore,
+    endpoints: EndpointStore,
+    resources: ResourceStore,
+    hypothesis: HypothesisRecord,
+) -> HypothesisReadinessAssessment:
+    selected = _endpoints(hypothesis, endpoints)
+    intent = assess_domain_intent(
+        target,
+        selected,
+        category=hypothesis.category,
+        generation_rule_id=hypothesis.generation_rule.get("id", ""),
+        logic_details=hypothesis.logic_details,
+    )
+    claim = assess_claim_strength(
+        generation_rule_id=hypothesis.generation_rule.get("id", ""),
+        category=hypothesis.category,
+        intent=intent,
+        eligibility_evidence=hypothesis.eligibility_evidence,
+    )
+    return assess_record_readiness(
+        target,
+        observations,
+        endpoints.endpoints,
+        resources,
+        hypothesis,
+        intent,
+        claim,
+    )
+
+
 def _draft(
     workspace: WorkspacePaths,
     target: TargetDocument,
@@ -278,37 +322,18 @@ def _draft(
     )
     function_authorization = hypothesis.generation_rule.get("id") == "FUNCTION_AUTHORIZATION"
     requires_two_accounts = hypothesis.category == "authorization" and not function_authorization
-    blockers: list[str] = []
-    if hypothesis.category == "business_logic":
-        logic_blockers = logic_details.get("readiness_blockers", [])
-        if isinstance(logic_blockers, list):
-            blockers.extend(str(item) for item in logic_blockers)
-        blockers.extend(execution_templates.execution.blockers)
-    endpoint_hosts = {host for item in source_endpoints for host in item.hosts}
-    if not hypothesis.source.endpoints:
-        blockers.append("The hypothesis has no source endpoint for scope validation.")
-    elif len(source_endpoints) != len(set(hypothesis.source.endpoints)):
-        blockers.append("One or more hypothesis source endpoints cannot be resolved.")
-    if not target.scope.hosts:
-        blockers.append("No in-scope hosts are recorded in target.yaml.")
-    elif endpoint_hosts and not hosts_are_covered(endpoint_hosts, target.scope.hosts):
-        blockers.append("The source endpoint host is not fully covered by target.yaml scope.")
-    if requires_two_accounts and len(researcher_accounts) < 2:
-        blockers.append("Two researcher-controlled accounts are required for this boundary test.")
-    elif not requires_two_accounts and not researcher_accounts:
-        blockers.append("A researcher-controlled account is not configured in target.yaml.")
-    if hypothesis.category == "state_integrity":
-        resource = next((item for item in resources.resources if item.name == resource_name), None)
-        if resource is None or not resource.states:
-            blockers.append(
-                "No researcher-confirmed lifecycle states are recorded for this resource."
-            )
+    assessment = _readiness_assessment(target, observations, endpoints, resources, hypothesis)
+    planning_issues = readiness_blocking_issues(assessment)
+    blockers = [item.summary for item in planning_issues]
+    execution_blockers = list(execution_templates.execution.blockers)
     if destructive and (
         not target.testing.destructive_testing or not target.restrictions.destructive_actions
     ):
-        blockers.append("The operation may be destructive and target policy does not permit it.")
+        execution_blockers.append(
+            "The operation may be destructive and target execution policy does not permit it."
+        )
     if financial and target.testing.production:
-        blockers.append(
+        execution_blockers.append(
             "Financial-effect testing against production requires explicit policy approval."
         )
 
@@ -330,7 +355,7 @@ def _draft(
         )
         if preflight.result == "BLOCKED_BY_AUTH":
             detail = "; ".join(preflight.reasons) or f"authentication status is {preflight.status}"
-            blockers.append(f"{actor_id} authentication is unusable: {detail}")
+            execution_blockers.append(f"{actor_id} authentication is unusable: {detail}")
         if authentication.profile_ref is not None:
             plan_authentication.append(
                 {
@@ -341,23 +366,27 @@ def _draft(
                 }
             )
 
-    if blockers and execution_templates.execution.supported:
+    execution_blockers = list(dict.fromkeys(execution_blockers))
+    if execution_blockers:
         execution_templates.execution.supported = False
-        execution_templates.execution.blockers.extend(
-            item for item in blockers if item not in execution_templates.execution.blockers
-        )
+        execution_templates.execution.blockers = execution_blockers
 
     affects_external = (
         requires_two_accounts and len(researcher_accounts) < 2
     ) or not researcher_accounts
     decision = "BLOCKED" if blockers else "REQUIRES_HUMAN_APPROVAL"
-    plan_status = (
-        "READY_FOR_REVIEW"
-        if not blockers and execution_templates.execution.supported
-        else "BLOCKED"
+    plan_status = "READY_FOR_REVIEW" if not blockers else "BLOCKED"
+    readiness_consistent = hypothesis.readiness == assessment.readiness and not (
+        hypothesis.readiness == "TEST_READY" and plan_status == "BLOCKED"
     )
+    violation = None
+    if not readiness_consistent:
+        violation = (
+            f"Persisted readiness is {hypothesis.readiness}, canonical readiness is "
+            f"{assessment.readiness}, and planner status is {plan_status}."
+        )
     setup, actions, assertions = _steps(hypothesis, endpoint, owner, actor)
-    return {
+    draft: dict[str, Any] = {
         "key": f"plan:{hypothesis.id}",
         "hypothesis_id": hypothesis.id,
         "purpose": f"Safely evaluate {hypothesis.title} without expanding beyond minimum proof.",
@@ -397,11 +426,34 @@ def _draft(
         ],
         "authentication": plan_authentication,
         "execution": execution_templates.execution.model_dump(mode="json"),
+        "readiness_assessment": assessment.model_dump(mode="json", exclude_none=True),
+        "planning_blockers": [
+            item.model_dump(mode="json", exclude_none=True) for item in planning_issues
+        ],
+        "readiness_consistent": readiness_consistent,
         "human_approval_required": True,
         "execution_default": "DO_NOT_EXECUTE",
         "approval_status": "NOT_REQUESTED",
         "status": plan_status,
     }
+    if violation is not None:
+        draft["readiness_invariant_violation"] = violation
+    return draft
+
+
+def inspect_plan_alignment(workspace: WorkspacePaths, hypothesis_id: str) -> PlanAlignment:
+    """Assess planner/readiness agreement without writing a plan or lifecycle state."""
+
+    target, observations, endpoints, resources, hypothesis = _load_inputs(workspace, hypothesis_id)
+    draft = _draft(workspace, target, observations, endpoints, resources, hypothesis)
+    assessment = HypothesisReadinessAssessment.model_validate(draft["readiness_assessment"])
+    violation = draft.get("readiness_invariant_violation")
+    return PlanAlignment(
+        readiness=assessment,
+        plan_status=str(draft["status"]),
+        agrees=bool(draft["readiness_consistent"]),
+        violation=str(violation) if violation is not None else None,
+    )
 
 
 def generate_plan(workspace: WorkspacePaths, hypothesis_id: str) -> PlanResult:

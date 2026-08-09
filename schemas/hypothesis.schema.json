@@ -121,6 +121,17 @@
       "type": "array",
       "items": {"type": "string"}
     },
+    "readiness": {"enum": ["RESEARCH_ONLY", "REVIEW_REQUIRED", "TEST_READY"]},
+    "readiness_assessment": {"$ref": "#/$defs/readinessAssessment"},
+    "domain_intent": {"$ref": "#/$defs/domainIntent"},
+    "claim_strength": {"$ref": "#/$defs/claimStrength"},
+    "semantic_descriptor": {
+      "anyOf": [{"$ref": "#/$defs/semanticDescriptor"}, {"type": "null"}]
+    },
+    "grouping": {"$ref": "#/$defs/hypothesisGrouping"},
+    "presentation": {"$ref": "#/$defs/hypothesisPresentation"},
+    "epistemic_status": {"type": ["string", "null"]},
+    "logic_details": {"type": ["object", "null"]},
     "notes": {
       "type": ["string", "null"]
     },
@@ -187,6 +198,203 @@
         "generator": {"type": "string"},
         "generated_checksum": {"type": "string"},
         "source_fingerprint": {"type": "string"}
+      }
+    },
+    "decisionEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference", "source", "detail"],
+      "properties": {
+        "reference": {"type": "string"},
+        "source": {
+          "enum": [
+            "OBSERVATION",
+            "ENDPOINT",
+            "INVARIANT",
+            "WORKFLOW",
+            "TARGET_POLICY",
+            "GENERATOR",
+            "LEGACY"
+          ]
+        },
+        "detail": {"type": "string"}
+      }
+    },
+    "domainIntent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject_resource",
+        "operation",
+        "visibility",
+        "binding",
+        "positive_evidence",
+        "counterevidence",
+        "ambiguity",
+        "confidence"
+      ],
+      "properties": {
+        "subject_resource": {"type": "string"},
+        "parent_resource": {"type": ["string", "null"]},
+        "operation": {
+          "enum": [
+            "READ",
+            "CREATE",
+            "CREATE_CHILD",
+            "UPDATE",
+            "DELETE",
+            "TRANSITION",
+            "VERIFY_CREDENTIAL",
+            "ACTION",
+            "UNKNOWN"
+          ]
+        },
+        "visibility": {
+          "enum": [
+            "PUBLIC",
+            "SHARED",
+            "OWNER_SCOPED",
+            "ROLE_SCOPED",
+            "ACTOR_BOUND",
+            "UNKNOWN"
+          ]
+        },
+        "binding": {
+          "enum": [
+            "OWNERSHIP",
+            "INITIATING_ACTOR",
+            "PRODUCER_CONSUMER",
+            "SESSION",
+            "ROLE",
+            "TENANT_ACCOUNT",
+            "UNKNOWN"
+          ]
+        },
+        "positive_evidence": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/decisionEvidence"}
+        },
+        "counterevidence": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/decisionEvidence"}
+        },
+        "ambiguity": {"type": "array", "items": {"type": "string"}},
+        "confidence": {"enum": ["HIGH", "MEDIUM", "LOW"]}
+      }
+    },
+    "claimStrength": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "current_level",
+        "target_level",
+        "evidence",
+        "upgrade_requirements",
+        "explanation"
+      ],
+      "properties": {
+        "current_level": {"pattern": "^[1-5]_"},
+        "target_level": {"pattern": "^[1-5]_"},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/decisionEvidence"}},
+        "upgrade_requirements": {"type": "array", "items": {"type": "string"}},
+        "explanation": {"type": "string"}
+      }
+    },
+    "readinessIssue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "stage", "summary", "evidence"],
+      "properties": {
+        "code": {"type": "string"},
+        "stage": {
+          "enum": [
+            "HYPOTHESIS_EVIDENCE",
+            "PLAN_CONSTRUCTABILITY",
+            "HUMAN_APPROVAL",
+            "EXECUTION_POLICY"
+          ]
+        },
+        "capability": {"type": ["string", "null"]},
+        "summary": {"type": "string"},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/decisionEvidence"}},
+        "next_action": {"type": ["string", "null"]}
+      }
+    },
+    "readinessAssessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "evaluator",
+        "readiness",
+        "actionable_plan",
+        "reasons",
+        "missing_prerequisites",
+        "blockers",
+        "warnings",
+        "capabilities",
+        "evidence_references"
+      ],
+      "properties": {
+        "version": {"const": 1},
+        "evaluator": {"type": "string"},
+        "readiness": {"enum": ["RESEARCH_ONLY", "REVIEW_REQUIRED", "TEST_READY"]},
+        "actionable_plan": {"type": "boolean"},
+        "reasons": {"type": "array", "items": {"type": "string"}},
+        "missing_prerequisites": {"type": "array", "items": {"type": "string"}},
+        "blockers": {"type": "array", "items": {"$ref": "#/$defs/readinessIssue"}},
+        "warnings": {"type": "array", "items": {"$ref": "#/$defs/readinessIssue"}},
+        "capabilities": {"type": "array", "items": {"type": "object"}},
+        "evidence_references": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "semanticDescriptor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exact_key", "campaign_key", "operation", "weakness_family"],
+      "properties": {
+        "target_services": {"type": "array", "items": {"type": "string"}},
+        "route_families": {"type": "array", "items": {"type": "string"}},
+        "methods": {"type": "array", "items": {"type": "string"}},
+        "operation": {"type": "string"},
+        "subject_resource": {"type": "string"},
+        "parent_resource": {"type": ["string", "null"]},
+        "visibility": {"type": "string"},
+        "binding": {"type": "string"},
+        "weakness_family": {"type": "string"},
+        "test_operator": {"type": "string"},
+        "expected_effect": {"type": "string"},
+        "oracle_family": {"type": "string"},
+        "actor_requirements": {"type": "array", "items": {"type": "string"}},
+        "workflow_family": {"type": ["string", "null"]},
+        "transition": {"type": ["string", "null"]},
+        "exact_key": {"type": "string"},
+        "campaign_key": {"type": "string"}
+      }
+    },
+    "hypothesisGrouping": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "campaign_id": {"type": ["string", "null"]},
+        "cluster_id": {"type": ["string", "null"]},
+        "relationship": {
+          "enum": ["EXACT_DUPLICATE", "OVERLAPPING_TEST_CAMPAIGN", "RELATED_DISTINCT", "NONE"]
+        },
+        "primary_hypothesis_id": {"type": ["string", "null"]},
+        "cluster_member_ids": {"type": "array", "items": {"type": "string"}},
+        "campaign_member_ids": {"type": "array", "items": {"type": "string"}},
+        "member_generators": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "hypothesisPresentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "visible": {"type": "boolean"},
+        "display_title": {"type": ["string", "null"]},
+        "suppression_reason": {"type": ["string", "null"]},
+        "next_action": {"type": ["string", "null"]}
       }
     }
   }

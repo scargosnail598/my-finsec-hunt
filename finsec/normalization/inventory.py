@@ -9,7 +9,7 @@ from typing import Any, cast
 
 from pydantic import ValidationError
 
-from finsec.config.models import TargetDocument
+from finsec.config.models import EndpointSideEffectRule, TargetDocument
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
 from finsec.modeling.models import (
@@ -34,6 +34,7 @@ from finsec.modeling.models import (
     OwnershipInferenceStatus,
     ParameterSemanticType,
     ParameterType,
+    SideEffectEvidence,
 )
 from finsec.normalization.classification import (
     ClassificationContext,
@@ -120,6 +121,7 @@ MUTATION_ACTIONS = {
     "resend",
     "return",
 }
+NON_MUTATING_ACTIONS = {"check", "inspect", "validate", "verification", "verify"}
 OBJECT_IDENTIFIER_FIELDS = {
     "id",
     "userid",
@@ -899,10 +901,47 @@ def _object_access_evidence(
 
 
 def _action(
-    path: str, method: str, *, allow_rest_collection_mutation: bool = False
+    path: str,
+    method: str,
+    *,
+    allow_rest_collection_mutation: bool = False,
+    side_effect_evidence: list[SideEffectEvidence] | None = None,
 ) -> tuple[EndpointAction, bool, list[str]]:
     segments = [segment.lower().replace("-", "_") for segment in path.split("/") if segment]
     tokens = [token for segment in segments for token in segment.split("_")]
+    explicit_side_effects = sorted(
+        side_effect_evidence or [], key=lambda item: (item.kind, item.action, item.reason)
+    )
+    if method in SAFE_METHODS:
+        if explicit_side_effects:
+            action = explicit_side_effects[0].action.lower().replace("-", "_")
+            reasons = [
+                f"{item.kind.lower().replace('_', ' ')}: {item.reason}"
+                for item in explicit_side_effects
+            ]
+            return (
+                EndpointAction(
+                    name=action,
+                    type="mutation",
+                    confidence=Confidence.HIGH,
+                    reasons=reasons,
+                ),
+                True,
+                reasons,
+            )
+        read = next((token for token in reversed(tokens) if token in READ_ACTIONS), None)
+        action = read or "read"
+        reason = f"{method} is a safe HTTP method and no explicit side-effect evidence exists"
+        return (
+            EndpointAction(
+                name=action,
+                type="read",
+                confidence=Confidence.HIGH,
+                reasons=[reason],
+            ),
+            False,
+            [reason],
+        )
     read = next((token for token in reversed(tokens) if token in READ_ACTIONS), None)
     mutation = next(
         (
@@ -923,6 +962,23 @@ def _action(
             False,
             [f"action verb {read} is read-like"],
         )
+    non_mutating = next(
+        (token for token in reversed(tokens) if token in NON_MUTATING_ACTIONS), None
+    )
+    if non_mutating:
+        return (
+            EndpointAction(
+                name=non_mutating,
+                type="authentication" if non_mutating in {"verification", "verify"} else "read",
+                confidence=Confidence.MEDIUM,
+                reasons=[
+                    f"action verb {non_mutating} is validation-like and no explicit state "
+                    "delta is observed"
+                ],
+            ),
+            False,
+            [f"action verb {non_mutating} is validation-like without state-delta evidence"],
+        )
     if mutation:
         action_type: EndpointActionType = (
             "financial_mutation"
@@ -938,17 +994,6 @@ def _action(
             ),
             True,
             [f"action verb {mutation} is mutation-like"],
-        )
-    if method in SAFE_METHODS:
-        return (
-            EndpointAction(
-                name="read",
-                type="read",
-                confidence=Confidence.HIGH,
-                reasons=[f"{method} is a safe HTTP method"],
-            ),
-            False,
-            [f"{method} is a safe HTTP method"],
         )
     if method in {"PUT", "PATCH", "DELETE"}:
         return (
@@ -1130,6 +1175,9 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
     next_number = max(existing_numbers, default=0) + 1
     endpoints: list[Endpoint] = []
     har_cache: dict[Path, list[Any] | None] = {}
+    side_effect_rules: dict[tuple[str, str], EndpointSideEffectRule] = {
+        (item.method, item.path): item for item in target.analysis.endpoint_side_effect_rules
+    }
 
     for method, path in sorted(groups):
         observations = groups[(method, path)]
@@ -1140,6 +1188,19 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
             next_number += 1
 
         classification = _aggregate_classification(observations, classifications)
+        side_effect_rule = side_effect_rules.get((method, path))
+        explicit_side_effects = (
+            [
+                SideEffectEvidence(
+                    kind="TRUSTED_CONTRACT_ANNOTATION",
+                    action=side_effect_rule.action,
+                    references=side_effect_rule.evidence_refs,
+                    reason=side_effect_rule.rationale,
+                )
+            ]
+            if side_effect_rule is not None
+            else []
+        )
         action, state_change, state_change_reasons = _action(
             path,
             method,
@@ -1147,6 +1208,7 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
                 (target.testing.local_lab or target.testing.synthetic)
                 and "business_logic" in target.focus
             ),
+            side_effect_evidence=explicit_side_effects,
         )
         resource_name, resource_confidence = _resource_name(path, classification, action.name)
         rules = sorted(
@@ -1206,6 +1268,7 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
                 ownership_inference=ownership_inference,
                 state_change=state_change,
                 state_change_reasons=state_change_reasons,
+                side_effect_evidence=explicit_side_effects,
                 financial_impact=(
                     "unknown"
                     if EndpointPrimaryClassification.FINANCIAL in classification.tags

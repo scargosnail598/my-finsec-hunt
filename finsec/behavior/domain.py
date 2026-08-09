@@ -5,6 +5,16 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from finsec.hypotheses.contracts import (
+    BindingType,
+    ClaimStrengthAssessment,
+    DomainIntentAssessment,
+    DomainOperation,
+    HypothesisGrouping,
+    HypothesisReadinessAssessment,
+    VisibilityIntent,
+)
+
 
 class BehaviorModel(BaseModel):
     """Reject accidental schema drift in canonical behavior artifacts."""
@@ -342,6 +352,10 @@ class HypothesisSemantics(BehaviorModel):
     vulnerability_family: HypothesisFamily
     subject_action: str
     subject_resource: str
+    parent_resource: str | None = None
+    operation: DomainOperation = DomainOperation.UNKNOWN
+    visibility: VisibilityIntent = VisibilityIntent.UNKNOWN
+    binding: BindingType = BindingType.UNKNOWN
     violated_property: str
     mutation_type: HypothesisFamily
     actor_dimension: list[str] = Field(default_factory=list)
@@ -781,6 +795,12 @@ class LogicHypothesis(BehaviorModel):
     observation_ids: list[str] = Field(default_factory=list)
     kind: Literal["SECURITY_HYPOTHESIS", "RESEARCH_TASK"]
     readiness: HypothesisReadiness = HypothesisReadiness.REVIEW_REQUIRED
+    readiness_assessment: HypothesisReadinessAssessment = Field(
+        default_factory=HypothesisReadinessAssessment
+    )
+    domain_intent: DomainIntentAssessment = Field(default_factory=DomainIntentAssessment)
+    claim_strength: ClaimStrengthAssessment = Field(default_factory=ClaimStrengthAssessment)
+    grouping: HypothesisGrouping = Field(default_factory=HypothesisGrouping)
     epistemic_status: EpistemicStatus
     semantics: HypothesisSemantics | None = None
     qualification: HypothesisQualification | None = None

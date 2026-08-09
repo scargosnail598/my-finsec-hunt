@@ -230,25 +230,22 @@ def test_public_region_scope_never_becomes_path_ownership(tmp_path: Path) -> Non
     assert decision.classification == "PUBLIC_SHARED_SCOPE"
     assert "public/shared" in " ".join(decision.reasons)
 
-    hypothesis = _hypothesis(workspace, endpoint)
-    plan = generate_plan(workspace, hypothesis.id).plan
-    assert plan.status == "BLOCKED"
-    assert plan.execution.supported is False
-    assert plan.execution.pattern == "UNSUPPORTED"
+    store = HypothesisStore.model_validate(load_yaml(workspace.hypotheses))
+    hypothesis = next(
+        item
+        for item in store.hypotheses
+        if endpoint.id in item.source.endpoints and item.category == "authorization"
+    )
+    assert hypothesis.kind == "RESEARCH_TASK"
+    assert hypothesis.disposition == "NEEDS_RESEARCH"
+    assert hypothesis.priority == "P3"
+    assert hypothesis.readiness == "RESEARCH_ONLY"
+    assert hypothesis.domain_intent.visibility == "SHARED"
+    assert hypothesis.title.startswith("Validate shared Region access semantics")
 
     planned = RUNNER.invoke(app, ["plan", hypothesis.id, "--workspace", str(workspace.root)])
-    assert planned.exit_code == 0, planned.output
-    assert "Automated bounded execution is unavailable" in planned.output
-
-    approval = RUNNER.invoke(
-        app,
-        ["approve", hypothesis.id, "--workspace", str(workspace.root)],
-        input=f"APPROVE {hypothesis.id}\n",
-    )
-    assert approval.exit_code == 1
-    assert "public/shared scope" in approval.output
-    assert "parameter" in approval.output
-    assert "Type APPROVE" not in approval.output
+    assert planned.exit_code == 1
+    assert "research or suppressed candidate" in planned.output
 
 
 @pytest.mark.parametrize(

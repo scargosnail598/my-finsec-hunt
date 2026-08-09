@@ -20,6 +20,28 @@
     "ownership_inference": {"type": "array", "items": {"type": "object"}},
     "state_change": {"type": "boolean"},
     "state_change_confidence": {"enum": ["OBSERVED", "INFERRED", "ASSUMED", "CONFIRMED", "REFUTED"]},
+    "state_change_reasons": {"type": "array", "items": {"type": "string"}},
+    "side_effect_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "action", "references", "reason", "confidence"],
+        "properties": {
+          "kind": {
+            "enum": [
+              "CORRELATED_STATE_DELTA",
+              "TRUSTED_CONTRACT_ANNOTATION",
+              "HIGH_CONFIDENCE_SIGNAL"
+            ]
+          },
+          "action": {"type": "string", "minLength": 1},
+          "references": {"type": "array", "items": {"type": "string"}},
+          "reason": {"type": "string", "minLength": 1},
+          "confidence": {"enum": ["low", "medium", "high"]}
+        }
+      }
+    },
     "financial_impact": {"enum": ["none", "unknown"]},
     "security_relevance": {"type": "integer", "minimum": 0, "maximum": 10},
     "relevance_reasons": {"type": "array", "items": {"type": "string"}},

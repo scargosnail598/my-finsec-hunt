@@ -324,6 +324,117 @@ class JwtAlgorithmRule(StrictModel):
         return list(dict.fromkeys(normalized))
 
 
+class EndpointSideEffectRule(StrictModel):
+    """Trusted annotation that a nominally safe route has a backend side effect."""
+
+    method: Literal["GET", "HEAD", "OPTIONS"]
+    path: str
+    action: str
+    rationale: str
+    evidence_refs: list[str] = Field(min_length=1)
+
+    @field_validator("path")
+    @classmethod
+    def side_effect_path_is_normalized(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized.startswith("/") or "?" in normalized or "#" in normalized:
+            raise ValueError("path must be an absolute normalized path without query or fragment")
+        return normalized
+
+    @field_validator("action", "rationale")
+    @classmethod
+    def side_effect_text_is_not_empty(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("value cannot be empty")
+        return normalized
+
+    @field_validator("evidence_refs")
+    @classmethod
+    def side_effect_refs_are_not_empty(cls, value: list[str]) -> list[str]:
+        normalized = [item.strip() for item in value]
+        if any(not item for item in normalized):
+            raise ValueError("evidence refs cannot contain empty values")
+        return list(dict.fromkeys(normalized))
+
+
+class DomainIntentRule(StrictModel):
+    """Reviewed policy annotation for a route's protected subject and access boundary."""
+
+    method: Literal["GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"]
+    path: str
+    subject_resource: str | None = None
+    parent_resource: str | None = None
+    operation: (
+        Literal[
+            "READ",
+            "CREATE",
+            "CREATE_CHILD",
+            "UPDATE",
+            "DELETE",
+            "TRANSITION",
+            "VERIFY_CREDENTIAL",
+            "ACTION",
+            "UNKNOWN",
+        ]
+        | None
+    ) = None
+    visibility: Literal[
+        "PUBLIC",
+        "SHARED",
+        "OWNER_SCOPED",
+        "ROLE_SCOPED",
+        "ACTOR_BOUND",
+        "UNKNOWN",
+    ]
+    binding: Literal[
+        "OWNERSHIP",
+        "INITIATING_ACTOR",
+        "PRODUCER_CONSUMER",
+        "SESSION",
+        "ROLE",
+        "TENANT_ACCOUNT",
+        "UNKNOWN",
+    ] = "UNKNOWN"
+    rationale: str
+    evidence_refs: list[str] = Field(min_length=1)
+
+    @field_validator("path")
+    @classmethod
+    def domain_intent_path_is_normalized(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized.startswith("/") or "?" in normalized or "#" in normalized:
+            raise ValueError("path must be an absolute normalized path without query or fragment")
+        return normalized
+
+    @field_validator("subject_resource", "parent_resource", "rationale")
+    @classmethod
+    def domain_intent_text_is_not_empty(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("value cannot be empty")
+        return normalized
+
+    @field_validator("evidence_refs")
+    @classmethod
+    def domain_intent_refs_are_not_empty(cls, value: list[str]) -> list[str]:
+        normalized = [item.strip() for item in value]
+        if any(not item for item in normalized):
+            raise ValueError("evidence refs cannot contain empty values")
+        return list(dict.fromkeys(normalized))
+
+    @model_validator(mode="after")
+    def visibility_and_binding_agree(self) -> Self:
+        scoped = {"OWNER_SCOPED", "ROLE_SCOPED", "ACTOR_BOUND"}
+        if self.visibility in scoped and self.binding == "UNKNOWN":
+            raise ValueError("scoped domain intent requires an explicit binding")
+        if self.visibility in {"PUBLIC", "SHARED"} and self.binding != "UNKNOWN":
+            raise ValueError("public or shared domain intent cannot assert an exclusive binding")
+        return self
+
+
 class AnalysisConfig(StrictModel):
     """Researcher-editable deterministic classification and gating policy."""
 
@@ -370,6 +481,8 @@ class AnalysisConfig(StrictModel):
     ownership_inference: OwnershipInferenceConfig = Field(default_factory=OwnershipInferenceConfig)
     function_authorization_rules: list[FunctionAuthorizationRule] = Field(default_factory=list)
     jwt_algorithm_rules: list[JwtAlgorithmRule] = Field(default_factory=list)
+    endpoint_side_effect_rules: list[EndpointSideEffectRule] = Field(default_factory=list)
+    domain_intent_rules: list[DomainIntentRule] = Field(default_factory=list)
     classification_overrides: dict[str, ClassificationOverride] = Field(default_factory=dict)
 
     @model_validator(mode="after")
@@ -385,6 +498,12 @@ class AnalysisConfig(StrictModel):
             raise ValueError(
                 "JWT algorithm rules must use unique method/path/location/parameter tuples"
             )
+        side_effect_keys = [(item.method, item.path) for item in self.endpoint_side_effect_rules]
+        if len(side_effect_keys) != len(set(side_effect_keys)):
+            raise ValueError("endpoint side-effect rules must use unique method/path pairs")
+        domain_intent_keys = [(item.method, item.path) for item in self.domain_intent_rules]
+        if len(domain_intent_keys) != len(set(domain_intent_keys)):
+            raise ValueError("domain-intent rules must use unique method/path pairs")
         return self
 
 

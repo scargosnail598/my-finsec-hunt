@@ -579,12 +579,17 @@ def test_successful_jwt_verifier_baseline_creates_algorithm_hypothesis_and_manua
     assert hypothesis.disposition == "ACTIVE"
     assert hypothesis.category == "authentication"
     assert hypothesis.mutation_dimensions == ["VALUE"]
-    assert hypothesis.priority == "P1"
-    assert "Unsigned JWT acceptance" in hypothesis.title
+    assert hypothesis.priority == "P2"
+    assert "accepted by the verifier" in hypothesis.title
+    assert "authentication bypass" not in hypothesis.title.lower()
+    assert "authenticated identity" in hypothesis.hypothesis
+    assert "does not establish" in hypothesis.hypothesis
+    assert hypothesis.claim_strength.target_level == "2_VALIDATOR_ACCEPTED"
     assert "alg=none" in hypothesis.hypothesis
 
     plan = generate_plan(workspace, hypothesis.id).plan
-    assert plan.status == "BLOCKED"
+    assert plan.status == "READY_FOR_REVIEW"
+    assert plan.risk.decision == "REQUIRES_HUMAN_APPROVAL"
     assert any("manual-only" in item for item in plan.execution.blockers)
     assert any("do not add privileged claims" in item for item in plan.actions)
 
@@ -749,10 +754,14 @@ def test_public_product_baselines_do_not_promote_bola(tmp_path: Path) -> None:
     endpoint = _endpoints(workspace).endpoints[0]
     assert endpoint.resource.type == "Product"
     assert endpoint.object_access[0].actor_object_binding_observed is True
-    assert not any(
-        item.category == "authorization" and item.disposition == "ACTIVE"
-        for item in _records(workspace).hypotheses
-    )
+    authorization = [
+        item for item in _records(workspace).hypotheses if item.category == "authorization"
+    ]
+    assert authorization
+    assert all(item.kind == "RESEARCH_TASK" for item in authorization)
+    assert all(item.disposition != "ACTIVE" for item in authorization)
+    assert all(item.domain_intent.visibility == "PUBLIC" for item in authorization)
+    assert all(item.readiness == "RESEARCH_ONLY" for item in authorization)
 
 
 def test_multiple_objects_per_actor_preserve_account_scoped_binding(tmp_path: Path) -> None:

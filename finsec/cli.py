@@ -35,7 +35,7 @@ from finsec.behavior.analysis import (
     find_logic_hypothesis,
     load_logic_presentation,
 )
-from finsec.behavior.hypothesis_precision import cluster_is_visible, rank_hypothesis_clusters
+from finsec.behavior.hypothesis_precision import rank_hypothesis_clusters
 from finsec.behavior.reconstruction import (
     build_behavior_model,
     find_workflow_family,
@@ -68,6 +68,8 @@ from finsec.execution.policy import (
     review_plan_approval,
 )
 from finsec.execution.runner import execute_prepared
+from finsec.hypotheses.clustering import presentation_title, presentation_visible
+from finsec.hypotheses.contracts import HypothesisCampaign
 from finsec.hypotheses.domain import HypothesisRecord, HypothesisStore
 from finsec.hypotheses.generator import (
     find_hypothesis,
@@ -87,7 +89,7 @@ from finsec.recon.mobile import scan_mobile
 from finsec.reporting.generator import generate_report
 from finsec.setup import SetupResult, run_setup_wizard
 from finsec.testing.burp import export_burp_requests
-from finsec.testing.planner import generate_plan
+from finsec.testing.planner import generate_plan, inspect_plan_alignment
 from finsec.utils.yaml_store import load_yaml
 from finsec.validation.validator import validate_hypothesis
 from finsec.workflow import (
@@ -176,45 +178,14 @@ def _canonical_backlog_presentation(
     *,
     include_suppressed: bool = False,
 ) -> list[HypothesisRecord]:
-    """Overlay canonical BLH clusters without migrating the persisted backlog."""
+    """Apply the common HYP/BLH presentation layer without changing source diagnostics."""
 
-    if not paths.business_logic_hypotheses.is_file():
-        return hypotheses
-    try:
-        logic = load_logic_presentation(paths)
-    except FinsecError:
-        return hypotheses
-    by_id = {item.id: item for item in hypotheses}
-    presented = [item for item in hypotheses if item.category != "business_logic"]
-    for cluster in rank_hypothesis_clusters(
-        logic.clusters,
-        include_suppressed=True,
-        include_low=True,
-    ):
-        record = by_id.get(cluster.representative_hypothesis_id)
-        if record is None:
-            continue
-        visible = cluster_is_visible(cluster)
-        if not visible and not include_suppressed:
-            continue
-        disposition = (
-            "ACTIVE"
-            if visible and record.kind == "SECURITY_HYPOTHESIS"
-            else "NEEDS_RESEARCH"
-            if visible
-            else "SUPPRESSED_INSUFFICIENT_EVIDENCE"
-        )
-        presented.append(
-            record.model_copy(
-                deep=True,
-                update={
-                    "title": cluster.title,
-                    "disposition": disposition,
-                    "readiness": cluster.readiness,
-                },
-            )
-        )
-    return presented
+    del paths
+    return [
+        item.model_copy(update={"title": presentation_title(item)})
+        for item in hypotheses
+        if include_suppressed or presentation_visible(item)
+    ]
 
 
 @app.command("init")
@@ -2017,6 +1988,15 @@ def _logic_panel(paths: WorkspacePaths, hypothesis_id: str) -> Panel:
         ),
         f"[bold]Epistemic status:[/bold] {item.epistemic_status}",
         f"[bold]Readiness:[/bold] {item.readiness}",
+        f"[bold]Protected subject:[/bold] {item.domain_intent.subject_resource}",
+        f"[bold]Parent/context:[/bold] {item.domain_intent.parent_resource or 'None'}",
+        f"[bold]Operation:[/bold] {item.domain_intent.operation}",
+        f"[bold]Visibility / binding:[/bold] {item.domain_intent.visibility} / "
+        f"{item.domain_intent.binding}",
+        f"[bold]Claim strength:[/bold] {item.claim_strength.current_level} -> "
+        f"{item.claim_strength.target_level}",
+        f"[bold]Common cluster / campaign:[/bold] {item.grouping.cluster_id or 'None'} / "
+        f"{item.grouping.campaign_id or 'None'} ({item.grouping.relationship})",
         f"[bold]Family:[/bold] {item.family}",
         f"[bold]Workflow:[/bold] {item.workflow_family_id}",
         f"[bold]Invariant:[/bold] {item.invariant_statement}",
@@ -2043,6 +2023,19 @@ def _logic_panel(paths: WorkspacePaths, hypothesis_id: str) -> Panel:
         "",
         "[bold]Uncertainty[/bold]",
         *[f"- {value}" for value in item.uncertainty],
+        *[f"- {value}" for value in item.domain_intent.ambiguity],
+        "",
+        "[bold]Categorized readiness blockers[/bold]",
+        *[
+            f"- {blocker.stage}/{blocker.code}: {blocker.summary}"
+            for blocker in item.readiness_assessment.blockers
+        ],
+        "",
+        "[bold]Approval and execution gates[/bold]",
+        *[
+            f"- {warning.stage}/{warning.code}: {warning.summary}"
+            for warning in item.readiness_assessment.warnings
+        ],
     ]
     if item.qualification is not None:
         evidence = item.qualification.evidence.model_dump(mode="json")
@@ -2117,8 +2110,17 @@ def logic_blockers_command(
     console.print(f"[bold]{item.id}: {item.title}[/bold]")
     console.print(f"[bold]Readiness:[/bold] {item.readiness}")
     console.print("\n[bold]Readiness blockers[/bold]")
-    for blocker in item.readiness_blockers or ["None recorded."]:
-        console.print(f"- {blocker}")
+    if item.readiness_assessment.blockers:
+        for blocker in item.readiness_assessment.blockers:
+            console.print(f"- {blocker.stage}/{blocker.code}: {blocker.summary}")
+    else:
+        console.print("- None recorded.")
+    console.print("\n[bold]Approval and execution gates[/bold]")
+    if item.readiness_assessment.warnings:
+        for warning in item.readiness_assessment.warnings:
+            console.print(f"- {warning.stage}/{warning.code}: {warning.summary}")
+    else:
+        console.print("- None recorded.")
     console.print("\n[bold]State evidence required[/bold]")
     for requirement in item.state_evidence_requirements:
         console.print(f"- {requirement}")
@@ -2197,6 +2199,10 @@ def hypotheses_command(
         str | None,
         typer.Option("--explain", help="Explain one hypothesis by ID."),
     ] = None,
+    campaigns: Annotated[
+        bool,
+        typer.Option("--campaigns", help="List deterministic cross-generator campaigns."),
+    ] = False,
 ) -> None:
     """Generate and display a prioritized, evidence-backed hypothesis backlog."""
 
@@ -2206,11 +2212,33 @@ def hypotheses_command(
     try:
         paths = resolve_workspace(workspace)
         result = generate_hypotheses(paths)
-        stored_hypotheses = load_hypotheses(paths).hypotheses
+        stored = load_hypotheses(paths)
+        stored_hypotheses = stored.hypotheses
     except FinsecError as error:
         _abort(error)
+    if campaigns:
+        table = Table("Campaign", "Relationship", "Members", "Services", "Primary", "Title")
+        for campaign in stored.campaigns:
+            table.add_row(
+                campaign.id,
+                campaign.relationship,
+                str(len(campaign.member_ids)),
+                ", ".join(campaign.target_services) or "unknown",
+                campaign.primary_hypothesis_id,
+                campaign.title,
+            )
+        console.print(table if stored.campaigns else "No multi-record campaigns are available.")
+        return
+    selected_campaign: HypothesisCampaign | None = None
     if explain:
         explained_id = explain
+        if explain.upper().startswith("HCMP-"):
+            selected_campaign = next(
+                (item for item in stored.campaigns if item.id == explain.upper()), None
+            )
+            if selected_campaign is None:
+                _abort(FinsecError(f"Hypothesis campaign not found: {explain}"))
+            explained_id = selected_campaign.primary_hypothesis_id
         if explain.upper().startswith("HCL-"):
             try:
                 explained_id = find_logic_cluster(paths, explain).representative_hypothesis_id
@@ -2273,6 +2301,73 @@ def hypotheses_command(
             console.print(_logic_panel(paths, explain))
         elif explain and len(hypotheses) == 1:
             item = hypotheses[0]
+            intent = item.domain_intent
+            readiness = item.readiness_assessment
+            console.print("\n[bold]Resolved domain intent[/bold]")
+            console.print(
+                f"- Subject: {intent.subject_resource}; parent: "
+                f"{intent.parent_resource or 'None'}; operation: {intent.operation}"
+            )
+            console.print(f"- Visibility: {intent.visibility}; binding: {intent.binding}")
+            for evidence in intent.positive_evidence:
+                console.print(
+                    f"- Supports: {evidence.reference} ({evidence.source}) - {evidence.detail}"
+                )
+            for evidence in intent.counterevidence:
+                console.print(
+                    f"- Counterevidence: {evidence.reference} ({evidence.source}) - "
+                    f"{evidence.detail}"
+                )
+            for ambiguity in intent.ambiguity:
+                console.print(f"- Ambiguity: {ambiguity}")
+            console.print("\n[bold]Claim strength[/bold]")
+            console.print(
+                f"- Current: {item.claim_strength.current_level}; "
+                f"bounded target: {item.claim_strength.target_level}"
+            )
+            console.print(f"- {item.claim_strength.explanation}")
+            for requirement in item.claim_strength.upgrade_requirements:
+                console.print(f"- Upgrade evidence: {requirement}")
+            console.print("\n[bold]Unified readiness[/bold]")
+            console.print(f"- Decision: {readiness.readiness}")
+            for reason in readiness.reasons:
+                console.print(f"- {reason}")
+            for blocker in readiness.blockers:
+                console.print(f"- Blocker [{blocker.stage}/{blocker.code}]: {blocker.summary}")
+                if blocker.next_action is not None:
+                    console.print(f"  Next action: {blocker.next_action}")
+            for warning in readiness.warnings:
+                console.print(f"- Gate [{warning.stage}/{warning.code}]: {warning.summary}")
+            grouping = item.grouping
+            console.print("\n[bold]Cluster and campaign[/bold]")
+            console.print(
+                f"- Cluster: {grouping.cluster_id or 'None'}; campaign: "
+                f"{grouping.campaign_id or 'None'}; relationship: {grouping.relationship}"
+            )
+            grouping_members = grouping.campaign_member_ids or grouping.cluster_member_ids
+            console.print(
+                f"- Primary: {grouping.primary_hypothesis_id or item.id}; members: "
+                f"{', '.join(grouping_members) or item.id}"
+            )
+            if selected_campaign is not None:
+                console.print("\n[bold]Campaign details[/bold]")
+                console.print(f"- Title: {selected_campaign.title}")
+                console.print(
+                    f"- Services: {', '.join(selected_campaign.target_services) or 'Unknown'}"
+                )
+                console.print(
+                    "- Authentication schemes: "
+                    f"{', '.join(selected_campaign.authentication_schemes) or 'Unknown'}"
+                )
+                console.print(
+                    f"- Endpoints: {', '.join(selected_campaign.affected_endpoints) or 'None'}"
+                )
+                console.print(
+                    f"- Resources: {', '.join(selected_campaign.affected_resources) or 'None'}"
+                )
+                for control in selected_campaign.missing_controls:
+                    console.print(f"- Missing control: {control}")
+                console.print(f"- Next action: {selected_campaign.next_action}")
             console.print("\n[bold]Eligibility evidence[/bold]")
             console.print(
                 "\n".join(f"- {value}" for value in item.eligibility_evidence) or "- None"
@@ -2283,6 +2378,15 @@ def hypotheses_command(
                 f"\nGeneration rule: {item.generation_rule.get('id', 'UNKNOWN')} "
                 f"v{item.generation_rule.get('version', '?')}"
             )
+            if item.kind == "SECURITY_HYPOTHESIS" and item.disposition == "ACTIVE":
+                alignment = inspect_plan_alignment(paths, item.id)
+                console.print("\n[bold]Planner agreement[/bold]")
+                console.print(
+                    f"- Planner status: {alignment.plan_status}; agrees: "
+                    f"{str(alignment.agrees).lower()}"
+                )
+                if alignment.violation is not None:
+                    console.print(f"- Invariant violation: {alignment.violation}")
     else:
         console.print("No hypotheses match the selected priority.")
 

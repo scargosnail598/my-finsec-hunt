@@ -10,6 +10,7 @@ from pydantic import ValidationError
 from finsec.config.models import FunctionAuthorizationRule, JwtAlgorithmRule, TargetDocument
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
+from finsec.hypotheses.clustering import finalize_hypothesis_store
 from finsec.hypotheses.domain import (
     BusinessEpistemicStatus,
     HypothesisRecord,
@@ -35,7 +36,6 @@ from finsec.utils.yaml_store import load_yaml, write_yaml
 VERSION_PATTERN = re.compile(r"(?P<prefix>/(?:api/)?)v(?P<version>\d+)(?=/|$)", re.IGNORECASE)
 MUTABLE_PARAMETER_LOCATIONS = {"path", "query", "body", "header", "graphql_variable"}
 RUNTIME_OBSERVATION_SOURCES = {"HAR", "BURP_XML", "CAIDO_JSON"}
-KNOWN_PUBLIC_RESOURCES = {"category", "challenge", "product", "staticasset"}
 
 
 @dataclass(frozen=True)
@@ -941,9 +941,7 @@ def _jwt_algorithm_hypothesis(
     scores = _score(5, 3, 3, 4)
     return {
         "key": f"jwt-algorithm:{rule.method.lower()}:{rule.path}",
-        "title": (
-            f"Unsigned JWT acceptance may bypass authentication on {rule.method} {rule.path}"
-        ),
+        "title": f"Unsigned JWT may be accepted by the verifier on {rule.method} {rule.path}",
         "category": "authentication",
         "component": f"JWT verification / {endpoint.id}",
         "source": {
@@ -963,8 +961,9 @@ def _jwt_algorithm_hypothesis(
         ],
         "evidence_status": KnowledgeStatus.INFERRED,
         "hypothesis": (
-            f"{rule.method} {rule.path} may accept an unsigned JWT using {algorithms}, allowing "
-            "attacker-controlled identity or authorization claims to bypass signature validation."
+            f"{rule.method} {rule.path} may report an unsigned JWT using {algorithms} as valid. "
+            "That verifier result does not establish an authenticated identity, session, role, "
+            "or protected-resource access."
         ),
         "reasoning": (
             f"Successful runtime requests show that {endpoint.id} processes the configured "
@@ -982,8 +981,8 @@ def _jwt_algorithm_hypothesis(
             "create or accept an authenticated context."
         ),
         "possible_vulnerable_behavior": (
-            "The endpoint returns success for an unsigned JWT and trusts its modified subject, "
-            "role, or other security-relevant claims."
+            "The verifier reports the unsigned JWT as valid; separate downstream evidence is "
+            "required before claiming authentication or authorization impact."
         ),
         "potential_impact": {
             "confidentiality": "high",
@@ -1008,7 +1007,9 @@ def _jwt_algorithm_hypothesis(
         ],
         "generation_rule": {"id": "JWT_ALGORITHM_VALIDATION", "version": "1"},
         "priority_rationale": [
-            "JWT signature bypass can permit authentication and authorization claim forgery.",
+            "Verifier acceptance can indicate a signature-validation weakness.",
+            "Authentication or authorization impact requires downstream identity or access "
+            "evidence.",
             "A successful verifier baseline exists for a researcher-controlled account.",
         ],
         "scores": scores,
@@ -1619,7 +1620,6 @@ def _drafts(
                 and (authenticated_runtime or binding is not None)
                 and researcher_accounts >= 2
                 and endpoint.security_relevance >= gate
-                and resource.name.lower() not in KNOWN_PUBLIC_RESOURCES
                 and endpoint.classification.primary
                 in {
                     EndpointPrimaryClassification.FIRST_PARTY_API,
@@ -1803,7 +1803,7 @@ def _drafts(
         draft.setdefault("disposition", "ACTIVE")
         draft.setdefault(
             "readiness",
-            "RESEARCH_ONLY" if draft["kind"] == "RESEARCH_TASK" else "TEST_READY",
+            "RESEARCH_ONLY" if draft["kind"] == "RESEARCH_TASK" else "REVIEW_REQUIRED",
         )
         endpoint_ids = draft.get("source", {}).get("endpoints", [])
         related = [endpoint_by_id[item] for item in endpoint_ids if item in endpoint_by_id]
@@ -1893,6 +1893,7 @@ def generate_hypotheses(workspace: WorkspacePaths) -> HypothesisResult:
         raise FinsecError(
             f"Cannot validate hypothesis backlog {workspace.hypotheses}: {error}"
         ) from error
+    store = finalize_hypothesis_store(target, observations, endpoints, resources, store)
     write_yaml(workspace.hypotheses, store.model_dump(mode="json", exclude_none=True))
     record_stage_provenance(
         workspace,

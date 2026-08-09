@@ -708,10 +708,12 @@ def test_planner_blocks_missing_and_expired_actor_authentication(tmp_path: Path)
 
     plan = generate_plan(workspace, hypothesis.id).plan
 
-    assert plan.status == "BLOCKED"
-    assert plan.risk.decision == "BLOCKED"
-    assert any("ACCOUNT_B authentication" in reason for reason in plan.risk.reasons)
-    assert any("expiration" in reason.lower() for reason in plan.risk.reasons)
+    assert plan.status == "READY_FOR_REVIEW"
+    assert plan.risk.decision == "REQUIRES_HUMAN_APPROVAL"
+    assert plan.planning_blockers == []
+    assert plan.execution.supported is False
+    assert any("ACCOUNT_B authentication" in reason for reason in plan.execution.blockers)
+    assert any("expiration" in reason.lower() for reason in plan.execution.blockers)
 
 
 def test_cli_capture_and_manual_entry_never_echo_secrets(tmp_path: Path) -> None:

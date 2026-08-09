@@ -16,6 +16,7 @@ from finsec.config.models import TargetDocument
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError, WorkspaceError
 from finsec.evidence.domain import EvidenceMetadata
+from finsec.hypotheses.clustering import presentation_title, presentation_visible
 from finsec.hypotheses.domain import HypothesisRecord, HypothesisStore
 from finsec.modeling.domain import ActorStore, InvariantStore, ResourceStore
 from finsec.modeling.models import Endpoint, EndpointStore, ObservationStore
@@ -195,7 +196,9 @@ def workspace_overview(snapshot: WorkspaceSnapshot) -> dict[str, Any]:
     ]
     active_hypotheses = _active_hypotheses(snapshot.hypotheses.hypotheses)
     research_tasks = [
-        item for item in snapshot.hypotheses.hypotheses if item.kind == "RESEARCH_TASK"
+        item
+        for item in snapshot.hypotheses.hypotheses
+        if item.kind == "RESEARCH_TASK" and presentation_visible(item)
     ]
     evidence_sets = _evidence_metadata(snapshot.paths)
     reports = _report_files(snapshot.paths)
@@ -334,7 +337,10 @@ def hypotheses_payload(snapshot: WorkspaceSnapshot) -> dict[str, Any]:
     plans = {item.hypothesis_id: item for item in snapshot.plans.plans}
     validations = {item.hypothesis_id: item for item in snapshot.validations.validations}
     evidence = {item.hypothesis_id: item for item in _evidence_metadata(snapshot.paths)}
-    hypotheses = sorted(snapshot.hypotheses.hypotheses, key=_hypothesis_sort_key)
+    hypotheses = sorted(
+        (item for item in snapshot.hypotheses.hypotheses if presentation_visible(item)),
+        key=_hypothesis_sort_key,
+    )
     rows: list[dict[str, Any]] = []
     for item in hypotheses:
         row = _hypothesis_summary(item)
@@ -558,7 +564,7 @@ def _authentication_preflight_payload(preflight: AuthenticationPreflight) -> dic
 def _hypothesis_summary(item: HypothesisRecord) -> dict[str, Any]:
     return {
         "id": item.id,
-        "title": item.title,
+        "title": presentation_title(item),
         "kind": item.kind,
         "disposition": item.disposition,
         "category": item.category,
@@ -568,6 +574,16 @@ def _hypothesis_summary(item: HypothesisRecord) -> dict[str, Any]:
         "scores": item.scores.model_dump(mode="json"),
         "status": item.status,
         "evidence_status": item.evidence_status,
+        "readiness": item.readiness,
+        "protected_subject": item.domain_intent.subject_resource,
+        "operation": item.domain_intent.operation,
+        "visibility": item.domain_intent.visibility,
+        "binding": item.domain_intent.binding,
+        "cluster_id": item.grouping.cluster_id,
+        "campaign_id": item.grouping.campaign_id,
+        "relationship": item.grouping.relationship,
+        "presentation_visible": presentation_visible(item),
+        "suppression_reason": item.presentation.suppression_reason,
         "mutation_dimensions": item.mutation_dimensions,
         "missing_evidence_count": len(item.missing_evidence),
         "source_counts": {
@@ -699,7 +715,9 @@ def _active_hypotheses(records: list[HypothesisRecord]) -> list[HypothesisRecord
     return [
         item
         for item in records
-        if item.kind == "SECURITY_HYPOTHESIS" and item.disposition == "ACTIVE"
+        if item.kind == "SECURITY_HYPOTHESIS"
+        and item.disposition == "ACTIVE"
+        and presentation_visible(item)
     ]
 
 

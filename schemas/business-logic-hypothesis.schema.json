@@ -59,6 +59,50 @@
           "candidate_fields": {"type": "array", "items": {"type": "string"}},
           "kind": {"enum": ["SECURITY_HYPOTHESIS", "RESEARCH_TASK"]},
           "readiness": {"enum": ["RESEARCH_ONLY", "REVIEW_REQUIRED", "TEST_READY"]},
+          "readiness_assessment": {"type": "object"},
+          "domain_intent": {
+            "type": "object",
+            "properties": {
+              "subject_resource": {"type": "string"},
+              "parent_resource": {"type": ["string", "null"]},
+              "operation": {
+                "enum": [
+                  "READ",
+                  "CREATE",
+                  "CREATE_CHILD",
+                  "UPDATE",
+                  "DELETE",
+                  "TRANSITION",
+                  "VERIFY_CREDENTIAL",
+                  "ACTION",
+                  "UNKNOWN"
+                ]
+              },
+              "visibility": {
+                "enum": [
+                  "PUBLIC",
+                  "SHARED",
+                  "OWNER_SCOPED",
+                  "ROLE_SCOPED",
+                  "ACTOR_BOUND",
+                  "UNKNOWN"
+                ]
+              },
+              "binding": {
+                "enum": [
+                  "OWNERSHIP",
+                  "INITIATING_ACTOR",
+                  "PRODUCER_CONSUMER",
+                  "SESSION",
+                  "ROLE",
+                  "TENANT_ACCOUNT",
+                  "UNKNOWN"
+                ]
+              }
+            }
+          },
+          "claim_strength": {"type": "object"},
+          "grouping": {"type": "object"},
           "epistemic_status": {
             "enum": [
               "RESEARCH_TASK",
@@ -122,7 +166,13 @@
               "mutation_type",
               "fingerprint",
               "canonical_id"
-            ]
+            ],
+            "properties": {
+              "parent_resource": {"type": ["string", "null"]},
+              "operation": {"type": "string"},
+              "visibility": {"type": "string"},
+              "binding": {"type": "string"}
+            }
           },
           "title": {"type": "string", "minLength": 1},
           "representative_hypothesis_id": {

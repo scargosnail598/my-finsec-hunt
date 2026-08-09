@@ -28,6 +28,7 @@ from finsec.behavior.reconstruction import (
 )
 from finsec.config.workspace import WorkspacePaths, create_workspace
 from finsec.evidence.manager import add_evidence, ensure_evidence
+from finsec.hypotheses.domain import HypothesisStore
 from finsec.hypotheses.generator import generate_hypotheses
 from finsec.ingest.har import ingest_har
 from finsec.modeling.generator import generate_model
@@ -411,7 +412,30 @@ def test_withdrawal_concurrency_remains_research_only(logic_workspace: Workspace
     )
     assert item.kind == "RESEARCH_TASK"
     assert item.safety_classification == "CONCURRENT"
-    assert any("Concurrency testing" in blocker for blocker in item.readiness_blockers)
+    assert not any("Concurrency testing" in blocker for blocker in item.readiness_blockers)
+    assert any(
+        warning.code == "CONCURRENCY_EXECUTION_UNSUPPORTED" and warning.stage == "EXECUTION_POLICY"
+        for warning in item.readiness_assessment.warnings
+    )
+
+
+def test_business_logic_producer_uses_unified_readiness_evaluator(
+    logic_workspace: WorkspacePaths,
+) -> None:
+    logic_records = _logic(logic_workspace)
+    assert logic_records
+    assert all(
+        item.readiness_assessment.evaluator == "unified-hypothesis-readiness-v1"
+        for item in logic_records
+    )
+
+    backlog = HypothesisStore.model_validate(load_yaml(logic_workspace.hypotheses))
+    synchronized = [item for item in backlog.hypotheses if item.id.startswith("BLH-")]
+    assert synchronized
+    assert all(
+        item.readiness_assessment.evaluator == "unified-hypothesis-readiness-v1"
+        for item in synchronized
+    )
 
 
 def test_partial_refund_tracks_entitlement_state(logic_workspace: WorkspacePaths) -> None:

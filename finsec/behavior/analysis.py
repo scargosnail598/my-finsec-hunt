@@ -48,7 +48,22 @@ from finsec.behavior.reconstruction import (
 from finsec.config.models import TargetDocument
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
+from finsec.hypotheses.clustering import finalize_hypothesis_store
+from finsec.hypotheses.contracts import (
+    BlockerStage,
+    CapabilityAssessment,
+    CapabilityKind,
+    ClaimStrengthAssessment,
+    DecisionEvidence,
+    DomainIntentAssessment,
+    HypothesisReadinessAssessment,
+    ReadinessIssue,
+    VisibilityIntent,
+)
 from finsec.hypotheses.domain import HypothesisRecord, HypothesisStore
+from finsec.hypotheses.readiness import ReadinessContext, evaluate_readiness
+from finsec.hypotheses.semantics import assess_claim_strength, assess_domain_intent
+from finsec.modeling.domain import ResourceStore
 from finsec.modeling.merge import merge_generated_records, stable_fingerprint
 from finsec.modeling.models import EndpointStore, ObservationStore
 from finsec.utils.yaml_store import load_yaml, write_yaml
@@ -123,6 +138,7 @@ class _Inputs:
     families: WorkflowFamilyStore
     transitions: TransitionStore
     propagation: PropagationStore
+    resources: ResourceStore
     existing_hypotheses: HypothesisStore
 
 
@@ -137,6 +153,7 @@ def _load_inputs(workspace: WorkspacePaths) -> _Inputs:
             families=WorkflowFamilyStore.model_validate(load_yaml(workspace.workflow_families)),
             transitions=TransitionStore.model_validate(load_yaml(workspace.behavior_transitions)),
             propagation=PropagationStore.model_validate(load_yaml(workspace.propagation_links)),
+            resources=ResourceStore.model_validate(load_yaml(workspace.resources)),
             existing_hypotheses=HypothesisStore.model_validate(load_yaml(workspace.hypotheses)),
         )
     except (OSError, ValidationError) as error:
@@ -814,82 +831,202 @@ def _title(family: HypothesisFamily, action: str, context: str) -> str:
     }[family]
 
 
-def _blockers(
+def _logic_readiness(
     inputs: _Inputs,
     family: WorkflowFamily,
     invariant: BusinessInvariant,
+    hypothesis_family: HypothesisFamily,
+    endpoint_ids: list[str],
+    *,
+    kind: str,
     required_actors: int,
-    safety: SafetyClassification,
     request_budget: int,
-) -> list[str]:
-    blockers: list[str] = []
-    if len(family.workflow_instance_ids) < 2:
-        blockers.append("Insufficient workflow observations to treat the pattern as mandatory.")
-    if family.inference_confidence in {
-        InferenceConfidence.WEAK_EVIDENCE,
-        InferenceConfidence.SPECULATIVE,
-    }:
-        blockers.append("Workflow segmentation remains ambiguous.")
-    controlled = _controlled_accounts(inputs.target)
-    if len(controlled) < required_actors:
-        blockers.append(f"At least {required_actors} controlled actor(s) are required.")
-    configured_controlled = [
-        item for item in inputs.target.accounts if item.id in controlled[:required_actors]
+    safety: SafetyClassification,
+) -> tuple[DomainIntentAssessment, ClaimStrengthAssessment, HypothesisReadinessAssessment]:
+    """Build BLH facts for the shared evaluator before backlog synchronization."""
+
+    selected_endpoints = [
+        endpoint for endpoint in inputs.endpoints.endpoints if endpoint.id in set(endpoint_ids)
     ]
-    missing_authentication = any(
-        item.authenticated
-        and (
-            item.authentication is None
-            or (
-                item.authentication.auth_type != "none"
-                and item.authentication.status
-                in {
-                    "MISSING",
-                    "INVALID",
-                    "EXPIRED",
-                    "REFRESH_REQUIRED",
-                    "REFRESH_FAILED",
-                    "AUTH_CONTEXT_CHANGED",
-                }
-            )
-        )
-        for item in configured_controlled
+    ownership_known = any(
+        access.actor_object_binding_observed
+        for endpoint in selected_endpoints
+        for access in endpoint.object_access
     )
-    if missing_authentication:
-        blockers.append("Missing actor authentication for one or more controlled workflow actors.")
-    if not family.resource_types:
-        blockers.append("Controlled resource ownership is not established.")
-    if invariant.invariant_type in {"ACTOR_BINDING", "RESOURCE_BINDING", "TOKEN_SCOPE"} and not any(
-        evidence.actor_object_binding_observed
-        for endpoint in inputs.endpoints.endpoints
-        for evidence in endpoint.object_access
-    ):
-        blockers.append("Controlled resource ownership baseline is missing.")
+    logic_details: dict[str, object] = {
+        "family": hypothesis_family,
+        "invariant_id": invariant.id,
+        "qualification": {
+            "evidence": {
+                "ownership_known": ownership_known,
+                "causal_prerequisites_proven": bool(invariant.causal_evidence),
+            }
+        },
+    }
+    intent = assess_domain_intent(
+        inputs.target,
+        selected_endpoints,
+        category="business_logic",
+        generation_rule_id=f"BUSINESS_LOGIC_{hypothesis_family}",
+        logic_details=logic_details,
+    )
+    claim = assess_claim_strength(
+        generation_rule_id=f"BUSINESS_LOGIC_{hypothesis_family}",
+        category="business_logic",
+        intent=intent,
+        eligibility_evidence=invariant.supporting_observations,
+    )
+    controlled = _controlled_accounts(inputs.target)
     family_transitions = [
         item for item in inputs.transitions.transitions if item.workflow_family_id == family.id
     ]
-    if invariant.state_changing_validation and not any(
+    resolved_state = any(
         item.source_state != "UNRESOLVED" and item.destination_state != "UNRESOLVED"
         for item in family_transitions
-    ):
-        blockers.append("An authoritative baseline state and before-state query are missing.")
-    if safety == SafetyClassification.CONCURRENT:
-        blockers.append("Concurrency testing is not permitted by the offline engine.")
-    if safety in {
-        SafetyClassification.FINANCIAL_STATE_CHANGE,
-        SafetyClassification.DESTRUCTIVE,
-        SafetyClassification.EXTERNAL_SIDE_EFFECT,
-    }:
-        blockers.append(
-            f"{safety.value.replace('_', ' ').title()} requires explicit target policy permission."
+    )
+    state_changing = invariant.state_changing_validation
+    binding_required = hypothesis_family in {
+        "ACTOR_SWITCH",
+        "RESOURCE_SWITCH",
+        "CROSS_WORKFLOW_TOKEN_REUSE",
+    }
+    binding_satisfied = (
+        intent.visibility
+        in {
+            VisibilityIntent.OWNER_SCOPED,
+            VisibilityIntent.ROLE_SCOPED,
+            VisibilityIntent.ACTOR_BOUND,
+        }
+        and intent.binding.value != "UNKNOWN"
+    )
+
+    def capability(
+        name: CapabilityKind,
+        satisfied: bool,
+        stage: BlockerStage,
+        summary: str,
+        *,
+        required: bool = True,
+        missing: str,
+    ) -> CapabilityAssessment:
+        return CapabilityAssessment(
+            capability=name,
+            required=required,
+            satisfied=satisfied,
+            stage=stage,
+            summary=summary,
+            evidence=[
+                DecisionEvidence(
+                    reference=invariant.id,
+                    source="INVARIANT",
+                    detail=summary,
+                )
+            ]
+            if satisfied
+            else [],
+            missing=[missing],
         )
-    if inputs.target.testing.maximum_requests_per_plan < request_budget:
-        blockers.append(
-            "Target request budget is too low: "
-            f"{request_budget} requests are estimated but only "
-            f"{inputs.target.testing.maximum_requests_per_plan} are permitted."
+
+    assessment = evaluate_readiness(
+        ReadinessContext(
+            hypothesis_id=f"BLH-{invariant.id}",
+            kind=kind,
+            capabilities=(
+                capability(
+                    CapabilityKind.CONCRETE_TEST,
+                    bool(endpoint_ids or invariant.candidate_paths),
+                    BlockerStage.HYPOTHESIS_EVIDENCE,
+                    "The mutation resolves to a concrete workflow action or candidate route.",
+                    missing="Resolve the mutation to one concrete action and route.",
+                ),
+                capability(
+                    CapabilityKind.ACTOR,
+                    len(controlled) >= required_actors,
+                    BlockerStage.HYPOTHESIS_EVIDENCE,
+                    f"At least {required_actors} controlled workflow actor(s) are required.",
+                    missing=f"Configure {required_actors} controlled workflow actor(s).",
+                ),
+                capability(
+                    CapabilityKind.OWNERSHIP,
+                    binding_satisfied,
+                    BlockerStage.HYPOTHESIS_EVIDENCE,
+                    "The actor/resource binding challenged by the mutation is evidenced.",
+                    required=binding_required,
+                    missing=(
+                        "Collect explicit ownership, actor, session, tenant, or causal binding "
+                        "evidence."
+                    ),
+                ),
+                capability(
+                    CapabilityKind.BASELINE,
+                    resolved_state if state_changing else bool(family.workflow_instance_ids),
+                    BlockerStage.HYPOTHESIS_EVIDENCE,
+                    "A controlled canonical or authoritative pre-state baseline exists.",
+                    missing="Capture a controlled canonical baseline and authoritative pre-state.",
+                ),
+                capability(
+                    CapabilityKind.REQUEST_TEMPLATE,
+                    bool(endpoint_ids) and hypothesis_family != "SHADOW_ENDPOINT",
+                    BlockerStage.PLAN_CONSTRUCTABILITY,
+                    "An observed request template supports the exact workflow mutation.",
+                    missing="Capture the exact request template required for the mutation.",
+                ),
+                capability(
+                    CapabilityKind.ORACLE,
+                    resolved_state if state_changing else bool(endpoint_ids),
+                    BlockerStage.PLAN_CONSTRUCTABILITY,
+                    "A concrete response or authoritative state oracle is available.",
+                    missing="Define an authoritative post-state or protected-response oracle.",
+                ),
+                capability(
+                    CapabilityKind.BUDGET,
+                    inputs.target.testing.maximum_requests_per_plan >= request_budget,
+                    BlockerStage.PLAN_CONSTRUCTABILITY,
+                    f"The plan needs {request_budget} request(s) within the configured budget.",
+                    missing=(
+                        "Target request budget is too low: "
+                        f"the bounded plan requires {request_budget} request(s), but policy "
+                        f"permits {inputs.target.testing.maximum_requests_per_plan}."
+                    ),
+                ),
+                capability(
+                    CapabilityKind.SEGMENTATION,
+                    family.inference_confidence
+                    not in {
+                        InferenceConfidence.WEAK_EVIDENCE,
+                        InferenceConfidence.SPECULATIVE,
+                    },
+                    BlockerStage.HYPOTHESIS_EVIDENCE,
+                    "Workflow segmentation isolates the tested sequence.",
+                    missing="Collect typed causal evidence to resolve workflow segmentation.",
+                ),
+                capability(
+                    CapabilityKind.CLEANUP,
+                    not state_changing
+                    or inputs.target.testing.synthetic
+                    or inputs.target.testing.local_lab
+                    or safety == SafetyClassification.REVERSIBLE_STATE_CHANGE,
+                    BlockerStage.PLAN_CONSTRUCTABILITY,
+                    "Rollback, cleanup, or disposable-resource controls are available.",
+                    required=state_changing,
+                    missing="Define rollback, cleanup, or disposable-resource controls.",
+                ),
+            ),
+            warnings=(
+                ReadinessIssue(
+                    code="HUMAN_APPROVAL_REQUIRED",
+                    stage=BlockerStage.HUMAN_APPROVAL,
+                    summary="Human approval remains mandatory after planning.",
+                ),
+                ReadinessIssue(
+                    code="MANUAL_ONLY_BUSINESS_LOGIC",
+                    stage=BlockerStage.EXECUTION_POLICY,
+                    summary="The bounded runner does not execute business-logic mutations.",
+                ),
+            ),
         )
-    return sorted(set(blockers))
+    )
+    return intent, claim, assessment
 
 
 def _hypothesis(
@@ -906,7 +1043,6 @@ def _hypothesis(
     required_actors: int = 1,
     transition_id: str | None = None,
     extra_suppression: list[str] | None = None,
-    extra_blockers: list[str] | None = None,
     endpoint_ids_override: list[str] | None = None,
     safety_override: SafetyClassification | None = None,
 ) -> LogicHypothesis:
@@ -917,9 +1053,6 @@ def _hypothesis(
     budget = 4 if invariant.state_changing_validation else 2
     if hypothesis_family in {"REPLAY", "DUPLICATE_ACTION", "CONCURRENT_EXECUTION"}:
         budget = 5
-    blockers = _blockers(inputs, family, invariant, required_actors, safety, budget)
-    blockers.extend(extra_blockers or [])
-    blockers = sorted(set(blockers))
     endpoint_ids = sorted(set(endpoint_ids_override or _endpoint_ids(instances, actions)))
     suppression = list(extra_suppression or [])
     if hypothesis_family == "RESOURCE_SWITCH":
@@ -941,13 +1074,19 @@ def _hypothesis(
         InferenceConfidence.SPECULATIVE,
     }
     kind = "RESEARCH_TASK" if unsafe or weak or suppression else "SECURITY_HYPOTHESIS"
-    readiness = (
-        HypothesisReadiness.RESEARCH_ONLY
-        if kind == "RESEARCH_TASK"
-        else HypothesisReadiness.REVIEW_REQUIRED
-        if blockers
-        else HypothesisReadiness.TEST_READY
+    intent, claim_strength, readiness_assessment = _logic_readiness(
+        inputs,
+        family,
+        invariant,
+        hypothesis_family,
+        endpoint_ids,
+        kind=kind,
+        required_actors=required_actors,
+        request_budget=budget,
+        safety=safety,
     )
+    readiness = HypothesisReadiness(readiness_assessment.readiness)
+    blockers = readiness_assessment.missing_prerequisites
     status = (
         EpistemicStatus.RESEARCH_TASK if kind == "RESEARCH_TASK" else EpistemicStatus.TEST_CANDIDATE
     )
@@ -1038,6 +1177,9 @@ def _hypothesis(
         safety_classification=safety,
         estimated_request_budget=budget,
         readiness_blockers=blockers,
+        readiness_assessment=readiness_assessment,
+        domain_intent=intent,
+        claim_strength=claim_strength,
         suggested_validation_strategy=[
             "Establish a successful controlled baseline.",
             f"Apply only this mutation: {mutated}.",
@@ -1307,13 +1449,9 @@ def generate_logic_hypotheses(
                     set(),
                     endpoint_ids_override=invariant.source_endpoint_ids,
                     safety_override=SafetyClassification.FINANCIAL_STATE_CHANGE,
-                    extra_blockers=[
-                        "The candidate method has not been observed at runtime.",
-                        "Collect passive route evidence or obtain explicit approval before "
-                        "validation.",
-                    ],
                     extra_suppression=[
-                        "An unobserved REST method remains a research lead, not a test candidate."
+                        "An unobserved REST method remains a research lead, not a test candidate.",
+                        "Collect passive route evidence before attempting plan construction.",
                     ],
                 )
             )
@@ -1633,7 +1771,8 @@ def _sync_backlog(
     workspace: WorkspacePaths,
     hypotheses: list[LogicHypothesis],
     clusters: list[HypothesisCluster],
-) -> tuple[str, ...]:
+    inputs: _Inputs,
+) -> tuple[tuple[str, ...], HypothesisStore]:
     cluster_by_member = {
         member_id: cluster for cluster in clusters for member_id in cluster.member_hypothesis_ids
     }
@@ -1661,7 +1800,7 @@ def _sync_backlog(
         drafts,
         preserved_fields=("status", "epistemic_status", "notes"),
     )
-    merge.document["version"] = 2
+    merge.document["version"] = 3
     active_keys = {str(item["key"]) for item in drafts}
     records = merge.document.get("hypotheses", [])
     if isinstance(records, list):
@@ -1697,8 +1836,15 @@ def _sync_backlog(
         store = HypothesisStore.model_validate(merge.document)
     except ValidationError as error:
         raise FinsecError(f"Cannot synchronize business-logic hypotheses: {error}") from error
+    store = finalize_hypothesis_store(
+        inputs.target,
+        inputs.observations,
+        inputs.endpoints,
+        inputs.resources,
+        store,
+    )
     write_yaml(workspace.hypotheses, store.model_dump(mode="json", exclude_none=True))
-    return merge.conflicts
+    return merge.conflicts, store
 
 
 def analyze_business_logic(
@@ -1761,7 +1907,30 @@ def analyze_business_logic(
             clusters=clusters,
         ).model_dump(mode="json"),
     )
-    conflicts = _sync_backlog(workspace, hypotheses, clusters)
+    conflicts, backlog = _sync_backlog(workspace, hypotheses, clusters, inputs)
+    common_by_id = {item.id: item for item in backlog.hypotheses}
+    hypotheses = [
+        item.model_copy(
+            update={
+                "readiness": HypothesisReadiness(common_by_id[item.id].readiness),
+                "readiness_assessment": common_by_id[item.id].readiness_assessment,
+                "domain_intent": common_by_id[item.id].domain_intent,
+                "claim_strength": common_by_id[item.id].claim_strength,
+                "grouping": common_by_id[item.id].grouping,
+            }
+        )
+        if item.id in common_by_id
+        else item
+        for item in hypotheses
+    ]
+    write_yaml(
+        workspace.business_logic_hypotheses,
+        LogicHypothesisStore(
+            hypotheses=hypotheses,
+            rejections=rejections,
+            clusters=clusters,
+        ).model_dump(mode="json"),
+    )
     return LogicAnalysisResult(
         business_invariants=len(invariants),
         hypotheses=sum(item.kind == "SECURITY_HYPOTHESIS" for item in hypotheses),

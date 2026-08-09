@@ -393,9 +393,20 @@ def _semantics(
         set(invariant.resource_types)
         | {endpoint.resource.type for endpoint in endpoints}
         | set(family.resource_types)
+        | {item.domain_intent.subject_resource}
+        | (
+            {item.domain_intent.parent_resource}
+            if item.domain_intent.parent_resource is not None
+            else set()
+        )
     )
-    label = semantic_label(item.affected_action, endpoints, resources)
-    subject_resource = label.normalized_value.split("_", 1)[-1].lower()
+    semantic_action = item.affected_action
+    if item.domain_intent.operation.value == "READ":
+        semantic_action = f"READ_{item.domain_intent.subject_resource}"
+    elif item.domain_intent.operation.value == "CREATE_CHILD":
+        semantic_action = f"CREATE_{item.domain_intent.subject_resource}"
+    label = semantic_label(semantic_action, endpoints, resources)
+    subject_resource = item.domain_intent.subject_resource.lower()
     endpoint_dimension = sorted(
         {f"{endpoint.method} {_semantic_route(endpoint.path)}" for endpoint in endpoints}
         | {
@@ -465,6 +476,10 @@ def _semantics(
         "vulnerability_family": item.family,
         "subject_action": label.normalized_value,
         "subject_resource": subject_resource,
+        "parent_resource": item.domain_intent.parent_resource,
+        "operation": item.domain_intent.operation,
+        "visibility": item.domain_intent.visibility,
+        "binding": item.domain_intent.binding,
         "violated_property": invariant.invariant_type,
         "mutation_type": item.family,
         "actor_dimension": actor_dimension,
@@ -479,6 +494,14 @@ def _semantics(
         vulnerability_family=item.family,
         subject_action=label.normalized_value,
         subject_resource=subject_resource,
+        parent_resource=(
+            item.domain_intent.parent_resource.lower()
+            if item.domain_intent.parent_resource is not None
+            else None
+        ),
+        operation=item.domain_intent.operation,
+        visibility=item.domain_intent.visibility,
+        binding=item.domain_intent.binding,
         violated_property=invariant.invariant_type,
         mutation_type=item.family,
         actor_dimension=actor_dimension,
@@ -780,7 +803,7 @@ def _evidence_strength(
             evidence.cross_actor_baseline
             and evidence.controlled_identifier
             and evidence.business_relevant_resource
-            and (evidence.ownership_known or evidence.authenticated)
+            and evidence.ownership_known
             and evidence.sensitive_operation
         )
     elif item.family == "RESOURCE_SWITCH":
@@ -790,7 +813,7 @@ def _evidence_strength(
             and evidence.independently_identifiable_resource
             and evidence.cross_workflow_resource
             and evidence.sensitive_operation
-            and (evidence.ownership_known or evidence.cross_actor_baseline)
+            and (evidence.ownership_known or evidence.causal_prerequisites_proven)
         )
     elif item.family in _ORDERING_FAMILIES:
         core = evidence.causal_prerequisites_proven and evidence.sensitive_operation
@@ -902,12 +925,12 @@ def _qualification(
         and evidence.controlled_identifier
         and evidence.business_relevant_resource
         and evidence.sensitive_operation
-        and (evidence.ownership_known or evidence.authenticated)
+        and evidence.ownership_known
     ):
         suppression.append("INSUFFICIENT_ACTOR_BINDING_EVIDENCE")
         reasons.append(
-            "Actor binding lacks a sensitive authenticated/owned boundary with a controlled "
-            "identifier and cross-actor baseline."
+            "Actor binding lacks explicit ownership, initiating-actor, session, tenant, role, "
+            "or producer-consumer evidence; authentication alone is insufficient."
         )
     if item.family == "RESOURCE_SWITCH" and not (
         evidence.controlled_identifier
@@ -915,7 +938,7 @@ def _qualification(
         and evidence.independently_identifiable_resource
         and evidence.cross_workflow_resource
         and evidence.sensitive_operation
-        and (evidence.ownership_known or evidence.cross_actor_baseline)
+        and (evidence.ownership_known or evidence.causal_prerequisites_proven)
     ):
         suppression.append("INSUFFICIENT_RESOURCE_SWITCH_EVIDENCE")
         reasons.append(

@@ -5,6 +5,7 @@ from typing import Literal
 
 from pydantic import Field
 
+from finsec.hypotheses.contracts import HypothesisReadinessAssessment, ReadinessIssue
 from finsec.modeling.domain import EditableModel, GenerationMetadata
 
 
@@ -150,6 +151,12 @@ class TestPlanRecord(EditableModel):
     requests: list[StructuredRequest] = Field(default_factory=list)
     authentication: list[PlanActorAuthentication] = Field(default_factory=list)
     execution: PlanExecutionConfig = Field(default_factory=PlanExecutionConfig)
+    readiness_assessment: HypothesisReadinessAssessment = Field(
+        default_factory=HypothesisReadinessAssessment
+    )
+    planning_blockers: list[ReadinessIssue] = Field(default_factory=list)
+    readiness_consistent: bool = True
+    readiness_invariant_violation: str | None = None
     human_approval_required: bool = True
     execution_default: Literal["DO_NOT_EXECUTE"] = "DO_NOT_EXECUTE"
     approval_status: Literal["NOT_REQUESTED", "APPROVED", "REJECTED"] = "NOT_REQUESTED"

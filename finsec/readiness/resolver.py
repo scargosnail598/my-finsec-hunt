@@ -1132,7 +1132,7 @@ def resolve_workspace_readiness(
         paths.hypotheses,
         HypothesisStore,
         "Hypothesis backlog",
-        supported_versions=frozenset({1, 2}),
+        supported_versions=frozenset({1, 2, 3}),
     )
     plans_loaded = _load_artifact(paths, paths.test_plans, TestPlanStore, "Test plan store")
     validations_loaded = _load_artifact(

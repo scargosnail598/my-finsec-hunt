@@ -26,6 +26,7 @@ from finsec.execution.domain import (
     ExecutionResponseSummary,
 )
 from finsec.execution.policy import plan_checksum
+from finsec.hypotheses.clustering import presentation_title, presentation_visible
 from finsec.hypotheses.domain import HypothesisRecord, HypothesisStore
 from finsec.ingest.har import ingest_har
 from finsec.mcp.models import (
@@ -304,10 +305,15 @@ class FinsecMcpService:
         evidence_sets, evidence_records = self._evidence_counts()
         authentication_states = self._authentication_counts(observations.observations)
         active_hypotheses = sum(
-            item.kind == "SECURITY_HYPOTHESIS" and item.disposition == "ACTIVE"
+            presentation_visible(item)
+            and item.kind == "SECURITY_HYPOTHESIS"
+            and item.disposition == "ACTIVE"
             for item in hypotheses.hypotheses
         )
-        research_tasks = sum(item.kind == "RESEARCH_TASK" for item in hypotheses.hypotheses)
+        research_tasks = sum(
+            presentation_visible(item) and item.kind == "RESEARCH_TASK"
+            for item in hypotheses.hypotheses
+        )
         return WorkspaceSummary(
             target_name=self.sanitizer.text(target.target.name, maximum=200) or "",
             in_scope_hosts=sorted(self.sanitizer.identifier(host) for host in target.scope.hosts),
@@ -339,7 +345,7 @@ class FinsecMcpService:
 
         records = self._hypotheses().hypotheses
         if active_only:
-            records = [item for item in records if item.disposition == "ACTIVE"]
+            records = [item for item in records if presentation_visible(item)]
         if not include_research_tasks:
             records = [item for item in records if item.kind == "SECURITY_HYPOTHESIS"]
         priority_rank = {"P1": 0, "P2": 1, "P3": 2}
@@ -404,6 +410,21 @@ class FinsecMcpService:
                 eligibility_evidence=self._safe_text_list(hypothesis.eligibility_evidence),
                 missing_evidence=self._safe_text_list(hypothesis.missing_evidence),
                 safety_notes=self._safe_text_list(hypothesis.safety_notes),
+                domain_ambiguity=self._safe_text_list(hypothesis.domain_intent.ambiguity),
+                claim_strength_current=hypothesis.claim_strength.current_level,
+                claim_strength_target=hypothesis.claim_strength.target_level,
+                readiness_blockers=self._safe_text_list(
+                    [
+                        f"{item.stage}/{item.code}: {item.summary}"
+                        for item in hypothesis.readiness_assessment.blockers
+                    ]
+                ),
+                approval_and_execution_gates=self._safe_text_list(
+                    [
+                        f"{item.stage}/{item.code}: {item.summary}"
+                        for item in hypothesis.readiness_assessment.warnings
+                    ]
+                ),
             ),
             source_ids={
                 "endpoints": sorted(endpoint_ids),
@@ -588,7 +609,7 @@ class FinsecMcpService:
             self.workspace.hypotheses,
             HypothesisStore,
             "Hypothesis store",
-            supported_versions=frozenset({1, 2}),
+            supported_versions=frozenset({1, 2, 3}),
         )
 
     def _plans(self) -> TestPlanStore:
@@ -647,13 +668,23 @@ class FinsecMcpService:
         return HypothesisSummary(
             id=hypothesis.id,
             kind=hypothesis.kind,
-            title=self._safe_text(hypothesis.title, maximum=300),
+            title=self._safe_text(presentation_title(hypothesis), maximum=300),
             category=hypothesis.category,
             priority=hypothesis.priority,
             score=hypothesis.scores.total,
             lifecycle_status=hypothesis.status,
             evidence_status=str(hypothesis.evidence_status),
             disposition=hypothesis.disposition,
+            readiness=hypothesis.readiness,
+            protected_subject=self._safe_text(
+                hypothesis.domain_intent.subject_resource, maximum=200
+            ),
+            operation=hypothesis.domain_intent.operation,
+            visibility=hypothesis.domain_intent.visibility,
+            binding=hypothesis.domain_intent.binding,
+            cluster_id=hypothesis.grouping.cluster_id,
+            campaign_id=hypothesis.grouping.campaign_id,
+            relationship=hypothesis.grouping.relationship,
         )
 
     def _observation_context(
