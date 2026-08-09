@@ -176,7 +176,7 @@ Operation maps are endpoint-derived. Lifecycle states and transition ordering ar
 - Identifiers: None observed
 - Owner / tenant: unknown (`ASSUMED`)
 - Operations:
-  - `change` via `GET /rest/user/change-password` (EP-035, INFERRED)
+  - `read` via `GET /rest/user/change-password` (EP-035, INFERRED)
 - Observed states: None
 - Transition order: `NOT CONFIRMED`
 

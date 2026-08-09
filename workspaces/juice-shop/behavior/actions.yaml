@@ -187,6 +187,24 @@ actions:
   - endpoint action is create
   - endpoint resource is Card
   epistemic_status: INFERRED_PATTERN
+- id: ACTN-37F2213AB52119D8
+  name: READ_PASSWORD
+  method: GET
+  route: /rest/user/change-password
+  endpoint_ids:
+  - EP-035
+  observation_ids:
+  - OBS-000244
+  - OBS-000245
+  - OBS-000454
+  resource_types:
+  - Password
+  state_changing: false
+  confidence: HIGH_EVIDENCE
+  reasons:
+  - endpoint action is read
+  - endpoint resource is Password
+  epistemic_status: INFERRED_PATTERN
 - id: ACTN-4B9BBC7AF58D84E9
   name: READ_WHOAMI
   method: GET
@@ -238,24 +256,6 @@ actions:
   reasons:
   - endpoint action is read
   - endpoint resource is Whoami
-  epistemic_status: INFERRED_PATTERN
-- id: ACTN-54BB7752A2CB2942
-  name: CHANGE_PASSWORD
-  method: GET
-  route: /rest/user/change-password
-  endpoint_ids:
-  - EP-035
-  observation_ids:
-  - OBS-000244
-  - OBS-000245
-  - OBS-000454
-  resource_types:
-  - Password
-  state_changing: true
-  confidence: HIGH_EVIDENCE
-  reasons:
-  - endpoint action is change
-  - endpoint resource is Password
   epistemic_status: INFERRED_PATTERN
 - id: ACTN-561305624A3DA15F
   name: READ_APPLICATIONCONFIGURATION

@@ -1,422 +1,672 @@
-version: 1
+version: 2
 propagation_links:
-- id: PROP-00EEBB07B7001B7C
-  value_fingerprint: 7bb1728e697e5b90618d0abda45bdcca6fc8ac6a07b02ea34cd62d1a56853453
+- id: PROP-11EC635156584FDD
+  relationship_type: CROSS_ACTOR_COMPARISON
+  causal_basis: EXISTING_VALUE_OBSERVED
+  value_fingerprint: e02e36bbc0a68cd3c51336037109da614767e22a3f1d9f90907215b5d228cb32
   value_kind: RESOURCE_IDENTIFIER
   destination_value_kind: RESOURCE_IDENTIFIER
   source_resource_type: product
   destination_resource_type: product
-  source_observation_id: OBS-000322
-  source_field: $.data[].products[].id
-  destination_observation_id: OBS-000324
+  source_semantic_role: resource:product:identifier
+  destination_semantic_role: resource:product:identifier
+  source_resource_role: PRIMARY
+  destination_resource_role: PRIMARY
+  source_location: PATH_PARAMETER
+  destination_location: PATH_PARAMETER
+  source_primitive_type: STRING
+  destination_primitive_type: STRING
+  source_observation_id: OBS-000514
+  source_field: path.productId
+  source_actor: mrscargo
+  source_session: null
+  source_capture: observations/har/scargo-files-194ef865-redacted.har
+  source_host: juice-shop.local
+  destination_observation_id: OBS-000128
   destination_field: path.productId
+  destination_actor: saeedmehmandoust
+  destination_session: null
+  destination_capture: observations/har/saeedmehmandoust-files-458860b6-redacted.har
+  destination_host: juice-shop.local
+  temporal_order_known: true
+  capture_continuity: false
+  distinctive_value: false
+  causal_evidence:
+    output_only: false
+    later_consumed: true
+    compatible_resource_type: true
+    temporal_order: true
+    same_controlled_actor: false
+    distinctive_value: false
+    same_session: false
+    same_capture: false
+    same_host: true
+    session_compatible: false
+    capture_compatible: false
+    host_compatible: true
+    request_echo: true
+    previously_observed: true
+    source_is_read: false
+    source_successful: true
+    source_created_resource: false
+    consumer_state_changing: true
+    consumed_as_path_identifier: true
+    persistent_resource_identity: true
+    collection_member: false
+    direct_state_transition: false
+    capability_semantics: false
+    state_transition_evidence: false
+    distinctive_semantic_role: true
+    field_alias_compatible: false
+  rejection_reasons:
+  - controlled_actor_mismatch
+  evidence_reason: Different controlled actors supplied compatible typed resource
+    fields on the same normalized action; journeys remain separate.
   evidence:
-  - OBS-000322
-  - OBS-000324
-  confidence: MODERATE_EVIDENCE
+  - OBS-000514
+  - OBS-000128
+  confidence: WEAK_EVIDENCE
   epistemic_status: OBSERVED_FACT
-- id: PROP-0BEFC6F6EBDC9350
-  value_fingerprint: fd706e7f528e780342ee327f3c21fd40d1632d1688de1da3fb82fa63f197d894
+- id: PROP-34B41F88FE929B27
+  relationship_type: CROSS_ACTOR_COMPARISON
+  causal_basis: EXISTING_VALUE_OBSERVED
+  value_fingerprint: f66b9804b7914b7a858c4d6af2bdd5e361322e52ba79e151667c2073bd0abf77
   value_kind: RESOURCE_IDENTIFIER
   destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: basket
-  destination_resource_type: basket
-  source_observation_id: OBS-000317
-  source_field: $.data.id
-  destination_observation_id: OBS-000320
-  destination_field: path.basketId
+  source_resource_type: s
+  destination_resource_type: s
+  source_semantic_role: resource:s:identifier
+  destination_semantic_role: resource:s:identifier
+  source_resource_role: RELATED
+  destination_resource_role: RELATED
+  source_location: QUERY_PARAMETER
+  destination_location: QUERY_PARAMETER
+  source_primitive_type: STRING
+  destination_primitive_type: STRING
+  source_observation_id: OBS-000373
+  source_field: query.sid
+  source_actor: mrscargo
+  source_session: null
+  source_capture: observations/har/scargo-files-194ef865-redacted.har
+  source_host: juice-shop.local
+  destination_observation_id: OBS-000008
+  destination_field: query.sid
+  destination_actor: saeedmehmandoust
+  destination_session: null
+  destination_capture: observations/har/saeedmehmandoust-files-458860b6-redacted.har
+  destination_host: juice-shop.local
+  temporal_order_known: true
+  capture_continuity: false
+  distinctive_value: true
+  causal_evidence:
+    output_only: false
+    later_consumed: true
+    compatible_resource_type: true
+    temporal_order: true
+    same_controlled_actor: false
+    distinctive_value: true
+    same_session: false
+    same_capture: false
+    same_host: true
+    session_compatible: false
+    capture_compatible: false
+    host_compatible: true
+    request_echo: true
+    previously_observed: true
+    source_is_read: true
+    source_successful: true
+    source_created_resource: false
+    consumer_state_changing: false
+    consumed_as_path_identifier: false
+    persistent_resource_identity: false
+    collection_member: false
+    direct_state_transition: false
+    capability_semantics: false
+    state_transition_evidence: false
+    distinctive_semantic_role: true
+    field_alias_compatible: false
+  rejection_reasons:
+  - controlled_actor_mismatch
+  evidence_reason: Different controlled actors supplied compatible typed resource
+    fields on the same normalized action; journeys remain separate.
   evidence:
-  - OBS-000317
-  - OBS-000320
-  confidence: MODERATE_EVIDENCE
+  - OBS-000373
+  - OBS-000008
+  confidence: WEAK_EVIDENCE
   epistemic_status: OBSERVED_FACT
-- id: PROP-0F485B153FA21AE8
-  value_fingerprint: fd706e7f528e780342ee327f3c21fd40d1632d1688de1da3fb82fa63f197d894
-  value_kind: RESOURCE_IDENTIFIER
-  destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: basket
-  destination_resource_type: basket
-  source_observation_id: OBS-000317
-  source_field: $.data.Products[].BasketItem.BasketId
-  destination_observation_id: OBS-000320
-  destination_field: path.basketId
-  evidence:
-  - OBS-000317
-  - OBS-000320
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: PROP-1204A303C896B68D
-  value_fingerprint: 1cbeaaaea1a25637531337bc3bf669f74208658dfa6d5c8c93214642ea273ad6
-  value_kind: RESOURCE_IDENTIFIER
-  destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: user
-  destination_resource_type: user
-  source_observation_id: OBS-000317
-  source_field: $.data.UserId
-  destination_observation_id: OBS-000334
-  destination_field: $.UserId
-  evidence:
-  - OBS-000317
-  - OBS-000334
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: PROP-23A0C6A8292CB3FB
-  value_fingerprint: 1cbeaaaea1a25637531337bc3bf669f74208658dfa6d5c8c93214642ea273ad6
-  value_kind: RESOURCE_IDENTIFIER
-  destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: user
-  destination_resource_type: user
-  source_observation_id: OBS-000287
-  source_field: $.user.id
-  destination_observation_id: OBS-000334
-  destination_field: $.UserId
-  evidence:
-  - OBS-000287
-  - OBS-000334
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: PROP-48DC97B7D67DAAC4
-  value_fingerprint: 1cbeaaaea1a25637531337bc3bf669f74208658dfa6d5c8c93214642ea273ad6
-  value_kind: RESOURCE_IDENTIFIER
-  destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: user
-  destination_resource_type: user
-  source_observation_id: OBS-000320
-  source_field: $.data.UserId
-  destination_observation_id: OBS-000334
-  destination_field: $.UserId
-  evidence:
-  - OBS-000320
-  - OBS-000334
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: PROP-4BDEE73AEFC7A384
-  value_fingerprint: fd706e7f528e780342ee327f3c21fd40d1632d1688de1da3fb82fa63f197d894
-  value_kind: RESOURCE_IDENTIFIER
-  destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: basket
-  destination_resource_type: basket
-  source_observation_id: OBS-000284
-  source_field: $.data.id
-  destination_observation_id: OBS-000313
-  destination_field: path.basketId
-  evidence:
-  - OBS-000284
-  - OBS-000313
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: PROP-4C7964ED7DF93101
-  value_fingerprint: 1cbeaaaea1a25637531337bc3bf669f74208658dfa6d5c8c93214642ea273ad6
-  value_kind: RESOURCE_IDENTIFIER
-  destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: user
-  destination_resource_type: user
-  source_observation_id: OBS-000313
-  source_field: $.data.UserId
-  destination_observation_id: OBS-000334
-  destination_field: $.UserId
-  evidence:
-  - OBS-000313
-  - OBS-000334
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: PROP-5AE67046CFF2A9BB
-  value_fingerprint: 1cbeaaaea1a25637531337bc3bf669f74208658dfa6d5c8c93214642ea273ad6
-  value_kind: RESOURCE_IDENTIFIER
-  destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: user
-  destination_resource_type: user
-  source_observation_id: OBS-000329
-  source_field: $.data.UserId
-  destination_observation_id: OBS-000334
-  destination_field: $.UserId
-  evidence:
-  - OBS-000329
-  - OBS-000334
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: PROP-5D1C21E873C5160A
-  value_fingerprint: fd706e7f528e780342ee327f3c21fd40d1632d1688de1da3fb82fa63f197d894
-  value_kind: RESOURCE_IDENTIFIER
-  destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: basket
-  destination_resource_type: basket
-  source_observation_id: OBS-000314
-  source_field: $.data.BasketId
-  destination_observation_id: OBS-000316
-  destination_field: path.basketId
-  evidence:
-  - OBS-000314
-  - OBS-000316
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: PROP-6415DD3D4F74F96F
-  value_fingerprint: 7bb1728e697e5b90618d0abda45bdcca6fc8ac6a07b02ea34cd62d1a56853453
-  value_kind: RESOURCE_IDENTIFIER
-  destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: product
-  destination_resource_type: product
-  source_observation_id: OBS-000324
-  source_field: $.data.id
-  destination_observation_id: OBS-000326
-  destination_field: path.productId
-  evidence:
-  - OBS-000324
-  - OBS-000326
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: PROP-7B034AFE1D040C48
-  value_fingerprint: 1cbeaaaea1a25637531337bc3bf669f74208658dfa6d5c8c93214642ea273ad6
-  value_kind: RESOURCE_IDENTIFIER
-  destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: user
-  destination_resource_type: user
-  source_observation_id: OBS-000321
-  source_field: $.data.UserId
-  destination_observation_id: OBS-000334
-  destination_field: $.UserId
-  evidence:
-  - OBS-000321
-  - OBS-000334
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: PROP-80AB14489CB40B90
-  value_fingerprint: fd706e7f528e780342ee327f3c21fd40d1632d1688de1da3fb82fa63f197d894
-  value_kind: RESOURCE_IDENTIFIER
-  destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: basket
-  destination_resource_type: basket
-  source_observation_id: OBS-000321
-  source_field: $.data.id
-  destination_observation_id: OBS-000329
-  destination_field: path.basketId
-  evidence:
-  - OBS-000321
-  - OBS-000329
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: PROP-815535A0F94F93DF
-  value_fingerprint: fd706e7f528e780342ee327f3c21fd40d1632d1688de1da3fb82fa63f197d894
-  value_kind: RESOURCE_IDENTIFIER
-  destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: basket
-  destination_resource_type: basket
-  source_observation_id: OBS-000316
-  source_field: $.data.Products[].BasketItem.BasketId
-  destination_observation_id: OBS-000317
-  destination_field: path.basketId
-  evidence:
-  - OBS-000316
-  - OBS-000317
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: PROP-83E51077173172C5
-  value_fingerprint: 7bb1728e697e5b90618d0abda45bdcca6fc8ac6a07b02ea34cd62d1a56853453
-  value_kind: RESOURCE_IDENTIFIER
-  destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: product
-  destination_resource_type: product
-  source_observation_id: OBS-000291
-  source_field: $.data[].ProductId
-  destination_observation_id: OBS-000324
-  destination_field: path.productId
-  evidence:
-  - OBS-000291
-  - OBS-000324
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: PROP-886E8C908811B98E
-  value_fingerprint: 1cbeaaaea1a25637531337bc3bf669f74208658dfa6d5c8c93214642ea273ad6
-  value_kind: RESOURCE_IDENTIFIER
-  destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: user
-  destination_resource_type: user
-  source_observation_id: OBS-000332
-  source_field: $.user.id
-  destination_observation_id: OBS-000334
-  destination_field: $.UserId
-  evidence:
-  - OBS-000332
-  - OBS-000334
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: PROP-9D3C28C324154A54
-  value_fingerprint: 35cc8c767649b422498339b137ca958d8cfe995e074c33c86bb939c8ecc385ef
+- id: PROP-3F0086A68C347A43
+  relationship_type: CROSS_ACTOR_COMPARISON
+  causal_basis: EXISTING_VALUE_OBSERVED
+  value_fingerprint: ae3696c2b6fbab8816c01f3e934ddc9e16e6ee686beda7a2c3148ca3e5d429f9
   value_kind: RESOURCE_IDENTIFIER
   destination_value_kind: RESOURCE_IDENTIFIER
   source_resource_type: basketitem
   destination_resource_type: basketitem
-  source_observation_id: OBS-000314
-  source_field: $.data.id
+  source_semantic_role: resource:basketitem:identifier
+  destination_semantic_role: resource:basketitem:identifier
+  source_resource_role: PRIMARY
+  destination_resource_role: PRIMARY
+  source_location: PATH_PARAMETER
+  destination_location: PATH_PARAMETER
+  source_primitive_type: STRING
+  destination_primitive_type: STRING
+  source_observation_id: OBS-000526
+  source_field: path.basketitemId
+  source_actor: mrscargo
+  source_session: null
+  source_capture: observations/har/scargo-files-194ef865-redacted.har
+  source_host: juice-shop.local
   destination_observation_id: OBS-000319
   destination_field: path.basketitemId
+  destination_actor: saeedmehmandoust
+  destination_session: null
+  destination_capture: observations/har/saeedmehmandoust-files-458860b6-redacted.har
+  destination_host: juice-shop.local
+  temporal_order_known: true
+  capture_continuity: false
+  distinctive_value: true
+  causal_evidence:
+    output_only: false
+    later_consumed: true
+    compatible_resource_type: true
+    temporal_order: true
+    same_controlled_actor: false
+    distinctive_value: true
+    same_session: false
+    same_capture: false
+    same_host: true
+    session_compatible: false
+    capture_compatible: false
+    host_compatible: true
+    request_echo: true
+    previously_observed: true
+    source_is_read: false
+    source_successful: true
+    source_created_resource: false
+    consumer_state_changing: true
+    consumed_as_path_identifier: true
+    persistent_resource_identity: true
+    collection_member: false
+    direct_state_transition: false
+    capability_semantics: false
+    state_transition_evidence: false
+    distinctive_semantic_role: true
+    field_alias_compatible: false
+  rejection_reasons:
+  - controlled_actor_mismatch
+  evidence_reason: Different controlled actors supplied compatible typed resource
+    fields on the same normalized action; journeys remain separate.
   evidence:
-  - OBS-000314
+  - OBS-000526
   - OBS-000319
-  confidence: MODERATE_EVIDENCE
+  confidence: WEAK_EVIDENCE
   epistemic_status: OBSERVED_FACT
-- id: PROP-B8753B688F68E842
-  value_fingerprint: d6e638c40fc8ff94b2fdab303d364daa8dd6a64d753a6e8b894cabb32b4dd05b
+- id: PROP-48D624704216BC60
+  relationship_type: CROSS_ACTOR_COMPARISON
+  causal_basis: EXISTING_VALUE_OBSERVED
+  value_fingerprint: 1e095d67dd86173caa9ad2bad06c1c77356e802075a133bc10e9513394fc2f9c
   value_kind: RESOURCE_IDENTIFIER
   destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: product
-  destination_resource_type: product
-  source_observation_id: OBS-000314
-  source_field: $.data.ProductId
-  destination_observation_id: OBS-000315
-  destination_field: path.productId
+  source_resource_type: trackorder
+  destination_resource_type: trackorder
+  source_semantic_role: resource:trackorder:identifier
+  destination_semantic_role: resource:trackorder:identifier
+  source_resource_role: PRIMARY
+  destination_resource_role: PRIMARY
+  source_location: PATH_PARAMETER
+  destination_location: PATH_PARAMETER
+  source_primitive_type: STRING
+  destination_primitive_type: STRING
+  source_observation_id: OBS-000441
+  source_field: path.trackOrderId
+  source_actor: mrscargo
+  source_session: null
+  source_capture: observations/har/scargo-files-194ef865-redacted.har
+  source_host: juice-shop.local
+  destination_observation_id: OBS-000115
+  destination_field: path.trackOrderId
+  destination_actor: saeedmehmandoust
+  destination_session: null
+  destination_capture: observations/har/saeedmehmandoust-files-458860b6-redacted.har
+  destination_host: juice-shop.local
+  temporal_order_known: true
+  capture_continuity: false
+  distinctive_value: true
+  causal_evidence:
+    output_only: false
+    later_consumed: true
+    compatible_resource_type: true
+    temporal_order: true
+    same_controlled_actor: false
+    distinctive_value: true
+    same_session: false
+    same_capture: false
+    same_host: true
+    session_compatible: false
+    capture_compatible: false
+    host_compatible: true
+    request_echo: true
+    previously_observed: true
+    source_is_read: true
+    source_successful: true
+    source_created_resource: false
+    consumer_state_changing: false
+    consumed_as_path_identifier: true
+    persistent_resource_identity: true
+    collection_member: false
+    direct_state_transition: false
+    capability_semantics: false
+    state_transition_evidence: false
+    distinctive_semantic_role: true
+    field_alias_compatible: false
+  rejection_reasons:
+  - controlled_actor_mismatch
+  evidence_reason: Different controlled actors supplied compatible typed resource
+    fields on the same normalized action; journeys remain separate.
   evidence:
-  - OBS-000314
-  - OBS-000315
-  confidence: MODERATE_EVIDENCE
+  - OBS-000441
+  - OBS-000115
+  confidence: WEAK_EVIDENCE
   epistemic_status: OBSERVED_FACT
-- id: PROP-BBE615E1B6160D4F
-  value_fingerprint: 35cc8c767649b422498339b137ca958d8cfe995e074c33c86bb939c8ecc385ef
-  value_kind: RESOURCE_IDENTIFIER
-  destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: basketitem
-  destination_resource_type: basketitem
-  source_observation_id: OBS-000317
-  source_field: $.data.Products[].BasketItem.id
-  destination_observation_id: OBS-000319
-  destination_field: path.basketitemId
-  evidence:
-  - OBS-000317
-  - OBS-000319
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: PROP-CAFE41FD9D966E8D
-  value_fingerprint: d6e638c40fc8ff94b2fdab303d364daa8dd6a64d753a6e8b894cabb32b4dd05b
-  value_kind: RESOURCE_IDENTIFIER
-  destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: product
-  destination_resource_type: product
-  source_observation_id: OBS-000291
-  source_field: $.data[].ProductId
-  destination_observation_id: OBS-000314
-  destination_field: $.ProductId
-  evidence:
-  - OBS-000291
-  - OBS-000314
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: PROP-D05A0B1C40EB8DA0
-  value_fingerprint: 1cbeaaaea1a25637531337bc3bf669f74208658dfa6d5c8c93214642ea273ad6
-  value_kind: RESOURCE_IDENTIFIER
-  destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: user
-  destination_resource_type: user
-  source_observation_id: OBS-000284
-  source_field: $.data.UserId
-  destination_observation_id: OBS-000334
-  destination_field: $.UserId
-  evidence:
-  - OBS-000284
-  - OBS-000334
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: PROP-DC50C735ADFD0EFD
-  value_fingerprint: fd706e7f528e780342ee327f3c21fd40d1632d1688de1da3fb82fa63f197d894
-  value_kind: RESOURCE_IDENTIFIER
-  destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: basket
-  destination_resource_type: basket
-  source_observation_id: OBS-000320
-  source_field: $.data.id
-  destination_observation_id: OBS-000321
-  destination_field: path.basketId
-  evidence:
-  - OBS-000320
-  - OBS-000321
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: PROP-DDE458520A986ED6
+- id: PROP-B52D7055DE7132ED
+  relationship_type: CROSS_ACTOR_COMPARISON
+  causal_basis: EXISTING_VALUE_OBSERVED
   value_fingerprint: 7bb1728e697e5b90618d0abda45bdcca6fc8ac6a07b02ea34cd62d1a56853453
   value_kind: RESOURCE_IDENTIFIER
   destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: product
-  destination_resource_type: product
-  source_observation_id: OBS-000292
-  source_field: $.data[].id
-  destination_observation_id: OBS-000324
-  destination_field: path.productId
+  source_resource_type: delivery
+  destination_resource_type: delivery
+  source_semantic_role: resource:delivery:identifier
+  destination_semantic_role: resource:delivery:identifier
+  source_resource_role: PRIMARY
+  destination_resource_role: PRIMARY
+  source_location: PATH_PARAMETER
+  destination_location: PATH_PARAMETER
+  source_primitive_type: STRING
+  destination_primitive_type: STRING
+  source_observation_id: OBS-000427
+  source_field: path.deliveryId
+  source_actor: mrscargo
+  source_session: null
+  source_capture: observations/har/scargo-files-194ef865-redacted.har
+  source_host: juice-shop.local
+  destination_observation_id: OBS-000101
+  destination_field: path.deliveryId
+  destination_actor: saeedmehmandoust
+  destination_session: null
+  destination_capture: observations/har/saeedmehmandoust-files-458860b6-redacted.har
+  destination_host: juice-shop.local
+  temporal_order_known: true
+  capture_continuity: false
+  distinctive_value: false
+  causal_evidence:
+    output_only: false
+    later_consumed: true
+    compatible_resource_type: true
+    temporal_order: true
+    same_controlled_actor: false
+    distinctive_value: false
+    same_session: false
+    same_capture: false
+    same_host: true
+    session_compatible: false
+    capture_compatible: false
+    host_compatible: true
+    request_echo: true
+    previously_observed: true
+    source_is_read: true
+    source_successful: true
+    source_created_resource: false
+    consumer_state_changing: false
+    consumed_as_path_identifier: true
+    persistent_resource_identity: true
+    collection_member: false
+    direct_state_transition: false
+    capability_semantics: false
+    state_transition_evidence: false
+    distinctive_semantic_role: true
+    field_alias_compatible: false
+  rejection_reasons:
+  - controlled_actor_mismatch
+  evidence_reason: Different controlled actors supplied compatible typed resource
+    fields on the same normalized action; journeys remain separate.
   evidence:
-  - OBS-000292
-  - OBS-000324
-  confidence: MODERATE_EVIDENCE
+  - OBS-000427
+  - OBS-000101
+  confidence: WEAK_EVIDENCE
   epistemic_status: OBSERVED_FACT
-- id: PROP-E31E022D4A4A212A
-  value_fingerprint: fd706e7f528e780342ee327f3c21fd40d1632d1688de1da3fb82fa63f197d894
+- id: PROP-DD64CBD0DA4857FE
+  relationship_type: CROSS_ACTOR_COMPARISON
+  causal_basis: EXISTING_VALUE_OBSERVED
+  value_fingerprint: e02e36bbc0a68cd3c51336037109da614767e22a3f1d9f90907215b5d228cb32
   value_kind: RESOURCE_IDENTIFIER
   destination_value_kind: RESOURCE_IDENTIFIER
   source_resource_type: basket
   destination_resource_type: basket
-  source_observation_id: OBS-000316
-  source_field: $.data.id
-  destination_observation_id: OBS-000317
+  source_semantic_role: resource:basket:identifier
+  destination_semantic_role: resource:basket:identifier
+  source_resource_role: PRIMARY
+  destination_resource_role: PRIMARY
+  source_location: PATH_PARAMETER
+  destination_location: PATH_PARAMETER
+  source_primitive_type: STRING
+  destination_primitive_type: STRING
+  source_observation_id: OBS-000395
+  source_field: path.basketId
+  source_actor: mrscargo
+  source_session: null
+  source_capture: observations/har/scargo-files-194ef865-redacted.har
+  source_host: juice-shop.local
+  destination_observation_id: OBS-000070
   destination_field: path.basketId
+  destination_actor: saeedmehmandoust
+  destination_session: null
+  destination_capture: observations/har/saeedmehmandoust-files-458860b6-redacted.har
+  destination_host: juice-shop.local
+  temporal_order_known: true
+  capture_continuity: false
+  distinctive_value: true
+  causal_evidence:
+    output_only: false
+    later_consumed: true
+    compatible_resource_type: true
+    temporal_order: true
+    same_controlled_actor: false
+    distinctive_value: true
+    same_session: false
+    same_capture: false
+    same_host: true
+    session_compatible: false
+    capture_compatible: false
+    host_compatible: true
+    request_echo: true
+    previously_observed: true
+    source_is_read: true
+    source_successful: true
+    source_created_resource: false
+    consumer_state_changing: false
+    consumed_as_path_identifier: true
+    persistent_resource_identity: true
+    collection_member: false
+    direct_state_transition: false
+    capability_semantics: false
+    state_transition_evidence: false
+    distinctive_semantic_role: true
+    field_alias_compatible: false
+  rejection_reasons:
+  - controlled_actor_mismatch
+  evidence_reason: Different controlled actors supplied compatible typed resource
+    fields on the same normalized action; journeys remain separate.
   evidence:
-  - OBS-000316
-  - OBS-000317
-  confidence: MODERATE_EVIDENCE
+  - OBS-000395
+  - OBS-000070
+  confidence: WEAK_EVIDENCE
   epistemic_status: OBSERVED_FACT
-- id: PROP-E73AAEEA36685468
-  value_fingerprint: 35cc8c767649b422498339b137ca958d8cfe995e074c33c86bb939c8ecc385ef
-  value_kind: RESOURCE_IDENTIFIER
-  destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: basketitem
-  destination_resource_type: basketitem
-  source_observation_id: OBS-000316
-  source_field: $.data.Products[].BasketItem.id
-  destination_observation_id: OBS-000319
-  destination_field: path.basketitemId
-  evidence:
-  - OBS-000316
-  - OBS-000319
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: PROP-F292669867A96841
-  value_fingerprint: 1cbeaaaea1a25637531337bc3bf669f74208658dfa6d5c8c93214642ea273ad6
-  value_kind: RESOURCE_IDENTIFIER
-  destination_value_kind: RESOURCE_IDENTIFIER
-  source_resource_type: user
-  destination_resource_type: user
-  source_observation_id: OBS-000316
-  source_field: $.data.UserId
-  destination_observation_id: OBS-000334
-  destination_field: $.UserId
-  evidence:
-  - OBS-000316
-  - OBS-000334
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: PROP-F2FFF45C50C02F96
-  value_fingerprint: fd706e7f528e780342ee327f3c21fd40d1632d1688de1da3fb82fa63f197d894
+- id: PROP-E59DFED16F5D5C5D
+  relationship_type: CROSS_ACTOR_COMPARISON
+  causal_basis: EXISTING_VALUE_OBSERVED
+  value_fingerprint: e02e36bbc0a68cd3c51336037109da614767e22a3f1d9f90907215b5d228cb32
   value_kind: RESOURCE_IDENTIFIER
   destination_value_kind: RESOURCE_IDENTIFIER
   source_resource_type: basket
   destination_resource_type: basket
-  source_observation_id: OBS-000313
-  source_field: $.data.id
-  destination_observation_id: OBS-000314
-  destination_field: $.BasketId
+  source_semantic_role: resource:basket:identifier
+  destination_semantic_role: resource:basket:identifier
+  source_resource_role: PRIMARY
+  destination_resource_role: PRIMARY
+  source_location: PATH_PARAMETER
+  destination_location: PATH_PARAMETER
+  source_primitive_type: STRING
+  destination_primitive_type: STRING
+  source_observation_id: OBS-000439
+  source_field: path.basketId
+  source_actor: mrscargo
+  source_session: null
+  source_capture: observations/har/scargo-files-194ef865-redacted.har
+  source_host: juice-shop.local
+  destination_observation_id: OBS-000113
+  destination_field: path.basketId
+  destination_actor: saeedmehmandoust
+  destination_session: null
+  destination_capture: observations/har/saeedmehmandoust-files-458860b6-redacted.har
+  destination_host: juice-shop.local
+  temporal_order_known: true
+  capture_continuity: false
+  distinctive_value: true
+  causal_evidence:
+    output_only: false
+    later_consumed: true
+    compatible_resource_type: true
+    temporal_order: true
+    same_controlled_actor: false
+    distinctive_value: true
+    same_session: false
+    same_capture: false
+    same_host: true
+    session_compatible: false
+    capture_compatible: false
+    host_compatible: true
+    request_echo: true
+    previously_observed: true
+    source_is_read: false
+    source_successful: true
+    source_created_resource: false
+    consumer_state_changing: true
+    consumed_as_path_identifier: true
+    persistent_resource_identity: true
+    collection_member: false
+    direct_state_transition: false
+    capability_semantics: false
+    state_transition_evidence: false
+    distinctive_semantic_role: true
+    field_alias_compatible: false
+  rejection_reasons:
+  - controlled_actor_mismatch
+  evidence_reason: Different controlled actors supplied compatible typed resource
+    fields on the same normalized action; journeys remain separate.
   evidence:
-  - OBS-000313
-  - OBS-000314
-  confidence: MODERATE_EVIDENCE
+  - OBS-000439
+  - OBS-000113
+  confidence: WEAK_EVIDENCE
   epistemic_status: OBSERVED_FACT
-- id: PROP-F5338663C9D8FDA3
-  value_fingerprint: d6e638c40fc8ff94b2fdab303d364daa8dd6a64d753a6e8b894cabb32b4dd05b
+- id: PROP-ECDB8FD00008D929
+  relationship_type: CROSS_ACTOR_COMPARISON
+  causal_basis: EXISTING_VALUE_OBSERVED
+  value_fingerprint: f66b9804b7914b7a858c4d6af2bdd5e361322e52ba79e151667c2073bd0abf77
+  value_kind: RESOURCE_IDENTIFIER
+  destination_value_kind: RESOURCE_IDENTIFIER
+  source_resource_type: s
+  destination_resource_type: s
+  source_semantic_role: resource:s:identifier
+  destination_semantic_role: resource:s:identifier
+  source_resource_role: RELATED
+  destination_resource_role: RELATED
+  source_location: QUERY_PARAMETER
+  destination_location: QUERY_PARAMETER
+  source_primitive_type: STRING
+  destination_primitive_type: STRING
+  source_observation_id: OBS-000372
+  source_field: query.sid
+  source_actor: mrscargo
+  source_session: null
+  source_capture: observations/har/scargo-files-194ef865-redacted.har
+  source_host: juice-shop.local
+  destination_observation_id: OBS-000007
+  destination_field: query.sid
+  destination_actor: saeedmehmandoust
+  destination_session: null
+  destination_capture: observations/har/saeedmehmandoust-files-458860b6-redacted.har
+  destination_host: juice-shop.local
+  temporal_order_known: true
+  capture_continuity: false
+  distinctive_value: true
+  causal_evidence:
+    output_only: false
+    later_consumed: true
+    compatible_resource_type: true
+    temporal_order: true
+    same_controlled_actor: false
+    distinctive_value: true
+    same_session: false
+    same_capture: false
+    same_host: true
+    session_compatible: false
+    capture_compatible: false
+    host_compatible: true
+    request_echo: true
+    previously_observed: true
+    source_is_read: false
+    source_successful: true
+    source_created_resource: false
+    consumer_state_changing: true
+    consumed_as_path_identifier: false
+    persistent_resource_identity: false
+    collection_member: false
+    direct_state_transition: false
+    capability_semantics: false
+    state_transition_evidence: false
+    distinctive_semantic_role: true
+    field_alias_compatible: false
+  rejection_reasons:
+  - controlled_actor_mismatch
+  evidence_reason: Different controlled actors supplied compatible typed resource
+    fields on the same normalized action; journeys remain separate.
+  evidence:
+  - OBS-000372
+  - OBS-000007
+  confidence: WEAK_EVIDENCE
+  epistemic_status: OBSERVED_FACT
+- id: PROP-EDC493A4C44BDD00
+  relationship_type: CROSS_ACTOR_COMPARISON
+  causal_basis: EXISTING_VALUE_OBSERVED
+  value_fingerprint: fd706e7f528e780342ee327f3c21fd40d1632d1688de1da3fb82fa63f197d894
+  value_kind: RESOURCE_IDENTIFIER
+  destination_value_kind: RESOURCE_IDENTIFIER
+  source_resource_type: card
+  destination_resource_type: card
+  source_semantic_role: resource:card:identifier
+  destination_semantic_role: resource:card:identifier
+  source_resource_role: PRIMARY
+  destination_resource_role: PRIMARY
+  source_location: PATH_PARAMETER
+  destination_location: PATH_PARAMETER
+  source_primitive_type: STRING
+  destination_primitive_type: STRING
+  source_observation_id: OBS-000435
+  source_field: path.cardId
+  source_actor: mrscargo
+  source_session: null
+  source_capture: observations/har/scargo-files-194ef865-redacted.har
+  source_host: juice-shop.local
+  destination_observation_id: OBS-000109
+  destination_field: path.cardId
+  destination_actor: saeedmehmandoust
+  destination_session: null
+  destination_capture: observations/har/saeedmehmandoust-files-458860b6-redacted.har
+  destination_host: juice-shop.local
+  temporal_order_known: true
+  capture_continuity: false
+  distinctive_value: true
+  causal_evidence:
+    output_only: false
+    later_consumed: true
+    compatible_resource_type: true
+    temporal_order: true
+    same_controlled_actor: false
+    distinctive_value: true
+    same_session: false
+    same_capture: false
+    same_host: true
+    session_compatible: false
+    capture_compatible: false
+    host_compatible: true
+    request_echo: true
+    previously_observed: true
+    source_is_read: true
+    source_successful: true
+    source_created_resource: false
+    consumer_state_changing: false
+    consumed_as_path_identifier: true
+    persistent_resource_identity: true
+    collection_member: false
+    direct_state_transition: false
+    capability_semantics: false
+    state_transition_evidence: false
+    distinctive_semantic_role: true
+    field_alias_compatible: false
+  rejection_reasons:
+  - controlled_actor_mismatch
+  evidence_reason: Different controlled actors supplied compatible typed resource
+    fields on the same normalized action; journeys remain separate.
+  evidence:
+  - OBS-000435
+  - OBS-000109
+  confidence: WEAK_EVIDENCE
+  epistemic_status: OBSERVED_FACT
+- id: PROP-F1E2E4529CAECF98
+  relationship_type: CROSS_ACTOR_COMPARISON
+  causal_basis: EXISTING_VALUE_OBSERVED
+  value_fingerprint: e02e36bbc0a68cd3c51336037109da614767e22a3f1d9f90907215b5d228cb32
   value_kind: RESOURCE_IDENTIFIER
   destination_value_kind: RESOURCE_IDENTIFIER
   source_resource_type: product
   destination_resource_type: product
-  source_observation_id: OBS-000292
-  source_field: $.data[].id
-  destination_observation_id: OBS-000314
-  destination_field: $.ProductId
+  source_semantic_role: resource:product:identifier
+  destination_semantic_role: resource:product:identifier
+  source_resource_role: PRIMARY
+  destination_resource_role: PRIMARY
+  source_location: PATH_PARAMETER
+  destination_location: PATH_PARAMETER
+  source_primitive_type: STRING
+  destination_primitive_type: STRING
+  source_observation_id: OBS-000417
+  source_field: path.productId
+  source_actor: mrscargo
+  source_session: null
+  source_capture: observations/har/scargo-files-194ef865-redacted.har
+  source_host: juice-shop.local
+  destination_observation_id: OBS-000092
+  destination_field: path.productId
+  destination_actor: saeedmehmandoust
+  destination_session: null
+  destination_capture: observations/har/saeedmehmandoust-files-458860b6-redacted.har
+  destination_host: juice-shop.local
+  temporal_order_known: true
+  capture_continuity: false
+  distinctive_value: false
+  causal_evidence:
+    output_only: false
+    later_consumed: true
+    compatible_resource_type: true
+    temporal_order: true
+    same_controlled_actor: false
+    distinctive_value: false
+    same_session: false
+    same_capture: false
+    same_host: true
+    session_compatible: false
+    capture_compatible: false
+    host_compatible: true
+    request_echo: true
+    previously_observed: true
+    source_is_read: true
+    source_successful: true
+    source_created_resource: false
+    consumer_state_changing: false
+    consumed_as_path_identifier: true
+    persistent_resource_identity: true
+    collection_member: false
+    direct_state_transition: false
+    capability_semantics: false
+    state_transition_evidence: false
+    distinctive_semantic_role: true
+    field_alias_compatible: false
+  rejection_reasons:
+  - controlled_actor_mismatch
+  evidence_reason: Different controlled actors supplied compatible typed resource
+    fields on the same normalized action; journeys remain separate.
   evidence:
-  - OBS-000292
-  - OBS-000314
-  confidence: MODERATE_EVIDENCE
+  - OBS-000417
+  - OBS-000092
+  confidence: WEAK_EVIDENCE
   epistemic_status: OBSERVED_FACT

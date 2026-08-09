@@ -6,6 +6,7 @@ states:
   derivation: ACTION_SEMANTICS
   observations:
   - OBS-000091
+  - OBS-000314
   - OBS-000416
   - OBS-000521
   confidence: WEAK_EVIDENCE
@@ -15,62 +16,10 @@ states:
   name: DELETED
   derivation: ACTION_SEMANTICS
   observations:
+  - OBS-000319
   - OBS-000526
   confidence: WEAK_EVIDENCE
   epistemic_status: INFERRED_PATTERN
-- id: STATE-3B4C151217E33A8B
-  resource_type: trackorder
-  name: SUCCESS
-  derivation: EXPLICIT_FIELD
-  observations:
-  - OBS-000339
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: STATE-5DCEED1DA86B232D
-  resource_type: complaint
-  name: SUCCESS
-  derivation: EXPLICIT_FIELD
-  observations:
-  - OBS-000334
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: STATE-6689F9BFC8C7C9E3
-  resource_type: product
-  name: SUCCESS
-  derivation: EXPLICIT_FIELD
-  observations:
-  - OBS-000292
-  - OBS-000315
-  - OBS-000324
-  - OBS-000326
-  - OBS-000327
-  - OBS-000328
-  - OBS-000704
-  confidence: HIGH_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: STATE-66B8F94E39968097
-  resource_type: addresss
-  name: تهران
-  derivation: EXPLICIT_FIELD
-  observations:
-  - OBS-000336
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: STATE-67B4BAB0ADF2A864
-  resource_type: basket
-  name: SUCCESS
-  derivation: EXPLICIT_FIELD
-  observations:
-  - OBS-000284
-  - OBS-000313
-  - OBS-000316
-  - OBS-000317
-  - OBS-000320
-  - OBS-000321
-  - OBS-000329
-  - OBS-000696
-  confidence: HIGH_EVIDENCE
-  epistemic_status: OBSERVED_FACT
 - id: STATE-70B872959D3F2376
   resource_type: addresss
   name: CREATED
@@ -80,45 +29,6 @@ states:
   - OBS-000423
   confidence: WEAK_EVIDENCE
   epistemic_status: INFERRED_PATTERN
-- id: STATE-79CD8F4036429963
-  resource_type: addresss
-  name: SUCCESS
-  derivation: EXPLICIT_FIELD
-  observations:
-  - OBS-000336
-  confidence: MODERATE_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: STATE-AC50AF06FF876152
-  resource_type: orderhistory
-  name: SUCCESS
-  derivation: EXPLICIT_FIELD
-  observations:
-  - OBS-000322
-  - OBS-000337
-  confidence: HIGH_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: STATE-BDF040E4EFB8CAE6
-  resource_type: challenge
-  name: SUCCESS
-  derivation: EXPLICIT_FIELD
-  observations:
-  - OBS-000281
-  - OBS-000288
-  - OBS-000693
-  - OBS-000700
-  confidence: HIGH_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: STATE-C3B7130830F82362
-  resource_type: codingchallenge
-  name: '0'
-  derivation: EXPLICIT_FIELD
-  observations:
-  - OBS-000281
-  - OBS-000288
-  - OBS-000693
-  - OBS-000700
-  confidence: HIGH_EVIDENCE
-  epistemic_status: OBSERVED_FACT
 - id: STATE-CA97E98BAD8A316A
   resource_type: card
   name: CREATED
@@ -128,29 +38,12 @@ states:
   - OBS-000431
   confidence: WEAK_EVIDENCE
   epistemic_status: INFERRED_PATTERN
-- id: STATE-DB623A4819F637C0
-  resource_type: quantity
-  name: SUCCESS
-  derivation: EXPLICIT_FIELD
-  observations:
-  - OBS-000291
-  - OBS-000703
-  confidence: HIGH_EVIDENCE
-  epistemic_status: OBSERVED_FACT
-- id: STATE-E08B5CD51797CD08
-  resource_type: basketitem
-  name: SUCCESS
-  derivation: EXPLICIT_FIELD
-  observations:
-  - OBS-000314
-  - OBS-000319
-  confidence: HIGH_EVIDENCE
-  epistemic_status: OBSERVED_FACT
 - id: STATE-E5B1E074C0FE7E46
   resource_type: complaint
   name: CREATED
   derivation: ACTION_SEMANTICS
   observations:
+  - OBS-000334
   - OBS-000539
   confidence: WEAK_EVIDENCE
   epistemic_status: INFERRED_PATTERN

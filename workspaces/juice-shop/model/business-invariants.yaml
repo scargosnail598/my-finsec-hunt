@@ -1,860 +1,34 @@
-version: 1
+version: 2
 business_invariants:
-- id: BINV-0A7E5A6CCA00D74C
-  statement: Identifiers used by Basketitem lifecycle should remain bound to the same
-    controlled resource lifecycle.
-  invariant_type: RESOURCE_BINDING
-  workflow_family_id: WFAM-E81FCD64129CB8D2
-  resource_types:
-  - Basketitem
-  - basket
-  - basketitem
-  - product
-  supporting_observations:
-  - OBS-000091
-  - OBS-000416
-  - OBS-000521
-  - OBS-000526
-  contradicting_observations: []
-  source_of_inference:
-  - 'Observed resource types: Basketitem, basket, basketitem, product.'
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: MODERATE_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 4 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-140151E054B61867
-  statement: Amounts, quantities, and linked financial effects in payment lifecycle
-    should remain internally consistent.
-  invariant_type: VALUE_CONSERVATION
-  workflow_family_id: WFAM-85CD40AC43A610E4
-  resource_types:
-  - Wallet
-  - account
-  - payment
-  supporting_observations:
-  - OBS-000137
-  contradicting_observations: []
-  source_of_inference:
-  - 'Observed value fields: $.balance.'
-  mutable_value_fields:
-  - $.balance
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 1 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  - One workflow instance cannot establish a mandatory business rule.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-1DC1568591EB8444
-  statement: Each state-changing step in Addresss lifecycle should remain bound to
-    an authorized workflow actor.
-  invariant_type: ACTOR_BINDING
-  workflow_family_id: WFAM-B59D028CF8625091
-  resource_types:
-  - Addresss
-  - addresss
-  - user
-  supporting_observations:
-  - OBS-000096
-  - OBS-000097
-  - OBS-000098
-  - OBS-000139
-  - OBS-000336
-  - OBS-000422
-  - OBS-000423
-  - OBS-000424
-  contradicting_observations: []
-  source_of_inference:
-  - 'Observed actors: mrscargo, saeedmehmandoust.'
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: MODERATE_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 4 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-253EE0B598C21C57
-  statement: Amounts, quantities, and linked financial effects in Product lifecycle
-    should remain internally consistent.
-  invariant_type: VALUE_CONSERVATION
-  workflow_family_id: WFAM-DD6641D2E966B66F
-  resource_types:
-  - Product
-  - product
-  supporting_observations:
-  - OBS-000047
-  - OBS-000074
-  - OBS-000092
-  - OBS-000122
-  - OBS-000124
-  - OBS-000125
-  - OBS-000127
-  - OBS-000128
-  - OBS-000129
-  - OBS-000130
-  - OBS-000131
-  - OBS-000219
-  - OBS-000226
-  - OBS-000369
-  - OBS-000399
-  - OBS-000417
-  - OBS-000457
-  - OBS-000481
-  - OBS-000508
-  - OBS-000514
-  - OBS-000519
-  - OBS-000522
-  - OBS-000602
-  - OBS-000704
-  contradicting_observations: []
-  source_of_inference:
-  - 'Observed value fields: $.data[].deluxePrice, $.data[].price.'
-  mutable_value_fields: []
-  authoritative_value_fields:
-  - $.data[].deluxePrice
-  - $.data[].price
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: MODERATE_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 18 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-26D4E0954E2C955E
-  statement: Identifiers used by order lifecycle should remain bound to the same controlled
-    resource lifecycle.
-  invariant_type: RESOURCE_BINDING
-  workflow_family_id: WFAM-7D13DA026188DF00
-  resource_types:
-  - Basket
-  - Basketitem
-  - Complaint
-  - OrderHistory
-  - Product
-  - Quantity
-  - Whoami
-  - address
-  - basket
-  - basketitem
-  - complaint
-  - order
-  - orderhistory
-  - payment
-  - product
-  - quantity
-  - user
-  supporting_observations:
-  - OBS-000284
-  - OBS-000287
-  - OBS-000291
-  - OBS-000292
-  - OBS-000313
-  - OBS-000314
-  - OBS-000315
-  - OBS-000316
-  - OBS-000317
-  - OBS-000319
-  - OBS-000320
-  - OBS-000321
-  - OBS-000322
-  - OBS-000324
-  - OBS-000326
-  - OBS-000327
-  - OBS-000328
-  - OBS-000329
-  - OBS-000332
-  - OBS-000334
-  contradicting_observations: []
-  source_of_inference:
-  - 'Observed resource types: Basket, Basketitem, Complaint, OrderHistory, Product,
-    Quantity, Whoami, address, basket, basketitem, complaint, order, orderhistory,
-    payment, product, quantity, user.'
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 1 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  - One workflow instance cannot establish a mandatory business rule.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-275C2243C28DE149
-  statement: Identifiers used by payment lifecycle should remain bound to the same
-    controlled resource lifecycle.
-  invariant_type: RESOURCE_BINDING
-  workflow_family_id: WFAM-85CD40AC43A610E4
-  resource_types:
-  - Wallet
-  - payment
-  supporting_observations:
-  - OBS-000137
-  contradicting_observations: []
-  source_of_inference:
-  - 'Observed resource types: Wallet, payment.'
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 1 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  - One workflow instance cannot establish a mandatory business rule.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-2C201890BC0DB3CA
-  statement: Identifiers used by Addresss lifecycle should remain bound to the same
-    controlled resource lifecycle.
-  invariant_type: RESOURCE_BINDING
-  workflow_family_id: WFAM-B59D028CF8625091
-  resource_types:
-  - Addresss
-  - addresss
-  - user
-  supporting_observations:
-  - OBS-000096
-  - OBS-000097
-  - OBS-000098
-  - OBS-000139
-  - OBS-000336
-  - OBS-000422
-  - OBS-000423
-  - OBS-000424
-  contradicting_observations: []
-  source_of_inference:
-  - 'Observed resource types: Addresss, addresss, user.'
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: MODERATE_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 4 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-5E35BE9012CB2EC5
-  statement: Amounts, quantities, and linked financial effects in order lifecycle
-    should remain internally consistent.
-  invariant_type: VALUE_CONSERVATION
-  workflow_family_id: WFAM-7D13DA026188DF00
-  resource_types:
-  - Basket
-  - Basketitem
-  - Complaint
-  - OrderHistory
-  - Product
-  - Quantity
-  - Whoami
-  - address
-  - basket
-  - basketitem
-  - complaint
-  - order
-  - orderhistory
-  - payment
-  - product
-  - quantity
-  - user
-  supporting_observations:
-  - OBS-000284
-  - OBS-000287
-  - OBS-000291
-  - OBS-000292
-  - OBS-000313
-  - OBS-000314
-  - OBS-000315
-  - OBS-000316
-  - OBS-000317
-  - OBS-000319
-  - OBS-000320
-  - OBS-000321
-  - OBS-000322
-  - OBS-000324
-  - OBS-000326
-  - OBS-000327
-  - OBS-000328
-  - OBS-000329
-  - OBS-000332
-  - OBS-000334
-  contradicting_observations: []
-  source_of_inference:
-  - 'Observed value fields: $.data.Products[].BasketItem.quantity, $.data.Products[].deluxePrice,
-    $.data.Products[].price, $.data.deluxePrice, $.data.price, $.data.quantity, $.data[].deliveryPrice,
-    $.data[].deluxePrice, $.data[].price, $.data[].products[].price, $.data[].products[].quantity,
-    $.data[].products[].total, $.data[].promotionalAmount, $.data[].quantity, $.data[].totalPrice,
-    $.quantity.'
-  mutable_value_fields:
-  - $.quantity
-  authoritative_value_fields:
-  - $.data.Products[].BasketItem.quantity
-  - $.data.Products[].deluxePrice
-  - $.data.Products[].price
-  - $.data.deluxePrice
-  - $.data.price
-  - $.data.quantity
-  - $.data[].deliveryPrice
-  - $.data[].deluxePrice
-  - $.data[].price
-  - $.data[].products[].price
-  - $.data[].products[].quantity
-  - $.data[].products[].total
-  - $.data[].promotionalAmount
-  - $.data[].quantity
-  - $.data[].totalPrice
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 1 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  - One workflow instance cannot establish a mandatory business rule.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-5F336AF75738B588
-  statement: Each state-changing step in Basketitem lifecycle should remain bound
-    to an authorized workflow actor.
-  invariant_type: ACTOR_BINDING
-  workflow_family_id: WFAM-E81FCD64129CB8D2
-  resource_types:
-  - Basketitem
-  - basket
-  - basketitem
-  - product
-  supporting_observations:
-  - OBS-000091
-  - OBS-000416
-  - OBS-000521
-  - OBS-000526
-  contradicting_observations: []
-  source_of_inference:
-  - 'Observed actors: mrscargo, saeedmehmandoust.'
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: MODERATE_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 4 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-644FC82024480516
-  statement: Operations should not revive or advance order lifecycle after DELETE_BASKETITEM
-    reaches a terminal state.
-  invariant_type: TERMINAL_STATE
-  workflow_family_id: WFAM-7D13DA026188DF00
-  resource_types:
-  - Basket
-  - Basketitem
-  - Complaint
-  - OrderHistory
-  - Product
-  - Quantity
-  - Whoami
-  - address
-  - basket
-  - basketitem
-  - complaint
-  - order
-  - orderhistory
-  - payment
-  - product
-  - quantity
-  - user
-  supporting_observations:
-  - OBS-000319
-  contradicting_observations: []
-  source_of_inference:
-  - DELETE_BASKETITEM has terminal lifecycle semantics.
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 1 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  - One workflow instance cannot establish a mandatory business rule.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-6C3D381F748E0B86
-  statement: Each state-changing step in Complaint lifecycle should remain bound to
-    an authorized workflow actor.
-  invariant_type: ACTOR_BINDING
-  workflow_family_id: WFAM-3A52F4F093882DFF
-  resource_types:
-  - Complaint
-  - user
-  supporting_observations:
-  - OBS-000539
-  contradicting_observations: []
-  source_of_inference:
-  - 'Observed actors: mrscargo.'
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 1 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  - One workflow instance cannot establish a mandatory business rule.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-6C3ED1AA46407B2E
-  statement: DELETE_BASKETITEM appears to require READ_BASKET to occur first in order
-    lifecycle.
-  invariant_type: ORDERING
-  workflow_family_id: WFAM-7D13DA026188DF00
-  resource_types:
-  - Basket
-  - Basketitem
-  - Complaint
-  - OrderHistory
-  - Product
-  - Quantity
-  - Whoami
-  - address
-  - basket
-  - basketitem
-  - complaint
-  - order
-  - orderhistory
-  - payment
-  - product
-  - quantity
-  - user
-  supporting_observations:
-  - OBS-000284
-  - OBS-000313
-  - OBS-000316
-  - OBS-000317
-  - OBS-000319
-  - OBS-000320
-  - OBS-000321
-  - OBS-000329
-  contradicting_observations: []
-  source_of_inference:
-  - READ_BASKET precedes DELETE_BASKETITEM in the canonical observed path.
-  - 'Observed path frequency: 1.'
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 1 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  - One workflow instance cannot establish a mandatory business rule.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-705BB6C808A01621
-  statement: Identifiers used by Complaint lifecycle should remain bound to the same
-    controlled resource lifecycle.
-  invariant_type: RESOURCE_BINDING
-  workflow_family_id: WFAM-3A52F4F093882DFF
-  resource_types:
-  - Complaint
-  - user
-  supporting_observations:
-  - OBS-000539
-  contradicting_observations: []
-  source_of_inference:
-  - 'Observed resource types: Complaint, user.'
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 1 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  - One workflow instance cannot establish a mandatory business rule.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-714C59BB85D5EDD6
-  statement: Each state-changing step in Password lifecycle should remain bound to
-    an authorized workflow actor.
-  invariant_type: ACTOR_BINDING
-  workflow_family_id: WFAM-6E1BA510E67F13F6
-  resource_types:
-  - Password
-  supporting_observations:
-  - OBS-000244
-  - OBS-000245
-  - OBS-000454
-  contradicting_observations: []
-  source_of_inference:
-  - 'Observed actors: mrscargo, saeedmehmandoust.'
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: MODERATE_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 2 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-7A938FC12D7AA1CD
-  statement: Identifiers used by Card lifecycle should remain bound to the same controlled
-    resource lifecycle.
-  invariant_type: RESOURCE_BINDING
-  workflow_family_id: WFAM-6D9F465E06072190
-  resource_types:
-  - Card
-  - card
-  supporting_observations:
-  - OBS-000105
-  - OBS-000109
-  - OBS-000431
-  - OBS-000435
-  contradicting_observations: []
-  source_of_inference:
-  - 'Observed resource types: Card, card.'
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: MODERATE_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 4 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-94CF2CC2FD6F0859
-  statement: CREATE_BASKETITEM appears to require READ_BASKET to occur first in order
-    lifecycle.
-  invariant_type: ORDERING
-  workflow_family_id: WFAM-7D13DA026188DF00
-  resource_types:
-  - Basket
-  - Basketitem
-  - Complaint
-  - OrderHistory
-  - Product
-  - Quantity
-  - Whoami
-  - address
-  - basket
-  - basketitem
-  - complaint
-  - order
-  - orderhistory
-  - payment
-  - product
-  - quantity
-  - user
-  supporting_observations:
-  - OBS-000284
-  - OBS-000313
-  - OBS-000314
-  - OBS-000316
-  - OBS-000317
-  - OBS-000320
-  - OBS-000321
-  - OBS-000329
-  contradicting_observations: []
-  source_of_inference:
-  - READ_BASKET precedes CREATE_BASKETITEM in the canonical observed path.
-  - 'Observed path frequency: 1.'
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 1 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  - One workflow instance cannot establish a mandatory business rule.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-A3B1E9657F3D94CF
+- id: BINV-23D066610E1804E7
   statement: Each state-changing step in Product lifecycle should remain bound to
     an authorized workflow actor.
   invariant_type: ACTOR_BINDING
-  workflow_family_id: WFAM-DD6641D2E966B66F
+  workflow_family_id: WFAM-9E969F653ADE3864
   resource_types:
   - Product
   - product
   supporting_observations:
-  - OBS-000047
-  - OBS-000074
-  - OBS-000092
-  - OBS-000122
-  - OBS-000124
-  - OBS-000125
-  - OBS-000127
   - OBS-000128
-  - OBS-000129
-  - OBS-000130
-  - OBS-000131
-  - OBS-000219
-  - OBS-000226
-  - OBS-000369
-  - OBS-000399
-  - OBS-000417
-  - OBS-000457
-  - OBS-000481
-  - OBS-000508
   - OBS-000514
-  - OBS-000519
-  - OBS-000522
-  - OBS-000602
-  - OBS-000704
   contradicting_observations: []
   source_of_inference:
   - 'Observed actors: mrscargo, saeedmehmandoust.'
+  - 'Cross-actor comparison links: 1.'
   mutable_value_fields: []
   authoritative_value_fields: []
   source_endpoint_ids: []
   candidate_methods: []
   candidate_paths: []
   candidate_fields: []
-  confidence: MODERATE_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 18 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-A4CF26799C260178
-  statement: Amounts, quantities, and linked financial effects in Basketitem lifecycle
-    should remain internally consistent.
-  invariant_type: VALUE_CONSERVATION
-  workflow_family_id: WFAM-E81FCD64129CB8D2
-  resource_types:
-  - Basketitem
-  - basket
-  - basketitem
-  - product
-  supporting_observations:
-  - OBS-000091
-  - OBS-000416
-  - OBS-000521
-  - OBS-000526
-  contradicting_observations: []
-  source_of_inference:
-  - 'Observed value fields: $.quantity.'
-  mutable_value_fields:
-  - $.quantity
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: MODERATE_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 4 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-AF73C4852A47ACBD
-  statement: CREATE_COMPLAINT appears to require READ_WHOAMI to occur first in order
-    lifecycle.
-  invariant_type: ORDERING
-  workflow_family_id: WFAM-7D13DA026188DF00
-  resource_types:
-  - Basket
-  - Basketitem
-  - Complaint
-  - OrderHistory
-  - Product
-  - Quantity
-  - Whoami
-  - address
-  - basket
-  - basketitem
-  - complaint
-  - order
-  - orderhistory
-  - payment
-  - product
-  - quantity
-  - user
-  supporting_observations:
-  - OBS-000287
-  - OBS-000332
-  - OBS-000334
-  contradicting_observations: []
-  source_of_inference:
-  - READ_WHOAMI precedes CREATE_COMPLAINT in the canonical observed path.
-  - 'Observed path frequency: 1.'
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 1 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  - One workflow instance cannot establish a mandatory business rule.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-B817047A7A8576EA
-  statement: Identifiers used by Password lifecycle should remain bound to the same
-    controlled resource lifecycle.
-  invariant_type: RESOURCE_BINDING
-  workflow_family_id: WFAM-6E1BA510E67F13F6
-  resource_types:
-  - Password
-  supporting_observations:
-  - OBS-000244
-  - OBS-000245
-  - OBS-000454
-  contradicting_observations: []
-  source_of_inference:
-  - 'Observed resource types: Password.'
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
+  prerequisite_action: null
+  dependent_action: null
+  prerequisite_position: null
+  dependent_position: null
+  support_count: 0
+  support_ratio: 0.0
+  causal_evidence: []
+  counterexamples: []
   confidence: MODERATE_EVIDENCE
   confidence_explanation:
   - The rule is derived from 2 workflow instance(s).
@@ -866,212 +40,38 @@ business_invariants:
   - Capture authoritative state before and after the mutation.
   state_changing_validation: true
   epistemic_status: INFERRED_PATTERN
-- id: BINV-D2301ED0648C4A8E
-  statement: Identifiers used by Product lifecycle should remain bound to the same
-    controlled resource lifecycle.
-  invariant_type: RESOURCE_BINDING
-  workflow_family_id: WFAM-DD6641D2E966B66F
-  resource_types:
-  - Product
-  - product
-  supporting_observations:
-  - OBS-000047
-  - OBS-000074
-  - OBS-000092
-  - OBS-000122
-  - OBS-000124
-  - OBS-000125
-  - OBS-000127
-  - OBS-000128
-  - OBS-000129
-  - OBS-000130
-  - OBS-000131
-  - OBS-000219
-  - OBS-000226
-  - OBS-000369
-  - OBS-000399
-  - OBS-000417
-  - OBS-000457
-  - OBS-000481
-  - OBS-000508
-  - OBS-000514
-  - OBS-000519
-  - OBS-000522
-  - OBS-000602
-  - OBS-000704
-  contradicting_observations: []
-  source_of_inference:
-  - 'Observed resource types: Product, product.'
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: MODERATE_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 18 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-D3D3513E86178B58
-  statement: Operations should not revive or advance Basketitem lifecycle after DELETE_BASKETITEM
-    reaches a terminal state.
-  invariant_type: TERMINAL_STATE
-  workflow_family_id: WFAM-E81FCD64129CB8D2
+- id: BINV-6C812E102798F156
+  statement: Each state-changing step in Basketitem lifecycle should remain bound
+    to an authorized workflow actor.
+  invariant_type: ACTOR_BINDING
+  workflow_family_id: WFAM-7F52DC801A35EF7D
   resource_types:
   - Basketitem
-  - basket
   - basketitem
-  - product
   supporting_observations:
+  - OBS-000319
   - OBS-000526
   contradicting_observations: []
   source_of_inference:
-  - DELETE_BASKETITEM has terminal lifecycle semantics.
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: MODERATE_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 4 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-E275CEFA9064DF8F
-  statement: Each state-changing step in order lifecycle should remain bound to an
-    authorized workflow actor.
-  invariant_type: ACTOR_BINDING
-  workflow_family_id: WFAM-7D13DA026188DF00
-  resource_types:
-  - Basket
-  - Basketitem
-  - Complaint
-  - OrderHistory
-  - Product
-  - Quantity
-  - Whoami
-  - address
-  - basket
-  - basketitem
-  - complaint
-  - order
-  - orderhistory
-  - payment
-  - product
-  - quantity
-  - user
-  supporting_observations:
-  - OBS-000284
-  - OBS-000287
-  - OBS-000291
-  - OBS-000292
-  - OBS-000313
-  - OBS-000314
-  - OBS-000315
-  - OBS-000316
-  - OBS-000317
-  - OBS-000319
-  - OBS-000320
-  - OBS-000321
-  - OBS-000322
-  - OBS-000324
-  - OBS-000326
-  - OBS-000327
-  - OBS-000328
-  - OBS-000329
-  - OBS-000332
-  - OBS-000334
-  contradicting_observations: []
-  source_of_inference:
-  - 'Observed actors: saeedmehmandoust.'
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 1 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  - One workflow instance cannot establish a mandatory business rule.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-E89690E67662C135
-  statement: Each state-changing step in payment lifecycle should remain bound to
-    an authorized workflow actor.
-  invariant_type: ACTOR_BINDING
-  workflow_family_id: WFAM-85CD40AC43A610E4
-  resource_types:
-  - Wallet
-  - payment
-  supporting_observations:
-  - OBS-000137
-  contradicting_observations: []
-  source_of_inference:
-  - 'Observed actors: saeedmehmandoust.'
-  mutable_value_fields: []
-  authoritative_value_fields: []
-  source_endpoint_ids: []
-  candidate_methods: []
-  candidate_paths: []
-  candidate_fields: []
-  confidence: WEAK_EVIDENCE
-  confidence_explanation:
-  - The rule is derived from 1 workflow instance(s).
-  - Observed frequency is evidence of a pattern, not proof that the backend requires
-    it.
-  - One workflow instance cannot establish a mandatory business rule.
-  validation_requirements:
-  - Use only researcher-controlled actors and resources.
-  - Capture the mutation request and immediate response.
-  - Capture authoritative state before and after the mutation.
-  state_changing_validation: true
-  epistemic_status: INFERRED_PATTERN
-- id: BINV-ECBF25DD7EBBD1BD
-  statement: Each state-changing step in Card lifecycle should remain bound to an
-    authorized workflow actor.
-  invariant_type: ACTOR_BINDING
-  workflow_family_id: WFAM-6D9F465E06072190
-  resource_types:
-  - Card
-  - card
-  supporting_observations:
-  - OBS-000105
-  - OBS-000109
-  - OBS-000431
-  - OBS-000435
-  contradicting_observations: []
-  source_of_inference:
   - 'Observed actors: mrscargo, saeedmehmandoust.'
+  - 'Cross-actor comparison links: 1.'
   mutable_value_fields: []
   authoritative_value_fields: []
   source_endpoint_ids: []
   candidate_methods: []
   candidate_paths: []
   candidate_fields: []
+  prerequisite_action: null
+  dependent_action: null
+  prerequisite_position: null
+  dependent_position: null
+  support_count: 0
+  support_ratio: 0.0
+  causal_evidence: []
+  counterexamples: []
   confidence: MODERATE_EVIDENCE
   confidence_explanation:
-  - The rule is derived from 4 workflow instance(s).
+  - The rule is derived from 2 workflow instance(s).
   - Observed frequency is evidence of a pattern, not proof that the backend requires
     it.
   validation_requirements:
@@ -1080,45 +80,78 @@ business_invariants:
   - Capture authoritative state before and after the mutation.
   state_changing_validation: true
   epistemic_status: INFERRED_PATTERN
-- id: BINV-FDD498E728D51625
-  statement: REPLACE_PRODUCT appears to require READ_PRODUCT to occur first in Product
-    lifecycle.
-  invariant_type: ORDERING
-  workflow_family_id: WFAM-DD6641D2E966B66F
+- id: BINV-D0975748D9F6F7CE
+  statement: Identifiers used by Basketitem lifecycle should remain bound to the same
+    controlled resource lifecycle.
+  invariant_type: RESOURCE_BINDING
+  workflow_family_id: WFAM-7F52DC801A35EF7D
   resource_types:
-  - Product
-  - product
+  - Basketitem
+  - basketitem
   supporting_observations:
-  - OBS-000092
-  - OBS-000122
-  - OBS-000124
-  - OBS-000125
-  - OBS-000127
-  - OBS-000128
-  - OBS-000129
-  - OBS-000130
-  - OBS-000131
-  - OBS-000417
-  - OBS-000508
-  - OBS-000514
-  - OBS-000522
-  contradicting_observations:
-  - OBS-000514
+  - OBS-000319
+  - OBS-000526
+  contradicting_observations: []
   source_of_inference:
-  - READ_PRODUCT precedes REPLACE_PRODUCT in the canonical observed path.
-  - 'Observed path frequency: 1.'
+  - 'Observed typed client-controlled identifier fields: path.basketitemId.'
   mutable_value_fields: []
   authoritative_value_fields: []
   source_endpoint_ids: []
   candidate_methods: []
   candidate_paths: []
   candidate_fields: []
-  confidence: WEAK_EVIDENCE
+  prerequisite_action: null
+  dependent_action: null
+  prerequisite_position: null
+  dependent_position: null
+  support_count: 0
+  support_ratio: 0.0
+  causal_evidence: []
+  counterexamples: []
+  confidence: MODERATE_EVIDENCE
   confidence_explanation:
-  - The rule is derived from 18 workflow instance(s).
+  - The rule is derived from 2 workflow instance(s).
   - Observed frequency is evidence of a pattern, not proof that the backend requires
     it.
-  - Confidence is reduced by 1 contradicting observation(s).
+  validation_requirements:
+  - Use only researcher-controlled actors and resources.
+  - Capture the mutation request and immediate response.
+  - Capture authoritative state before and after the mutation.
+  state_changing_validation: true
+  epistemic_status: INFERRED_PATTERN
+- id: BINV-FF9574ACDB30335E
+  statement: Identifiers used by Product lifecycle should remain bound to the same
+    controlled resource lifecycle.
+  invariant_type: RESOURCE_BINDING
+  workflow_family_id: WFAM-9E969F653ADE3864
+  resource_types:
+  - Product
+  - product
+  supporting_observations:
+  - OBS-000128
+  - OBS-000514
+  contradicting_observations: []
+  source_of_inference:
+  - 'Observed typed client-controlled identifier fields: path.productId.'
+  mutable_value_fields: []
+  authoritative_value_fields: []
+  source_endpoint_ids: []
+  candidate_methods: []
+  candidate_paths: []
+  candidate_fields: []
+  prerequisite_action: null
+  dependent_action: null
+  prerequisite_position: null
+  dependent_position: null
+  support_count: 0
+  support_ratio: 0.0
+  causal_evidence: []
+  counterexamples: []
+  confidence: MODERATE_EVIDENCE
+  confidence_explanation:
+  - The rule is derived from 2 workflow instance(s).
+  - Observed frequency is evidence of a pattern, not proof that the backend requires
+    it.
   validation_requirements:
   - Use only researcher-controlled actors and resources.
   - Capture the mutation request and immediate response.

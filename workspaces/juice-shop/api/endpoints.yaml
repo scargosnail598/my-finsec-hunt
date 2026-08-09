@@ -87,6 +87,7 @@ endpoints:
   state_change_confidence: INFERRED
   state_change_reasons:
   - DELETE commonly represents mutation
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 8
   relevance_reasons:
@@ -136,14 +137,15 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters: []
   object_access: []
   ownership_inference: []
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 0
   relevance_reasons:
@@ -193,7 +195,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: data
     location: response_body
@@ -382,7 +384,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 2
   relevance_reasons:
@@ -433,7 +436,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: addresssId
     location: path
@@ -468,7 +471,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 6
   relevance_reasons:
@@ -521,14 +525,15 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters: []
   object_access: []
   ownership_inference: []
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 2
   relevance_reasons:
@@ -580,7 +585,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: cardId
     location: path
@@ -611,7 +616,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 6
   relevance_reasons:
@@ -661,7 +667,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: name
     location: query
@@ -1010,7 +1016,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 7
   relevance_reasons:
@@ -1069,14 +1076,15 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters: []
   object_access: []
   ownership_inference: []
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 2
   relevance_reasons:
@@ -1123,7 +1131,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: deliveryId
     location: path
@@ -1155,7 +1163,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 6
   relevance_reasons:
@@ -1205,14 +1214,15 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters: []
   object_access: []
   ownership_inference: []
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 2
   relevance_reasons:
@@ -1257,14 +1267,15 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters: []
   object_access: []
   ownership_inference: []
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 2
   relevance_reasons:
@@ -1309,7 +1320,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: productId
     location: path
@@ -1529,7 +1540,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 6
   relevance_reasons:
@@ -1584,7 +1596,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: data
     location: response_body
@@ -1711,7 +1723,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 2
   relevance_reasons:
@@ -1768,14 +1781,15 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters: []
   object_access: []
   ownership_inference: []
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 2
   relevance_reasons:
@@ -1821,7 +1835,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: 2FA_AUTH_SETUP_INSTRUCTIONS
     location: response_body
@@ -9508,7 +9522,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 0
   relevance_reasons:
@@ -9561,7 +9576,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: filename
     location: path
@@ -9600,7 +9615,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 0
   relevance_reasons:
@@ -9666,14 +9682,15 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters: []
   object_access: []
   ownership_inference: []
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 0
   relevance_reasons:
@@ -9724,14 +9741,15 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters: []
   object_access: []
   ownership_inference: []
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 0
   relevance_reasons:
@@ -9796,7 +9814,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: filename
     location: path
@@ -9825,7 +9843,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 0
   relevance_reasons:
@@ -9880,7 +9899,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: filename
     location: path
@@ -9904,7 +9923,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 0
   relevance_reasons:
@@ -9958,7 +9978,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: filename
     location: path
@@ -10153,7 +10173,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 0
   relevance_reasons:
@@ -10377,7 +10398,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: filename
     location: path
@@ -10408,7 +10429,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 0
   relevance_reasons:
@@ -10468,7 +10490,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: filename
     location: path
@@ -10499,7 +10521,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 0
   relevance_reasons:
@@ -10555,14 +10578,15 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters: []
   object_access: []
   ownership_inference: []
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 0
   relevance_reasons:
@@ -10615,14 +10639,15 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters: []
   object_access: []
   ownership_inference: []
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 2
   relevance_reasons:
@@ -10706,7 +10731,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: version
     location: response_body
@@ -10730,7 +10755,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 2
   relevance_reasons:
@@ -10787,7 +10813,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: basketId
     location: path
@@ -11242,35 +11268,7 @@ endpoints:
     original_examples: []
     normalization_reasons:
     - response JSON contains field $.status
-  object_access:
-  - identifier: basketId
-    source: RESPONSE_BODY
-    confidence: high
-    owner_field_path: $.data.UserId
-    baselines:
-    - actor: mrscargo
-      requested_value: '6'
-      response_object_path: $.data.id
-      owner_value_fingerprint: f1d3825973e71668ef20dedf3dfb0ec82477c4e79dedec911c0cfd24a26da163
-      observations:
-      - OBS-000696
-    - actor: saeedmehmandoust
-      requested_value: '7'
-      response_object_path: $.data.id
-      owner_value_fingerprint: 87d63e266f7a9461fb9ebf4f5233166f6bce7ad4524b130c8e86b553128f7155
-      observations:
-      - OBS-000284
-      - OBS-000313
-      - OBS-000316
-      - OBS-000317
-      - OBS-000320
-      - OBS-000321
-      - OBS-000329
-    distinct_actors: 2
-    distinct_objects: 2
-    distinct_owner_values: 2
-    distinct_scope_values: 0
-    actor_object_binding_observed: true
+  object_access: []
   ownership_inference:
   - parameter: basketId
     classification: UNCLASSIFIED
@@ -11283,16 +11281,14 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
-  security_relevance: 9
+  security_relevance: 6
   relevance_reasons:
   - first-party API endpoint
   - authenticated endpoint observed
   - client-controlled object identifier observed
-  - two controlled actors have distinct object baselines
-  - successful JSON response object IDs match requested IDs
-  - distinct owner/account values observed at $.data.UserId
   disposition: ACTIVE
   observed_by:
   - mrscargo
@@ -11364,14 +11360,15 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters: []
   object_access: []
   ownership_inference: []
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 2
   relevance_reasons:
@@ -11417,7 +11414,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: gauge
     location: response_body
@@ -11514,7 +11511,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 2
   relevance_reasons:
@@ -11565,7 +11563,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - path contains strong read-like action history
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: data
     location: response_body
@@ -11872,7 +11870,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - action verb history is read-like
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 2
   relevance_reasons:
@@ -11922,7 +11921,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - path contains strong read-like action search
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: q
     location: query
@@ -12117,7 +12116,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - action verb search is read-like
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 4
   relevance_reasons:
@@ -12173,7 +12173,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: productId
     location: path
@@ -12345,7 +12345,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 6
   relevance_reasons:
@@ -12408,14 +12409,15 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters: []
   object_access: []
   ownership_inference: []
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 5
   relevance_reasons:
@@ -12461,7 +12463,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: trackOrderId
     location: path
@@ -12774,7 +12776,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 6
   relevance_reasons:
@@ -12823,11 +12826,11 @@ endpoints:
     confidence: low
     knowledge_status: INFERRED
   action:
-    name: change
-    type: mutation
-    confidence: medium
+    name: read
+    type: read
+    confidence: high
     reasons:
-    - path contains mutation-like action change
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: current
     location: query
@@ -12873,16 +12876,16 @@ endpoints:
     normalization_reasons: []
   object_access: []
   ownership_inference: []
-  state_change: true
+  state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - action verb change is mutation-like
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
-  security_relevance: 6
+  security_relevance: 4
   relevance_reasons:
   - first-party API endpoint
   - authenticated endpoint observed
-  - mutation-like business action observed
   disposition: ACTIVE
   observed_by:
   - mrscargo
@@ -12924,7 +12927,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: fields
     location: query
@@ -13060,7 +13063,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 4
   relevance_reasons:
@@ -13142,14 +13146,15 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters: []
   object_access: []
   ownership_inference: []
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: unknown
   security_relevance: 5
   relevance_reasons:
@@ -13200,7 +13205,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: EIO
     location: query
@@ -13318,7 +13323,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 4
   relevance_reasons:
@@ -13385,7 +13391,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: filename
     location: path
@@ -13424,7 +13430,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 0
   relevance_reasons:
@@ -13489,14 +13496,15 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters: []
   object_access: []
   ownership_inference: []
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 0
   relevance_reasons:
@@ -13551,7 +13559,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: filename
     location: path
@@ -13610,7 +13618,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 0
   relevance_reasons:
@@ -13697,7 +13706,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: filename
     location: path
@@ -13736,7 +13745,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 0
   relevance_reasons:
@@ -13804,7 +13814,7 @@ endpoints:
     type: read
     confidence: high
     reasons:
-    - GET is a safe HTTP method
+    - GET is a safe HTTP method and no explicit side-effect evidence exists
   parameters:
   - name: filename
     location: path
@@ -13946,7 +13956,8 @@ endpoints:
   state_change: false
   state_change_confidence: INFERRED
   state_change_reasons:
-  - GET is a safe HTTP method
+  - GET is a safe HTTP method and no explicit side-effect evidence exists
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 0
   relevance_reasons:
@@ -14226,6 +14237,7 @@ endpoints:
   state_change_confidence: INFERRED
   state_change_reasons:
   - local-lab POST to a plural REST collection is mutation-like
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 6
   relevance_reasons:
@@ -14443,6 +14455,7 @@ endpoints:
   state_change_confidence: INFERRED
   state_change_reasons:
   - local-lab POST to a plural REST collection is mutation-like
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 8
   relevance_reasons:
@@ -14560,6 +14573,7 @@ endpoints:
   state_change_confidence: INFERRED
   state_change_reasons:
   - local-lab POST to a plural REST collection is mutation-like
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 6
   relevance_reasons:
@@ -14756,6 +14770,7 @@ endpoints:
   state_change_confidence: INFERRED
   state_change_reasons:
   - local-lab POST to a plural REST collection is mutation-like
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 8
   relevance_reasons:
@@ -14825,6 +14840,7 @@ endpoints:
   state_change_confidence: INFERRED
   state_change_reasons:
   - no mutating action or observed state delta
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 1
   relevance_reasons:
@@ -14894,6 +14910,7 @@ endpoints:
   state_change_confidence: INFERRED
   state_change_reasons:
   - no mutating action or observed state delta
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 1
   relevance_reasons:
@@ -14965,6 +14982,7 @@ endpoints:
   state_change_confidence: INFERRED
   state_change_reasons:
   - no mutating action or observed state delta
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 1
   relevance_reasons:
@@ -15036,6 +15054,7 @@ endpoints:
   state_change_confidence: INFERRED
   state_change_reasons:
   - no mutating action or observed state delta
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 1
   relevance_reasons:
@@ -15189,6 +15208,7 @@ endpoints:
   state_change_confidence: INFERRED
   state_change_reasons:
   - no mutating action or observed state delta
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 3
   relevance_reasons:
@@ -15279,6 +15299,7 @@ endpoints:
   state_change_confidence: INFERRED
   state_change_reasons:
   - no mutating action or observed state delta
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 4
   relevance_reasons:
@@ -15407,6 +15428,7 @@ endpoints:
   state_change_confidence: INFERRED
   state_change_reasons:
   - no mutating action or observed state delta
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 1
   relevance_reasons:
@@ -15520,6 +15542,7 @@ endpoints:
   state_change_confidence: INFERRED
   state_change_reasons:
   - PUT commonly represents mutation
+  side_effect_evidence: []
   financial_impact: none
   security_relevance: 8
   relevance_reasons:
@@ -15606,6 +15629,7 @@ endpoints:
   state_change_confidence: INFERRED
   state_change_reasons:
   - PUT commonly represents mutation
+  side_effect_evidence: []
   financial_impact: unknown
   security_relevance: 10
   relevance_reasons:

@@ -77,7 +77,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 29481e17bf37c16d255dd5bbc68fec4576240628f1c48427bcb6bbbafe76668f
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-002
   key: resource:applicationconfiguration
   name: ApplicationConfiguration
@@ -185,7 +185,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 61c9b8c7c7a25f80974543901051277ea5b262dd5e8a4e364486683d4a8c88f8
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-003
   key: resource:applicationversion
   name: ApplicationVersion
@@ -239,7 +239,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 14fa6c1ffb846303757a696d61444d7a79d2b29c563e80af23c1a4bbf936fc91
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-004
   key: resource:basket
   name: Basket
@@ -347,7 +347,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 98e28a5b527d157c7b244cbbefe97fc7aa5dc3cc1f4f63309591c0bba7c56459
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-005
   key: resource:basketitem
   name: Basketitem
@@ -400,7 +400,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 3e765e5f6c2f62c5ceb7df25a4faf2115116fe88de839be4d5376d87331b7276
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-006
   key: resource:card
   name: Card
@@ -472,7 +472,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 05d5993e7b0634599ba67c2313c887c0fffef3c3614d829d1bae9d9f688078d0
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-007
   key: resource:challenge
   name: Challenge
@@ -532,7 +532,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 43530bbe3767e4198486b60908309a9477e13a3333e1e2b3391524d2fb2f944e
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-009
   key: resource:complaint
   name: Complaint
@@ -568,7 +568,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 8bd3d09192cb65e163757338f3f516e1ee1d4d43e4ef60f043ef1369814d21bb
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-010
   key: resource:continuecode
   name: ContinueCode
@@ -602,7 +602,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: dbf4910479f66319c33597abb93f0392ac8ad5601307e2f03e2ff48043d84846
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-011
   key: resource:delivery
   name: Delivery
@@ -654,7 +654,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: d5e0106474235c810b2daebd552c0a1c9bfaf425ad742e1d77bb06a92a9d189d
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-012
   key: resource:feedback
   name: Feedback
@@ -686,7 +686,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 24029d681e23a8ea1fdecdc8246f4a94799489f7334616b10e0dcd199d26c269
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-013
   key: resource:file
   name: File
@@ -724,7 +724,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: a96a19fd8f7a0050c164ba19ce0abec42cb64c99181334dd9bc56cd00176beb1
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-014
   key: resource:fileupload
   name: FileUpload
@@ -758,7 +758,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 5d8f4055da90fba55d29c5b0aab4fc305224f6f8a5c9981a98813e5847cec4a9
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-015
   key: resource:hint
   name: Hint
@@ -790,7 +790,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 20f8bcee2811d805b1b0da9a1a530a18bd779517d3ca24f56b5a6dab311845ed
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-016
   key: resource:language
   name: Language
@@ -832,7 +832,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: e628c0e32600eb7afb2413ebeff5aafb60244487a1607134c3adaccafca2b682
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-017
   key: resource:orderhistory
   name: OrderHistory
@@ -874,7 +874,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 3595beb6294335b7da2a71f1b9ad61c150c8cd52312decc3e63a627e4a1ee3a5
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-028
   key: resource:password
   name: Password
@@ -886,10 +886,10 @@ resources:
     evidence: []
   operations:
   - endpoint: EP-035
-    action: change
+    action: read
     method: GET
     path: /rest/user/change-password
-    state_change: true
+    state_change: false
     authentication_required: true
     evidence:
     - OBS-000244
@@ -909,8 +909,8 @@ resources:
   generation:
     managed: true
     generator: phase2-modeler
-    generated_checksum: 27920d42bdbce03ca19d83e8ffa7e16a59050c4264a77430a38f3f0869362023
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    generated_checksum: d69dfe10360eb3a4b20395458058489f1d80bec578edba4a9abefdace1a6f65a
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-018
   key: resource:product
   name: Product
@@ -1041,7 +1041,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 6782c4ce1a53d5af61c5a04e54a1787d0cd77cf630eb17e4c6b9a6fd7f08c8f4
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-019
   key: resource:profile
   name: Profile
@@ -1102,7 +1102,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: e3a9471a89ea0416683149ae23291c08fc5bd60848a84e46745d7126e6dab970
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-020
   key: resource:quantity
   name: Quantity
@@ -1157,7 +1157,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 70e192fe867415e9eca5397b1d9c02ba071b845b2c8ca94c02f8df3e5ee3d727
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-021
   key: resource:saveloginip
   name: Saveloginip
@@ -1189,7 +1189,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 6125d6ba228ae97b1b23d6700aecdec8ffe1c65936980626e22bf6aa0602764b
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-022
   key: resource:securityquestion
   name: Securityquestion
@@ -1223,7 +1223,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 2717fadd38d56f7d1451ac7f1274414fc2983766344f98fb91c980be1872eeeb
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-023
   key: resource:socket.io
   name: Socket.Io
@@ -1316,7 +1316,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: b1ad13f21ae99d8f3e740fe936c374bf47a528314b42303c7b05ed776d997037
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-024
   key: resource:trackorder
   name: TrackOrder
@@ -1359,7 +1359,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: ab53f2d4c8d6f1a65faa78030bad3726a07aaf70b5fd4e4fe37e96a8e7b3e30b
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-025
   key: resource:url
   name: Url
@@ -1393,7 +1393,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 006bc4794cc17fcaea7b3916569d65d16610a4e81be0c26873ea260c5673640d
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-026
   key: resource:wallet
   name: Wallet
@@ -1446,7 +1446,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: 8512494450e2589145c410dbaa21b7f19db4ee1b1e157b7f608889a5f38a5650
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-027
   key: resource:whoami
   name: Whoami
@@ -1550,7 +1550,7 @@ resources:
     managed: true
     generator: phase2-modeler
     generated_checksum: a3b29b960df94edf967831e64aac73c71119406e9873a7c6ca18ae6d1727a9ea
-    source_fingerprint: b4fbdbda885e9103cfa4ca04928f0f2275c0b2a0a51e12eec731226a727f348b
+    source_fingerprint: 52aa00b6d1a4cdeb1785d10148492338a13f87a085ef56eb0e0408fdcb56f6af
 - id: RES-008
   key: resource:changepassword
   name: ChangePassword
