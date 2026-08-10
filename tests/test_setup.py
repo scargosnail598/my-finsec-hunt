@@ -138,7 +138,7 @@ def test_interactive_setup_configures_only_authentication_remaining_after_ingest
     result = RUNNER.invoke(
         app,
         _setup_args(tmp_path),
-        input="\n\n\n\n\nACCOUNT_A\n\n\ny\nn\ny\n4\n",
+        input="\n\n\n\n\nACCOUNT_A\n\n\n\ny\nn\ny\n4\n",
     )
 
     assert result.exit_code == 0, result.output
@@ -153,7 +153,22 @@ def test_interactive_setup_configures_only_authentication_remaining_after_ingest
     assert token not in result.output
     manifest = load_yaml(tmp_path / "captures/divar/workflow.yaml")
     assert manifest["captures"] == [
-        {"file": "account-a.har", "actor": "ACCOUNT_A", "channel": "WEB", "enabled": True}
+        {
+            "file": "account-a.har",
+            "actor": "ACCOUNT_A",
+            "channel": "WEB",
+            "enabled": True,
+            "actor_source": "USER_SUPPLIED",
+            "capture_mode": "NORMAL_BEHAVIOR",
+            "capture_mode_source": "USER_SUPPLIED",
+            "intent": {
+                "label": "read_profile",
+                "action": "READ",
+                "resource_type": "profile",
+                "confidence": "LOW",
+                "source": "USER_CONFIRMED",
+            },
+        }
     ]
     workspace = WorkspacePaths(tmp_path / "workspaces/divar")
     target = TargetDocument.model_validate(load_yaml(workspace.target))
@@ -183,7 +198,7 @@ def test_setup_skips_second_authentication_prompt_when_ingestion_readies_all_act
     result = RUNNER.invoke(
         app,
         _setup_args(tmp_path),
-        input="\n\n\n\n\nACCOUNT_A\n\n\nACCOUNT_B\n\n\ny\nn\n",
+        input="\n\n\n\n\nACCOUNT_A\n\n\n\nACCOUNT_B\n\n\n\ny\nn\n",
     )
 
     assert result.exit_code == 0, result.output
@@ -207,7 +222,7 @@ def test_interactive_setup_checks_ingestion_before_authentication_when_no_captur
 
     assert result.exit_code == 0, result.output
     assert "Capture ingestion" in result.output
-    assert "Add authorized, reviewed HAR files and rescan" in result.output
+    assert "Add authorized, reviewed HAR or Burp XML files and rescan" in result.output
     assert "Assign and import available captures now?" not in result.output
     assert "Configure actor authentication now?" in result.output
     assert result.output.index("Capture ingestion") < result.output.index(

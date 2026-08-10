@@ -11,6 +11,8 @@ from urllib.parse import parse_qsl, urlsplit
 
 from pydantic import ValidationError
 
+from finsec.captures.domain import Capture, CaptureAssignment, CaptureSourceType
+from finsec.captures.service import associate_capture
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import HarFormatError
 from finsec.ingest.har_io import load_har_json
@@ -36,6 +38,7 @@ class IngestResult:
     redacted_har: Path
     authentication_status: str | None = None
     credential_profile_ref: str | None = None
+    capture: Capture | None = None
 
 
 def _headers(items: Any) -> dict[str, str]:
@@ -263,6 +266,7 @@ def ingest_har(
     capture_auth: bool = False,
     auth_candidate: int | None = None,
     auth_observed_renewal: bool = False,
+    capture_assignment: CaptureAssignment | None = None,
 ) -> IngestResult:
     """Import one HAR file without retaining its unredacted content."""
 
@@ -294,6 +298,10 @@ def ingest_har(
             if existing.actor != actor or existing.channel != channel:
                 existing.actor = actor
                 existing.channel = channel
+                if existing.capture_id is not None:
+                    existing.session_identity = f"{actor}:{existing.capture_id}"
+                elif existing.capture_identity is not None:
+                    existing.session_identity = f"{actor}:{existing.capture_identity}"
                 relabeled += 1
             skipped += 1
             continue
@@ -330,12 +338,22 @@ def ingest_har(
         )
         authentication_status = authentication.status
         credential_profile_ref = authentication.profile_ref
+    capture = associate_capture(
+        workspace,
+        source_type=CaptureSourceType.HAR,
+        source_file=source_path,
+        source_fingerprint=digest,
+        redacted_capture=redacted_path,
+        actor_id=actor,
+        assignment=capture_assignment,
+    )
     return IngestResult(
-        imported,
-        skipped,
-        relabeled,
-        len(store.observations),
-        redacted_path,
-        authentication_status,
-        credential_profile_ref,
+        imported=imported,
+        skipped=skipped,
+        relabeled=relabeled,
+        total=len(store.observations),
+        redacted_har=redacted_path,
+        authentication_status=authentication_status,
+        credential_profile_ref=credential_profile_ref,
+        capture=capture,
     )

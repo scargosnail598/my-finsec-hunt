@@ -45,6 +45,7 @@ from finsec.behavior.reconstruction import (
     build_behavior_model,
     is_merge_capable_relationship,
 )
+from finsec.captures.domain import CaptureMode
 from finsec.config.models import TargetDocument
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
@@ -444,6 +445,9 @@ def infer_business_invariants(inputs: _Inputs) -> list[BusinessInvariant]:
             item
             for item in inputs.propagation.propagation_links
             if item.relationship_type == RelationshipType.CROSS_ACTOR_COMPARISON
+            and item.source_capture_mode not in {CaptureMode.RESEARCHER_PROBE, CaptureMode.MIXED}
+            and item.destination_capture_mode
+            not in {CaptureMode.RESEARCHER_PROBE, CaptureMode.MIXED}
             and family_observations.intersection(item.evidence)
         ]
         client_resource_fields = sorted(
@@ -1578,6 +1582,10 @@ def generate_mutation_rejections(
                 link
                 for link in inputs.propagation.propagation_links
                 if link.relationship_type == RelationshipType.CROSS_ACTOR_COMPARISON
+                and link.source_capture_mode
+                not in {CaptureMode.RESEARCHER_PROBE, CaptureMode.MIXED}
+                and link.destination_capture_mode
+                not in {CaptureMode.RESEARCHER_PROBE, CaptureMode.MIXED}
                 and set(link.evidence).intersection(observations)
             ]
             client_fields = sorted(

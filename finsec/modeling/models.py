@@ -6,6 +6,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from finsec.captures.domain import CaptureMode, CaptureRelevance
+
 AuthenticationType = Literal["none", "bearer", "basic", "cookie", "api_key", "mixed"]
 ParameterType = Literal["string", "integer", "uuid", "ulid", "hash", "date", "version"]
 ParameterSemanticType = Literal[
@@ -126,7 +128,10 @@ class Observation(StrictModel):
     source: ObservationSource = "HAR"
     source_reference: str
     source_fingerprint: str
+    capture_id: str | None = None
     capture_identity: str | None = None
+    capture_mode: CaptureMode = CaptureMode.UNKNOWN
+    capture_relevance: CaptureRelevance = CaptureRelevance.UNKNOWN
     session_identity: str | None = None
     sequence_position: int | None = Field(default=None, ge=0)
     actor: str = "UNKNOWN"
@@ -265,6 +270,8 @@ class Endpoint(StrictModel):
     relevance_reasons: list[str] = Field(default_factory=list)
     disposition: EndpointDisposition = "ACTIVE"
     observed_by: list[str] = Field(default_factory=list)
+    baseline_observed_by: list[str] = Field(default_factory=list)
+    capture_modes: list[CaptureMode] = Field(default_factory=list)
     sources: list[str]
     confidence: Confidence
     knowledge_status: KnowledgeStatus = KnowledgeStatus.INFERRED

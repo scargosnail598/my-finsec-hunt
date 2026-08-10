@@ -43,6 +43,10 @@ from finsec.behavior.domain import (
     WorkflowStep,
 )
 from finsec.behavior.extraction import ExchangeFacts, ScalarSignal, extract_exchange_facts
+from finsec.captures.domain import (
+    observation_is_probe_evidence,
+    observation_supports_normal_behavior,
+)
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
 from finsec.modeling.merge import stable_fingerprint
@@ -146,7 +150,9 @@ def _order_key(facts: ExchangeFacts) -> tuple[float, str, int, str]:
     timestamp = _timestamp(observation.timestamp)
     return (
         timestamp if timestamp is not None else float("inf"),
-        observation.capture_identity or observation.source_reference.split("#", 1)[0],
+        observation.capture_id
+        or observation.capture_identity
+        or observation.source_reference.split("#", 1)[0],
         observation.sequence_position if observation.sequence_position is not None else 10**9,
         observation.id,
     )
@@ -156,6 +162,7 @@ def _capture_scope(facts: ExchangeFacts) -> str:
     observation = facts.observation
     return (
         observation.session_identity
+        or observation.capture_id
         or observation.capture_identity
         or observation.source_reference.split("#", 1)[0]
     )
@@ -163,7 +170,11 @@ def _capture_scope(facts: ExchangeFacts) -> str:
 
 def _capture_identity(facts: ExchangeFacts) -> str:
     observation = facts.observation
-    return observation.capture_identity or observation.source_reference.split("#", 1)[0]
+    return (
+        observation.capture_id
+        or observation.capture_identity
+        or observation.source_reference.split("#", 1)[0]
+    )
 
 
 def _session_identity(facts: ExchangeFacts) -> str | None:
@@ -183,11 +194,18 @@ def _is_read(facts: ExchangeFacts) -> bool:
 
 
 def _noise_observations(facts: list[ExchangeFacts]) -> set[str]:
-    grouped: dict[tuple[str, str, str], list[ExchangeFacts]] = defaultdict(list)
+    grouped: dict[tuple[str, str, str, str], list[ExchangeFacts]] = defaultdict(list)
     for item in facts:
-        grouped[(item.observation.actor, item.observation.path, item.action_name)].append(item)
+        grouped[
+            (
+                item.observation.actor,
+                _capture_identity(item),
+                item.observation.path,
+                item.action_name,
+            )
+        ].append(item)
     noise: set[str] = set()
-    for (_actor, path, _action), items in grouped.items():
+    for (_actor, _capture, path, _action), items in grouped.items():
         ordered = sorted(items, key=_order_key)
         if len(ordered) < 3 or not all(_is_read(item) for item in ordered):
             continue
@@ -218,6 +236,12 @@ def _active_facts(all_facts: list[ExchangeFacts]) -> tuple[list[ExchangeFacts], 
     ]
     noise = _noise_observations(eligible)
     return [item for item in eligible if item.observation.id not in noise], len(noise)
+
+
+def _normal_behavior_facts(facts: list[ExchangeFacts]) -> list[ExchangeFacts]:
+    """Select baseline facts without discarding probe evidence from other artifacts."""
+
+    return [item for item in facts if observation_supports_normal_behavior(item.observation)]
 
 
 def _actions(facts: list[ExchangeFacts]) -> tuple[list[ActionRecord], dict[str, str]]:
@@ -306,14 +330,22 @@ def _resources(
     grouped: dict[tuple[str, str, str], list[tuple[ExchangeFacts, ScalarSignal]]] = defaultdict(
         list
     )
+    normal_observations = {
+        item.observation.id
+        for item in facts
+        if observation_supports_normal_behavior(item.observation)
+    }
     for item in facts:
         for signal in _resource_signals(item):
             resource_type = signal.resource_type or "resource"
-            actor_scope = (
-                item.observation.actor
-                if item.observation.actor != "UNKNOWN"
-                else f"UNKNOWN:{_capture_identity(item)}"
-            )
+            actor_scope = item.observation.actor
+            if item.observation.actor == "UNKNOWN":
+                actor_scope = f"UNKNOWN:{_capture_identity(item)}"
+            elif not observation_supports_normal_behavior(item.observation):
+                actor_scope = (
+                    f"{item.observation.actor}:{item.observation.capture_mode.value}:"
+                    f"{_capture_identity(item)}"
+                )
             grouped[(resource_type, signal.fingerprint, actor_scope)].append((item, signal))
     observation_resources: dict[str, list[str]] = defaultdict(list)
     fingerprint_resources: dict[tuple[str, str, str], str] = {}
@@ -326,6 +358,19 @@ def _resources(
         fingerprint_resources[(resource_type, fingerprint, actor_scope)] = resource_id
         observations = sorted({item.observation.id for item, _signal in items})
         actors = sorted({item.observation.actor for item, _signal in items})
+        capture_modes = sorted({item.observation.capture_mode for item, _signal in items})
+        normal_behavior_observations = sorted(
+            observation_id
+            for observation_id in observations
+            if observation_id in normal_observations
+        )
+        probe_observations = sorted(
+            {
+                item.observation.id
+                for item, _signal in items
+                if observation_is_probe_evidence(item.observation)
+            }
+        )
         for observation_id in observations:
             observation_resources[observation_id].append(resource_id)
         resources.append(
@@ -336,12 +381,17 @@ def _resources(
                 reference=f"{resource_type}:{fingerprint[:12]}",
                 observations=observations,
                 actors=actors,
+                capture_modes=capture_modes,
+                normal_behavior_observations=normal_behavior_observations,
+                probe_observations=probe_observations,
                 confidence=InferenceConfidence.HIGH_EVIDENCE,
             )
         )
 
     resource_by_id = {item.id: item for item in resources}
     for observation_id, resource_ids in sorted(observation_resources.items()):
+        if observation_id not in normal_observations:
+            continue
         unique = sorted(set(resource_ids))
         for source_id in unique:
             source = resource_by_id[source_id]
@@ -603,6 +653,9 @@ def _causal_evidence(
         source
     ) == _session_identity(destination)
     same_capture = _capture_identity(source) == _capture_identity(destination)
+    normal_behavior = observation_supports_normal_behavior(
+        source.observation
+    ) and observation_supports_normal_behavior(destination.observation)
     same_host = source.observation.host == destination.observation.host
     output_only = not _request_contains_response_value(source, signal)
     persistent_identity = _persistent_resource_identity(source, signal, destination_signal)
@@ -623,8 +676,8 @@ def _causal_evidence(
         same_session=same_session,
         same_capture=same_capture,
         same_host=same_host,
-        session_compatible=same_session,
-        capture_compatible=same_capture or same_session,
+        session_compatible=same_session and normal_behavior,
+        capture_compatible=(same_capture or same_session) and normal_behavior,
         host_compatible=same_host
         or (
             same_session
@@ -736,6 +789,18 @@ def _relationship_type(
             evidence,
             ["controlled_actor_mismatch"],
         )
+    if observation_is_probe_evidence(source.observation) or observation_is_probe_evidence(
+        destination.observation
+    ):
+        return (
+            RelationshipType.REPLAY_RELATED,
+            False,
+            causal_basis,
+            "Researcher-probe traffic is retained as testing evidence and cannot establish a "
+            "normal application prerequisite.",
+            evidence,
+            ["researcher_probe_not_normal_workflow"],
+        )
     if (
         same_action_replay
         and causal_basis
@@ -842,12 +907,14 @@ def _relationship_link(
         source_actor=source.observation.actor,
         source_session=_session_identity(source),
         source_capture=_capture_identity(source),
+        source_capture_mode=source.observation.capture_mode,
         source_host=source.observation.host,
         destination_observation_id=destination.observation.id,
         destination_field=destination_signal.field,
         destination_actor=destination.observation.actor,
         destination_session=_session_identity(destination),
         destination_capture=_capture_identity(destination),
+        destination_capture_mode=destination.observation.capture_mode,
         destination_host=destination.observation.host,
         temporal_order_known=_temporal_order_known(source, destination),
         capture_continuity=capture_continuity,
@@ -1382,6 +1449,9 @@ def _workflow_instances(
                     action_id=observation_actions[observation_id],
                     action_name=item.action_name,
                     observation_id=observation_id,
+                    capture_id=item.observation.capture_id,
+                    capture_mode=item.observation.capture_mode,
+                    capture_relevance=item.observation.capture_relevance,
                     endpoint_ids=[item.endpoint.id] if item.endpoint is not None else [],
                     actor=item.observation.actor,
                     method=item.observation.method,
@@ -1449,6 +1519,10 @@ def _workflow_instances(
             ambiguities.append("Temporal order is unavailable for at least one observation.")
         if any(item.observation.actor == "UNKNOWN" for item in items):
             ambiguities.append("Missing actor identity prevents strong workflow segmentation.")
+        if any(item.observation.capture_mode.value == "UNKNOWN" for item in items):
+            ambiguities.append(
+                "Capture mode is unknown; the journey remains usable with conservative confidence."
+            )
         confidence = (
             InferenceConfidence.HIGH_EVIDENCE
             if len(items) >= 3
@@ -1477,6 +1551,7 @@ def _workflow_instances(
                     }
                 ),
                 captures=sorted({_capture_identity(item) for item in items}),
+                capture_modes=sorted({item.observation.capture_mode for item in items}),
                 resource_instance_ids=resource_ids,
                 resource_types=resource_types,
                 steps=steps,
@@ -1632,6 +1707,7 @@ def _workflow_families(
             {resource_type for item in items for resource_type in item.resource_types}
         )
         actors = sorted({actor for item in items for actor in item.actors})
+        capture_modes = sorted({mode for item in items for mode in item.capture_modes})
         evidence_instances = len(evidence_items)
         confidence = (
             InferenceConfidence.HIGH_EVIDENCE
@@ -1677,6 +1753,7 @@ def _workflow_families(
                 required_looking_steps=sorted(required),
                 branch_points=sorted(branch_points),
                 actors=actors,
+                capture_modes=capture_modes,
                 resource_types=resource_types,
                 transition_frequencies=dict(sorted(transitions.items())),
                 outcome_distribution=dict(sorted(outcomes.items())),
@@ -1914,10 +1991,11 @@ def build_behavior_model(workspace: WorkspacePaths) -> BehaviorBuildResult:
 
     extracted = extract_exchange_facts(workspace, observations.observations, endpoints)
     facts, suppressed_noise = _active_facts(extracted)
+    normal_facts = _normal_behavior_facts(facts)
     actions, observation_actions = _actions(facts)
     resources, observation_resources, _fingerprint_resources = _resources(facts)
     propagation = _propagation(facts)
-    components = _components(facts, propagation)
+    components = _components(normal_facts, propagation)
     instances = _workflow_instances(
         components, observation_actions, observation_resources, resources, propagation
     )

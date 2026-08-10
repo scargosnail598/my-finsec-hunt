@@ -32,6 +32,7 @@ from finsec.behavior.domain import (
     WorkflowInstance,
     WorkflowInstanceStore,
 )
+from finsec.captures.domain import CaptureMode
 from finsec.config.models import TargetDocument
 from finsec.modeling.merge import stable_fingerprint
 from finsec.modeling.models import (
@@ -704,6 +705,8 @@ def _evidence(
         link
         for link in inputs.propagation.propagation_links
         if link.relationship_type == RelationshipType.CROSS_ACTOR_COMPARISON
+        and link.source_capture_mode not in {CaptureMode.RESEARCHER_PROBE, CaptureMode.MIXED}
+        and link.destination_capture_mode not in {CaptureMode.RESEARCHER_PROBE, CaptureMode.MIXED}
         and family_observations.intersection(link.evidence)
     ]
     comparison_actors = {

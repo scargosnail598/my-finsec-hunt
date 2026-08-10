@@ -7,8 +7,9 @@ hypotheses, human-approved bounded test plans, indexed evidence, skeptical valid
 and versioned reports.
 
 ```text
-HAR / Burp XML / Caido JSON / OpenAPI
-  -> redacted factual observations
+HAR / Burp XML / Caido JSON
+  -> generic source adapters and redacted factual observations
+  -> Session Capture context (actor, mode, intent, relevance, quality)
   -> classified endpoint inventory
   -> actors, resources, operation maps, and invariants
   -> workflow instances, state transitions, and business invariants
@@ -20,7 +21,7 @@ HAR / Burp XML / Caido JSON / OpenAPI
   -> skeptical completeness and integrity checks
   -> immutable report revision
 
-GraphQL schema / mobile artifact
+OpenAPI / GraphQL schema / mobile artifact
   -> separate static discovery inventories
   -> researcher review (never runtime confirmation)
 ```
@@ -230,7 +231,7 @@ conservatively reported as stale until regenerated.
 ## From Setup To Workflow: First-Time Guide
 
 `hunt setup` prepares the project and can hand off to passive capture ingestion, but it never
-guesses capture provenance or automatically analyzes HAR files. In a normal first run,
+trusts capture provenance or automatically analyzes capture files. In a normal first run,
 `captures/<slug>/workflow.yaml` starts with an empty list:
 
 ```yaml
@@ -238,31 +239,33 @@ version: 1
 captures: []
 ```
 
-This is intentional. The tool must not guess which account produced a capture or whether it came
-from the web, mobile app, or an API client. Those labels affect authorization and channel-parity
-analysis.
+This is intentional. The ingest wizard proposes a controlled actor, capture mode, and high-level
+intent, then asks only for missing confirmation. These labels affect ownership, workflow, and
+channel-parity analysis, so filename inference alone is never treated as proof.
 
 Use this sequence:
 
 1. Run `hunt setup` to create the workspace and capture directories.
-2. Export a sanitized HAR and place it in `captures/<slug>/incoming/`.
-3. Run `hunt ingest-wizard -w workspaces/<slug>` to assign and import new HARs, or edit
+2. Record one focused normal journey and export a sanitized HAR or Burp XML file into
+   `captures/<slug>/incoming/`.
+3. Run `hunt ingest-wizard -w workspaces/<slug>` to review and import new captures, or edit
    `captures/<slug>/workflow.yaml` directly.
-4. Run `hunt workflow --workspace workspaces/<slug>`.
-5. Review active hypotheses and research tasks; the workflow stops before active testing.
+4. Inspect context with `hunt captures -w workspaces/<slug>`.
+5. Run `hunt workflow --workspace workspaces/<slug>`.
+6. Review active hypotheses and research tasks; the workflow stops before active testing.
 
-If sanitized HAR files are staged in `captures/<slug>/incoming/` before interactive setup finishes,
+If sanitized HAR or Burp XML files are staged before interactive setup finishes,
 setup offers to launch the ingest wizard immediately. The wizard still requires an explicit actor
-and channel for every selected file and can optionally update authentication from a reviewed
-request. If no HAR is present, setup can wait while the user adds files and then rescan the capture
-directory. After that ingestion step is completed or explicitly skipped, setup separately offers
+and capture mode, confirms or edits inferred intent, and can optionally update authentication from
+a reviewed request. If no capture is present, setup can wait while the user adds files and then
+rescan the directory. After that ingestion step is completed or explicitly skipped, setup offers
 authentication from a HAR, raw HTTP request, hidden secret prompt, or an explicit incomplete state
 only for actors that are not already `READY`. Resume incomplete authentication with
 `hunt setup -w workspaces/<slug>` without overwriting existing scope or credential references.
 Non-interactive `hunt setup --yes` skips both interactive steps, never imports captures, and creates
 authenticated actors in `MISSING` state until authentication is supplied explicitly.
 
-For example, after placing two HAR files in `incoming/`, edit `workflow.yaml` to contain:
+For example, after placing two focused captures in `incoming/`, edit `workflow.yaml` to contain:
 
 ```yaml
 version: 1
@@ -270,9 +273,17 @@ captures:
   - file: 01-account-a-login.har
     actor: ACCOUNT_A
     channel: WEB
-  - file: 02-account-b-payments.har
+    capture_mode: AUTHENTICATION
+    intent:
+      action: AUTHENTICATE
+      resource_type: session
+  - file: 02-account-b-create-dns.xml
     actor: ACCOUNT_B
-    channel: MOBILE
+    channel: WEB
+    capture_mode: NORMAL_BEHAVIOR
+    intent:
+      action: CREATE
+      resource_type: dns_record
 ```
 
 Then run:
@@ -313,6 +324,21 @@ hunt ingest-graphql schema.graphql -w workspaces/example-fintech \
   --endpoint https://api.example.test/graphql
 hunt scan-mobile authorized-app.apk -w workspaces/example-fintech
 ```
+
+Direct HAR and Burp imports can supply capture context without an interactive questionnaire:
+
+```bash
+hunt ingest account-a-create-dns.har -w workspaces/example-fintech \
+  --actor ACCOUNT_A --channel WEB --capture-mode NORMAL_BEHAVIOR \
+  --intent-action CREATE --intent-resource dns_record
+hunt captures -w workspaces/example-fintech
+hunt captures --explain CAP-12AB34CD56EF -w workspaces/example-fintech
+```
+
+Record normal behavior and researcher probes in separate captures. Probe and mixed traffic remains
+available as evidence, but cannot establish normal ownership, lifecycle, causal workflow, or
+passive baseline hypotheses. Broad captures are accepted with explainable quality warnings. See
+[docs/session-captures.md](docs/session-captures.md) for the exact semantics.
 
 Capture actor-owned replay authentication during HAR or Burp import:
 

@@ -11,6 +11,7 @@ from urllib.parse import parse_qsl, urlsplit
 
 from pydantic import ValidationError
 
+from finsec.captures.domain import Capture
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
 from finsec.modeling.models import (
@@ -66,6 +67,7 @@ class PassiveIngestResult:
     redacted_capture: Path
     authentication_status: str | None = None
     credential_profile_ref: str | None = None
+    capture: Capture | None = None
 
 
 def load_observation_store(path: Path) -> ObservationStore:
@@ -99,6 +101,10 @@ def append_observations(
             if existing.actor != draft.actor or existing.channel != draft.channel:
                 existing.actor = draft.actor
                 existing.channel = draft.channel
+                if existing.capture_id is not None:
+                    existing.session_identity = f"{draft.actor}:{existing.capture_id}"
+                elif existing.capture_identity is not None:
+                    existing.session_identity = f"{draft.actor}:{existing.capture_identity}"
                 relabeled += 1
             skipped += 1
             continue

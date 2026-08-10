@@ -236,6 +236,21 @@ class SuppressionConfig(StrictModel):
     third_party: bool = True
 
 
+class CapturePolicy(StrictModel):
+    """Low-friction defaults for session-aware passive capture ingestion."""
+
+    preferred_style: Literal["focused_journey"] = "focused_journey"
+    default_mode: Literal[
+        "NORMAL_BEHAVIOR",
+        "RESEARCHER_PROBE",
+        "AUTHENTICATION",
+        "MIXED",
+        "UNKNOWN",
+    ] = "NORMAL_BEHAVIOR"
+    require_actor_resolution: bool = True
+    infer_intent: bool = True
+
+
 class HypothesisGateConfig(StrictModel):
     """Minimum relevance required before a candidate becomes active."""
 
@@ -516,6 +531,7 @@ class TargetDocument(StrictModel):
     testing: TestingConfig = Field(default_factory=TestingConfig)
     restrictions: RestrictionsConfig = Field(default_factory=RestrictionsConfig)
     analysis: AnalysisConfig = Field(default_factory=AnalysisConfig)
+    capture_policy: CapturePolicy = Field(default_factory=CapturePolicy)
     focus: list[str] = Field(
         default_factory=lambda: [
             "authorization",

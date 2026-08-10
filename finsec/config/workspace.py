@@ -33,6 +33,10 @@ class WorkspacePaths:
         return self.root / "observations" / "normalized" / "observations.yaml"
 
     @property
+    def captures(self) -> Path:
+        return self.root / "captures" / "captures.yaml"
+
+    @property
     def redacted_har(self) -> Path:
         return self.root / "observations" / "har"
 
@@ -157,6 +161,7 @@ class CaptureDeletionTarget:
 
 WORKSPACE_DIRECTORIES = (
     "scope",
+    "captures",
     "observations/raw",
     "observations/normalized",
     "observations/har",
@@ -185,6 +190,7 @@ TEXT_SCAFFOLDS = {
 
 
 EMPTY_YAML_SCAFFOLDS = {
+    "captures/captures.yaml": {"version": 1, "captures": []},
     "api/graphql.yaml": {"version": 1, "operations": []},
     "model/actors.yaml": {"version": 1, "actors": []},
     "model/resources.yaml": {"version": 1, "resources": []},

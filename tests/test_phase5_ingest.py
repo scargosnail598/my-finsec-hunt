@@ -7,6 +7,7 @@ from typing import Any
 
 import pytest
 
+from finsec.captures.domain import CaptureSourceType
 from finsec.config.workspace import create_workspace
 from finsec.errors import FinsecError
 from finsec.hypotheses.domain import HypothesisStore
@@ -65,6 +66,9 @@ def test_burp_xml_import_is_redacted_evidence_linked_and_idempotent(tmp_path: Pa
 
     assert (first.imported, first.skipped, first.total) == (1, 0, 1)
     assert (second.imported, second.skipped, second.total) == (0, 1, 1)
+    assert first.capture is not None and second.capture is not None
+    assert first.capture.capture_id == second.capture.capture_id
+    assert first.capture.source.type == CaptureSourceType.BURP_XML
     stored = first.redacted_capture.read_text(encoding="utf-8")
     for secret in (
         "QUERY_SECRET",
@@ -79,6 +83,7 @@ def test_burp_xml_import_is_redacted_evidence_linked_and_idempotent(tmp_path: Pa
 
     observations = ObservationStore.model_validate(load_yaml(workspace.observations))
     observation = observations.observations[0]
+    assert observation.capture_id == first.capture.capture_id
     assert observation.source == "BURP_XML"
     assert observation.source_reference.endswith("#item-0")
     assert observation.authentication.observed_type == "mixed"

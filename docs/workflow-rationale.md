@@ -24,6 +24,7 @@ Three constraints shape the architecture:
 |---|---|---|---|
 | Setup | Researcher-entered scope and labels | `target.yaml`, scope docs, capture layout | Makes authorization and account ownership explicit before analysis. |
 | Ingestion | Local passive artifact | Redacted derivative and `OBS-*` facts | Removes stored values while retaining method, host, path, field names, status, actor, channel, and provenance. |
+| Session context | Redacted observations plus minimal researcher context | Stable `CAP-*` registry, intent evidence, relevance, quality | Preserves business intent without coupling it to raw source parsing or treating it as causal proof. |
 | Classification | Observations plus policy | Traffic role and disposition | Keeps static, telemetry, analytics, and third-party noise auditable without promoting it. |
 | Normalization | Classified observations | Stable `EP-*` endpoint families | Groups only strongly supported identifiers so hypotheses target semantic routes instead of individual instances. |
 | Modeling | Endpoints plus configured labels | Actors, resources, operation maps, trust-boundary views | Converts route structure into reviewable domain language while marking ownership and roles unconfirmed. |
@@ -36,14 +37,21 @@ Three constraints shape the architecture:
 | Validation | Plan, evidence, endpoints, target policy | Skeptical disposition and missing requirements | Tries to disprove or downgrade the claim before a report can exist. |
 | Reporting | Current confirmed validation | Immutable Markdown revision | Prevents stale or unvalidated narratives from becoming reports and preserves report history. |
 
-Interactive setup may hand off directly to the ingestion wizard when unassigned HAR files are
+Interactive setup may hand off directly to the ingestion wizard when unassigned HAR or Burp files are
 already available. This is a user-interface shortcut, not a collapsed stage boundary: ingestion
-still requires an explicit actor and channel for every file, writes redacted observations, and
+still confirms actor, capture mode, intent, and channel, writes redacted observations, and
 offers downstream analysis as a separate reviewed choice. An empty capture directory produces an
 explicit add-and-rescan or skip decision instead of silently advancing. Setup then offers actor
 authentication as the next independent step only for actors that remain incomplete. When ingestion
 makes every authenticated actor `READY`, setup reports that state and suppresses the redundant
 prompt. Non-interactive setup skips both prompts and does not import captures.
+
+Capture context is applied after generic source parsing. `NORMAL_BEHAVIOR` primary/supporting
+observations may support ordinary workflows and ownership. `RESEARCHER_PROBE` and `MIXED` traffic
+is retained for replay and comparison evidence but cannot establish a natural workflow, ownership
+baseline, or passive baseline hypothesis. Capture membership and confirmed intent are supporting
+context only; hard causality still requires typed producer-consumer evidence and compatible
+actor/session/capture boundaries.
 
 ## Precision-First Workflow Evidence
 

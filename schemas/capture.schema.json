@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finsec-hunt.local/schemas/capture.schema.json",
+  "title": "FinSec Hunt Session Capture Store",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "captures"],
+  "properties": {
+    "version": {"const": 1},
+    "captures": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/capture"}
+    }
+  },
+  "$defs": {
+    "metadataSource": {
+      "enum": ["ENGINE_INFERRED", "USER_CONFIRMED", "USER_SUPPLIED", "UNKNOWN"]
+    },
+    "confidence": {"enum": ["LOW", "MEDIUM", "HIGH"]},
+    "captureMode": {
+      "enum": ["NORMAL_BEHAVIOR", "RESEARCHER_PROBE", "AUTHENTICATION", "MIXED", "UNKNOWN"]
+    },
+    "relevance": {
+      "enum": ["PRIMARY", "SUPPORTING", "CONTEXT", "NOISE", "UNKNOWN"]
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "file", "fingerprint"],
+      "properties": {
+        "type": {"enum": ["HAR", "BURP_XML", "CAIDO_JSON", "LEGACY"]},
+        "file": {"type": "string", "minLength": 1},
+        "fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "redacted_reference": {"type": ["string", "null"]}
+      }
+    },
+    "intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "action", "resource_type", "confidence", "source"],
+      "properties": {
+        "label": {"type": "string", "minLength": 1},
+        "action": {"type": "string", "minLength": 1},
+        "resource_type": {"type": "string", "minLength": 1},
+        "confidence": {"$ref": "#/$defs/confidence"},
+        "source": {"$ref": "#/$defs/metadataSource"}
+      }
+    },
+    "intentInference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["proposed_action", "proposed_resource", "confidence", "evidence"],
+      "properties": {
+        "proposed_action": {"type": "string", "minLength": 1},
+        "proposed_resource": {"type": "string", "minLength": 1},
+        "confidence": {"$ref": "#/$defs/confidence"},
+        "evidence": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observations",
+        "first_party",
+        "state_changing",
+        "primary",
+        "supporting",
+        "context",
+        "noise",
+        "unknown"
+      ],
+      "properties": {
+        "observations": {"type": "integer", "minimum": 0},
+        "first_party": {"type": "integer", "minimum": 0},
+        "state_changing": {"type": "integer", "minimum": 0},
+        "primary": {"type": "integer", "minimum": 0},
+        "supporting": {"type": "integer", "minimum": 0},
+        "context": {"type": "integer", "minimum": 0},
+        "noise": {"type": "integer", "minimum": 0},
+        "unknown": {"type": "integer", "minimum": 0}
+      }
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["labels", "evidence"],
+      "properties": {
+        "labels": {
+          "type": "array",
+          "items": {
+            "enum": ["FOCUSED", "BROAD", "MIXED", "LOW_SIGNAL", "AUTH_HEAVY", "MULTI_INTENT"]
+          }
+        },
+        "evidence": {"type": "array", "items": {"type": "string"}},
+        "recommendation": {"type": ["string", "null"]}
+      }
+    },
+    "capture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capture_id",
+        "source",
+        "actor_id",
+        "actor_source",
+        "actor_confidence",
+        "actor_evidence",
+        "capture_mode",
+        "capture_mode_source",
+        "intent",
+        "intent_inference",
+        "notes",
+        "observation_ids",
+        "observation_relevance",
+        "counts",
+        "quality",
+        "warnings",
+        "legacy"
+      ],
+      "properties": {
+        "capture_id": {"type": "string", "pattern": "^CAP-[A-Z0-9-]{8,32}$"},
+        "source": {"$ref": "#/$defs/source"},
+        "actor_id": {"type": "string", "minLength": 1},
+        "actor_source": {"$ref": "#/$defs/metadataSource"},
+        "actor_confidence": {"$ref": "#/$defs/confidence"},
+        "actor_evidence": {"type": "array", "items": {"type": "string"}},
+        "capture_mode": {"$ref": "#/$defs/captureMode"},
+        "capture_mode_source": {"$ref": "#/$defs/metadataSource"},
+        "intent": {"$ref": "#/$defs/intent"},
+        "intent_inference": {"$ref": "#/$defs/intentInference"},
+        "started_at": {"type": ["string", "null"], "format": "date-time"},
+        "ended_at": {"type": ["string", "null"], "format": "date-time"},
+        "notes": {"type": "array", "items": {"type": "string"}},
+        "observation_ids": {"type": "array", "items": {"type": "string"}},
+        "observation_relevance": {
+          "type": "object",
+          "additionalProperties": {"$ref": "#/$defs/relevance"}
+        },
+        "counts": {"$ref": "#/$defs/counts"},
+        "quality": {"$ref": "#/$defs/quality"},
+        "warnings": {"type": "array", "items": {"type": "string"}},
+        "legacy": {"type": "boolean"}
+      }
+    }
+  }
+}

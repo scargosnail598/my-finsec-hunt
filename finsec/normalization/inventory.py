@@ -9,6 +9,11 @@ from typing import Any, cast
 
 from pydantic import ValidationError
 
+from finsec.captures.domain import (
+    observation_supports_ownership_baseline,
+    observation_supports_passive_baseline,
+)
+from finsec.captures.service import refresh_capture_analysis
 from finsec.config.models import EndpointSideEffectRule, TargetDocument
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
@@ -568,7 +573,10 @@ def _response_object_access_evidence(
         dict[tuple[str, str, str, str], set[str]],
     ] = {}
     for observation in observations:
-        if observation.actor not in controlled_actors:
+        if (
+            observation.actor not in controlled_actors
+            or not observation_supports_ownership_baseline(observation)
+        ):
             continue
         response = _response_json(workspace, observation, cache)
         if response is None:
@@ -759,6 +767,8 @@ def _path_scope_evidence(
         authenticated_observations = 0
         successful_json_observations = 0
         for observation in observations:
+            if not observation_supports_ownership_baseline(observation):
+                continue
             account = controlled_accounts.get(observation.actor)
             if (
                 account is None
@@ -1279,6 +1289,14 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
                 relevance_reasons=relevance_reasons,
                 disposition=endpoint_disposition(classification, target),
                 observed_by=sorted({item.actor for item in observations}),
+                baseline_observed_by=sorted(
+                    {
+                        item.actor
+                        for item in observations
+                        if observation_supports_passive_baseline(item)
+                    }
+                ),
+                capture_modes=sorted({item.capture_mode for item in observations}),
                 sources=sorted(item.id for item in observations),
                 confidence=confidence,
                 normalization=NormalizationEvidence(
@@ -1291,7 +1309,9 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
     store = EndpointStore(endpoints=endpoints)
     document = store.model_dump(mode="json", exclude_none=True)
     write_yaml(workspace.endpoints, document)
-    fingerprint = inventory_source_fingerprint(target, observation_store)
+    refresh_capture_analysis(workspace)
+    refreshed_observations = ObservationStore.model_validate(load_yaml(workspace.observations))
+    fingerprint = inventory_source_fingerprint(target, refreshed_observations)
     for stage in ("classify", "normalize"):
         record_stage_provenance(
             workspace,

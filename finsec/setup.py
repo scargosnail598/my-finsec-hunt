@@ -431,30 +431,36 @@ def _scope_documents(config: SetupConfig) -> dict[str, str]:
 
 def _capture_readme() -> str:
     return (
-        "# HAR Capture Directory\n\n"
-        "Place authorized HAR files in `incoming/`; originals stay outside the workspace.\n\n"
+        "# Session Capture Directory\n\n"
+        "Place authorized HAR or Burp XML files in `incoming/`; originals stay outside the "
+        "workspace.\n\n"
         "Recommended structure:\n\n"
         "- `01-account-a-login.har`\n"
-        "- `02-account-a-profile.har`\n"
-        "- `03-account-a-payments.har`\n"
-        "- `04-account-b-payments.har`\n\n"
+        "- `02-account-a-create-dns.har`\n"
+        "- `03-account-b-create-dns.xml`\n"
+        "- `04-account-b-probe-account-a-dns.har`\n\n"
         "Recommended capture rules:\n\n"
-        "- One account per HAR\n"
-        "- One workflow per HAR\n"
+        "- One controlled actor per capture\n"
+        "- One primary business journey per capture\n"
+        "- Record normal behavior before security probes\n"
+        "- Keep researcher probes separate from baseline traffic\n"
         "- Prefer Fetch/XHR traffic\n"
-        "- Remove unrelated traffic and personal data\n"
-        "- Do not commit HAR files\n"
+        "- Broad captures are accepted but produce quality warnings\n"
+        "- Remove personal data and review unrelated traffic\n"
+        "- Do not commit capture files\n"
         "- Keep credential-bearing originals outside the repository\n"
         "- Review files before ingestion\n\n"
-        "Actor and channel assignments are security-relevant metadata. Correcting an assignment "
-        "and rerunning keeps stable observation IDs while refreshing those labels.\n\n"
+        "Actor, capture mode, high-level intent, and channel are security-relevant metadata. "
+        "Correcting an assignment and rerunning keeps stable observation IDs while refreshing "
+        "those labels.\n\n"
         "`workflow.yaml` starts with `captures: []` because the tool cannot safely infer an actor "
-        "or channel from a filename. Assign and import new files with:\n\n"
+        "or trust a filename as capture intent. Assign and import new files with:\n\n"
         "```bash\n"
         "hunt ingest-wizard --workspace workspaces/<slug>\n"
         "```\n\n"
-        "The wizard can update actor authentication from a reviewed HAR candidate and offers to "
-        "run the passive offline workflow. It never sends target requests.\n"
+        "The wizard proposes actor, mode, and intent from credential-free HTTP structure, asks "
+        "only for missing confirmation, can update authentication from a reviewed candidate, and "
+        "offers to run the passive offline workflow. It never sends target requests.\n"
     )
 
 
@@ -916,7 +922,7 @@ def _print_summary(
         ("Project", config.target.target.name),
         ("Slug", config.slug),
         ("Workspace", str(workspace)),
-        ("HAR input", str(capture / "incoming")),
+        ("Capture input", str(capture / "incoming")),
         ("Scope hosts", ", ".join(config.target.scope.hosts)),
         ("Target URL", config.target.target.base_url or "not configured"),
         (
@@ -1019,18 +1025,19 @@ def _print_completion(console: Console, result: SetupResult) -> None:
     incoming = result.capture_root / "incoming"
     console.print("\n[bold green]Workspace setup completed.[/bold green]")
     console.print(f"\nWorkspace:\n{workspace}")
-    console.print(f"\nHAR input directory:\n{incoming}")
+    console.print(f"\nCapture input directory:\n{incoming}")
     console.print(
         "\nRecommended naming:\n\n"
         "01-account-a-login.har\n"
-        "02-account-a-payments.har\n"
-        "03-account-b-payments.har"
+        "02-account-a-create-dns.har\n"
+        "03-account-b-create-dns.xml"
     )
     console.print(
         "\nNext steps:\n\n"
-        "1. Export an authorized actor HAR and keep the original out of Git.\n"
+        "1. Export one authorized, focused HAR or Burp XML journey and keep the original out of "
+        "Git.\n"
         f"2. Place it in {incoming}.\n"
-        "3. Setup will offer to assign existing HARs or pause while you add and rescan.\n"
+        "3. Setup will offer to assign existing captures or pause while you add and rescan.\n"
         "4. To import files added later, run:\n"
         f"   hunt ingest-wizard --workspace {workspace}\n"
         "5. If the wizard did not run analysis, start the offline workflow:\n"

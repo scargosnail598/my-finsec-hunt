@@ -23,6 +23,19 @@
     "source": {"enum": ["HAR", "BURP_XML", "CAIDO_JSON", "OPENAPI"]},
     "source_reference": {"type": "string"},
     "source_fingerprint": {"type": "string"},
+    "capture_id": {
+      "type": ["string", "null"],
+      "pattern": "^CAP-[A-Z0-9-]{8,32}$"
+    },
+    "capture_identity": {"type": ["string", "null"]},
+    "capture_mode": {
+      "enum": ["NORMAL_BEHAVIOR", "RESEARCHER_PROBE", "AUTHENTICATION", "MIXED", "UNKNOWN"]
+    },
+    "capture_relevance": {
+      "enum": ["PRIMARY", "SUPPORTING", "CONTEXT", "NOISE", "UNKNOWN"]
+    },
+    "session_identity": {"type": ["string", "null"]},
+    "sequence_position": {"type": ["integer", "null"], "minimum": 0},
     "actor": {"type": "string"},
     "channel": {"enum": ["WEB", "MOBILE", "PARTNER_API", "PUBLIC_API", "UNKNOWN"]},
     "host": {"type": "string", "minLength": 1},

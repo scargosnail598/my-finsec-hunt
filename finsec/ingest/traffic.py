@@ -11,6 +11,8 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
 
+from finsec.captures.domain import CaptureAssignment, CaptureSourceType
+from finsec.captures.service import associate_capture
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
 from finsec.ingest.common import (
@@ -178,6 +180,7 @@ def ingest_burp_xml(
     capture_auth: bool = False,
     auth_candidate: int | None = None,
     auth_observed_renewal: bool = False,
+    capture_assignment: CaptureAssignment | None = None,
 ) -> PassiveIngestResult:
     """Import Burp XML history without retaining unredacted request or response data."""
 
@@ -265,14 +268,24 @@ def ingest_burp_xml(
         )
         authentication_status = authentication.status
         credential_profile_ref = authentication.profile_ref
+    capture = associate_capture(
+        workspace,
+        source_type=CaptureSourceType.BURP_XML,
+        source_file=document.path,
+        source_fingerprint=document.digest,
+        redacted_capture=capture_path,
+        actor_id=actor,
+        assignment=capture_assignment,
+    )
     return PassiveIngestResult(
-        imported,
-        skipped,
-        relabeled,
-        total,
-        capture_path,
-        authentication_status,
-        credential_profile_ref,
+        imported=imported,
+        skipped=skipped,
+        relabeled=relabeled,
+        total=total,
+        redacted_capture=capture_path,
+        authentication_status=authentication_status,
+        credential_profile_ref=credential_profile_ref,
+        capture=capture,
     )
 
 
@@ -333,6 +346,8 @@ def ingest_caido_json(
     workspace: WorkspacePaths,
     actor: str = "UNKNOWN",
     channel: ChannelType = "UNKNOWN",
+    *,
+    capture_assignment: CaptureAssignment | None = None,
 ) -> PassiveIngestResult:
     """Import a bounded Caido-style JSON exchange without retaining secrets."""
 
@@ -401,4 +416,20 @@ def ingest_caido_json(
         )
     write_redacted_json(capture_path, document)
     imported, skipped, relabeled, total = append_observations(workspace, drafts)
-    return PassiveIngestResult(imported, skipped, relabeled, total, capture_path)
+    capture = associate_capture(
+        workspace,
+        source_type=CaptureSourceType.CAIDO_JSON,
+        source_file=path,
+        source_fingerprint=digest,
+        redacted_capture=capture_path,
+        actor_id=actor,
+        assignment=capture_assignment,
+    )
+    return PassiveIngestResult(
+        imported=imported,
+        skipped=skipped,
+        relabeled=relabeled,
+        total=total,
+        redacted_capture=capture_path,
+        capture=capture,
+    )

@@ -265,11 +265,15 @@ Hypothesis gates accept scores from 0 to 10. Parent-scope ownership inference is
 explicitly trusted parameters may use authenticated, successful, non-empty controlled baselines.
 The public/shared list takes precedence, and response-body ownership evidence remains stronger.
 
-## 5. Prepare Passive Captures
+## 5. Prepare Session Captures
 
-Export authorized HAR files and keep the originals outside the repository. When using
-`--capture-auth`, the source may contain the selected actor session; FinSec Hunt stores the secret
-components outside the workspace and writes only a redacted HAR derivative. Place input files in:
+A Session Capture is one researcher-observed application journey with lightweight context: actor,
+capture mode, and high-level intent. HAR and Burp parsing remains generic; the context is associated
+with redacted observations afterward and used as a soft prior during deterministic reconstruction.
+
+Export authorized HAR or Burp XML files and keep originals outside the repository. When using
+`--capture-auth`, the source may contain the selected actor session; FinSec Hunt stores secret
+components outside the workspace and writes only a redacted derivative. Place input files in:
 
 ```text
 captures/<slug>/incoming/
@@ -277,18 +281,23 @@ captures/<slug>/incoming/
 
 Recommended practice:
 
-- Use one account and one coherent workflow per HAR.
+- Use one controlled actor and one primary business journey per capture.
+- Record normal behavior first and keep researcher probes in separate files.
 - Prefer Fetch/XHR traffic when possible.
-- Remove unrelated browsing and third-party noise before import.
+- Stop after observing the authoritative result of the journey.
 - Keep original captures outside the repository.
 - Review every file for credentials and personal data.
 
+A good DNS capture is: open a domain, list records, create one record, read the result, stop. A
+broad capture that mixes login, CDN, billing, DNS, IAM, profile changes, and server deletion is
+still accepted, but it will be marked `BROAD` or `MULTI_INTENT` and provide weaker reconstruction.
+
 For a normal first run:
 
-1. Copy each sanitized `.har` file into `captures/<slug>/incoming/`.
+1. Copy each sanitized `.har` or Burp `.xml` file into `captures/<slug>/incoming/`.
 2. Open `captures/<slug>/workflow.yaml`.
-3. Add one entry per HAR using a configured account label, `ANONYMOUS`, or `UNKNOWN`.
-4. Set the channel that actually produced the traffic.
+3. Add one entry per capture using a configured account label, `ANONYMOUS`, or `UNKNOWN`.
+4. Set its channel, capture mode, and high-level intent.
 5. Save the file and continue with `hunt workflow` in the next section.
 
 Alternatively, let the interactive importer discover files that are not yet assigned:
@@ -297,10 +306,10 @@ Alternatively, let the interactive importer discover files that are not yet assi
 hunt ingest-wizard --workspace workspaces/<slug>
 ```
 
-The wizard scans `captures/<slug>/incoming/`, asks for the actual actor and channel for every new
-HAR, recommends a redacted request containing the freshest usable authentication, optionally
-updates that actor's stored credential, imports the observations, and merges successful assignments
-into `workflow.yaml`. Add more HAR files later and run the same command again. Use
+The wizard scans `captures/<slug>/incoming/`, proposes actor, mode, and explainable intent, and asks
+only for missing confirmation. It can recommend a redacted authentication request, optionally
+update the actor credential, import observations, and merge assignments into `workflow.yaml`. Add
+more files later and run the same command again. Use
 `--include-assigned` only when deliberately relabeling or renewing from an existing manifest entry.
 
 Assign every imported HAR in `captures/<slug>/workflow.yaml`:
@@ -311,12 +320,24 @@ captures:
   - file: 01-account-a-profile.har
     actor: ACCOUNT_A
     channel: WEB
-  - file: 02-account-b-profile.har
+    capture_mode: NORMAL_BEHAVIOR
+    intent:
+      action: READ
+      resource_type: profile
+  - file: 02-account-b-create-dns.xml
     actor: ACCOUNT_B
     channel: WEB
-  - file: 03-account-a-mobile.har
-    actor: ACCOUNT_A
-    channel: MOBILE
+    capture_mode: NORMAL_BEHAVIOR
+    intent:
+      action: CREATE
+      resource_type: dns_record
+  - file: 03-account-b-probe-account-a-dns.har
+    actor: ACCOUNT_B
+    channel: WEB
+    capture_mode: RESEARCHER_PROBE
+    intent:
+      action: READ
+      resource_type: dns_record
 ```
 
 Valid manifest channels are `WEB`, `MOBILE`, `API`, `PARTNER_API`, `PUBLIC_API`, and `UNKNOWN`.
@@ -325,6 +346,30 @@ Valid manifest channels are `WEB`, `MOBILE`, `API`, `PARTNER_API`, `PUBLIC_API`,
 The manifest accepts filenames only, never directories, so each source resolves beneath the
 manifest's `incoming/` directory. Actors must be configured account labels, `ANONYMOUS`, or
 `UNKNOWN`.
+
+Inspect the persisted registry and inference evidence before modeling:
+
+```bash
+hunt captures -w workspaces/<slug>
+hunt captures --explain CAP-12AB34CD56EF -w workspaces/<slug>
+```
+
+`NORMAL_BEHAVIOR` primary/supporting observations may contribute to workflows, lifecycle, and
+ownership. `RESEARCHER_PROBE` and `MIXED` observations remain available for replay/comparison
+evidence but are excluded from normal ownership and workflow baselines. `AUTHENTICATION` is kept
+out of ordinary workflow reconstruction. Explicit new `UNKNOWN` captures cannot establish new
+ownership claims; legacy unlinked observations retain historical behavior. Capture intent never
+creates causality by itself, and cross-capture hard links still require typed identity evidence.
+
+Direct imports accept the same minimal context:
+
+```bash
+hunt ingest account-a-create-dns.har -w workspaces/<slug> \
+  --actor ACCOUNT_A --channel WEB --capture-mode NORMAL_BEHAVIOR \
+  --intent-action CREATE --intent-resource dns_record
+```
+
+See [session-captures.md](session-captures.md) for the complete model and mode semantics.
 
 ## 6. Run The Offline Workflow
 

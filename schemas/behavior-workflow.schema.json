@@ -39,6 +39,12 @@
         "required_looking_steps": {"type": "array", "items": {"type": "string"}},
         "branch_points": {"type": "array", "items": {"type": "string"}},
         "actors": {"type": "array", "items": {"type": "string"}},
+        "capture_modes": {
+          "type": "array",
+          "items": {
+            "enum": ["NORMAL_BEHAVIOR", "RESEARCHER_PROBE", "AUTHENTICATION", "MIXED", "UNKNOWN"]
+          }
+        },
         "resource_types": {"type": "array", "items": {"type": "string"}},
         "transition_frequencies": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 1}},
         "outcome_distribution": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 1}},

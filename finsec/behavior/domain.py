@@ -5,6 +5,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from finsec.captures.domain import CaptureMode, CaptureRelevance
 from finsec.hypotheses.contracts import (
     BindingType,
     ClaimStrengthAssessment,
@@ -443,6 +444,9 @@ class ResourceInstance(BehaviorModel):
     reference: str
     observations: list[str] = Field(default_factory=list)
     actors: list[str] = Field(default_factory=list)
+    capture_modes: list[CaptureMode] = Field(default_factory=list)
+    normal_behavior_observations: list[str] = Field(default_factory=list)
+    probe_observations: list[str] = Field(default_factory=list)
     relationships: list[ResourceRelationship] = Field(default_factory=list)
     confidence: InferenceConfidence
     epistemic_status: Literal[EpistemicStatus.OBSERVED_FACT] = EpistemicStatus.OBSERVED_FACT
@@ -487,12 +491,14 @@ class PropagationLink(BehaviorModel):
     source_actor: str | None = None
     source_session: str | None = None
     source_capture: str | None = None
+    source_capture_mode: CaptureMode = CaptureMode.UNKNOWN
     source_host: str | None = None
     destination_observation_id: str
     destination_field: str
     destination_actor: str | None = None
     destination_session: str | None = None
     destination_capture: str | None = None
+    destination_capture_mode: CaptureMode = CaptureMode.UNKNOWN
     destination_host: str | None = None
     temporal_order_known: bool = False
     capture_continuity: bool = False
@@ -540,6 +546,9 @@ class WorkflowStep(BehaviorModel):
     action_id: str
     action_name: str
     observation_id: str
+    capture_id: str | None = None
+    capture_mode: CaptureMode = CaptureMode.UNKNOWN
+    capture_relevance: CaptureRelevance = CaptureRelevance.UNKNOWN
     endpoint_ids: list[str] = Field(default_factory=list)
     actor: str
     method: str = "UNKNOWN"
@@ -566,6 +575,7 @@ class WorkflowInstance(BehaviorModel):
     actors: list[str] = Field(default_factory=list)
     sessions: list[str] = Field(default_factory=list)
     captures: list[str] = Field(default_factory=list)
+    capture_modes: list[CaptureMode] = Field(default_factory=list)
     resource_instance_ids: list[str] = Field(default_factory=list)
     resource_types: list[str] = Field(default_factory=list)
     steps: list[WorkflowStep] = Field(default_factory=list)
@@ -641,6 +651,7 @@ class WorkflowFamily(BehaviorModel):
     required_looking_steps: list[str] = Field(default_factory=list)
     branch_points: list[str] = Field(default_factory=list)
     actors: list[str] = Field(default_factory=list)
+    capture_modes: list[CaptureMode] = Field(default_factory=list)
     resource_types: list[str] = Field(default_factory=list)
     transition_frequencies: dict[str, int] = Field(default_factory=dict)
     outcome_distribution: dict[str, int] = Field(default_factory=dict)

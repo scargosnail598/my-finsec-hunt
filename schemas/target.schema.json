@@ -115,6 +115,18 @@
         "real_user_testing": {"type": "boolean"}
       }
     },
+    "capture_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "preferred_style": {"const": "focused_journey"},
+        "default_mode": {
+          "enum": ["NORMAL_BEHAVIOR", "RESEARCHER_PROBE", "AUTHENTICATION", "MIXED", "UNKNOWN"]
+        },
+        "require_actor_resolution": {"type": "boolean"},
+        "infer_intent": {"type": "boolean"}
+      }
+    },
     "focus": {
       "type": "array",
       "items": {

@@ -166,6 +166,7 @@ FinSec Hunt maintains a clean physical separation between codebase modules, targ
 my-finsec-hunt/
 ├── finsec/                            # Core Python Package (Python 3.12+)
 │   ├── auth/                          # Authentication, secret resolution, & JWT handling
+│   ├── captures/                      # Session context, intent, relevance, & persistence
 │   ├── config/                        # Workspace paths, target document models, & scope logic
 │   ├── evidence/                      # Evidence package management & artifact indexing
 │   ├── execution/                     # Bounded HTTP execution runner & policy engine
@@ -200,6 +201,8 @@ my-finsec-hunt/
 │       │   ├── raw/                   # Redacted JSON capture derivatives
 │       │   └── normalized/
 │       │       └── observations.yaml  # Fact ObservationStore (OBS-xxxxxx)
+│       ├── captures/
+│       │   └── captures.yaml          # Session Capture registry (CAP-xxxxxxxxxxxx)
 │       ├── api/
 │       │   └── endpoints.yaml         # Normalized EndpointStore (EP-xxx)
 │       ├── model/                     # Derived domain architecture & invariants
@@ -257,7 +260,18 @@ EndpointDisposition = Literal[
 ChannelType = Literal["WEB", "MOBILE", "PARTNER_API", "PUBLIC_API", "UNKNOWN"]
 ObservationSource = Literal["HAR", "BURP_XML", "CAIDO_JSON", "OPENAPI"]
 KnowledgeStatus = Literal["OBSERVED", "INFERRED", "ASSUMED"]
+CaptureMode = Literal["NORMAL_BEHAVIOR", "RESEARCHER_PROBE", "AUTHENTICATION", "MIXED", "UNKNOWN"]
+CaptureRelevance = Literal["PRIMARY", "SUPPORTING", "CONTEXT", "NOISE", "UNKNOWN"]
+MetadataSource = Literal["ENGINE_INFERRED", "USER_CONFIRMED", "USER_SUPPLIED", "UNKNOWN"]
 ```
+
+### 3.3 Session Capture Context
+
+`finsec/captures/` associates one stable `CAP-*` entity with observations after generic source
+parsing. A capture persists source fingerprint/reference, actor and provenance, mode, confirmed or
+inferred intent, explainable inference evidence, observation relevance, quality labels, counts,
+and warnings. It never stores raw credentials. Intent is contextual evidence, not proof that every
+request belongs to one workflow.
 
 ---
 
@@ -280,9 +294,11 @@ KnowledgeStatus = Literal["OBSERVED", "INFERRED", "ASSUMED"]
 - **Operation**: Extracts session headers/cookies from captures, securely persists them in `.finsec-secrets/<slug>.json` with `0600` permissions, and updates actor profile references in `target.yaml`.
 
 ### Stage 3: Passive Multi-Format Capture Ingestion
-- **Module**: `finsec/ingest/har.py`, `traffic.py`, `openapi.py`
-- **CLI**: `hunt ingest`, `hunt ingest-burp`, `hunt ingest-caido`, `hunt ingest-openapi`
-- **Operation**: Parses input files, redacts sensitive headers/values, generates a redacted JSON capture under `observations/raw/`, and appends factual `Observation` entries (`OBS-xxxxxx`) to `observations.yaml`.
+- **Module**: `finsec/ingest/har.py`, `traffic.py`, `openapi.py`, then `finsec/captures/`
+- **CLI**: `hunt ingest`, `hunt ingest-burp`, `hunt ingest-caido`, `hunt ingest-openapi`, `hunt ingest-wizard`
+- **Operation**: Source adapters parse and redact independently, append factual `Observation`
+  entries, then the source-independent capture layer associates stable `CAP-*` context. The wizard
+  asks for only actor, mode, and high-level intent when deterministic proposals need confirmation.
 
 ### Stage 4: Traffic Classification & Noise Suppression
 - **Module**: `finsec/normalization/classification.py`
@@ -471,11 +487,12 @@ The validator (`finsec/validation/validator.py`) evaluates 15 deterministic chec
 | `hunt workspace clear` | none | Clear the configured default and return to automatic discovery. |
 | `hunt status` | `-w <workspace>` | Show concise canonical readiness, actor dimensions, blockers, and next actions. |
 | `hunt status --json` | `-w <workspace>` | Emit the complete canonical `ReadinessReport` for automation and adapter parity. |
-| `hunt ingest` | `<file.har> -w <workspace> --actor <actor> --channel <channel> [--capture-auth]` | Ingest HAR capture with optional credential extraction. |
-| `hunt ingest-burp` | `<file.xml> -w <workspace> --actor <actor> --channel <channel> [--capture-auth]` | Ingest Burp XML history file. |
+| `hunt ingest` | `<file.har> -w <workspace> --actor <actor> --capture-mode <mode> [--intent-action <action> --intent-resource <type>]` | Ingest HAR observations and associate session context. |
+| `hunt ingest-burp` | `<file.xml> -w <workspace> --actor <actor> --capture-mode <mode> [--intent-action <action> --intent-resource <type>]` | Ingest Burp observations with the same capture semantics. |
 | `hunt ingest-caido` | `<file.json> -w <workspace> --actor <actor> --channel <channel>` | Ingest Caido JSON export. |
 | `hunt ingest-openapi` | `<file.yaml> -w <workspace> [--base-url <url>]` | Ingest OpenAPI specification document. |
-| `hunt ingest-wizard` | `-w <workspace>` | Interactive wizard to assign actor/channel to incoming captures. |
+| `hunt ingest-wizard` | `-w <workspace>` | Propose and confirm actor, mode, intent, channel, and optional auth for incoming HAR/Burp captures. |
+| `hunt captures` | `-w <workspace> [--explain <CAP-ID>]` | List captures or explain provenance, relevance, quality, and warnings. |
 | `hunt workflow` | `-w <workspace> [--manifest <path>] [--no-ingest]` | Run full passive offline analysis pipeline. |
 | `hunt workflows build` | `-w <workspace>` | Reconstruct deterministic workflow instances, families, states, transitions, and graphs. |
 | `hunt workflows list/show/explain` | `<WFAM-ID> -w <workspace>` | Inspect a workflow family and its evidence basis. |

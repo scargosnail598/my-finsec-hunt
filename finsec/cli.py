@@ -45,6 +45,19 @@ from finsec.behavior.reconstruction import (
     load_workflow_instances,
 )
 from finsec.behavior.rendering import render_graph
+from finsec.captures.analysis import resource_family
+from finsec.captures.domain import (
+    Capture,
+    CaptureAssignment,
+    CaptureConfidence,
+    CaptureIntent,
+    CaptureMode,
+    CaptureRelevance,
+    CaptureSourceType,
+    MetadataSource,
+)
+from finsec.captures.preview import CapturePreview, preview_capture
+from finsec.captures.service import find_capture, list_captures
 from finsec.config.models import TargetDocument
 from finsec.config.workspace import (
     CaptureDeletionTarget,
@@ -81,7 +94,7 @@ from finsec.ingest.openapi import ingest_openapi
 from finsec.ingest.traffic import ingest_burp_xml, ingest_caido_json
 from finsec.modeling.generator import generate_model
 from finsec.modeling.invariants import generate_invariants
-from finsec.modeling.models import ChannelType, EndpointStore
+from finsec.modeling.models import ChannelType, EndpointStore, ObservationStore
 from finsec.normalization.inventory import build_inventory
 from finsec.readiness.resolver import resolve_workspace_readiness
 from finsec.recon.graphql import ingest_graphql
@@ -891,10 +904,12 @@ def workflow_command(
 
 
 @dataclass(frozen=True)
-class _InteractiveHarImport:
+class _InteractiveCaptureImport:
     path: Path
+    source_type: CaptureSourceType
     actor: str
     channel: ChannelType
+    assignment: CaptureAssignment
     auth_candidate: int | None = None
     observed_renewal: bool = False
 
@@ -905,7 +920,13 @@ class _IngestWizardContext:
     capture_root: Path
     incoming: Path
     manifest_path: Path
-    har_files: tuple[Path, ...]
+    capture_files: tuple[Path, ...]
+
+    @property
+    def har_files(self) -> tuple[Path, ...]:
+        """Backward-compatible alias retained for setup integrations."""
+
+        return self.capture_files
 
 
 def _print_authentication_recommendation(
@@ -970,15 +991,15 @@ def _resolve_ingest_wizard_context(
     incoming = selected_capture_root / "incoming"
     manifest_path = selected_capture_root / "workflow.yaml"
     if not incoming.is_dir():
-        raise FinsecError(f"HAR input directory not found: {incoming}")
+        raise FinsecError(f"Capture input directory not found: {incoming}")
     manifest = load_workflow_manifest(manifest_path) if manifest_path.is_file() else None
     assigned = {item.file for item in manifest.captures} if manifest is not None else set()
-    har_files = tuple(
+    capture_files = tuple(
         sorted(
             path
             for path in incoming.iterdir()
             if path.is_file()
-            and path.suffix.lower() == ".har"
+            and path.suffix.lower() in {".har", ".xml"}
             and (include_assigned or path.name not in assigned)
         )
     )
@@ -987,7 +1008,7 @@ def _resolve_ingest_wizard_context(
         capture_root=selected_capture_root,
         incoming=incoming,
         manifest_path=manifest_path,
-        har_files=har_files,
+        capture_files=capture_files,
     )
 
 
@@ -1001,10 +1022,10 @@ def _offer_setup_capture_ingestion(result: SetupResult) -> None:
             result.capture_root,
             include_assigned=False,
         )
-        if context.har_files:
+        if context.capture_files:
             break
-        console.print(f"No unassigned HAR files were found in {context.incoming}.")
-        console.print("1. Add authorized, reviewed HAR files and rescan")
+        console.print(f"No unassigned capture files were found in {context.incoming}.")
+        console.print("1. Add authorized, reviewed HAR or Burp XML files and rescan")
         console.print("2. Continue to actor authentication without ingesting")
         choice = str(typer.prompt("Choose the next setup step", default="1")).strip()
         if choice == "2":
@@ -1012,7 +1033,7 @@ def _offer_setup_capture_ingestion(result: SetupResult) -> None:
         if choice != "1":
             console.print("[red]Choose 1 or 2.[/red]")
             continue
-        console.print(f"Place the HAR files in: {context.incoming}")
+        console.print(f"Place the HAR or Burp XML files in: {context.incoming}")
         while True:
             ready = (
                 str(
@@ -1029,10 +1050,10 @@ def _offer_setup_capture_ingestion(result: SetupResult) -> None:
             if ready == "SKIP":
                 return
             console.print("[red]Type RESCAN or SKIP.[/red]")
-    count = len(context.har_files)
+    count = len(context.capture_files)
     console.print(
         f"[bold]Available capture{'s' if count != 1 else ''}:[/bold] "
-        f"{count} unassigned HAR file{'s' if count != 1 else ''}"
+        f"{count} unassigned capture file{'s' if count != 1 else ''}"
     )
     if not typer.confirm("Assign and import available captures now?", default=True):
         return
@@ -1077,6 +1098,356 @@ def _prompt_har_channel(target: TargetDocument, actor_id: str) -> ChannelType:
             console.print(f"[red]{error}[/red]")
 
 
+def _capture_mode(value: str | None) -> CaptureMode:
+    """Normalize a capture-mode CLI value with a concise error."""
+
+    if value is None:
+        return CaptureMode.UNKNOWN
+    try:
+        return CaptureMode(value.strip().upper())
+    except ValueError as error:
+        allowed = ", ".join(item.value for item in CaptureMode)
+        raise FinsecError(f"Capture mode must be one of: {allowed}.") from error
+
+
+def _supplied_intent(action: str | None, resource: str | None) -> CaptureIntent | None:
+    """Build a complete user-supplied intent or reject partial metadata."""
+
+    if action is None and resource is None:
+        return None
+    if action is None or resource is None:
+        raise FinsecError("--intent-action and --intent-resource must be supplied together.")
+    intent = CaptureIntent(
+        label=f"{action}_{resource}",
+        action=action,
+        resource_type=resource,
+        confidence=CaptureConfidence.HIGH,
+        source=MetadataSource.USER_SUPPLIED,
+    )
+    return intent
+
+
+def _direct_capture_assignment(
+    actor: str,
+    mode: str | None,
+    intent_action: str | None,
+    intent_resource: str | None,
+) -> CaptureAssignment:
+    normalized_mode = _capture_mode(mode)
+    return CaptureAssignment(
+        actor_source=(
+            MetadataSource.USER_SUPPLIED if actor != "UNKNOWN" else MetadataSource.UNKNOWN
+        ),
+        actor_confidence=(CaptureConfidence.HIGH if actor != "UNKNOWN" else CaptureConfidence.LOW),
+        actor_evidence=(
+            ["Actor label was supplied via command-line ingestion."] if actor != "UNKNOWN" else []
+        ),
+        capture_mode=normalized_mode,
+        capture_mode_source=(
+            MetadataSource.USER_SUPPLIED if mode is not None else MetadataSource.UNKNOWN
+        ),
+        intent=_supplied_intent(intent_action, intent_resource),
+    )
+
+
+def _intent_text(intent: CaptureIntent) -> str:
+    if intent.action == "UNKNOWN" or intent.resource_type == "unknown":
+        return "UNKNOWN"
+    return f"{intent.action} {intent.resource_type}"
+
+
+def _print_capture_diagnostics(capture: Capture) -> None:
+    """Print a concise, secret-free summary that teaches better capture practice."""
+
+    console.print(f"\n[bold green]Capture {capture.capture_id} ingested.[/bold green]")
+    details = Table(show_header=False, box=None, pad_edge=False)
+    details.add_column("Field")
+    details.add_column("Value")
+    details.add_row(
+        "Actor",
+        f"{capture.actor_id} ({capture.actor_confidence}, {capture.actor_source})",
+    )
+    details.add_row(
+        "Mode",
+        f"{capture.capture_mode} ({capture.capture_mode_source})",
+    )
+    details.add_row(
+        "Intent",
+        f"{_intent_text(capture.intent)} ({capture.intent.source}, {capture.intent.confidence})",
+    )
+    details.add_row("Capture quality", ", ".join(capture.quality.labels) or "UNKNOWN")
+    console.print(details)
+    counts = capture.counts
+    console.print(
+        "Observations: "
+        f"{counts.observations} total, {counts.first_party} first-party, "
+        f"{counts.state_changing} state-changing, "
+        f"{counts.primary} primary, {counts.supporting} supporting, "
+        f"{counts.context} context, {counts.noise} noise"
+    )
+    for warning in capture.warnings:
+        console.print(f"[yellow]Warning:[/yellow] {escape(warning)}")
+    if capture.quality.recommendation:
+        console.print(f"Recommendation: {escape(capture.quality.recommendation)}")
+
+
+def _print_capture_preview(preview: CapturePreview) -> None:
+    console.print(f"\n[bold]Found new capture:[/bold] {escape(preview.path.name)}")
+    console.print(
+        f"  {preview.first_party_requests} first-party requests\n"
+        f"  {preview.state_changing_requests} state-changing requests"
+    )
+    console.print("\n[bold]Detected actor:[/bold]")
+    console.print(f"  {preview.actor_id or 'Unknown'}")
+    console.print(f"  Confidence: {preview.actor_confidence}")
+    console.print("\n[bold]Likely intent:[/bold]")
+    console.print(f"  {_intent_text(preview.intent)}")
+    console.print(f"  Confidence: {preview.intent.confidence}")
+    console.print("\n[bold]Capture mode:[/bold]")
+    console.print(f"  {preview.capture_mode} ({preview.capture_mode_confidence})")
+    if preview.quality.labels:
+        console.print(f"\nCapture quality: {', '.join(preview.quality.labels)}")
+
+
+def _prompt_capture_actor(target: TargetDocument, default: str | None = None) -> str | None:
+    options = list(dict.fromkeys([item.id for item in target.accounts] + ["ANONYMOUS", "UNKNOWN"]))
+    console.print("\nWho performed this capture?")
+    for index, actor in enumerate(options, start=1):
+        console.print(f"{index}. {actor}")
+    console.print(f"{len(options) + 1}. Skip this file")
+    default_value = str(options.index(default) + 1) if default in options else "1"
+    while True:
+        choice = str(typer.prompt("Choose actor", default=default_value)).strip()
+        if choice.isdigit():
+            selected = int(choice)
+            if 1 <= selected <= len(options):
+                return options[selected - 1]
+            if selected == len(options) + 1:
+                return None
+        if choice in options:
+            return choice
+        console.print("[red]Choose one listed actor or number.[/red]")
+
+
+def _prompt_capture_mode(default: CaptureMode) -> CaptureMode:
+    options = [
+        (CaptureMode.NORMAL_BEHAVIOR, "Normal application behavior"),
+        (CaptureMode.RESEARCHER_PROBE, "Researcher security probe"),
+        (CaptureMode.AUTHENTICATION, "Authentication/session setup"),
+        (CaptureMode.MIXED, "Mixed normal and probe activity"),
+        (CaptureMode.UNKNOWN, "Unknown"),
+    ]
+    console.print("\nWhat type of activity is this?")
+    for index, (_mode, label) in enumerate(options, start=1):
+        console.print(f"{index}. {label}")
+    default_index = next(
+        index for index, (mode, _label) in enumerate(options, start=1) if mode == default
+    )
+    while True:
+        choice = str(typer.prompt("Choose activity type", default=str(default_index))).strip()
+        if choice.isdigit() and 1 <= int(choice) <= len(options):
+            return options[int(choice) - 1][0]
+        console.print("[red]Choose a number from 1 to 5.[/red]")
+
+
+def _parse_prompt_intent(value: str, source: MetadataSource) -> CaptureIntent:
+    normalized = value.strip()
+    if not normalized or normalized.upper() == "UNKNOWN":
+        return CaptureIntent(source=source)
+    action, separator, resource = normalized.partition(" ")
+    if not separator or not resource.strip():
+        raise FinsecError("Intent must use 'ACTION resource_type', for example CREATE dns_record.")
+    return CaptureIntent(
+        label=f"{action}_{resource}",
+        action=action,
+        resource_type=resource,
+        confidence=CaptureConfidence.HIGH,
+        source=source,
+    )
+
+
+def _prompt_capture_intent(preview: CapturePreview) -> CaptureIntent:
+    proposed = preview.intent
+    console.print("\nWhat were you mainly doing?")
+    console.print(f"Detected: {_intent_text(proposed)} ({proposed.confidence})")
+    if proposed.action != "UNKNOWN":
+        while True:
+            choice = (
+                str(typer.prompt("Accept, edit, or mark unknown [Y/e/u]", default="Y"))
+                .strip()
+                .lower()
+            )
+            if choice in {"y", "yes"}:
+                return proposed.model_copy(update={"source": MetadataSource.USER_CONFIRMED})
+            if choice in {"u", "unknown"}:
+                return CaptureIntent(source=MetadataSource.USER_SUPPLIED)
+            if choice in {"e", "edit"}:
+                break
+            console.print("[red]Choose Y, e, or u.[/red]")
+    while True:
+        value = str(
+            typer.prompt(
+                "Main intent (ACTION resource_type or UNKNOWN)",
+                default="UNKNOWN",
+            )
+        )
+        try:
+            return _parse_prompt_intent(value, MetadataSource.USER_SUPPLIED)
+        except FinsecError as error:
+            console.print(f"[red]{error}[/red]")
+
+
+def _capture_selection(
+    target: TargetDocument, preview: CapturePreview
+) -> tuple[str, ChannelType, CaptureAssignment] | None:
+    _print_capture_preview(preview)
+    can_accept = preview.actor_id is not None and preview.intent.confidence != CaptureConfidence.LOW
+    if can_accept and typer.confirm("Accept detected metadata?", default=True):
+        actor = preview.actor_id
+        assert actor is not None
+        return (
+            actor,
+            cast(ChannelType, _default_actor_channel(target, actor)),
+            CaptureAssignment(
+                actor_source=MetadataSource.USER_CONFIRMED,
+                actor_confidence=preview.actor_confidence,
+                actor_evidence=[
+                    *preview.actor_evidence,
+                    "Researcher confirmed the detected actor.",
+                ],
+                capture_mode=preview.capture_mode,
+                capture_mode_source=MetadataSource.USER_CONFIRMED,
+                intent=preview.intent.model_copy(update={"source": MetadataSource.USER_CONFIRMED}),
+            ),
+        )
+
+    actor = _prompt_capture_actor(target, preview.actor_id)
+    if actor is None:
+        return None
+    mode = _prompt_capture_mode(preview.capture_mode)
+    intent = _prompt_capture_intent(preview)
+    return (
+        actor,
+        cast(ChannelType, _default_actor_channel(target, actor)),
+        CaptureAssignment(
+            actor_source=MetadataSource.USER_SUPPLIED,
+            actor_confidence=CaptureConfidence.HIGH,
+            actor_evidence=["Researcher selected the actor during ingest-wizard."],
+            capture_mode=mode,
+            capture_mode_source=MetadataSource.USER_SUPPLIED,
+            intent=intent,
+        ),
+    )
+
+
+@app.command("captures")
+def captures_command(
+    workspace: WorkspaceOption = None,
+    explain: Annotated[
+        str | None,
+        typer.Option("--explain", help="Explain one capture ID such as CAP-12AB34CD56EF."),
+    ] = None,
+) -> None:
+    """List session captures or explain one capture's provenance and relevance."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        if explain is None:
+            captures = list_captures(paths)
+            if not captures:
+                console.print("No passive captures are registered in this workspace.")
+                return
+            table = Table("Capture", "Actor", "Mode", "Intent", "Requests", "Quality")
+            table.columns[0].no_wrap = True
+            for capture_row in captures:
+                table.add_row(
+                    capture_row.capture_id,
+                    capture_row.actor_id,
+                    capture_row.capture_mode,
+                    _intent_text(capture_row.intent),
+                    str(capture_row.counts.observations),
+                    ", ".join(capture_row.quality.labels) or "UNKNOWN",
+                )
+            console.print(table)
+            return
+
+        capture = find_capture(paths, explain)
+        if capture is None:
+            raise FinsecError(f"Capture not found: {explain.strip().upper()}")
+        observations = ObservationStore.model_validate(load_yaml(paths.observations))
+    except (FinsecError, OSError, ValidationError) as error:
+        _abort(error)
+
+    details = [
+        f"[bold]Source:[/bold] {escape(capture.source.file)} ({capture.source.type})",
+        f"[bold]Redacted reference:[/bold] "
+        f"{escape(capture.source.redacted_reference or 'not available')}",
+        f"[bold]Actor:[/bold] {escape(capture.actor_id)}",
+        f"[bold]Actor provenance:[/bold] {capture.actor_source} / {capture.actor_confidence}",
+        f"[bold]Mode:[/bold] {capture.capture_mode} ({capture.capture_mode_source})",
+        f"[bold]Intent:[/bold] {_intent_text(capture.intent)}",
+        f"[bold]Intent provenance:[/bold] {capture.intent.source} / {capture.intent.confidence}",
+        f"[bold]Quality:[/bold] {', '.join(capture.quality.labels) or 'UNKNOWN'}",
+        f"[bold]Requests:[/bold] {capture.counts.observations} total; "
+        f"{capture.counts.primary} primary; {capture.counts.supporting} supporting; "
+        f"{capture.counts.context} context; {capture.counts.noise} noise",
+    ]
+    console.print(Panel("\n".join(details), title=capture.capture_id))
+    if capture.actor_evidence:
+        console.print("[bold]Actor evidence[/bold]")
+        for evidence_text in capture.actor_evidence:
+            console.print(f"- {escape(evidence_text)}")
+    if capture.intent_inference.evidence:
+        console.print("[bold]Intent inference evidence[/bold]")
+        for evidence_text in capture.intent_inference.evidence:
+            console.print(f"- {escape(evidence_text)}")
+    by_id = {item.id: item for item in observations.observations}
+    relevant_resources = sorted(
+        {
+            resource_family(by_id[observation_id].path)
+            for observation_id, relevance in capture.observation_relevance.items()
+            if observation_id in by_id
+            and relevance in {CaptureRelevance.PRIMARY, CaptureRelevance.SUPPORTING}
+            and resource_family(by_id[observation_id].path) != "unknown"
+        }
+    )
+    if relevant_resources:
+        console.print(f"[bold]Relevant resources:[/bold] {', '.join(relevant_resources)}")
+    important = [
+        by_id[observation_id]
+        for observation_id, relevance in capture.observation_relevance.items()
+        if observation_id in by_id
+        and relevance in {CaptureRelevance.PRIMARY, CaptureRelevance.SUPPORTING}
+    ]
+    if important:
+        console.print("[bold]Likely journey observations[/bold]")
+        for observation in sorted(
+            important,
+            key=lambda item: (
+                item.sequence_position if item.sequence_position is not None else 10**9,
+                item.id,
+            ),
+        ):
+            relevance = capture.observation_relevance[observation.id]
+            console.print(
+                f"- {observation.id} [{relevance}] {observation.method} "
+                f"{escape(observation.path)} -> {observation.status_code or 'unknown'}"
+            )
+    state_changing = [
+        item for item in important if item.method in {"POST", "PUT", "PATCH", "DELETE"}
+    ]
+    if state_changing:
+        console.print("[bold]Key state-changing observations[/bold]")
+        for observation in state_changing:
+            console.print(f"- {observation.id} {observation.method} {escape(observation.path)}")
+    if capture.quality.evidence:
+        console.print("[bold]Quality evidence[/bold]")
+        for evidence_text in capture.quality.evidence:
+            console.print(f"- {escape(evidence_text)}")
+    for warning in capture.warnings:
+        console.print(f"[yellow]Warning:[/yellow] {escape(warning)}")
+
+
 @app.command("ingest")
 def ingest_command(
     har_file: Annotated[Path, typer.Argument(help="HAR file to import passively.")],
@@ -1092,6 +1463,21 @@ def ingest_command(
             help="Observed client channel: WEB, MOBILE, PARTNER_API, PUBLIC_API, or UNKNOWN.",
         ),
     ] = "UNKNOWN",
+    capture_mode: Annotated[
+        str | None,
+        typer.Option(
+            "--capture-mode",
+            help="NORMAL_BEHAVIOR, RESEARCHER_PROBE, AUTHENTICATION, MIXED, or UNKNOWN.",
+        ),
+    ] = None,
+    intent_action: Annotated[
+        str | None,
+        typer.Option("--intent-action", help="High-level action such as CREATE or UPDATE."),
+    ] = None,
+    intent_resource: Annotated[
+        str | None,
+        typer.Option("--intent-resource", help="High-level resource such as dns_record."),
+    ] = None,
     capture_auth: Annotated[
         bool,
         typer.Option(
@@ -1157,6 +1543,12 @@ def ingest_command(
             capture_auth=should_capture_auth,
             auth_candidate=selected_candidate,
             auth_observed_renewal=update_auth,
+            capture_assignment=_direct_capture_assignment(
+                actor,
+                capture_mode,
+                intent_action,
+                intent_resource,
+            ),
         )
     except FinsecError as error:
         _abort(error)
@@ -1167,6 +1559,8 @@ def ingest_command(
     if result.relabeled:
         console.print(f"[yellow]Refreshed {result.relabeled} actor/channel assignments.[/yellow]")
     console.print(f"Redacted HAR: {result.redacted_har}")
+    if result.capture is not None:
+        _print_capture_diagnostics(result.capture)
     if result.authentication_status is not None:
         console.print(f"Credential storage: successful ({result.credential_profile_ref})")
         console.print(f"Actor status: {result.authentication_status}")
@@ -1177,24 +1571,32 @@ def _run_ingest_wizard(paths: WorkspacePaths, context: _IngestWizardContext) -> 
     """Run the shared interactive import flow for one validated capture directory."""
 
     target = context.target
-    console.print(f"[bold]HAR input directory:[/bold] {context.incoming}")
+    console.print(f"[bold]Capture input directory:[/bold] {context.incoming}")
     console.print("Configured actors: " + ", ".join(item.id for item in target.accounts))
     console.print("Use ANONYMOUS or UNKNOWN only when that provenance is accurate.")
-    selections: list[_InteractiveHarImport] = []
+    selections: list[_InteractiveCaptureImport] = []
     accounts = {item.id: item for item in target.accounts}
 
-    for har_file in context.har_files:
-        console.print(f"\n[bold]Capture:[/bold] {escape(har_file.name)}")
-        actor = _prompt_har_actor(target)
-        if actor is None:
+    for capture_file in context.capture_files:
+        try:
+            preview = preview_capture(capture_file, target)
+        except FinsecError as error:
+            console.print(f"[red]{escape(capture_file.name)} cannot be previewed:[/red] {error}")
             continue
-        channel = _prompt_har_channel(target, actor)
+        selected = _capture_selection(target, preview)
+        if selected is None:
+            continue
+        actor, channel, assignment = selected
         auth_candidate: int | None = None
         observed_renewal = False
         account = accounts.get(actor)
         if account is not None and account.authenticated and account.actor_type != "anonymous":
             try:
-                recommendation = recommend_har_authentication(paths, actor, har_file)
+                recommendation = (
+                    recommend_har_authentication(paths, actor, capture_file)
+                    if preview.source_type == CaptureSourceType.HAR
+                    else recommend_burp_authentication(paths, actor, capture_file)
+                )
             except FinsecError as error:
                 console.print(f"[yellow]Authentication unchanged:[/yellow] {error}")
             else:
@@ -1211,20 +1613,22 @@ def _run_ingest_wizard(paths: WorkspacePaths, context: _IngestWizardContext) -> 
                         and authentication.auth_type not in {"none", "unconfigured"}
                     )
         selections.append(
-            _InteractiveHarImport(
-                path=har_file,
+            _InteractiveCaptureImport(
+                path=capture_file,
+                source_type=preview.source_type,
                 actor=actor,
                 channel=channel,
+                assignment=assignment,
                 auth_candidate=auth_candidate,
                 observed_renewal=observed_renewal,
             )
         )
 
     if not selections:
-        console.print("No HAR files were selected.")
+        console.print("No capture files were selected.")
         return
 
-    summary = Table("File", "Actor", "Channel", "Authentication")
+    summary = Table("File", "Actor", "Mode", "Intent", "Authentication")
     for selection in selections:
         authentication_summary = (
             f"recommended request {selection.auth_candidate}"
@@ -1234,24 +1638,36 @@ def _run_ingest_wizard(paths: WorkspacePaths, context: _IngestWizardContext) -> 
         summary.add_row(
             selection.path.name,
             selection.actor,
-            selection.channel,
+            selection.assignment.capture_mode,
+            _intent_text(selection.assignment.intent or CaptureIntent()),
             authentication_summary,
         )
     console.print(summary)
-    if not typer.confirm("Import these HAR files passively?", default=False):
-        console.print("No HAR files were imported.")
+    if not typer.confirm("Import these capture files passively?", default=False):
+        console.print("No capture files were imported.")
         return
 
     successful_assignments: list[WorkflowCapture] = []
     imported_any = False
     for selection in selections:
         try:
-            result = ingest_har(
-                selection.path,
-                paths,
-                actor=selection.actor,
-                channel=selection.channel,
-            )
+            result: Any
+            if selection.source_type == CaptureSourceType.HAR:
+                result = ingest_har(
+                    selection.path,
+                    paths,
+                    actor=selection.actor,
+                    channel=selection.channel,
+                    capture_assignment=selection.assignment,
+                )
+            else:
+                result = ingest_burp_xml(
+                    selection.path,
+                    paths,
+                    actor=selection.actor,
+                    channel=selection.channel,
+                    capture_assignment=selection.assignment,
+                )
         except (FinsecError, OSError, ValidationError) as error:
             console.print(f"[red]{escape(selection.path.name)} failed:[/red] {error}")
             continue
@@ -1261,20 +1677,36 @@ def _run_ingest_wizard(paths: WorkspacePaths, context: _IngestWizardContext) -> 
                 file=selection.path.name,
                 actor=selection.actor,
                 channel=selection.channel,
+                actor_source=selection.assignment.actor_source,
+                capture_mode=selection.assignment.capture_mode,
+                capture_mode_source=selection.assignment.capture_mode_source,
+                intent=selection.assignment.intent,
             )
         )
         console.print(
             f"[green]{escape(selection.path.name)}:[/green] {result.imported} imported, "
             f"{result.skipped} already present"
         )
+        if result.capture is not None:
+            _print_capture_diagnostics(result.capture)
         if selection.auth_candidate is not None:
             try:
-                authentication, _ = capture_from_har(
-                    paths,
-                    selection.actor,
-                    selection.path,
-                    candidate_number=selection.auth_candidate,
-                    observed_renewal=selection.observed_renewal,
+                authentication, _ = (
+                    capture_from_har(
+                        paths,
+                        selection.actor,
+                        selection.path,
+                        candidate_number=selection.auth_candidate,
+                        observed_renewal=selection.observed_renewal,
+                    )
+                    if selection.source_type == CaptureSourceType.HAR
+                    else capture_from_burp(
+                        paths,
+                        selection.actor,
+                        selection.path,
+                        candidate_number=selection.auth_candidate,
+                        observed_renewal=selection.observed_renewal,
+                    )
                 )
             except FinsecError as error:
                 console.print(f"[red]Authentication update failed:[/red] {error}")
@@ -1314,11 +1746,11 @@ def ingest_wizard_command(
         bool,
         typer.Option(
             "--include-assigned",
-            help="Offer HAR files already present in workflow.yaml for relabeling or renewal.",
+            help="Offer capture files already present in workflow.yaml for relabeling or renewal.",
         ),
     ] = False,
 ) -> None:
-    """Interactively import newly added HAR files and recommend fresh actor authentication."""
+    """Import new HAR/Burp captures with minimal actor, mode, and intent context."""
 
     try:
         paths = resolve_workspace(workspace)
@@ -1327,8 +1759,8 @@ def ingest_wizard_command(
             capture_root,
             include_assigned=include_assigned,
         )
-        if not context.har_files:
-            console.print("No unassigned HAR files were found.")
+        if not context.capture_files:
+            console.print("No unassigned capture files were found.")
             console.print(f"Add captures to {context.incoming} and run this command again.")
             return
         _run_ingest_wizard(paths, context)
@@ -1348,6 +1780,21 @@ def ingest_burp_command(
         str,
         typer.Option("--channel", help="Observed client channel for these exchanges."),
     ] = "UNKNOWN",
+    capture_mode: Annotated[
+        str | None,
+        typer.Option(
+            "--capture-mode",
+            help="NORMAL_BEHAVIOR, RESEARCHER_PROBE, AUTHENTICATION, MIXED, or UNKNOWN.",
+        ),
+    ] = None,
+    intent_action: Annotated[
+        str | None,
+        typer.Option("--intent-action", help="High-level action such as CREATE or UPDATE."),
+    ] = None,
+    intent_resource: Annotated[
+        str | None,
+        typer.Option("--intent-resource", help="High-level resource such as dns_record."),
+    ] = None,
     capture_auth: Annotated[
         bool,
         typer.Option(
@@ -1413,6 +1860,12 @@ def ingest_burp_command(
             capture_auth=should_capture_auth,
             auth_candidate=selected_candidate,
             auth_observed_renewal=update_auth,
+            capture_assignment=_direct_capture_assignment(
+                actor,
+                capture_mode,
+                intent_action,
+                intent_resource,
+            ),
         )
     except FinsecError as error:
         _abort(error)
@@ -1423,6 +1876,8 @@ def ingest_burp_command(
     if result.relabeled:
         console.print(f"[yellow]Refreshed {result.relabeled} actor/channel assignments.[/yellow]")
     console.print(f"Redacted capture: {result.redacted_capture}")
+    if result.capture is not None:
+        _print_capture_diagnostics(result.capture)
     if result.authentication_status is not None:
         console.print(f"Credential storage: successful ({result.credential_profile_ref})")
         console.print(f"Actor status: {result.authentication_status}")
@@ -1441,12 +1896,38 @@ def ingest_caido_command(
         str,
         typer.Option("--channel", help="Observed client channel for these exchanges."),
     ] = "UNKNOWN",
+    capture_mode: Annotated[
+        str | None,
+        typer.Option(
+            "--capture-mode",
+            help="NORMAL_BEHAVIOR, RESEARCHER_PROBE, AUTHENTICATION, MIXED, or UNKNOWN.",
+        ),
+    ] = None,
+    intent_action: Annotated[
+        str | None,
+        typer.Option("--intent-action", help="High-level action such as CREATE or UPDATE."),
+    ] = None,
+    intent_resource: Annotated[
+        str | None,
+        typer.Option("--intent-resource", help="High-level resource such as dns_record."),
+    ] = None,
 ) -> None:
     """Import a Caido-style JSON exchange export as redacted observations."""
 
     try:
         paths = resolve_workspace(workspace)
-        result = ingest_caido_json(json_file, paths, actor=actor, channel=_channel(channel))
+        result = ingest_caido_json(
+            json_file,
+            paths,
+            actor=actor,
+            channel=_channel(channel),
+            capture_assignment=_direct_capture_assignment(
+                actor,
+                capture_mode,
+                intent_action,
+                intent_resource,
+            ),
+        )
     except FinsecError as error:
         _abort(error)
     console.print(
@@ -1456,6 +1937,8 @@ def ingest_caido_command(
     if result.relabeled:
         console.print(f"[yellow]Refreshed {result.relabeled} actor/channel assignments.[/yellow]")
     console.print(f"Redacted capture: {result.redacted_capture}")
+    if result.capture is not None:
+        _print_capture_diagnostics(result.capture)
     console.print(_offline_workflow_hint(paths))
 
 

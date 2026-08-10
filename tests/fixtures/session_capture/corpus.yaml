@@ -1,0 +1,51 @@
+version: 1
+captures:
+  - file: order-a1-create.har
+    scenario: order
+    actor: ACCOUNT_A
+    mode: NORMAL_BEHAVIOR
+    intent:
+      action: CREATE
+      resource: order
+  - file: order-a2-return.har
+    scenario: order
+    actor: ACCOUNT_A
+    mode: NORMAL_BEHAVIOR
+    intent:
+      action: RETURN
+      resource: order
+  - file: order-b1-create.har
+    scenario: order
+    actor: ACCOUNT_B
+    mode: NORMAL_BEHAVIOR
+    intent:
+      action: CREATE
+      resource: order
+  - file: order-b2-return.har
+    scenario: order
+    actor: ACCOUNT_B
+    mode: NORMAL_BEHAVIOR
+    intent:
+      action: RETURN
+      resource: order
+  - file: order-b-probe-a.har
+    scenario: order
+    actor: ACCOUNT_B
+    mode: RESEARCHER_PROBE
+    intent:
+      action: READ
+      resource: order
+  - file: arvan-a-create-dns.har
+    scenario: arvan_dns
+    actor: ACCOUNT_A
+    mode: NORMAL_BEHAVIOR
+    intent:
+      action: CREATE
+      resource: dns_record
+  - file: arvan-b-create-dns.har
+    scenario: arvan_dns
+    actor: ACCOUNT_B
+    mode: NORMAL_BEHAVIOR
+    intent:
+      action: CREATE
+      resource: dns_record

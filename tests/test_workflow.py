@@ -8,6 +8,12 @@ import pytest
 from pydantic import ValidationError
 from typer.testing import CliRunner
 
+from finsec.captures.domain import (
+    CaptureConfidence,
+    CaptureIntent,
+    CaptureMode,
+    MetadataSource,
+)
 from finsec.cli import app
 from finsec.errors import FinsecError
 from finsec.modeling.models import ObservationStore
@@ -54,6 +60,22 @@ def test_setup_creates_empty_workflow_manifest(tmp_path: Path) -> None:
     _, manifest = _workspace(tmp_path)
     document = load_workflow_manifest(manifest)
     assert document == WorkflowManifest()
+
+
+def test_manifest_explicit_context_is_treated_as_user_supplied() -> None:
+    assignment = WorkflowCapture(
+        file="probe.xml",
+        actor="ACCOUNT_B",
+        capture_mode=CaptureMode.RESEARCHER_PROBE,
+        intent=CaptureIntent(action="READ", resource_type="order"),
+    ).assignment()
+
+    assert assignment.actor_source == MetadataSource.USER_SUPPLIED
+    assert assignment.capture_mode == CaptureMode.RESEARCHER_PROBE
+    assert assignment.capture_mode_source == MetadataSource.USER_SUPPLIED
+    assert assignment.intent is not None
+    assert assignment.intent.source == MetadataSource.USER_SUPPLIED
+    assert assignment.intent.confidence == CaptureConfidence.HIGH
 
 
 def test_workflow_manifest_drives_complete_offline_pipeline(

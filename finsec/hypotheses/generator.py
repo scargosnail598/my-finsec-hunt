@@ -7,6 +7,7 @@ from typing import Any
 
 from pydantic import ValidationError
 
+from finsec.captures.domain import observation_supports_passive_baseline
 from finsec.config.models import FunctionAuthorizationRule, JwtAlgorithmRule, TargetDocument
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
@@ -109,7 +110,9 @@ def _runtime_observations(
     return [
         observations[source]
         for source in endpoint.sources
-        if source in observations and observations[source].source in RUNTIME_OBSERVATION_SOURCES
+        if source in observations
+        and observations[source].source in RUNTIME_OBSERVATION_SOURCES
+        and observation_supports_passive_baseline(observations[source])
     ]
 
 
@@ -1363,7 +1366,13 @@ def _version_hypotheses(
                 for invariant in invariants_by_endpoint[endpoint_id]
             }
         )
-        observation_ids = sorted({source for item in items for source in item.sources})
+        observation_ids = sorted(
+            {
+                observation.id
+                for item in items
+                for observation in _runtime_observations(item, observations)
+            }
+        )
         scores = _score(4, 3, 3, 4)
         drafts.append(
             {

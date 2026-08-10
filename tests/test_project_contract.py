@@ -14,6 +14,7 @@ def test_json_schemas_are_valid() -> None:
         "behavior-workflow.schema.json",
         "business-invariant.schema.json",
         "business-logic-hypothesis.schema.json",
+        "capture.schema.json",
         "endpoint.schema.json",
         "graphql-operation.schema.json",
         "hypothesis.schema.json",

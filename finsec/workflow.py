@@ -10,13 +10,23 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from finsec.behavior.analysis import analyze_business_logic
+from finsec.captures.domain import (
+    CaptureAssignment,
+    CaptureConfidence,
+    CaptureIntent,
+    CaptureMode,
+    CaptureSourceType,
+    MetadataSource,
+)
 from finsec.config.models import TargetDocument
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
 from finsec.hypotheses.clustering import presentation_visible
 from finsec.hypotheses.domain import HypothesisStore
 from finsec.hypotheses.generator import generate_hypotheses
-from finsec.ingest.har import ingest_har
+from finsec.ingest.common import PassiveIngestResult
+from finsec.ingest.har import IngestResult, ingest_har
+from finsec.ingest.traffic import ingest_burp_xml
 from finsec.modeling.domain import ActorStore, ResourceStore
 from finsec.modeling.generator import generate_model
 from finsec.modeling.invariants import generate_invariants
@@ -42,25 +52,29 @@ class StrictModel(BaseModel):
 
 
 class WorkflowCapture(StrictModel):
-    """One explicitly assigned HAR file in the incoming directory."""
+    """One explicitly assigned passive capture in the incoming directory."""
 
     file: str
     actor: str
     channel: ManifestChannel = "UNKNOWN"
     enabled: bool = True
+    actor_source: MetadataSource | None = None
+    capture_mode: CaptureMode | None = None
+    capture_mode_source: MetadataSource | None = None
+    intent: CaptureIntent | None = None
 
     @field_validator("file")
     @classmethod
-    def file_is_a_safe_har_name(cls, value: str) -> str:
+    def file_is_a_safe_capture_name(cls, value: str) -> str:
         normalized = value.strip()
         path = Path(normalized)
         if (
             not normalized
             or path.name != normalized
-            or path.suffix.lower() != ".har"
+            or path.suffix.lower() not in {".har", ".xml"}
             or normalized in {".", ".."}
         ):
-            raise ValueError("file must be a .har filename without directories")
+            raise ValueError("file must be a .har or Burp .xml filename without directories")
         return normalized
 
     @field_validator("actor")
@@ -70,6 +84,42 @@ class WorkflowCapture(StrictModel):
         if not normalized:
             raise ValueError("actor cannot be empty")
         return normalized
+
+    @property
+    def source_type(self) -> CaptureSourceType:
+        """Infer the source adapter from the validated filename."""
+
+        return (
+            CaptureSourceType.HAR
+            if Path(self.file).suffix.lower() == ".har"
+            else CaptureSourceType.BURP_XML
+        )
+
+    def assignment(self) -> CaptureAssignment:
+        """Return persisted context without inventing missing metadata."""
+
+        intent = self.intent
+        if intent is not None and intent.source == MetadataSource.UNKNOWN:
+            intent = intent.model_copy(
+                update={
+                    "source": MetadataSource.USER_SUPPLIED,
+                    "confidence": CaptureConfidence.HIGH,
+                }
+            )
+        return CaptureAssignment(
+            actor_source=self.actor_source or MetadataSource.USER_SUPPLIED,
+            actor_evidence=["Actor label was supplied by the workflow manifest."],
+            capture_mode=self.capture_mode or CaptureMode.UNKNOWN,
+            capture_mode_source=(
+                self.capture_mode_source
+                or (
+                    MetadataSource.USER_SUPPLIED
+                    if self.capture_mode is not None
+                    else MetadataSource.UNKNOWN
+                )
+            ),
+            intent=intent,
+        )
 
 
 class WorkflowManifest(StrictModel):
@@ -89,6 +139,8 @@ class WorkflowIngestResult:
     imported: int
     skipped: int
     relabeled: int
+    capture_id: str | None = None
+    source_type: CaptureSourceType = CaptureSourceType.HAR
 
 
 @dataclass(frozen=True)
@@ -151,6 +203,10 @@ def ensure_workflow_manifest(path: Path) -> None:
         "#   - file: 01-account-a-login.har\n"
         "#     actor: ACCOUNT_A\n"
         "#     channel: WEB\n"
+        "#     capture_mode: AUTHENTICATION\n"
+        "#     intent:\n"
+        "#       action: AUTHENTICATE\n"
+        "#       resource_type: session\n"
     )
     path.write_text(content, encoding="utf-8", newline="\n")
 
@@ -163,7 +219,7 @@ def merge_workflow_assignments(path: Path, captures: list[WorkflowCapture]) -> N
     for capture in captures:
         by_file[capture.file] = capture
     merged = WorkflowManifest(captures=[by_file[name] for name in sorted(by_file)])
-    write_yaml(path, merged.model_dump(mode="json"))
+    write_yaml(path, merged.model_dump(mode="json", exclude_none=True))
 
 
 def _load_target(workspace: WorkspacePaths) -> TargetDocument:
@@ -203,14 +259,29 @@ def _ingest_manifest(
     failures: list[str] = []
     for capture in captures:
         source = incoming / capture.file
-        _notify(progress, f"Ingesting {capture.file} as {capture.actor} ({capture.channel})")
+        _notify(
+            progress,
+            f"Ingesting {capture.file} as {capture.actor} "
+            f"({capture.channel}, {capture.source_type.value})",
+        )
         try:
-            result = ingest_har(
-                source,
-                workspace,
-                actor=capture.actor,
-                channel=_manifest_channel(capture.channel),
-            )
+            result: IngestResult | PassiveIngestResult
+            if capture.source_type == CaptureSourceType.HAR:
+                result = ingest_har(
+                    source,
+                    workspace,
+                    actor=capture.actor,
+                    channel=_manifest_channel(capture.channel),
+                    capture_assignment=capture.assignment(),
+                )
+            else:
+                result = ingest_burp_xml(
+                    source,
+                    workspace,
+                    actor=capture.actor,
+                    channel=_manifest_channel(capture.channel),
+                    capture_assignment=capture.assignment(),
+                )
         except (FinsecError, OSError, ValidationError) as error:
             failures.append(f"{capture.file}: {error}")
             _notify(progress, f"Failed {capture.file}: {error}")
@@ -223,6 +294,8 @@ def _ingest_manifest(
                 imported=result.imported,
                 skipped=result.skipped,
                 relabeled=result.relabeled,
+                capture_id=result.capture.capture_id if result.capture is not None else None,
+                source_type=capture.source_type,
             )
         )
     if failures:

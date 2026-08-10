@@ -16,13 +16,35 @@
         "properties": {
           "file": {
             "type": "string",
-            "pattern": "^[^/\\\\]+\\.[Hh][Aa][Rr]$"
+            "pattern": "^[^/\\\\]+\\.(?:[Hh][Aa][Rr]|[Xx][Mm][Ll])$"
           },
           "actor": {"type": "string", "minLength": 1},
           "channel": {
             "enum": ["WEB", "MOBILE", "API", "PARTNER_API", "PUBLIC_API", "UNKNOWN"]
           },
-          "enabled": {"type": "boolean", "default": true}
+          "enabled": {"type": "boolean", "default": true},
+          "actor_source": {
+            "enum": ["ENGINE_INFERRED", "USER_CONFIRMED", "USER_SUPPLIED", "UNKNOWN"]
+          },
+          "capture_mode": {
+            "enum": ["NORMAL_BEHAVIOR", "RESEARCHER_PROBE", "AUTHENTICATION", "MIXED", "UNKNOWN"]
+          },
+          "capture_mode_source": {
+            "enum": ["ENGINE_INFERRED", "USER_CONFIRMED", "USER_SUPPLIED", "UNKNOWN"]
+          },
+          "intent": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "label": {"type": "string"},
+              "action": {"type": "string"},
+              "resource_type": {"type": "string"},
+              "confidence": {"enum": ["LOW", "MEDIUM", "HIGH"]},
+              "source": {
+                "enum": ["ENGINE_INFERRED", "USER_CONFIRMED", "USER_SUPPLIED", "UNKNOWN"]
+              }
+            }
+          }
         }
       }
     }

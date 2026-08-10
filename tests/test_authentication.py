@@ -496,7 +496,7 @@ def test_ingest_wizard_imports_multiple_new_hars_and_updates_authentication(
             "--capture-root",
             str(capture_root),
         ],
-        input="ACCOUNT_A\n\n\nACCOUNT_B\n\n\ny\nn\n",
+        input="ACCOUNT_A\n\n\n\nACCOUNT_B\n\n\n\ny\nn\n",
     )
 
     assert result.exit_code == 0, result.output
@@ -505,8 +505,38 @@ def test_ingest_wizard_imports_multiple_new_hars_and_updates_authentication(
     assert all(token not in result.output for token in new_tokens.values())
     manifest = load_yaml(capture_root / "workflow.yaml")
     assert manifest["captures"] == [
-        {"file": "new-1.har", "actor": "ACCOUNT_A", "channel": "WEB", "enabled": True},
-        {"file": "new-2.har", "actor": "ACCOUNT_B", "channel": "WEB", "enabled": True},
+        {
+            "file": "new-1.har",
+            "actor": "ACCOUNT_A",
+            "channel": "WEB",
+            "enabled": True,
+            "actor_source": "USER_SUPPLIED",
+            "capture_mode": "NORMAL_BEHAVIOR",
+            "capture_mode_source": "USER_SUPPLIED",
+            "intent": {
+                "label": "read_profile",
+                "action": "READ",
+                "resource_type": "profile",
+                "confidence": "LOW",
+                "source": "USER_CONFIRMED",
+            },
+        },
+        {
+            "file": "new-2.har",
+            "actor": "ACCOUNT_B",
+            "channel": "WEB",
+            "enabled": True,
+            "actor_source": "USER_SUPPLIED",
+            "capture_mode": "NORMAL_BEHAVIOR",
+            "capture_mode_source": "USER_SUPPLIED",
+            "intent": {
+                "label": "read_profile",
+                "action": "READ",
+                "resource_type": "profile",
+                "confidence": "LOW",
+                "source": "USER_CONFIRMED",
+            },
+        },
     ]
     target = TargetDocument.model_validate(load_yaml(workspace.target))
     for actor in target.accounts:
