@@ -14,14 +14,21 @@
   },
   "$defs": {
     "metadataSource": {
-      "enum": ["ENGINE_INFERRED", "USER_CONFIRMED", "USER_SUPPLIED", "UNKNOWN"]
+      "enum": [
+        "ENGINE_INFERRED",
+        "ENGINE_INFERRED_RAW",
+        "ENGINE_REFINED",
+        "USER_CONFIRMED",
+        "USER_SUPPLIED",
+        "UNKNOWN"
+      ]
     },
     "confidence": {"enum": ["LOW", "MEDIUM", "HIGH"]},
     "captureMode": {
       "enum": ["NORMAL_BEHAVIOR", "RESEARCHER_PROBE", "AUTHENTICATION", "MIXED", "UNKNOWN"]
     },
     "relevance": {
-      "enum": ["PRIMARY", "SUPPORTING", "CONTEXT", "NOISE", "UNKNOWN"]
+      "enum": ["PRIMARY", "SUPPORTING", "CONTEXT", "NOISE", "PROTOCOL_SUPPORT", "UNKNOWN"]
     },
     "source": {
       "type": "object",
@@ -57,6 +64,59 @@
         "evidence": {"type": "array", "items": {"type": "string"}}
       }
     },
+    "journeyAnchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "anchor_id",
+        "observation_ids",
+        "endpoint_ids",
+        "action",
+        "resource_type",
+        "method",
+        "path",
+        "score",
+        "confidence",
+        "state_changing",
+        "evidence"
+      ],
+      "properties": {
+        "anchor_id": {"type": "string", "minLength": 1},
+        "observation_ids": {"type": "array", "items": {"type": "string"}},
+        "endpoint_ids": {"type": "array", "items": {"type": "string"}},
+        "action": {"type": "string", "minLength": 1},
+        "resource_type": {"type": "string", "minLength": 1},
+        "parent_resource_type": {"type": ["string", "null"]},
+        "subject_selector": {"type": ["string", "null"]},
+        "method": {"type": "string", "minLength": 1},
+        "path": {"type": "string", "minLength": 1},
+        "status_code": {"type": ["integer", "null"]},
+        "score": {"type": "integer", "minimum": 0},
+        "confidence": {"$ref": "#/$defs/confidence"},
+        "state_changing": {"type": "boolean"},
+        "evidence": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "analysisMetrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocol_requests_excluded",
+        "background_requests_excluded",
+        "passive_observations",
+        "passive_operation_groups",
+        "repeated_passive_observations_saturated",
+        "anchor_candidates"
+      ],
+      "properties": {
+        "protocol_requests_excluded": {"type": "integer", "minimum": 0},
+        "background_requests_excluded": {"type": "integer", "minimum": 0},
+        "passive_observations": {"type": "integer", "minimum": 0},
+        "passive_operation_groups": {"type": "integer", "minimum": 0},
+        "repeated_passive_observations_saturated": {"type": "integer", "minimum": 0},
+        "anchor_candidates": {"type": "integer", "minimum": 0}
+      }
+    },
     "counts": {
       "type": "object",
       "additionalProperties": false,
@@ -78,6 +138,7 @@
         "supporting": {"type": "integer", "minimum": 0},
         "context": {"type": "integer", "minimum": 0},
         "noise": {"type": "integer", "minimum": 0},
+        "protocol_support": {"type": "integer", "minimum": 0},
         "unknown": {"type": "integer", "minimum": 0}
       }
     },
@@ -128,7 +189,22 @@
         "capture_mode": {"$ref": "#/$defs/captureMode"},
         "capture_mode_source": {"$ref": "#/$defs/metadataSource"},
         "intent": {"$ref": "#/$defs/intent"},
+        "declared_intent": {
+          "anyOf": [{"$ref": "#/$defs/intent"}, {"type": "null"}]
+        },
+        "provisional_intent": {"$ref": "#/$defs/intent"},
+        "observed_intent": {"$ref": "#/$defs/intent"},
+        "intent_alignment": {
+          "enum": ["CONSISTENT", "PARTIAL", "CONFLICTING", "UNKNOWN"]
+        },
+        "intent_analysis_stage": {"enum": ["PROVISIONAL", "REFINED"]},
         "intent_inference": {"$ref": "#/$defs/intentInference"},
+        "journey_anchors": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/journeyAnchor"}
+        },
+        "primary_anchor_id": {"type": ["string", "null"]},
+        "analysis_metrics": {"$ref": "#/$defs/analysisMetrics"},
         "started_at": {"type": ["string", "null"], "format": "date-time"},
         "ended_at": {"type": ["string", "null"], "format": "date-time"},
         "notes": {"type": "array", "items": {"type": "string"}},

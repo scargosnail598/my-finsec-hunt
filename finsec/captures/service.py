@@ -11,6 +11,7 @@ from pydantic import ValidationError
 from finsec.captures.analysis import (
     CaptureSignal,
     IntentAnalysis,
+    align_intents,
     assess_quality,
     classify_relevance,
     infer_intent,
@@ -28,13 +29,14 @@ from finsec.captures.domain import (
     CaptureSource,
     CaptureSourceType,
     CaptureStore,
+    IntentAlignment,
     MetadataSource,
 )
-from finsec.config.models import TargetDocument
+from finsec.config.models import DomainIntentRule, TargetDocument
 from finsec.config.scope import host_is_covered
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
-from finsec.modeling.models import EndpointStore, Observation, ObservationStore
+from finsec.modeling.models import Endpoint, EndpointStore, Observation, ObservationStore
 from finsec.utils.yaml_store import load_yaml, write_yaml
 
 
@@ -74,7 +76,10 @@ def _load_target(workspace: WorkspacePaths) -> TargetDocument:
         ) from error
 
 
-def _endpoint_dispositions(workspace: WorkspacePaths) -> dict[str, str]:
+USER_INTENT_SOURCES = {MetadataSource.USER_CONFIRMED, MetadataSource.USER_SUPPLIED}
+
+
+def _endpoints_by_observation(workspace: WorkspacePaths) -> dict[str, Endpoint]:
     if not workspace.endpoints.is_file():
         return {}
     try:
@@ -82,7 +87,7 @@ def _endpoint_dispositions(workspace: WorkspacePaths) -> dict[str, str]:
     except (OSError, ValidationError):
         return {}
     return {
-        observation_id: endpoint.disposition
+        observation_id: endpoint
         for endpoint in endpoints.endpoints
         for observation_id in endpoint.sources
     }
@@ -104,7 +109,7 @@ def _first_party_patterns(target: TargetDocument) -> list[str]:
 def _signals(
     observations: list[Observation],
     target: TargetDocument,
-    endpoint_dispositions: dict[str, str],
+    endpoints_by_observation: dict[str, Endpoint],
 ) -> list[CaptureSignal]:
     patterns = _first_party_patterns(target)
     ordered = sorted(
@@ -115,32 +120,65 @@ def _signals(
             item.id,
         ),
     )
-    return [
-        CaptureSignal(
-            observation_id=item.id,
-            position=index,
-            host=item.host,
-            method=item.method,
-            path=item.path,
-            status_code=item.status_code,
-            first_party=host_is_covered(item.host, patterns) if patterns else True,
-            endpoint_disposition=endpoint_dispositions.get(item.id),
+    domain_rules: dict[tuple[str, str], DomainIntentRule] = {
+        (item.method, item.path): item for item in target.analysis.domain_intent_rules
+    }
+    signals: list[CaptureSignal] = []
+    for index, item in enumerate(ordered):
+        endpoint = endpoints_by_observation.get(item.id)
+        domain_rule = (
+            domain_rules.get((endpoint.method, endpoint.path)) if endpoint is not None else None
         )
-        for index, item in enumerate(ordered)
-    ]
+        signals.append(
+            CaptureSignal(
+                observation_id=item.id,
+                position=index,
+                host=item.host,
+                method=item.method,
+                path=item.path,
+                status_code=item.status_code,
+                first_party=host_is_covered(item.host, patterns) if patterns else True,
+                endpoint_id=endpoint.id if endpoint is not None else None,
+                endpoint_disposition=endpoint.disposition if endpoint is not None else None,
+                endpoint_classification=(
+                    endpoint.classification.primary.value if endpoint is not None else None
+                ),
+                endpoint_action=endpoint.action.name if endpoint is not None else None,
+                endpoint_action_type=endpoint.action.type if endpoint is not None else None,
+                endpoint_resource=endpoint.resource.type if endpoint is not None else None,
+                endpoint_state_change=endpoint.state_change if endpoint is not None else False,
+                endpoint_reasons=(
+                    tuple([*endpoint.action.reasons, *endpoint.state_change_reasons])
+                    if endpoint is not None
+                    else ()
+                ),
+                domain_operation=domain_rule.operation if domain_rule is not None else None,
+                domain_subject_resource=(
+                    domain_rule.subject_resource if domain_rule is not None else None
+                ),
+                domain_parent_resource=(
+                    domain_rule.parent_resource if domain_rule is not None else None
+                ),
+                domain_evidence=(
+                    (f"Reviewed domain-intent rule: {domain_rule.rationale}",)
+                    if domain_rule is not None
+                    else ()
+                ),
+            )
+        )
+    return signals
 
 
 def _selected_context(
     existing: Capture | None,
     actor_id: str,
     assignment: CaptureAssignment,
-    inferred: CaptureIntent,
 ) -> tuple[
     MetadataSource,
     CaptureConfidence,
     CaptureMode,
     MetadataSource,
-    CaptureIntent,
+    CaptureIntent | None,
 ]:
     actor_source = assignment.actor_source
     actor_confidence = assignment.actor_confidence
@@ -162,20 +200,19 @@ def _selected_context(
         capture_mode = existing.capture_mode
         capture_mode_source = existing.capture_mode_source
 
-    intent = assignment.intent
-    if (
-        intent is None
-        and existing is not None
-        and existing.intent.source
-        in {
-            MetadataSource.USER_CONFIRMED,
-            MetadataSource.USER_SUPPLIED,
-        }
-    ):
-        intent = existing.intent
-    if intent is None:
-        intent = inferred
-    return actor_source, actor_confidence, capture_mode, capture_mode_source, intent
+    declared_intent = assignment.intent
+    if declared_intent is None and existing is not None:
+        if existing.declared_intent is not None:
+            declared_intent = existing.declared_intent
+        elif existing.intent.source in USER_INTENT_SOURCES:
+            declared_intent = existing.intent
+    return (
+        actor_source,
+        actor_confidence,
+        capture_mode,
+        capture_mode_source,
+        declared_intent,
+    )
 
 
 def _actor_evidence(
@@ -205,26 +242,35 @@ def _counts(signals: list[CaptureSignal], relevance: dict[str, CaptureRelevance]
         supporting=distribution[CaptureRelevance.SUPPORTING],
         context=distribution[CaptureRelevance.CONTEXT],
         noise=distribution[CaptureRelevance.NOISE],
+        protocol_support=distribution[CaptureRelevance.PROTOCOL_SUPPORT],
         unknown=distribution[CaptureRelevance.UNKNOWN],
     )
 
 
 def _contextual_relevance(
     signals: list[CaptureSignal],
-    intent: CaptureIntent,
+    observed_intent: CaptureIntent,
+    declared_intent: CaptureIntent | None,
     analysis: IntentAnalysis,
     mode_source: MetadataSource,
+    infer_intent_enabled: bool,
 ) -> dict[str, CaptureRelevance]:
-    user_sources = {MetadataSource.USER_CONFIRMED, MetadataSource.USER_SUPPLIED}
-    if mode_source not in user_sources and intent.source not in user_sources:
+    declared_source = (
+        declared_intent.source if declared_intent is not None else MetadataSource.UNKNOWN
+    )
+    if mode_source not in USER_INTENT_SOURCES and declared_source not in USER_INTENT_SOURCES:
         return classify_relevance(signals, CaptureIntent(), analysis)
-    return classify_relevance(signals, intent, analysis)
+    if not infer_intent_enabled and declared_intent is None:
+        return classify_relevance(signals, CaptureIntent(), analysis)
+    return classify_relevance(signals, observed_intent, analysis)
 
 
 def _warnings(
     actor_id: str,
     mode: CaptureMode,
     quality_labels: list[CaptureQualityLabel],
+    alignment: IntentAlignment = IntentAlignment.UNKNOWN,
+    observed_confidence: CaptureConfidence = CaptureConfidence.LOW,
 ) -> list[str]:
     warnings: list[str] = []
     if actor_id == "UNKNOWN":
@@ -246,6 +292,11 @@ def _warnings(
         warnings.append("Broad capture content may reduce workflow precision.")
     if CaptureQualityLabel.MULTI_INTENT in quality_labels:
         warnings.append("Multiple state-changing intent groups were detected.")
+    if alignment == IntentAlignment.CONFLICTING and observed_confidence != CaptureConfidence.LOW:
+        warnings.append(
+            "Declared intent conflicts with the observed journey anchor; both are preserved for "
+            "researcher review."
+        )
     return warnings
 
 
@@ -276,11 +327,9 @@ def associate_capture(
         raise FinsecError("No observations were associated with the redacted capture.")
 
     target = _load_target(workspace)
-    signals = _signals(associated, target, _endpoint_dispositions(workspace))
+    signals = _signals(associated, target, {})
     analysis = infer_intent(signals)
-    proposed_intent = (
-        inferred_intent(analysis) if target.capture_policy.infer_intent else CaptureIntent()
-    )
+    provisional_intent = inferred_intent(analysis)
     store = load_capture_store(workspace)
     existing = next((item for item in store.captures if item.capture_id == capture_id), None)
     if existing is None and selected_assignment.capture_mode_source == MetadataSource.UNKNOWN:
@@ -290,13 +339,24 @@ def associate_capture(
                 "capture_mode_source": MetadataSource.ENGINE_INFERRED,
             }
         )
-    actor_source, actor_confidence, mode, mode_source, intent = _selected_context(
+    actor_source, actor_confidence, mode, mode_source, declared_intent = _selected_context(
         existing,
         actor_id,
         selected_assignment,
-        proposed_intent,
     )
-    relevance = _contextual_relevance(signals, intent, analysis, mode_source)
+    observed_intent = provisional_intent
+    effective_intent = declared_intent or (
+        observed_intent if target.capture_policy.infer_intent else CaptureIntent()
+    )
+    alignment = align_intents(declared_intent, observed_intent)
+    relevance = _contextual_relevance(
+        signals,
+        observed_intent,
+        declared_intent,
+        analysis,
+        mode_source,
+        target.capture_policy.infer_intent,
+    )
     quality = assess_quality(signals, analysis, relevance)
     if mode == CaptureMode.MIXED and CaptureQualityLabel.MIXED not in quality.labels:
         quality = quality.model_copy(
@@ -317,8 +377,16 @@ def associate_capture(
         actor_evidence=_actor_evidence(existing, selected_assignment, actor_id, actor_source),
         capture_mode=mode,
         capture_mode_source=mode_source,
-        intent=intent,
+        intent=effective_intent,
+        declared_intent=declared_intent,
+        provisional_intent=provisional_intent,
+        observed_intent=observed_intent,
+        intent_alignment=alignment,
+        intent_analysis_stage=analysis.stage,
         intent_inference=analysis.inference,
+        journey_anchors=list(analysis.anchors),
+        primary_anchor_id=analysis.primary_anchor_id,
+        analysis_metrics=analysis.metrics,
         started_at=timestamps[0] if timestamps else None,
         ended_at=timestamps[-1] if timestamps else None,
         notes=list(
@@ -328,7 +396,13 @@ def associate_capture(
         observation_relevance={key: relevance[key] for key in sorted(relevance)},
         counts=_counts(signals, relevance),
         quality=quality,
-        warnings=_warnings(actor_id, mode, quality.labels),
+        warnings=_warnings(
+            actor_id,
+            mode,
+            quality.labels,
+            alignment,
+            observed_intent.confidence,
+        ),
     )
 
     for observation in associated:
@@ -359,7 +433,7 @@ def refresh_capture_analysis(workspace: WorkspacePaths) -> CaptureStore:
         return store
     observation_store = _load_observations(workspace)
     target = _load_target(workspace)
-    dispositions = _endpoint_dispositions(workspace)
+    endpoints_by_observation = _endpoints_by_observation(workspace)
     by_capture: dict[str, list[Observation]] = defaultdict(list)
     for observation in observation_store.observations:
         if observation.capture_id is not None:
@@ -371,13 +445,26 @@ def refresh_capture_analysis(workspace: WorkspacePaths) -> CaptureStore:
         if not associated:
             refreshed.append(capture)
             continue
-        signals = _signals(associated, target, dispositions)
+        raw_signals = _signals(associated, target, {})
+        raw_analysis = infer_intent(raw_signals)
+        provisional_intent = inferred_intent(raw_analysis)
+        signals = _signals(associated, target, endpoints_by_observation)
         analysis = infer_intent(signals)
+        observed_intent = inferred_intent(analysis)
+        declared_intent = capture.declared_intent
+        if declared_intent is None and capture.intent.source in USER_INTENT_SOURCES:
+            declared_intent = capture.intent
+        effective_intent = declared_intent or (
+            observed_intent if target.capture_policy.infer_intent else CaptureIntent()
+        )
+        alignment = align_intents(declared_intent, observed_intent)
         relevance = _contextual_relevance(
             signals,
-            capture.intent,
+            observed_intent,
+            declared_intent,
             analysis,
             capture.capture_mode_source,
+            target.capture_policy.infer_intent,
         )
         quality = assess_quality(signals, analysis, relevance)
         if (
@@ -389,12 +476,27 @@ def refresh_capture_analysis(workspace: WorkspacePaths) -> CaptureStore:
             )
         updated = capture.model_copy(
             update={
+                "intent": effective_intent,
+                "declared_intent": declared_intent,
+                "provisional_intent": provisional_intent,
+                "observed_intent": observed_intent,
+                "intent_alignment": alignment,
+                "intent_analysis_stage": analysis.stage,
                 "intent_inference": analysis.inference,
+                "journey_anchors": list(analysis.anchors),
+                "primary_anchor_id": analysis.primary_anchor_id,
+                "analysis_metrics": analysis.metrics,
                 "observation_ids": sorted(item.id for item in associated),
                 "observation_relevance": {key: relevance[key] for key in sorted(relevance)},
                 "counts": _counts(signals, relevance),
                 "quality": quality,
-                "warnings": _warnings(capture.actor_id, capture.capture_mode, quality.labels),
+                "warnings": _warnings(
+                    capture.actor_id,
+                    capture.capture_mode,
+                    quality.labels,
+                    alignment,
+                    observed_intent.confidence,
+                ),
             }
         )
         refreshed.append(updated)

@@ -2,6 +2,7 @@
 
 from finsec.captures.domain import (
     Capture,
+    CaptureAnalysisMetrics,
     CaptureAssignment,
     CaptureConfidence,
     CaptureIntent,
@@ -10,14 +11,21 @@ from finsec.captures.domain import (
     CaptureRelevance,
     CaptureSourceType,
     CaptureStore,
+    IntentAlignment,
+    IntentAnalysisStage,
+    JourneyAnchor,
     MetadataSource,
 )
 
 __all__ = [
     "Capture",
     "CaptureAssignment",
+    "CaptureAnalysisMetrics",
     "CaptureConfidence",
     "CaptureIntent",
+    "IntentAlignment",
+    "IntentAnalysisStage",
+    "JourneyAnchor",
     "CaptureMode",
     "CaptureQualityLabel",
     "CaptureRelevance",

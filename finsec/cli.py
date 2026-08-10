@@ -1156,6 +1156,14 @@ def _intent_text(intent: CaptureIntent) -> str:
     return f"{intent.action} {intent.resource_type}"
 
 
+def _observed_capture_intent(capture: Capture) -> CaptureIntent:
+    """Prefer independently observed semantics while retaining legacy capture compatibility."""
+
+    if capture.observed_intent.action != "UNKNOWN":
+        return capture.observed_intent
+    return capture.intent
+
+
 def _print_capture_diagnostics(capture: Capture) -> None:
     """Print a concise, secret-free summary that teaches better capture practice."""
 
@@ -1171,9 +1179,15 @@ def _print_capture_diagnostics(capture: Capture) -> None:
         "Mode",
         f"{capture.capture_mode} ({capture.capture_mode_source})",
     )
+    observed_intent = _observed_capture_intent(capture)
+    if capture.declared_intent is not None:
+        details.add_row(
+            "Declared intent",
+            f"{_intent_text(capture.declared_intent)} ({capture.declared_intent.source})",
+        )
     details.add_row(
-        "Intent",
-        f"{_intent_text(capture.intent)} ({capture.intent.source}, {capture.intent.confidence})",
+        "Observed intent",
+        f"{_intent_text(observed_intent)} ({observed_intent.source}, {observed_intent.confidence})",
     )
     details.add_row("Capture quality", ", ".join(capture.quality.labels) or "UNKNOWN")
     console.print(details)
@@ -1183,7 +1197,8 @@ def _print_capture_diagnostics(capture: Capture) -> None:
         f"{counts.observations} total, {counts.first_party} first-party, "
         f"{counts.state_changing} state-changing, "
         f"{counts.primary} primary, {counts.supporting} supporting, "
-        f"{counts.context} context, {counts.noise} noise"
+        f"{counts.context} context, {counts.protocol_support} protocol support, "
+        f"{counts.noise} noise"
     )
     for warning in capture.warnings:
         console.print(f"[yellow]Warning:[/yellow] {escape(warning)}")
@@ -1364,7 +1379,7 @@ def captures_command(
                     capture_row.capture_id,
                     capture_row.actor_id,
                     capture_row.capture_mode,
-                    _intent_text(capture_row.intent),
+                    _intent_text(_observed_capture_intent(capture_row)),
                     str(capture_row.counts.observations),
                     ", ".join(capture_row.quality.labels) or "UNKNOWN",
                 )
@@ -1378,6 +1393,12 @@ def captures_command(
     except (FinsecError, OSError, ValidationError) as error:
         _abort(error)
 
+    observed_intent = _observed_capture_intent(capture)
+    declared_text = (
+        _intent_text(capture.declared_intent)
+        if capture.declared_intent is not None
+        else "not supplied"
+    )
     details = [
         f"[bold]Source:[/bold] {escape(capture.source.file)} ({capture.source.type})",
         f"[bold]Redacted reference:[/bold] "
@@ -1385,23 +1406,58 @@ def captures_command(
         f"[bold]Actor:[/bold] {escape(capture.actor_id)}",
         f"[bold]Actor provenance:[/bold] {capture.actor_source} / {capture.actor_confidence}",
         f"[bold]Mode:[/bold] {capture.capture_mode} ({capture.capture_mode_source})",
-        f"[bold]Intent:[/bold] {_intent_text(capture.intent)}",
-        f"[bold]Intent provenance:[/bold] {capture.intent.source} / {capture.intent.confidence}",
+        f"[bold]Declared intent:[/bold] {declared_text}",
+        f"[bold]Provisional intent:[/bold] {_intent_text(capture.provisional_intent)}",
+        f"[bold]Observed intent:[/bold] {_intent_text(observed_intent)}",
+        f"[bold]Observed provenance:[/bold] {observed_intent.source} / "
+        f"{observed_intent.confidence} / {capture.intent_analysis_stage}",
+        f"[bold]Intent alignment:[/bold] {capture.intent_alignment}",
         f"[bold]Quality:[/bold] {', '.join(capture.quality.labels) or 'UNKNOWN'}",
         f"[bold]Requests:[/bold] {capture.counts.observations} total; "
         f"{capture.counts.primary} primary; {capture.counts.supporting} supporting; "
-        f"{capture.counts.context} context; {capture.counts.noise} noise",
+        f"{capture.counts.context} context; {capture.counts.protocol_support} protocol; "
+        f"{capture.counts.noise} noise; {capture.counts.unknown} unknown",
     ]
     console.print(Panel("\n".join(details), title=capture.capture_id))
     if capture.actor_evidence:
         console.print("[bold]Actor evidence[/bold]")
         for evidence_text in capture.actor_evidence:
             console.print(f"- {escape(evidence_text)}")
+    by_id = {item.id: item for item in observations.observations}
+    primary_anchor = next(
+        (item for item in capture.journey_anchors if item.anchor_id == capture.primary_anchor_id),
+        None,
+    )
+    if primary_anchor is not None:
+        console.print("[bold]Primary journey anchor[/bold]")
+        anchor_observation = primary_anchor.observation_ids[0]
+        console.print(
+            f"- {anchor_observation} {primary_anchor.method} {escape(primary_anchor.path)} "
+            f"-> {primary_anchor.status_code or 'unknown'}"
+        )
+        console.print(
+            f"- Semantic intent: {primary_anchor.action} {primary_anchor.resource_type}; "
+            f"score {primary_anchor.score}; confidence {primary_anchor.confidence}"
+        )
+        for evidence_text in primary_anchor.evidence:
+            console.print(f"- Reason: {escape(evidence_text)}")
+    competing = [
+        item for item in capture.journey_anchors if item.anchor_id != capture.primary_anchor_id
+    ]
+    if competing:
+        console.print("[bold]Competing journey anchors[/bold]")
+        for anchor in competing[:5]:
+            console.print(
+                f"- {anchor.observation_ids[0]} {anchor.method} {escape(anchor.path)}: "
+                f"{anchor.action} {anchor.resource_type}; score {anchor.score}; "
+                f"confidence {anchor.confidence}"
+            )
+        if len(competing) > 5:
+            console.print(f"- {len(competing) - 5} additional candidates omitted.")
     if capture.intent_inference.evidence:
-        console.print("[bold]Intent inference evidence[/bold]")
+        console.print("[bold]Observed intent evidence[/bold]")
         for evidence_text in capture.intent_inference.evidence:
             console.print(f"- {escape(evidence_text)}")
-    by_id = {item.id: item for item in observations.observations}
     relevant_resources = sorted(
         {
             resource_family(by_id[observation_id].path)
@@ -1413,33 +1469,49 @@ def captures_command(
     )
     if relevant_resources:
         console.print(f"[bold]Relevant resources:[/bold] {', '.join(relevant_resources)}")
-    important = [
-        by_id[observation_id]
-        for observation_id, relevance in capture.observation_relevance.items()
-        if observation_id in by_id
-        and relevance in {CaptureRelevance.PRIMARY, CaptureRelevance.SUPPORTING}
-    ]
-    if important:
-        console.print("[bold]Likely journey observations[/bold]")
-        for observation in sorted(
-            important,
+
+    def print_observation_section(
+        title: str, relevance_value: CaptureRelevance, *, limit: int = 12
+    ) -> None:
+        selected = sorted(
+            (
+                by_id[observation_id]
+                for observation_id, relevance in capture.observation_relevance.items()
+                if observation_id in by_id and relevance == relevance_value
+            ),
             key=lambda item: (
                 item.sequence_position if item.sequence_position is not None else 10**9,
                 item.id,
             ),
-        ):
-            relevance = capture.observation_relevance[observation.id]
+        )
+        if not selected:
+            return
+        console.print(f"[bold]{title}[/bold]")
+        for observation in selected[:limit]:
             console.print(
-                f"- {observation.id} [{relevance}] {observation.method} "
+                f"- {observation.id} {observation.method} "
                 f"{escape(observation.path)} -> {observation.status_code or 'unknown'}"
             )
-    state_changing = [
-        item for item in important if item.method in {"POST", "PUT", "PATCH", "DELETE"}
-    ]
-    if state_changing:
-        console.print("[bold]Key state-changing observations[/bold]")
-        for observation in state_changing:
-            console.print(f"- {observation.id} {observation.method} {escape(observation.path)}")
+        if len(selected) > limit:
+            console.print(f"- {len(selected) - limit} additional observations omitted.")
+
+    print_observation_section("PRIMARY observations", CaptureRelevance.PRIMARY)
+    print_observation_section("SUPPORTING observations", CaptureRelevance.SUPPORTING)
+    metrics = capture.analysis_metrics
+    console.print("[bold]Protocol/background exclusions[/bold]")
+    console.print(
+        f"- Protocol requests excluded: {metrics.protocol_requests_excluded}; "
+        f"background requests excluded: {metrics.background_requests_excluded}."
+    )
+    console.print(
+        f"- Passive observations: {metrics.passive_observations} across "
+        f"{metrics.passive_operation_groups} normalized operations; "
+        f"{metrics.repeated_passive_observations_saturated} repeats saturated."
+    )
+    print_observation_section(
+        "Protocol support examples", CaptureRelevance.PROTOCOL_SUPPORT, limit=5
+    )
+    print_observation_section("Background/noise examples", CaptureRelevance.NOISE, limit=5)
     if capture.quality.evidence:
         console.print("[bold]Quality evidence[/bold]")
         for evidence_text in capture.quality.evidence:

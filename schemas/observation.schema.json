@@ -32,7 +32,7 @@
       "enum": ["NORMAL_BEHAVIOR", "RESEARCHER_PROBE", "AUTHENTICATION", "MIXED", "UNKNOWN"]
     },
     "capture_relevance": {
-      "enum": ["PRIMARY", "SUPPORTING", "CONTEXT", "NOISE", "UNKNOWN"]
+      "enum": ["PRIMARY", "SUPPORTING", "CONTEXT", "NOISE", "PROTOCOL_SUPPORT", "UNKNOWN"]
     },
     "session_identity": {"type": ["string", "null"]},
     "sequence_position": {"type": ["integer", "null"], "minimum": 0},

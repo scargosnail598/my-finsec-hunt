@@ -17,9 +17,11 @@ from finsec.hypotheses.contracts import (
     VisibilityIntent,
 )
 from finsec.modeling.models import Endpoint
+from finsec.normalization.path_semantics import path_resource_semantics
 
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 VERIFY_ACTIONS = {"check", "inspect", "validate", "verification", "verify"}
+UPDATE_ACTIONS = {"change", "edit", "replace", "reset", "rotate", "update"}
 TRANSITION_ACTIONS = {
     "accept",
     "activate",
@@ -158,11 +160,16 @@ def _operation(
         return DomainOperation.DELETE, evidence
     if methods.intersection({"PUT", "PATCH"}):
         return DomainOperation.UPDATE, evidence
+    if actions.intersection(UPDATE_ACTIONS):
+        return DomainOperation.UPDATE, evidence
     if actions.intersection(TRANSITION_ACTIONS):
         return DomainOperation.TRANSITION, evidence
-    if "POST" in methods and (
-        "create" in actions or all("{" not in item.path for item in endpoints)
-    ):
+    collection_posts = [
+        item
+        for item in endpoints
+        if item.method == "POST" and path_resource_semantics(item.path).terminal_is_collection
+    ]
+    if "create" in actions or (collection_posts and len(collection_posts) == len(endpoints)):
         return DomainOperation.CREATE, evidence
     if any(endpoint.state_change for endpoint in endpoints):
         return DomainOperation.ACTION, evidence

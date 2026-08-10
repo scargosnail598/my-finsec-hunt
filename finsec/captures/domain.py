@@ -37,6 +37,8 @@ class MetadataSource(StrEnum):
     """Provenance for actor, mode, and intent metadata."""
 
     ENGINE_INFERRED = "ENGINE_INFERRED"
+    ENGINE_INFERRED_RAW = "ENGINE_INFERRED_RAW"
+    ENGINE_REFINED = "ENGINE_REFINED"
     USER_CONFIRMED = "USER_CONFIRMED"
     USER_SUPPLIED = "USER_SUPPLIED"
     UNKNOWN = "UNKNOWN"
@@ -57,6 +59,7 @@ class CaptureRelevance(StrEnum):
     SUPPORTING = "SUPPORTING"
     CONTEXT = "CONTEXT"
     NOISE = "NOISE"
+    PROTOCOL_SUPPORT = "PROTOCOL_SUPPORT"
     UNKNOWN = "UNKNOWN"
 
 
@@ -69,6 +72,22 @@ class CaptureQualityLabel(StrEnum):
     LOW_SIGNAL = "LOW_SIGNAL"
     AUTH_HEAVY = "AUTH_HEAVY"
     MULTI_INTENT = "MULTI_INTENT"
+
+
+class IntentAnalysisStage(StrEnum):
+    """Evidence stage used to derive the observed capture intent."""
+
+    PROVISIONAL = "PROVISIONAL"
+    REFINED = "REFINED"
+
+
+class IntentAlignment(StrEnum):
+    """Relationship between explicit researcher context and observed semantics."""
+
+    CONSISTENT = "CONSISTENT"
+    PARTIAL = "PARTIAL"
+    CONFLICTING = "CONFLICTING"
+    UNKNOWN = "UNKNOWN"
 
 
 class CaptureSource(CaptureModel):
@@ -127,6 +146,48 @@ class IntentInference(CaptureModel):
         return CaptureIntent(resource_type=value).resource_type
 
 
+class JourneyAnchor(CaptureModel):
+    """One explainable operation candidate for the center of a capture journey."""
+
+    anchor_id: str
+    observation_ids: list[str] = Field(default_factory=list)
+    endpoint_ids: list[str] = Field(default_factory=list)
+    action: str = "UNKNOWN"
+    resource_type: str = "unknown"
+    parent_resource_type: str | None = None
+    subject_selector: str | None = None
+    method: str
+    path: str
+    status_code: int | None = None
+    score: int = Field(default=0, ge=0)
+    confidence: CaptureConfidence = CaptureConfidence.LOW
+    state_changing: bool = False
+    evidence: list[str] = Field(default_factory=list)
+
+    @field_validator("action")
+    @classmethod
+    def normalize_action(cls, value: str) -> str:
+        return CaptureIntent(action=value).action
+
+    @field_validator("resource_type", "parent_resource_type")
+    @classmethod
+    def normalize_resource(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return CaptureIntent(resource_type=value).resource_type
+
+
+class CaptureAnalysisMetrics(CaptureModel):
+    """Deterministic diagnostics for anchor precision and excluded traffic."""
+
+    protocol_requests_excluded: int = Field(default=0, ge=0)
+    background_requests_excluded: int = Field(default=0, ge=0)
+    passive_observations: int = Field(default=0, ge=0)
+    passive_operation_groups: int = Field(default=0, ge=0)
+    repeated_passive_observations_saturated: int = Field(default=0, ge=0)
+    anchor_candidates: int = Field(default=0, ge=0)
+
+
 class CaptureQuality(CaptureModel):
     """Advisory quality assessment that never blocks ingestion."""
 
@@ -145,6 +206,7 @@ class CaptureCounts(CaptureModel):
     supporting: int = Field(default=0, ge=0)
     context: int = Field(default=0, ge=0)
     noise: int = Field(default=0, ge=0)
+    protocol_support: int = Field(default=0, ge=0)
     unknown: int = Field(default=0, ge=0)
 
 
@@ -160,7 +222,15 @@ class Capture(CaptureModel):
     capture_mode: CaptureMode = CaptureMode.UNKNOWN
     capture_mode_source: MetadataSource = MetadataSource.UNKNOWN
     intent: CaptureIntent = Field(default_factory=CaptureIntent)
+    declared_intent: CaptureIntent | None = None
+    provisional_intent: CaptureIntent = Field(default_factory=CaptureIntent)
+    observed_intent: CaptureIntent = Field(default_factory=CaptureIntent)
+    intent_alignment: IntentAlignment = IntentAlignment.UNKNOWN
+    intent_analysis_stage: IntentAnalysisStage = IntentAnalysisStage.PROVISIONAL
     intent_inference: IntentInference = Field(default_factory=IntentInference)
+    journey_anchors: list[JourneyAnchor] = Field(default_factory=list)
+    primary_anchor_id: str | None = None
+    analysis_metrics: CaptureAnalysisMetrics = Field(default_factory=CaptureAnalysisMetrics)
     started_at: datetime | None = None
     ended_at: datetime | None = None
     notes: list[str] = Field(default_factory=list)
@@ -207,6 +277,7 @@ class CaptureAwareObservation(Protocol):
     capture_id: str | None
     capture_mode: CaptureMode
     capture_relevance: CaptureRelevance
+    method: str
 
 
 def observation_is_probe_evidence(observation: CaptureAwareObservation) -> bool:
@@ -220,30 +291,47 @@ def observation_supports_passive_baseline(observation: CaptureAwareObservation) 
 
     if observation_is_probe_evidence(observation):
         return False
+    if observation.method in {"HEAD", "OPTIONS"}:
+        return False
     if observation.capture_mode == CaptureMode.UNKNOWN:
         return observation.capture_id is None
     return observation.capture_relevance not in {
         CaptureRelevance.CONTEXT,
         CaptureRelevance.NOISE,
+        CaptureRelevance.PROTOCOL_SUPPORT,
     }
 
 
 def observation_supports_normal_behavior(observation: CaptureAwareObservation) -> bool:
     """Return whether traffic may contribute to ordinary workflows and ownership inference."""
 
+    if observation.method in {"HEAD", "OPTIONS"}:
+        return False
     if observation.capture_mode == CaptureMode.UNKNOWN:
         return observation.capture_id is None
     return observation.capture_mode == CaptureMode.NORMAL_BEHAVIOR and (
-        observation.capture_relevance not in {CaptureRelevance.CONTEXT, CaptureRelevance.NOISE}
+        observation.capture_relevance
+        not in {
+            CaptureRelevance.CONTEXT,
+            CaptureRelevance.NOISE,
+            CaptureRelevance.PROTOCOL_SUPPORT,
+        }
     )
 
 
 def observation_supports_ownership_baseline(observation: CaptureAwareObservation) -> bool:
     """Require explicit normal behavior for new ownership claims while preserving legacy facts."""
 
+    if observation.method in {"HEAD", "OPTIONS"}:
+        return False
     if observation.capture_id is None and observation.capture_mode == CaptureMode.UNKNOWN:
         return True
     return (
         observation.capture_mode == CaptureMode.NORMAL_BEHAVIOR
-        and observation.capture_relevance not in {CaptureRelevance.CONTEXT, CaptureRelevance.NOISE}
+        and observation.capture_relevance
+        not in {
+            CaptureRelevance.CONTEXT,
+            CaptureRelevance.NOISE,
+            CaptureRelevance.PROTOCOL_SUPPORT,
+        }
     )

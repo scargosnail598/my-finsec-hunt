@@ -192,7 +192,7 @@ def test_har_creates_stable_capture_links_and_explainable_intent(tmp_path: Path)
     assert first.capture.capture_id == second.capture.capture_id
     assert first.capture.intent.action == "CREATE"
     assert first.capture.intent.resource_type == "dns_record"
-    assert first.capture.intent.source == MetadataSource.ENGINE_INFERRED
+    assert first.capture.intent.source == MetadataSource.ENGINE_INFERRED_RAW
     assert first.capture.intent_inference.evidence
     observations = ObservationStore.model_validate(load_yaml(workspace.observations)).observations
     assert {item.capture_id for item in observations} == {first.capture.capture_id}
@@ -208,7 +208,7 @@ def test_har_creates_stable_capture_links_and_explainable_intent(tmp_path: Path)
     assert listed.exit_code == explained.exit_code == 0
     assert first.capture.capture_id in listed.output
     assert "Actor evidence" in explained.output
-    assert "Intent inference evidence" in explained.output
+    assert "Observed intent evidence" in explained.output
     assert "CREATE dns_record" in explained.output
 
 
@@ -537,9 +537,9 @@ def test_arvan_style_dns_capture_marks_primary_context_and_noise(tmp_path: Path)
     assert refreshed is not None
     assert refreshed.intent.action == "CREATE"
     assert refreshed.intent.resource_type == "dns_record"
-    assert refreshed.counts.primary >= 3
-    assert refreshed.counts.supporting >= 1
-    assert refreshed.counts.context >= 2
+    assert refreshed.counts.primary == 1
+    assert refreshed.counts.supporting >= 3
+    assert refreshed.counts.context >= 3
     assert refreshed.counts.noise >= 1
 
     observations = ObservationStore.model_validate(load_yaml(workspace.observations)).observations
@@ -638,8 +638,8 @@ def test_arvan_acceptance_corpus_prioritizes_independent_dns_journeys(
         capture = result.capture
         assert capture.intent.action == "CREATE"
         assert capture.intent.resource_type == "dns_record"
-        assert capture.counts.primary >= 3
-        assert capture.counts.supporting >= 1
+        assert capture.counts.primary == 1
+        assert capture.counts.supporting >= 3
         assert capture.counts.context >= 3
         assert capture.counts.noise >= 1
         assert CaptureQualityLabel.MULTI_INTENT not in capture.quality.labels

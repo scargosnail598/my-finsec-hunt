@@ -50,6 +50,7 @@ from finsec.normalization.ownership import (
     classify_ownership_scope_parameter,
     normalized_parameter_name,
 )
+from finsec.normalization.path_semantics import path_resource_semantics
 from finsec.normalization.paths import NormalizedPath, normalize_paths
 from finsec.readiness.provenance import (
     inventory_source_fingerprint,
@@ -157,7 +158,23 @@ MONETARY_FIELDS = {
     "refundamount",
 }
 STATE_FIELDS = {"status", "state", "action", "operation", "type", "mode", "step", "stage"}
-AUTH_FIELDS = {"code", "otp", "challengeid", "sessionid", "verificationid", "nonce", "token"}
+AUTH_FIELDS = {
+    "apikey",
+    "challengeid",
+    "code",
+    "credential",
+    "currentpassword",
+    "newpassword",
+    "nonce",
+    "otp",
+    "passcode",
+    "password",
+    "pin",
+    "secret",
+    "sessionid",
+    "token",
+    "verificationid",
+}
 OWNER_ASSOCIATION_FIELDS = {
     "userid",
     "ownerid",
@@ -230,6 +247,15 @@ def _resource_name(
         return ("UserVerification", Confidence.HIGH)
     if "my-posts" in lowered_path and action_name == "list":
         return ("PostCollection", Confidence.HIGH)
+
+    semantics = path_resource_semantics(path)
+    if semantics.resource != "unknown" and (
+        semantics.subject_selector is not None or semantics.semantic_component is not None
+    ):
+        return (
+            "".join(part.title() for part in semantics.resource.split("_")),
+            Confidence.MEDIUM,
+        )
 
     placeholders = re.findall(r"\{([A-Za-z][A-Za-z0-9]*)Id\}", path)
     if placeholders:
@@ -916,6 +942,7 @@ def _action(
     *,
     allow_rest_collection_mutation: bool = False,
     side_effect_evidence: list[SideEffectEvidence] | None = None,
+    request_fields: list[str] | None = None,
 ) -> tuple[EndpointAction, bool, list[str]]:
     segments = [segment.lower().replace("-", "_") for segment in path.split("/") if segment]
     tokens = [token for segment in segments for token in segment.split("_")]
@@ -950,6 +977,29 @@ def _action(
                 reasons=[reason],
             ),
             False,
+            [reason],
+        )
+    semantics = path_resource_semantics(path)
+    credential_fields = sorted(
+        {
+            field
+            for field in request_fields or []
+            if _field_semantic_type(re.split(r"\.|\[\]", field)[-1]) == "authentication"
+        }
+    )
+    if method == "POST" and semantics.semantic_component == "credential" and credential_fields:
+        reason = (
+            "POST targets a credential component and the request contains credential-shaped "
+            "fields; this is an update, not resource creation"
+        )
+        return (
+            EndpointAction(
+                name="update",
+                type="mutation",
+                confidence=Confidence.HIGH,
+                reasons=[reason],
+            ),
+            True,
             [reason],
         )
     read = next((token for token in reversed(tokens) if token in READ_ACTIONS), None)
@@ -1219,6 +1269,7 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
                 and "business_logic" in target.focus
             ),
             side_effect_evidence=explicit_side_effects,
+            request_fields=[field for item in observations for field in item.request_fields],
         )
         resource_name, resource_confidence = _resource_name(path, classification, action.name)
         rules = sorted(
