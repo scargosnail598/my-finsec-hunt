@@ -246,6 +246,16 @@ def _baseline_expectation(
             nonempty_json_required=True,
             object_value=baseline.requested_value,
         )
+    if binding.source == "CONTROLLED_LIFECYCLE":
+        return RequestExpectation(
+            ownership_source="CONTROLLED_LIFECYCLE",
+            object_path=baseline.response_object_path,
+            object_value=baseline.requested_value,
+            baseline_id=baseline.baseline_id,
+            subject_resource_id=baseline.subject_resource_id,
+            parent_resource_id=baseline.parent_resource_id,
+            relationship_ids=baseline.relationship_ids,
+        )
     return RequestExpectation(
         ownership_source="RESPONSE_BODY",
         object_path=baseline.response_object_path,
@@ -267,6 +277,14 @@ def _distinct_controlled_baselines(
             source.scope_value_fingerprint is not None
             and target.scope_value_fingerprint is not None
             and source.scope_value_fingerprint != target.scope_value_fingerprint
+        )
+    if binding.source == "CONTROLLED_LIFECYCLE":
+        return (
+            source.subject_resource_id is not None
+            and target.subject_resource_id is not None
+            and source.subject_resource_id != target.subject_resource_id
+            and source.baseline_id is not None
+            and target.baseline_id is not None
         )
     return (
         source.owner_value_fingerprint is not None
@@ -302,7 +320,33 @@ def _object_substitution(
 
     source_baseline: ActorObjectBaseline | None
     target_baseline: ActorObjectBaseline | None
-    if binding.source == "PATH_PARENT_SCOPE":
+    if binding.source == "CONTROLLED_LIFECYCLE":
+        baselines = sorted(
+            binding.baselines,
+            key=lambda item: (
+                0 if item.endpoint_id == endpoint.id else 1,
+                item.actor,
+                _value_key(item.requested_value),
+            ),
+        )
+        source_baseline = next(
+            (item for item in baselines if item.endpoint_id == endpoint.id),
+            None,
+        )
+        target_baseline = (
+            next(
+                (
+                    item
+                    for item in baselines
+                    if source_baseline is not None
+                    and _distinct_controlled_baselines(binding, source_baseline, item)
+                ),
+                None,
+            )
+            if source_baseline is not None
+            else None
+        )
+    elif binding.source == "PATH_PARENT_SCOPE":
         baselines = sorted(
             binding.baselines, key=lambda item: (item.actor, _value_key(item.requested_value))
         )
@@ -373,6 +417,11 @@ def _object_substitution(
             to_value=target_baseline.requested_value,
             source_actor=source_baseline.actor,
             target_actor=target_baseline.actor,
+            source_resource_id=source_baseline.subject_resource_id,
+            target_resource_id=target_baseline.subject_resource_id,
+            source_parent_resource_id=source_baseline.parent_resource_id,
+            target_parent_resource_id=target_baseline.parent_resource_id,
+            substitution_scope="SUBJECT_ONLY",
         )
     ]
     requests = [baseline, mutated]

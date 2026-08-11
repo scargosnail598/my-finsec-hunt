@@ -247,6 +247,14 @@ def _object_authorization_hypothesis(
             "inferred only from the explicitly trusted path scope. Cross-substitution has not "
             "yet been tested."
         )
+    elif binding is not None and binding.source == "CONTROLLED_LIFECYCLE":
+        reasoning = (
+            f"{binding.distinct_actors} researcher-controlled actors each have a distinct "
+            f"{resource.name} baseline backed by a successful CREATE response and subsequent "
+            f"same-actor use. The parent-aware identities retain "
+            f"{binding.distinct_parent_values} distinct parent value(s). Cross-substitution has "
+            "not yet been tested."
+        )
     elif binding is not None and binding.source == "RESPONSE_BODY":
         owner_field = (binding.owner_field_path or "owner association").rsplit(".", 1)[-1]
         reasoning = (
@@ -1677,6 +1685,20 @@ def _drafts(
                             "ownership provenance is PATH_PARENT_SCOPE",
                             *endpoint.relevance_reasons,
                         ]
+                    elif binding.source == "CONTROLLED_LIFECYCLE":
+                        eligibility_evidence = [
+                            "authenticated first-party API",
+                            f"client-controlled {parameter} path parameter",
+                            (
+                                f"{binding.distinct_actors} controlled actors have distinct "
+                                "CREATE-produced resource baselines"
+                            ),
+                            "produced object IDs were subsequently consumed by the same actors",
+                            "resource identity retains structural parent context",
+                            "ownership provenance is CONTROLLED_LIFECYCLE",
+                            *binding.relationship_ids,
+                            *endpoint.relevance_reasons,
+                        ]
                     else:
                         eligibility_evidence = [
                             "first-party JSON API",
@@ -1709,6 +1731,9 @@ def _drafts(
                             "version": (
                                 "4"
                                 if binding is not None and binding.source == "PATH_PARENT_SCOPE"
+                                else "5"
+                                if binding is not None
+                                and binding.source == "CONTROLLED_LIFECYCLE"
                                 else "3"
                             ),
                         },

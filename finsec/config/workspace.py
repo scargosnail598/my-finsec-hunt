@@ -61,6 +61,10 @@ class WorkspacePaths:
         return self.root / "model" / "resources.yaml"
 
     @property
+    def controlled_ownership(self) -> Path:
+        return self.root / "model" / "controlled-ownership.yaml"
+
+    @property
     def invariants(self) -> Path:
         return self.root / "model" / "invariants.yaml"
 
@@ -194,6 +198,15 @@ EMPTY_YAML_SCAFFOLDS = {
     "api/graphql.yaml": {"version": 1, "operations": []},
     "model/actors.yaml": {"version": 1, "actors": []},
     "model/resources.yaml": {"version": 1, "resources": []},
+    "model/controlled-ownership.yaml": {
+        "version": 1,
+        "generator": "controlled-ownership-boundary-v1",
+        "source_fingerprint": "",
+        "resources": [],
+        "relationships": [],
+        "controlled_baselines": [],
+        "identity_assumptions": [],
+    },
     "model/invariants.yaml": {"version": 1, "invariants": []},
     "model/business-invariants.yaml": {"version": 2, "business_invariants": []},
     "behavior/actions.yaml": {"version": 1, "actions": []},

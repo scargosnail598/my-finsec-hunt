@@ -350,11 +350,28 @@ def build_record_readiness_context(
 
     distinct_baselines = any(
         access.actor_object_binding_observed
+        and access.source in {"CONTROLLED_LIFECYCLE", "RESPONSE_BODY"}
         and access.distinct_actors >= 2
         and len(access.baselines) >= 2
         for endpoint in source
         for access in endpoint.object_access
     )
+    controlled_baseline_evidence = [
+        _evidence(
+            baseline.baseline_id or observation_id,
+            "WORKFLOW" if access.source == "CONTROLLED_LIFECYCLE" else "ENDPOINT",
+            (
+                f"Controlled {baseline.operation or 'resource'} baseline for {baseline.actor} "
+                "is backed by explicit lifecycle or owner-binding evidence."
+            ),
+        )
+        for endpoint in source
+        for access in endpoint.object_access
+        if access.actor_object_binding_observed
+        and access.source in {"CONTROLLED_LIFECYCLE", "RESPONSE_BODY"}
+        for baseline in access.baselines
+        for observation_id in baseline.observations[:1]
+    ]
     all_runtime_ids = {
         item.id for item in observations.observations if item.source in RUNTIME_SOURCES
     }
@@ -400,7 +417,8 @@ def build_record_readiness_context(
         evidence=[
             _evidence(endpoint.id, "ENDPOINT", "A safe baseline/oracle endpoint is available.")
             for endpoint in safe_oracles
-        ],
+        ]
+        + controlled_baseline_evidence,
         missing=(
             ["Capture two distinct controlled actor/subject baselines."]
             if record.category == "authorization" or binding_family

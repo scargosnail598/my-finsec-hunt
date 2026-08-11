@@ -17,6 +17,7 @@ from finsec.hypotheses.contracts import (
     VisibilityIntent,
 )
 from finsec.modeling.models import Endpoint
+from finsec.modeling.relationships import structural_parent_resource
 from finsec.normalization.path_semantics import path_resource_semantics
 
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
@@ -204,6 +205,23 @@ def assess_domain_intent(
     endpoint_resources = [endpoint.resource.type for endpoint in ordered]
     subject = endpoint_resources[0] if endpoint_resources else "Unknown"
     parent: str | None = None
+    structural_parents = {
+        value for endpoint in ordered if (value := structural_parent_resource(endpoint)) is not None
+    }
+    if len(structural_parents) == 1:
+        parent = next(iter(structural_parents))
+        positive.extend(
+            _evidence(
+                endpoint.id,
+                "ENDPOINT",
+                f"Nested route structure places {endpoint.resource.type} beneath {parent}; "
+                "this is structural scope evidence, not ownership proof.",
+            )
+            for endpoint in ordered
+            if structural_parent_resource(endpoint) == parent
+        )
+    elif len(structural_parents) > 1:
+        ambiguity.append("Source endpoints imply conflicting structural parent resource types.")
     if operation == DomainOperation.CREATE_CHILD and ordered:
         child = _child_subject(ordered[0])
         if child is not None:
@@ -287,6 +305,44 @@ def assess_domain_intent(
                 )
         for access in endpoint.object_access:
             if not access.actor_object_binding_observed:
+                continue
+            if access.source == "PATH_PARENT_SCOPE":
+                counter.append(
+                    _evidence(
+                        endpoint.id,
+                        "ENDPOINT",
+                        "Authenticated path access is retained as structural scope evidence and "
+                        "does not establish actor ownership or control.",
+                    )
+                )
+                ambiguity.extend(access.ambiguity)
+                continue
+            if access.source == "CONTROLLED_LIFECYCLE":
+                owner_signals.append(
+                    _evidence(
+                        endpoint.id,
+                        "ENDPOINT",
+                        f"{access.distinct_actors} controlled actors have distinct "
+                        "CREATE-produced, subsequently consumed resource baselines for "
+                        f"{access.identifier}.",
+                    )
+                )
+                positive.extend(
+                    _evidence(
+                        relationship_id,
+                        "WORKFLOW",
+                        "Canonical controlled-lifecycle relationship supports this actor/resource "
+                        "binding.",
+                    )
+                    for relationship_id in access.relationship_ids
+                )
+                counter.extend(
+                    _evidence(endpoint.id, "ENDPOINT", item)
+                    for item in access.counterevidence
+                )
+                ambiguity.extend(access.ambiguity)
+                if binding == BindingType.UNKNOWN:
+                    binding = BindingType.PRODUCER_CONSUMER
                 continue
             owner_field = _normalized((access.owner_field_path or "").rsplit(".", 1)[-1])
             if access.source == "RESPONSE_BODY" and owner_field not in EXCLUSIVE_OWNER_FIELDS:
@@ -401,7 +457,12 @@ def assess_domain_intent(
         counter.extend(public_signals)
         visibility = (
             VisibilityIntent.ACTOR_BOUND
-            if binding in {BindingType.INITIATING_ACTOR, BindingType.SESSION}
+            if binding
+            in {
+                BindingType.INITIATING_ACTOR,
+                BindingType.PRODUCER_CONSUMER,
+                BindingType.SESSION,
+            }
             else VisibilityIntent.OWNER_SCOPED
         )
         ambiguity.append("Public/shared and owner-scoped signals conflict and require review.")
@@ -417,7 +478,12 @@ def assess_domain_intent(
         positive.extend(owner_signals)
         visibility = (
             VisibilityIntent.ACTOR_BOUND
-            if binding in {BindingType.INITIATING_ACTOR, BindingType.SESSION}
+            if binding
+            in {
+                BindingType.INITIATING_ACTOR,
+                BindingType.PRODUCER_CONSUMER,
+                BindingType.SESSION,
+            }
             else VisibilityIntent.OWNER_SCOPED
         )
     else:

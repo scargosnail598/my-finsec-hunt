@@ -41,6 +41,7 @@ from finsec.modeling.models import (
     ParameterType,
     SideEffectEvidence,
 )
+from finsec.modeling.relationships import reconstruct_controlled_ownership
 from finsec.normalization.classification import (
     ClassificationContext,
     classify_observation,
@@ -875,37 +876,18 @@ def _path_scope_evidence(
             )
             continue
 
-        baselines = [
-            ActorObjectBaseline(
-                actor=actor,
-                requested_value=next(iter(values)),
-                scope_value_fingerprint=_scope_fingerprint(identifier, next(iter(values))),
-                observations=sorted(candidates[(actor, next(iter(values)))]),
-            )
-            for actor, values in sorted(actor_values.items())
-        ]
-        bindings.append(
-            ObjectAccessEvidence(
-                identifier=identifier,
-                source="PATH_PARENT_SCOPE",
-                confidence=Confidence.MEDIUM,
-                scope_parameter=identifier,
-                baselines=baselines,
-                distinct_actors=len(actor_values),
-                distinct_objects=len(distinct_values),
-                distinct_scope_values=len(distinct_values),
-                actor_object_binding_observed=True,
-            )
-        )
         decisions.append(
             OwnershipInference(
                 parameter=identifier,
                 classification=scope_classification,
-                status="APPLIED",
+                status="REJECTED",
                 controlled_actors=len(actor_values),
                 distinct_scope_values=len(distinct_values),
                 observations=observation_ids,
-                reasons=["Distinct authenticated controlled parent-scope baselines were observed."],
+                reasons=[
+                    "Distinct authenticated path values are structural scope observations only; "
+                    "successful GET access does not establish actor ownership or control."
+                ],
             )
         )
     return bindings, decisions
@@ -1358,10 +1340,17 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
         )
 
     store = EndpointStore(endpoints=endpoints)
-    document = store.model_dump(mode="json", exclude_none=True)
-    write_yaml(workspace.endpoints, document)
+    write_yaml(workspace.endpoints, store.model_dump(mode="json", exclude_none=True))
     refresh_capture_analysis(workspace)
     refreshed_observations = ObservationStore.model_validate(load_yaml(workspace.observations))
+    _relationships, store, _relationship_result = reconstruct_controlled_ownership(
+        workspace,
+        target=target,
+        observations=refreshed_observations,
+        endpoints=store,
+    )
+    document = store.model_dump(mode="json", exclude_none=True)
+    write_yaml(workspace.endpoints, document)
     fingerprint = inventory_source_fingerprint(target, refreshed_observations)
     for stage in ("classify", "normalize"):
         record_stage_provenance(

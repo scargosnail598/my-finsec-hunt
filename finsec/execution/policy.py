@@ -373,6 +373,49 @@ def _validate_object_binding(
             raise FinsecError(
                 "Execution refused: path-scope mutation is not bound to controlled baselines."
             )
+    elif binding.source == "CONTROLLED_LIFECYCLE":
+        available_lifecycle = {
+            (
+                item.actor,
+                item.requested_value,
+                item.subject_resource_id,
+                item.parent_resource_id,
+                item.baseline_id,
+            )
+            for item in binding.baselines
+            if item.subject_resource_id is not None and item.baseline_id is not None
+        }
+        source_lifecycle = (
+            mutation.source_actor,
+            mutation.from_value,
+            mutation.source_resource_id,
+            mutation.source_parent_resource_id,
+            baseline.expected.baseline_id,
+        )
+        target_lifecycle = (
+            mutation.target_actor,
+            mutation.to_value or "",
+            mutation.target_resource_id,
+            mutation.target_parent_resource_id,
+            mutated.expected.baseline_id,
+        )
+        if (
+            source_lifecycle not in available_lifecycle
+            or target_lifecycle not in available_lifecycle
+            or baseline.expected.ownership_source != "CONTROLLED_LIFECYCLE"
+            or mutated.expected.ownership_source != "CONTROLLED_LIFECYCLE"
+            or baseline.expected.subject_resource_id != mutation.source_resource_id
+            or mutated.expected.subject_resource_id != mutation.target_resource_id
+            or baseline.expected.parent_resource_id != mutation.source_parent_resource_id
+            or mutated.expected.parent_resource_id != mutation.target_parent_resource_id
+            or mutation.substitution_scope != "SUBJECT_ONLY"
+            or not baseline.expected.relationship_ids
+            or not mutated.expected.relationship_ids
+        ):
+            raise FinsecError(
+                "Execution refused: lifecycle mutation is not bound to canonical controlled "
+                "baselines."
+            )
     else:
         available_response = {
             (item.actor, item.requested_value, item.owner_value_fingerprint)

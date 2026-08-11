@@ -24,7 +24,11 @@ ParameterSource = Literal[
     "derived_resource_schema",
     "related_endpoint_schema",
 ]
-OwnershipEvidenceSource = Literal["RESPONSE_BODY", "PATH_PARENT_SCOPE"]
+OwnershipEvidenceSource = Literal[
+    "RESPONSE_BODY",
+    "PATH_PARENT_SCOPE",
+    "CONTROLLED_LIFECYCLE",
+]
 OwnershipInferenceStatus = Literal["APPLIED", "REJECTED", "NOT_NEEDED"]
 EndpointActionType = Literal["read", "mutation", "financial_mutation", "authentication", "unknown"]
 SideEffectEvidenceKind = Literal[
@@ -211,6 +215,17 @@ class ActorObjectBaseline(StrictModel):
     response_object_path: str | None = None
     owner_value_fingerprint: str | None = None
     scope_value_fingerprint: str | None = None
+    subject_resource_id: str | None = None
+    parent_resource_id: str | None = None
+    parent_resource_type: str | None = None
+    parent_value: str | None = None
+    endpoint_id: str | None = None
+    baseline_id: str | None = None
+    relationship_ids: list[str] = Field(default_factory=list)
+    capture_ids: list[str] = Field(default_factory=list)
+    session_ids: list[str] = Field(default_factory=list)
+    operation: Literal["READ", "CREATE", "UPDATE", "DELETE", "ACTION"] | None = None
+    authentication_type: str | None = None
     observations: list[str] = Field(default_factory=list)
 
 
@@ -227,7 +242,12 @@ class ObjectAccessEvidence(StrictModel):
     distinct_objects: int = Field(default=0, ge=0)
     distinct_owner_values: int = Field(default=0, ge=0)
     distinct_scope_values: int = Field(default=0, ge=0)
+    distinct_parent_values: int = Field(default=0, ge=0)
     actor_object_binding_observed: bool = False
+    relationship_ids: list[str] = Field(default_factory=list)
+    baseline_ids: list[str] = Field(default_factory=list)
+    counterevidence: list[str] = Field(default_factory=list)
+    ambiguity: list[str] = Field(default_factory=list)
 
 
 class OwnershipInference(StrictModel):
@@ -288,5 +308,5 @@ class ObservationStore(StrictModel):
 class EndpointStore(StrictModel):
     """Versioned endpoint inventory persisted in a target workspace."""
 
-    version: int = 1
+    version: int = 2
     endpoints: list[Endpoint] = Field(default_factory=list)

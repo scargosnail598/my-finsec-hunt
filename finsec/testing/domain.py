@@ -60,13 +60,19 @@ class PlanActorAuthentication(EditableModel):
 class RequestExpectation(EditableModel):
     """Passive identity evidence required before a bounded comparison proceeds."""
 
-    ownership_source: Literal["RESPONSE_BODY", "PATH_PARENT_SCOPE"] | None = None
+    ownership_source: (
+        Literal["RESPONSE_BODY", "PATH_PARENT_SCOPE", "CONTROLLED_LIFECYCLE"] | None
+    ) = None
     scope_parameter: str | None = None
     nonempty_json_required: bool = False
     object_path: str | None = None
     object_value: str | None = None
     owner_path: str | None = None
     owner_fingerprint: str | None = None
+    baseline_id: str | None = None
+    subject_resource_id: str | None = None
+    parent_resource_id: str | None = None
+    relationship_ids: list[str] = Field(default_factory=list)
 
 
 class RequestMutation(EditableModel):
@@ -79,6 +85,16 @@ class RequestMutation(EditableModel):
     to_value: str | None = None
     source_actor: str | None = None
     target_actor: str | None = None
+    source_resource_id: str | None = None
+    target_resource_id: str | None = None
+    source_parent_resource_id: str | None = None
+    target_parent_resource_id: str | None = None
+    substitution_scope: Literal[
+        "SUBJECT_ONLY",
+        "PARENT_ONLY",
+        "SUBJECT_AND_PARENT",
+        "TENANT",
+    ] | None = None
 
 
 class StructuredRequest(EditableModel):
