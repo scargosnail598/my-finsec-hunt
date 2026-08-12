@@ -16,6 +16,7 @@ from finsec.modeling.models import (
     Observation,
     ObservationStore,
 )
+from finsec.modeling.semantics import execution_ownership_supported
 from finsec.testing.domain import (
     PlanExecutionConfig,
     RequestExpectation,
@@ -296,6 +297,7 @@ def _distinct_controlled_baselines(
 def _object_substitution(
     workspace: WorkspacePaths,
     target: TargetDocument,
+    hypothesis: HypothesisRecord,
     endpoint: Endpoint,
     observations: ObservationStore,
 ) -> ExecutionTemplateResult:
@@ -304,8 +306,23 @@ def _object_substitution(
         blockers.append("Object substitution execution supports GET or HEAD read-only endpoints.")
     if endpoint.resource.type.lower() in PUBLIC_READ_RESOURCES:
         blockers.append("Known-public resources are not eligible for BOLA execution plans.")
+    mutation_target = hypothesis.mutation_target
+    if mutation_target.parameter is None:
+        blockers.append("The hypothesis does not identify an exact mutation parameter.")
+    elif not execution_ownership_supported(mutation_target.semantics):
+        blockers.append(
+            f"Identifier {mutation_target.parameter} is {mutation_target.semantics.semantic_class} "
+            f"with ownership state {mutation_target.semantics.ownership_state}; strong "
+            "owned-object evidence is required."
+        )
     binding = next(
-        (item for item in endpoint.object_access if item.actor_object_binding_observed),
+        (
+            item
+            for item in endpoint.object_access
+            if item.actor_object_binding_observed
+            and mutation_target.parameter is not None
+            and item.identifier.lower() == mutation_target.parameter.lower()
+        ),
         None,
     )
     if binding is None:
@@ -641,7 +658,7 @@ def build_execution_templates(
         ]
         return ExecutionTemplateResult([], _execution(target, "UNSUPPORTED", [], None, blockers))
     if hypothesis.category == "authorization":
-        return _object_substitution(workspace, target, endpoints[0], observations)
+        return _object_substitution(workspace, target, hypothesis, endpoints[0], observations)
     if hypothesis.category == "authentication":
         return _authentication_comparison(workspace, target, endpoints[0], observations)
     if hypothesis.category == "version_parity":

@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from finsec.behavior.domain import (
     ActionStore,
     BusinessInvariant,
+    CausalBasis,
     HypothesisCluster,
     HypothesisConfidence,
     HypothesisEvidence,
@@ -42,6 +43,7 @@ from finsec.modeling.models import (
     Observation,
     ObservationStore,
 )
+from finsec.modeling.semantics import IdentifierSemanticClass
 
 _ORDERING_FAMILIES = {"OUT_OF_ORDER_EXECUTION", "STEP_SKIPPING"}
 _NOISE_CLASSIFICATIONS = {
@@ -683,15 +685,39 @@ def _evidence(
         for parameter in endpoint.parameters
         if parameter.source == "request"
         and parameter.client_controlled
+        and parameter.identifier_semantics.semantic_class
+        not in {
+            IdentifierSemanticClass.REGION,
+            IdentifierSemanticClass.SHARED_SCOPE,
+            IdentifierSemanticClass.TENANT_CONTAINER,
+            IdentifierSemanticClass.PARENT_CONTAINER,
+            IdentifierSemanticClass.COLLECTION,
+            IdentifierSemanticClass.ACTOR_IDENTIFIER,
+            IdentifierSemanticClass.AUTH_IDENTIFIER,
+            IdentifierSemanticClass.NON_SECURITY_RELEVANT,
+        }
         and parameter.semantic_type == "object_identifier"
+    }
+    endpoint_request_names = {
+        _normalized_word(parameter.name)
+        for endpoint in endpoints
+        for parameter in endpoint.parameters
+        if parameter.source == "request" and parameter.client_controlled
+    }
+    endpoint_route_parameter_names = {
+        _normalized_word(segment[1:-1])
+        for endpoint in endpoints
+        for segment in endpoint.path.split("/")
+        if segment.startswith("{") and segment.endswith("}")
     }
     step_identifier_names = {
         _normalized_word(field.rsplit(".", 1)[-1])
         for step in relevant_steps
         for field in step.client_controlled_resource_fields
     }
-    controlled_identifier = bool(endpoint_identifier_names) or bool(
-        not endpoints and step_identifier_names
+    controlled_identifier = bool(
+        endpoint_identifier_names
+        or (step_identifier_names - endpoint_request_names - endpoint_route_parameter_names)
     )
     ownership_known = any(
         access.actor_object_binding_observed
@@ -716,6 +742,12 @@ def _evidence(
         if actor not in {None, "ANONYMOUS", "UNKNOWN"}
     }
     cross_actor_baseline = bool(comparison_links) and len(comparison_actors) >= 2
+    capability_binding_observed = any(
+        link.causal_basis == CausalBasis.CAPABILITY_ISSUED
+        and link.causal_evidence.capability_semantics
+        and link.causal_evidence.consumer_state_changing
+        for link in comparison_links
+    )
     causal_prerequisites = bool(invariant.causal_evidence) and bool(
         invariant.prerequisite_action
         and invariant.dependent_action
@@ -737,13 +769,13 @@ def _evidence(
     resource_instances = {
         resource for instance in family_instances for resource in instance.resource_instance_ids
     }
-    instances_with_resources = sum(
-        bool(instance.resource_instance_ids) for instance in family_instances
-    )
+    distinct_resource_lifecycles = {
+        tuple(instance.resource_instance_ids)
+        for instance in family_instances
+        if instance.resource_instance_ids
+    }
     independently_identifiable = controlled_identifier and bool(resource_instances)
-    cross_workflow_resource = (
-        controlled_identifier and len(resource_instances) >= 2 and instances_with_resources >= 2
-    )
+    cross_workflow_resource = controlled_identifier and len(distinct_resource_lifecycles) >= 2
     sensitive_read = (
         not state_changing
         and any(endpoint.method in {"GET", "HEAD"} for endpoint in endpoints)
@@ -773,6 +805,7 @@ def _evidence(
         controlled_identifier=controlled_identifier,
         ownership_known=ownership_known,
         cross_actor_baseline=cross_actor_baseline,
+        capability_binding_observed=capability_binding_observed,
         causal_prerequisites_proven=causal_prerequisites,
         business_relevant_resource=business_resource,
         independently_identifiable_resource=independently_identifiable,
@@ -794,6 +827,7 @@ def _evidence_strength(
             evidence.controlled_identifier,
             evidence.ownership_known,
             evidence.cross_actor_baseline,
+            evidence.capability_binding_observed,
             evidence.causal_prerequisites_proven,
             evidence.business_relevant_resource,
             evidence.independently_identifiable_resource,
@@ -806,7 +840,11 @@ def _evidence_strength(
             evidence.cross_actor_baseline
             and evidence.controlled_identifier
             and evidence.business_relevant_resource
-            and evidence.ownership_known
+            and (
+                evidence.ownership_known
+                or evidence.capability_binding_observed
+                or evidence.causal_prerequisites_proven
+            )
             and evidence.sensitive_operation
         )
     elif item.family == "RESOURCE_SWITCH":
@@ -882,6 +920,7 @@ def _research_score(
         "Controlled identifier": evidence.controlled_identifier,
         "Ownership baseline": evidence.ownership_known,
         "Cross-actor baseline": evidence.cross_actor_baseline,
+        "Producer-consumer actor binding": evidence.capability_binding_observed,
         "Causal prerequisite": evidence.causal_prerequisites_proven,
         "Business-relevant resource": evidence.business_relevant_resource,
         "Cross-workflow resource": evidence.cross_workflow_resource,
@@ -928,7 +967,11 @@ def _qualification(
         and evidence.controlled_identifier
         and evidence.business_relevant_resource
         and evidence.sensitive_operation
-        and evidence.ownership_known
+        and (
+            evidence.ownership_known
+            or evidence.capability_binding_observed
+            or evidence.causal_prerequisites_proven
+        )
     ):
         suppression.append("INSUFFICIENT_ACTOR_BINDING_EVIDENCE")
         reasons.append(
@@ -1320,7 +1363,19 @@ def calibrate_hypotheses(
         _cluster(members, contexts, supports) for _fingerprint, members in sorted(grouped.items())
     ]
     return HypothesisPrecisionResult(
-        hypotheses=sorted(calibrated, key=lambda item: item.id),
+        hypotheses=sorted(
+            calibrated,
+            key=lambda item: (
+                -_PROMOTION_RANK[
+                    item.qualification.promotion
+                    if item.qualification is not None
+                    else HypothesisPromotion.SUPPRESSED
+                ],
+                -(item.qualification.research_score if item.qualification is not None else 0),
+                -_score_total(item),
+                item.id,
+            ),
+        ),
         clusters=rank_hypothesis_clusters(clusters, include_suppressed=True, include_low=True),
     )
 

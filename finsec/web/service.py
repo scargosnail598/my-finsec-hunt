@@ -383,6 +383,7 @@ def hypothesis_detail(snapshot: WorkspaceSnapshot, hypothesis_id: str) -> dict[s
     invariant_ids = set(hypothesis.source.invariants)
     return {
         "hypothesis": hypothesis.model_dump(mode="json"),
+        "explanation": _hypothesis_explanation(hypothesis),
         "plan": _plan_payload(plan),
         "validation": _validation_payload(validation),
         "evidence": evidence.model_dump(mode="json") if evidence is not None else None,
@@ -582,6 +583,7 @@ def _hypothesis_summary(item: HypothesisRecord) -> dict[str, Any]:
         "cluster_id": item.grouping.cluster_id,
         "campaign_id": item.grouping.campaign_id,
         "relationship": item.grouping.relationship,
+        "explanation": _hypothesis_explanation(item),
         "presentation_visible": presentation_visible(item),
         "suppression_reason": item.presentation.suppression_reason,
         "mutation_dimensions": item.mutation_dimensions,
@@ -590,6 +592,45 @@ def _hypothesis_summary(item: HypothesisRecord) -> dict[str, Any]:
             "endpoints": len(item.source.endpoints),
             "invariants": len(item.source.invariants),
             "observations": len(item.source.observations),
+        },
+    }
+
+
+def _hypothesis_explanation(item: HypothesisRecord) -> dict[str, Any]:
+    target = item.mutation_target
+    semantics = target.semantics
+    return {
+        "mutation_target": {
+            "parameter": target.parameter,
+            "location": target.location,
+            "endpoint_ids": list(target.endpoint_ids),
+            "expected_authorization_relationship": target.expected_authorization_relationship,
+        },
+        "identifier_semantics": {
+            "semantic_class": semantics.semantic_class,
+            "resource_role": semantics.resource_role,
+            "resource_type": semantics.resource_type,
+            "parent_resource_type": semantics.parent_resource_type,
+            "ownership_state": semantics.ownership_state,
+            "confidence": semantics.confidence,
+            "evidence": list(semantics.evidence),
+            "counterevidence": list(semantics.counterevidence),
+            "sources": list(semantics.sources),
+            "explanation": semantics.explanation,
+        },
+        "readiness": {
+            "decision": item.readiness_assessment.readiness,
+            "reasons": list(item.readiness_assessment.reasons),
+            "missing_prerequisites": list(item.readiness_assessment.missing_prerequisites),
+        },
+        "presentation": {
+            "visible": item.presentation.visible,
+            "suppression_reason": item.presentation.suppression_reason,
+            "retention_reasons": list(item.presentation.retention_reasons),
+            "difference_reasons": list(item.presentation.difference_reasons),
+            "similar_hypothesis_ids": list(item.presentation.similar_hypothesis_ids),
+            "cluster_id": item.grouping.cluster_id,
+            "campaign_id": item.grouping.campaign_id,
         },
     }
 

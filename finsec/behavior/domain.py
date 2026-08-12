@@ -15,6 +15,7 @@ from finsec.hypotheses.contracts import (
     HypothesisReadinessAssessment,
     VisibilityIntent,
 )
+from finsec.modeling.semantics import IdentifierSemanticClass, OwnershipState
 
 
 class BehaviorModel(BaseModel):
@@ -380,6 +381,7 @@ class HypothesisEvidence(BehaviorModel):
     controlled_identifier: bool = False
     ownership_known: bool = False
     cross_actor_baseline: bool = False
+    capability_binding_observed: bool = False
     causal_prerequisites_proven: bool = False
     business_relevant_resource: bool = False
     independently_identifiable_resource: bool = False
@@ -445,6 +447,8 @@ class ResourceInstance(BehaviorModel):
     observations: list[str] = Field(default_factory=list)
     actors: list[str] = Field(default_factory=list)
     capture_modes: list[CaptureMode] = Field(default_factory=list)
+    semantic_classes: list[IdentifierSemanticClass] = Field(default_factory=list)
+    ownership_states: list[OwnershipState] = Field(default_factory=list)
     normal_behavior_observations: list[str] = Field(default_factory=list)
     probe_observations: list[str] = Field(default_factory=list)
     relationships: list[ResourceRelationship] = Field(default_factory=list)
@@ -558,6 +562,7 @@ class WorkflowStep(BehaviorModel):
     timestamp: str | None = None
     resource_instance_ids: list[str] = Field(default_factory=list)
     client_controlled_resource_fields: list[str] = Field(default_factory=list)
+    client_controlled_binding_fields: list[str] = Field(default_factory=list)
     state_observations: list[WorkflowStateObservation] = Field(default_factory=list)
     business_values: list[WorkflowBusinessValue] = Field(default_factory=list)
     state_before: str | None = None

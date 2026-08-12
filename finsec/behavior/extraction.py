@@ -13,6 +13,12 @@ from finsec.config.workspace import WorkspacePaths
 from finsec.ingest.common import headers_from_any, parse_raw_http
 from finsec.modeling.merge import stable_fingerprint
 from finsec.modeling.models import Endpoint, EndpointStore, Observation
+from finsec.modeling.semantics import (
+    IdentifierResourceRole,
+    IdentifierSemanticAssessment,
+    IdentifierSemanticClass,
+    OwnershipState,
+)
 from finsec.utils.redaction import REDACTED
 
 SignalKind = Literal[
@@ -78,6 +84,8 @@ class ScalarSignal:
     resource_type: str | None = None
     semantic_role: str = "unknown"
     resource_role: ResourceRole = "UNKNOWN"
+    semantic_class: IdentifierSemanticClass = IdentifierSemanticClass.OPAQUE_UNKNOWN
+    ownership_state: OwnershipState = OwnershipState.UNKNOWN
     location: str = "BODY"
     primitive_type: PrimitiveType = "STRING"
     distinctive: bool = False
@@ -323,7 +331,19 @@ def _value_resource_type(field_path: str, endpoint: Endpoint | None) -> str:
     return endpoint.resource.type.lower() if endpoint is not None else "resource"
 
 
-def _resource_role(resource_type: str | None, endpoint: Endpoint | None) -> ResourceRole:
+def _resource_role(
+    resource_type: str | None,
+    endpoint: Endpoint | None,
+    semantics: IdentifierSemanticAssessment | None = None,
+) -> ResourceRole:
+    if semantics is not None and semantics.semantic_class in {
+        IdentifierSemanticClass.REGION,
+        IdentifierSemanticClass.SHARED_SCOPE,
+        IdentifierSemanticClass.TENANT_CONTAINER,
+        IdentifierSemanticClass.PARENT_CONTAINER,
+        IdentifierSemanticClass.ACTOR_IDENTIFIER,
+    }:
+        return "SCOPE"
     if resource_type is None:
         return "UNKNOWN"
     lowered = resource_type.lower()
@@ -332,6 +352,53 @@ def _resource_role(resource_type: str | None, endpoint: Endpoint | None) -> Reso
     if endpoint is not None and lowered == endpoint.resource.type.lower():
         return "PRIMARY"
     return "RELATED"
+
+
+def _parameter_semantics(
+    endpoint: Endpoint | None,
+    field_name: str,
+    location: str,
+    direction: Literal["REQUEST", "RESPONSE"],
+) -> IdentifierSemanticAssessment | None:
+    if endpoint is None:
+        return None
+    normalized = _normalized_name(field_name)
+    expected_locations = {
+        "PATH_PARAMETER": {"path"},
+        "QUERY_PARAMETER": {"query"},
+        "HEADER": {"header"},
+        "BODY": {"body"} if direction == "REQUEST" else {"response_body"},
+    }.get(location, set())
+    candidates = [
+        item
+        for item in endpoint.parameters
+        if _normalized_name(item.name) == normalized
+        and item.source == direction.lower()
+        and (not expected_locations or item.location in expected_locations)
+    ]
+    if candidates:
+        return sorted(candidates, key=lambda item: (item.location, item.name))[
+            0
+        ].identifier_semantics
+    if location == "PATH_PARAMETER" and normalized == _normalized_name(
+        f"{endpoint.resource.type}Id"
+    ):
+        return IdentifierSemanticAssessment(
+            semantic_class=IdentifierSemanticClass.OBJECT_IDENTIFIER,
+            resource_role=IdentifierResourceRole.SUBJECT,
+            resource_type=endpoint.resource.type,
+            ownership_state=OwnershipState.UNKNOWN,
+            confidence="medium",
+            evidence=[
+                "A literal path segment selects the endpoint subject; ownership remains unknown."
+            ],
+            sources=["PATH_STRUCTURE"],
+            explanation=(
+                "The path scalar is an object-identifier candidate, but no ownership evidence "
+                "is inferred from its shape or position."
+            ),
+        )
+    return None
 
 
 def _business_role(field_name: str) -> str:
@@ -475,11 +542,16 @@ def _signal(
     if not value or value == REDACTED or len(value) > 256:
         return None
     field_name = _terminal_field(field_path)
+    parameter_semantics = _parameter_semantics(endpoint, field_name, location, direction)
     kind = _signal_kind(field_name, location, raw_value)
     if kind is None:
         return None
     resource_type = (
-        _resource_type(field_path, endpoint)
+        parameter_semantics.resource_type
+        if kind == "RESOURCE_IDENTIFIER"
+        and parameter_semantics is not None
+        and parameter_semantics.resource_type is not None
+        else _resource_type(field_path, endpoint)
         if kind == "RESOURCE_IDENTIFIER"
         else _value_resource_type(field_path, endpoint)
         if kind == "BUSINESS_VALUE"
@@ -493,7 +565,17 @@ def _signal(
         kind=kind,
         resource_type=resource_type,
         semantic_role=_semantic_role(field_name, kind, resource_type),
-        resource_role=_resource_role(resource_type, endpoint),
+        resource_role=_resource_role(resource_type, endpoint, parameter_semantics),
+        semantic_class=(
+            parameter_semantics.semantic_class
+            if parameter_semantics is not None
+            else IdentifierSemanticClass.OPAQUE_UNKNOWN
+        ),
+        ownership_state=(
+            parameter_semantics.ownership_state
+            if parameter_semantics is not None
+            else OwnershipState.UNKNOWN
+        ),
         location=location,
         primitive_type=_primitive_type(raw_value),
         distinctive=distinctive,

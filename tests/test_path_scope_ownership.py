@@ -18,6 +18,7 @@ from finsec.mcp.service import FinsecMcpService
 from finsec.modeling.generator import generate_model
 from finsec.modeling.invariants import generate_invariants
 from finsec.modeling.models import Endpoint, EndpointStore
+from finsec.modeling.semantics import IdentifierSemanticClass, OwnershipState
 from finsec.normalization.inventory import build_inventory
 from finsec.testing.planner import generate_plan
 from finsec.utils.yaml_store import load_yaml, write_yaml
@@ -92,7 +93,9 @@ def _workspace(
     build_inventory(workspace)
     generate_model(workspace)
     generate_invariants(workspace)
-    generate_hypotheses(workspace)
+    invariants = load_yaml(workspace.invariants)
+    if invariants.get("invariants"):
+        generate_hypotheses(workspace)
     return workspace
 
 
@@ -136,57 +139,32 @@ def _account_entries() -> list[tuple[str, dict[str, Any]]]:
     ]
 
 
-def test_account_parent_scope_builds_supported_object_substitution(tmp_path: Path) -> None:
+def test_account_parent_scope_remains_tenant_container_research_only(tmp_path: Path) -> None:
     workspace = _workspace(tmp_path, _account_entries())
     for command in ("inventory", "model", "invariants", "hypotheses"):
         result = RUNNER.invoke(app, [command, "--workspace", str(workspace.root)])
         assert result.exit_code == 0, result.output
     endpoint = _endpoint(workspace, "/v1/accounts/{accountId}/iam/resources")
-    binding = next(item for item in endpoint.object_access if item.identifier == "accountId")
+    parameter = next(item for item in endpoint.parameters if item.name == "accountId")
+    decision = next(item for item in endpoint.ownership_inference if item.parameter == "accountId")
+    store = HypothesisStore.model_validate(load_yaml(workspace.hypotheses))
 
-    assert binding.source == "PATH_PARENT_SCOPE"
-    assert binding.confidence == "medium"
-    assert binding.owner_field_path is None
-    assert binding.scope_parameter == "accountId"
-    assert binding.distinct_actors == 2
-    assert binding.distinct_scope_values == 2
-    assert all(item.owner_value_fingerprint is None for item in binding.baselines)
-    assert all(item.scope_value_fingerprint is not None for item in binding.baselines)
+    assert endpoint.object_access == []
+    assert parameter.identifier_semantics.semantic_class == IdentifierSemanticClass.TENANT_CONTAINER
+    assert parameter.identifier_semantics.ownership_state == OwnershipState.WEAK_INFERRED
+    assert decision.status == "REJECTED"
+    assert "structural scope observations only" in " ".join(decision.reasons)
+    assert not any(
+        item.category == "authorization" and endpoint.id in item.source.endpoints
+        for item in store.hypotheses
+    )
 
-    hypothesis = _hypothesis(workspace, endpoint)
-    plan = generate_plan(workspace, hypothesis.id).plan
-
-    assert plan.status == "READY_FOR_REVIEW"
-    assert plan.execution.supported is True
-    assert plan.execution.pattern == "OBJECT_SUBSTITUTION"
-    assert plan.execution.request_budget == 2
-    assert plan.requests[0].actor == "ACCOUNT_A"
-    assert plan.requests[1].actor == "ACCOUNT_A"
-    assert plan.requests[0].path.endswith("/acct-a-1001/iam/resources")
-    assert plan.requests[1].path.endswith("/acct-b-2002/iam/resources")
-    assert plan.requests[1].mutations[0].source_actor == "ACCOUNT_A"
-    assert plan.requests[1].mutations[0].target_actor == "ACCOUNT_B"
-
-    planned = RUNNER.invoke(app, ["plan", hypothesis.id, "--workspace", str(workspace.root)])
-    assert planned.exit_code == 0, planned.output
-    assert "Bounded execution template: OBJECT_SUBSTITUTION (2 requests)" in planned.output
-
-    explained = RUNNER.invoke(app, ["explain", endpoint.id, "--workspace", str(workspace.root)])
-    assert explained.exit_code == 0, explained.output
-    assert "controlled parent-scope baseline" in explained.output
-    assert "Parameter: accountId" in explained.output
-    assert "OBJECT_SUBSTITUTION" in explained.output
-    assert "acct-a-1001" not in explained.output
-    assert "acct-b-2002" not in explained.output
-
-    context = FinsecMcpService.from_workspace_path(workspace.root).hypothesis_context(hypothesis.id)
-    mcp_endpoint = next(item for item in context.endpoints if item.id == endpoint.id)
-    assert mcp_endpoint.object_access[0].source == "PATH_PARENT_SCOPE"
-    assert mcp_endpoint.object_access[0].owner_field_path is None
-    assert mcp_endpoint.ownership_inference[0].status == "APPLIED"
+    mcp = FinsecMcpService.from_workspace_path(workspace.root)
+    summary = mcp.list_hypotheses(active_only=False, include_research_tasks=True)
+    assert summary.hypotheses
 
 
-def test_tenant_parent_scope_uses_the_same_generic_inference(tmp_path: Path) -> None:
+def test_tenant_parent_scope_uses_the_same_container_semantics(tmp_path: Path) -> None:
     workspace = _workspace(
         tmp_path,
         [
@@ -201,10 +179,11 @@ def test_tenant_parent_scope_uses_the_same_generic_inference(tmp_path: Path) -> 
         ],
     )
     endpoint = _endpoint(workspace, "/v2/tenants/{tenantId}/audit")
-    binding = next(item for item in endpoint.object_access if item.identifier == "tenantId")
+    parameter = next(item for item in endpoint.parameters if item.name == "tenantId")
 
-    assert binding.source == "PATH_PARENT_SCOPE"
-    assert generate_plan(workspace, _hypothesis(workspace, endpoint).id).plan.execution.supported
+    assert endpoint.object_access == []
+    assert parameter.identifier_semantics.semantic_class == IdentifierSemanticClass.TENANT_CONTAINER
+    assert parameter.identifier_semantics.ownership_state == OwnershipState.WEAK_INFERRED
 
 
 def test_public_region_scope_never_becomes_path_ownership(tmp_path: Path) -> None:
@@ -231,21 +210,10 @@ def test_public_region_scope_never_becomes_path_ownership(tmp_path: Path) -> Non
     assert "public/shared" in " ".join(decision.reasons)
 
     store = HypothesisStore.model_validate(load_yaml(workspace.hypotheses))
-    hypothesis = next(
-        item
+    assert not any(
+        item.category == "authorization" and endpoint.id in item.source.endpoints
         for item in store.hypotheses
-        if endpoint.id in item.source.endpoints and item.category == "authorization"
     )
-    assert hypothesis.kind == "RESEARCH_TASK"
-    assert hypothesis.disposition == "NEEDS_RESEARCH"
-    assert hypothesis.priority == "P3"
-    assert hypothesis.readiness == "RESEARCH_ONLY"
-    assert hypothesis.domain_intent.visibility == "SHARED"
-    assert hypothesis.title.startswith("Validate shared Region access semantics")
-
-    planned = RUNNER.invoke(app, ["plan", hypothesis.id, "--workspace", str(workspace.root)])
-    assert planned.exit_code == 1
-    assert "research or suppressed candidate" in planned.output
 
 
 @pytest.mark.parametrize(
@@ -383,8 +351,78 @@ def test_options_requests_do_not_contribute_to_parent_scope_binding(tmp_path: Pa
         workspace, "/v1/accounts/{accountId}/iam/resources", method="OPTIONS"
     )
 
-    assert any(item.source == "PATH_PARENT_SCOPE" for item in get_endpoint.object_access)
+    assert get_endpoint.object_access == []
+    assert (
+        next(
+            item for item in get_endpoint.parameters if item.name == "accountId"
+        ).identifier_semantics.semantic_class
+        == IdentifierSemanticClass.TENANT_CONTAINER
+    )
     assert options_endpoint.object_access == []
+
+
+def _owned_object_entries() -> list[tuple[str, dict[str, Any]]]:
+    object_a = "11111111-1111-4111-8111-111111111111"
+    object_b = "22222222-2222-4222-8222-222222222222"
+    return [
+        ("ACCOUNT_A", _entry(1, "POST", "/v1/firewalls", {"id": object_a})),
+        ("ACCOUNT_A", _entry(2, "GET", f"/v1/firewalls/{object_a}", {"id": object_a})),
+        ("ACCOUNT_B", _entry(3, "POST", "/v1/firewalls", {"id": object_b})),
+        ("ACCOUNT_B", _entry(4, "GET", f"/v1/firewalls/{object_b}", {"id": object_b})),
+    ]
+
+
+def _owned_object_workspace(tmp_path: Path, *, active_execution: bool) -> WorkspacePaths:
+    workspace = create_workspace("path-scope", tmp_path / "workspaces")
+    target = load_yaml(workspace.target)
+    target["scope"]["hosts"] = ["api.example.test"]
+    target["accounts"] = [
+        {"id": actor, "ownership": "researcher"}
+        for actor in sorted({actor for actor, _ in _owned_object_entries()})
+    ]
+    target["testing"].update(
+        {
+            "production": False,
+            "synthetic": True,
+            "local_lab": True,
+            "active_execution_enabled": active_execution,
+            "maximum_requests_per_plan": 6,
+        }
+    )
+    write_yaml(workspace.target, target)
+
+    entries = _owned_object_entries()
+    for index, actor in enumerate(sorted({actor for actor, _ in entries}), start=1):
+        capture = tmp_path / f"owned-{index}.har"
+        capture.write_text(
+            json.dumps(
+                {
+                    "log": {
+                        "version": "1.2",
+                        "creator": {"name": "path-scope-tests", "version": "1"},
+                        "entries": [
+                            entry for entry_actor, entry in entries if entry_actor == actor
+                        ],
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+        ingest_har(capture, workspace, actor=actor, channel="WEB")
+
+    build_inventory(workspace)
+    generate_model(workspace)
+    generate_invariants(workspace)
+    generate_hypotheses(workspace)
+    return workspace
+
+
+def _owned_object_context(
+    tmp_path: Path, *, active_execution: bool
+) -> tuple[WorkspacePaths, Endpoint, HypothesisRecord]:
+    workspace = _owned_object_workspace(tmp_path, active_execution=active_execution)
+    endpoint = _endpoint(workspace, "/v1/firewalls/{firewallId}")
+    return workspace, endpoint, _hypothesis(workspace, endpoint)
 
 
 def test_conflicting_response_scope_metadata_disables_fallback(tmp_path: Path) -> None:
@@ -420,9 +458,7 @@ def test_conflicting_response_scope_metadata_disables_fallback(tmp_path: Path) -
 
 
 def test_supported_approval_still_prompts_and_records_checksum_binding(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path, _account_entries(), active_execution=True)
-    endpoint = _endpoint(workspace, "/v1/accounts/{accountId}/iam/resources")
-    hypothesis = _hypothesis(workspace, endpoint)
+    workspace, _endpoint_record, hypothesis = _owned_object_context(tmp_path, active_execution=True)
     generate_plan(workspace, hypothesis.id)
 
     result = RUNNER.invoke(
@@ -445,9 +481,9 @@ def test_supported_approval_still_prompts_and_records_checksum_binding(tmp_path:
 
 
 def test_disabled_active_execution_is_rejected_before_approval_prompt(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path, _account_entries())
-    endpoint = _endpoint(workspace, "/v1/accounts/{accountId}/iam/resources")
-    hypothesis = _hypothesis(workspace, endpoint)
+    workspace, _endpoint_record, hypothesis = _owned_object_context(
+        tmp_path, active_execution=False
+    )
     generate_plan(workspace, hypothesis.id)
 
     result = RUNNER.invoke(
@@ -462,9 +498,7 @@ def test_disabled_active_execution_is_rejected_before_approval_prompt(tmp_path: 
 
 
 def test_edited_plan_is_rejected_before_approval_prompt(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path, _account_entries(), active_execution=True)
-    endpoint = _endpoint(workspace, "/v1/accounts/{accountId}/iam/resources")
-    hypothesis = _hypothesis(workspace, endpoint)
+    workspace, _endpoint_record, hypothesis = _owned_object_context(tmp_path, active_execution=True)
     generate_plan(workspace, hypothesis.id)
     plans = load_yaml(workspace.test_plans)
     plan = next(item for item in plans["plans"] if item["hypothesis_id"] == hypothesis.id)
@@ -483,9 +517,7 @@ def test_edited_plan_is_rejected_before_approval_prompt(tmp_path: Path) -> None:
 
 
 def test_stale_plan_is_rejected_before_approval_prompt(tmp_path: Path) -> None:
-    workspace = _workspace(tmp_path, _account_entries(), active_execution=True)
-    endpoint = _endpoint(workspace, "/v1/accounts/{accountId}/iam/resources")
-    hypothesis = _hypothesis(workspace, endpoint)
+    workspace, _endpoint_record, hypothesis = _owned_object_context(tmp_path, active_execution=True)
     generate_plan(workspace, hypothesis.id)
     observations = load_yaml(workspace.observations)
     observations["observations"][0]["notes"] = "Synthetic input changed after planning."

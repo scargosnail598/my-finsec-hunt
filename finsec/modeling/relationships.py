@@ -7,8 +7,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
-from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
@@ -28,6 +27,7 @@ from finsec.modeling.models import (
     ObjectAccessEvidence,
     ObservationStore,
 )
+from finsec.modeling.semantics import IdentifierSemanticClass, OwnershipState
 from finsec.normalization.ownership import classify_ownership_scope_parameter
 from finsec.utils.redaction import REDACTED
 from finsec.utils.yaml_store import load_yaml, write_yaml
@@ -185,9 +185,7 @@ class ControlledOwnershipStore(BoundaryModel):
     """Versioned canonical ownership, boundary, and controlled-baseline artifact."""
 
     version: Literal[1] = 1
-    generator: Literal["controlled-ownership-boundary-v1"] = (
-        "controlled-ownership-boundary-v1"
-    )
+    generator: Literal["controlled-ownership-boundary-v1"] = "controlled-ownership-boundary-v1"
     source_fingerprint: str = ""
     resources: list[ResourceIdentity] = Field(default_factory=list)
     relationships: list[EvidenceBackedRelationship] = Field(default_factory=list)
@@ -382,7 +380,9 @@ def path_hierarchy(
         for index in collection_indices
         if _type_key(_singular(_snake(template[index]))) == subject_key
     ]
-    subject_index = matching[-1] if matching else collection_indices[-1] if collection_indices else None
+    subject_index = (
+        matching[-1] if matching else collection_indices[-1] if collection_indices else None
+    )
     nodes: list[_PathNode] = []
     value_positions: dict[int, str] = {}
     for position, collection_index in enumerate(collection_indices):
@@ -555,16 +555,20 @@ def _auth_compatible(source: ExchangeFacts, target: ExchangeFacts) -> bool:
     target_auth = target.observation.authentication
     if not source_auth.present or not target_auth.present:
         return False
-    return (
-        source_auth.observed_type == target_auth.observed_type
-        or "mixed" in {source_auth.observed_type, target_auth.observed_type}
-    )
+    return source_auth.observed_type == target_auth.observed_type or "mixed" in {
+        source_auth.observed_type,
+        target_auth.observed_type,
+    }
 
 
 def _temporal_support(source: ExchangeFacts, target: ExchangeFacts) -> TemporalSupport | None:
     left = source.observation
     right = target.observation
-    if left.timestamp is not None and right.timestamp is not None and right.timestamp >= left.timestamp:
+    if (
+        left.timestamp is not None
+        and right.timestamp is not None
+        and right.timestamp >= left.timestamp
+    ):
         return TemporalSupport(
             source_observation_id=left.id,
             target_observation_id=right.id,
@@ -611,26 +615,35 @@ def _relationship_id(
     source: RelationshipEntity,
     target: RelationshipEntity,
 ) -> str:
-    return "REL-" + stable_fingerprint(
-        {"type": relationship_type, "source": source.id, "target": target.id}
-    )[:16].upper()
+    return (
+        "REL-"
+        + stable_fingerprint({"type": relationship_type, "source": source.id, "target": target.id})[
+            :16
+        ].upper()
+    )
 
 
 def _resource_id(resource_type: str, fingerprint: str, parent_resource_id: str | None) -> str:
-    return "RSC-" + stable_fingerprint(
-        {"type": _type_key(resource_type), "value": fingerprint, "parent": parent_resource_id}
-    )[:16].upper()
+    return (
+        "RSC-"
+        + stable_fingerprint(
+            {"type": _type_key(resource_type), "value": fingerprint, "parent": parent_resource_id}
+        )[:16].upper()
+    )
 
 
 def _baseline_id(actor: str, resource_id: str, operation: str, observation_id: str) -> str:
-    return "BASE-" + stable_fingerprint(
-        {
-            "actor": actor,
-            "resource": resource_id,
-            "operation": operation,
-            "observation": observation_id,
-        }
-    )[:16].upper()
+    return (
+        "BASE-"
+        + stable_fingerprint(
+            {
+                "actor": actor,
+                "resource": resource_id,
+                "operation": operation,
+                "observation": observation_id,
+            }
+        )[:16].upper()
+    )
 
 
 def _merge_confidence(left: Confidence, right: Confidence) -> Confidence:
@@ -648,17 +661,17 @@ def reconstruct_controlled_ownership(
 
     try:
         target = target or TargetDocument.model_validate(load_yaml(workspace.target))
-        observations = observations or ObservationStore.model_validate(load_yaml(workspace.observations))
+        observations = observations or ObservationStore.model_validate(
+            load_yaml(workspace.observations)
+        )
         endpoints = endpoints or EndpointStore.model_validate(load_yaml(workspace.endpoints))
     except (OSError, ValidationError) as error:
         raise FinsecError(f"Cannot reconstruct controlled ownership evidence: {error}") from error
 
     facts = extract_exchange_facts(workspace, observations.observations, endpoints)
-    controlled_actors = {
-        item.id for item in target.accounts if item.ownership == "researcher"
-    }
-    resources: dict[str, dict[str, object]] = {}
-    relationships: dict[tuple[str, str, str], dict[str, object]] = {}
+    controlled_actors = {item.id for item in target.accounts if item.ownership == "researcher"}
+    resources: dict[str, dict[str, Any]] = {}
+    relationships: dict[tuple[str, str, str], dict[str, Any]] = {}
     occurrences: list[_Occurrence] = []
     creates: list[_Occurrence] = []
     uses_by_resource: dict[str, list[_Occurrence]] = defaultdict(list)
@@ -713,12 +726,12 @@ def reconstruct_controlled_ownership(
                 "global_uniqueness_confirmed": False,
             },
         )
-        entry["observations"].add(facts_item.observation.id)  # type: ignore[union-attr]
-        entry["actors"].add(facts_item.observation.actor)  # type: ignore[union-attr]
+        entry["observations"].add(facts_item.observation.id)
+        entry["actors"].add(facts_item.observation.actor)
         if capture is not None:
-            entry["capture_ids"].add(capture)  # type: ignore[union-attr]
+            entry["capture_ids"].add(capture)
         if session is not None:
-            entry["session_ids"].add(session)  # type: ignore[union-attr]
+            entry["session_ids"].add(session)
         return identifier
 
     def add_relationship(
@@ -764,26 +777,26 @@ def reconstruct_controlled_ownership(
                 ),
             },
         )
-        entry["confidence"] = _merge_confidence(entry["confidence"], confidence)  # type: ignore[arg-type]
+        entry["confidence"] = _merge_confidence(entry["confidence"], confidence)
         entry["direct"] = bool(entry["direct"]) or direct
-        entry["evidence_types"].add(evidence_type)  # type: ignore[union-attr]
-        entry["provenance"].add(provenance)  # type: ignore[union-attr]
-        entry["ambiguity"].update(ambiguity or [])  # type: ignore[union-attr]
-        entry["counterevidence"].update(counterevidence or [])  # type: ignore[union-attr]
+        entry["evidence_types"].add(evidence_type)
+        entry["provenance"].add(provenance)
+        entry["ambiguity"].update(ambiguity or [])
+        entry["counterevidence"].update(counterevidence or [])
         for facts_item in facts_items:
             observation = facts_item.observation
-            entry["supporting_observation_ids"].add(observation.id)  # type: ignore[union-attr]
-            entry["supporting_actor_ids"].add(observation.actor)  # type: ignore[union-attr]
+            entry["supporting_observation_ids"].add(observation.id)
+            entry["supporting_actor_ids"].add(observation.actor)
             capture = _capture_id(facts_item)
             session = _session_id(facts_item)
             if capture is not None:
-                entry["supporting_capture_ids"].add(capture)  # type: ignore[union-attr]
-                entry["capture_boundaries"].add(capture)  # type: ignore[union-attr]
+                entry["supporting_capture_ids"].add(capture)
+                entry["capture_boundaries"].add(capture)
             if session is not None:
-                entry["session_boundaries"].add(session)  # type: ignore[union-attr]
+                entry["session_boundaries"].add(session)
         for item in temporal or []:
             temporal_key = (item.source_observation_id, item.target_observation_id, item.basis)
-            entry["temporal_support"][temporal_key] = item  # type: ignore[index]
+            entry["temporal_support"][temporal_key] = item
         return identifier
 
     eligible_facts = [
@@ -797,10 +810,11 @@ def reconstruct_controlled_ownership(
     for facts_item in eligible_facts:
         endpoint = facts_item.endpoint
         assert endpoint is not None
-        hierarchy = path_hierarchy(endpoint.path, facts_item.observation.path, endpoint.resource.type)
+        hierarchy = path_hierarchy(
+            endpoint.path, facts_item.observation.path, endpoint.resource.type
+        )
         parent_id: str | None = None
         parent_type: str | None = None
-        parent_value: str | None = None
         node_ids: dict[int, str] = {}
         for node in hierarchy.nodes:
             if node.value is None or node.value == REDACTED:
@@ -823,7 +837,9 @@ def reconstruct_controlled_ownership(
                         "capture_ids": sorted(resources[parent_id]["capture_ids"]),
                         "session_ids": sorted(resources[parent_id]["session_ids"]),
                         "actors": sorted(resources[parent_id]["actors"]),
-                        "identity_assumptions": sorted(resources[parent_id]["identity_assumptions"]),
+                        "identity_assumptions": sorted(
+                            resources[parent_id]["identity_assumptions"]
+                        ),
                     }
                 )
                 child_resource = ResourceIdentity.model_validate(
@@ -862,10 +878,11 @@ def reconstruct_controlled_ownership(
                 )
             parent_id = node_id
             parent_type = node.resource_type
-            parent_value = node.value
 
         subject_type = (
-            hierarchy.subject.resource_type if hierarchy.subject is not None else endpoint.resource.type
+            hierarchy.subject.resource_type
+            if hierarchy.subject is not None
+            else endpoint.resource.type
         )
         immediate_parent_id = (
             node_ids.get(hierarchy.parent.collection_index)
@@ -913,7 +930,9 @@ def reconstruct_controlled_ownership(
                             "capture_ids": sorted(resources[resource_id]["capture_ids"]),
                             "session_ids": sorted(resources[resource_id]["session_ids"]),
                             "actors": sorted(resources[resource_id]["actors"]),
-                            "identity_assumptions": sorted(resources[resource_id]["identity_assumptions"]),
+                            "identity_assumptions": sorted(
+                                resources[resource_id]["identity_assumptions"]
+                            ),
                         }
                     )
                     add_relationship(
@@ -933,7 +952,9 @@ def reconstruct_controlled_ownership(
         if not _successful(facts_item):
             continue
         actor = facts_item.observation.actor
-        for resource_id in sorted({item.resource_id for item in signal_occurrences} | set(node_ids.values())):
+        for resource_id in sorted(
+            {item.resource_id for item in signal_occurrences} | set(node_ids.values())
+        ):
             resource = ResourceIdentity.model_validate(
                 {
                     **resources[resource_id],
@@ -957,7 +978,10 @@ def reconstruct_controlled_ownership(
                 ambiguity=["Observation does not establish ownership or exclusive control."],
             )
             observed_actors[resource_id].add(actor)
-            if actor.upper() in {"ANONYMOUS", "UNKNOWN"} or not facts_item.observation.authentication.present:
+            if (
+                actor.upper() in {"ANONYMOUS", "UNKNOWN"}
+                or not facts_item.observation.authentication.present
+            ):
                 anonymous_resources.add(resource_id)
 
         if hierarchy.subject is not None and hierarchy.subject.parameter is not None:
@@ -965,9 +989,7 @@ def reconstruct_controlled_ownership(
                 hierarchy.subject.parameter, target.analysis.ownership_inference
             )
             if classification == "PUBLIC_SHARED_SCOPE":
-                public_shared_resources.update(
-                    item.resource_id for item in signal_occurrences
-                )
+                public_shared_resources.update(item.resource_id for item in signal_occurrences)
 
         response_scopes = [
             item
@@ -1007,7 +1029,9 @@ def reconstruct_controlled_ownership(
                         "capture_ids": sorted(resources[resource_id]["capture_ids"]),
                         "session_ids": sorted(resources[resource_id]["session_ids"]),
                         "actors": sorted(resources[resource_id]["actors"]),
-                        "identity_assumptions": sorted(resources[resource_id]["identity_assumptions"]),
+                        "identity_assumptions": sorted(
+                            resources[resource_id]["identity_assumptions"]
+                        ),
                     }
                 )
                 add_relationship(
@@ -1055,7 +1079,9 @@ def reconstruct_controlled_ownership(
                 "capture_ids": sorted(resources[created.resource_id]["capture_ids"]),
                 "session_ids": sorted(resources[created.resource_id]["session_ids"]),
                 "actors": sorted(resources[created.resource_id]["actors"]),
-                "identity_assumptions": sorted(resources[created.resource_id]["identity_assumptions"]),
+                "identity_assumptions": sorted(
+                    resources[created.resource_id]["identity_assumptions"]
+                ),
             }
         )
         produced_id = add_relationship(
@@ -1118,7 +1144,7 @@ def reconstruct_controlled_ownership(
                 temporal=[temporal],
                 ambiguity=ambiguity,
             )
-            add_relationship(
+            actor_binding_id = add_relationship(
                 BoundaryRelationshipType.RESOURCE_BOUND_TO_ACTOR,
                 _resource_entity(resource),
                 _actor_entity(actor),
@@ -1131,18 +1157,23 @@ def reconstruct_controlled_ownership(
                 temporal=[temporal],
                 ambiguity=ambiguity,
             )
+            parent_relationship_id: str | None = None
             if created.parent_resource_id is not None:
                 parent_resource = ResourceIdentity.model_validate(
                     {
                         **resources[created.parent_resource_id],
-                        "observations": sorted(resources[created.parent_resource_id]["observations"]),
+                        "observations": sorted(
+                            resources[created.parent_resource_id]["observations"]
+                        ),
                         "capture_ids": sorted(resources[created.parent_resource_id]["capture_ids"]),
                         "session_ids": sorted(resources[created.parent_resource_id]["session_ids"]),
                         "actors": sorted(resources[created.parent_resource_id]["actors"]),
-                        "identity_assumptions": sorted(resources[created.parent_resource_id]["identity_assumptions"]),
+                        "identity_assumptions": sorted(
+                            resources[created.parent_resource_id]["identity_assumptions"]
+                        ),
                     }
                 )
-                add_relationship(
+                parent_relationship_id = add_relationship(
                     BoundaryRelationshipType.RESOURCE_PARENT_OF,
                     _resource_entity(parent_resource),
                     _resource_entity(resource),
@@ -1192,7 +1223,9 @@ def reconstruct_controlled_ownership(
                 parent_resource_type=used.parent_resource_type,
                 parent_identifier=used.parent_value,
                 operation=operation,
-                endpoint_id=used.facts.endpoint.id if used.facts.endpoint is not None else "UNKNOWN",
+                endpoint_id=used.facts.endpoint.id
+                if used.facts.endpoint is not None
+                else "UNKNOWN",
                 route_family=used.route_family,
                 collection_route_family=used.collection_route_family,
                 host=used.facts.observation.host,
@@ -1201,7 +1234,15 @@ def reconstruct_controlled_ownership(
                 response_object_path=response_path,
                 authentication_present=used.facts.observation.authentication.present,
                 authentication_type=used.facts.observation.authentication.observed_type,
-                relationship_ids=sorted({produced_id, created_id, control_id}),
+                relationship_ids=sorted(
+                    {
+                        produced_id,
+                        created_id,
+                        control_id,
+                        actor_binding_id,
+                        *([parent_relationship_id] if parent_relationship_id is not None else []),
+                    }
+                ),
                 supporting_observation_ids=sorted(
                     {created.facts.observation.id, used.facts.observation.id}
                 ),
@@ -1320,7 +1361,7 @@ def reconstruct_controlled_ownership(
             ambiguity=["Observed anonymous reachability does not prove intended public policy."],
         )
 
-    for key, entry in relationships.items():
+    for _key, entry in relationships.items():
         target_id = entry["target"].id
         if target_id not in shared_resources and target_id not in anonymous_resources:
             continue
@@ -1330,7 +1371,7 @@ def reconstruct_controlled_ownership(
             BoundaryRelationshipType.ACTOR_OWNS_RESOURCE,
             BoundaryRelationshipType.RESOURCE_BOUND_TO_ACTOR,
         }:
-            entry["counterevidence"].add(  # type: ignore[union-attr]
+            entry["counterevidence"].add(
                 "The same resource has shared/public normal-access evidence; exclusive actor "
                 "binding is not established."
             )
@@ -1414,8 +1455,7 @@ def reconstruct_controlled_ownership(
         {
             "target": {
                 "accounts": [
-                    {"id": item.id, "ownership": item.ownership}
-                    for item in target.accounts
+                    {"id": item.id, "ownership": item.ownership} for item in target.accounts
                 ],
                 "ownership_inference": target.analysis.ownership_inference.model_dump(mode="json"),
             },
@@ -1491,7 +1531,7 @@ def controlled_binding_for_endpoint(
     ]
     actors = {item.actor_id for item in candidates}
     resources = {item.subject_resource_id for item in candidates}
-    if len(actors) < 2 or len(resources) < 2:
+    if not candidates:
         return None
     baselines = [
         ActorObjectBaseline(
@@ -1553,20 +1593,137 @@ def project_controlled_ownership(
     """Persist a deterministic, relationship-ID-bound projection for existing consumers."""
 
     projected: list[Endpoint] = []
+    relationship_ids = {item.id for item in store.relationships}
     for endpoint in endpoints.endpoints:
-        retained = [item for item in endpoint.object_access if item.source != "CONTROLLED_LIFECYCLE"]
+        retained = [
+            item for item in endpoint.object_access if item.source != "CONTROLLED_LIFECYCLE"
+        ]
         parameter = _endpoint_subject_parameter(endpoint)
         binding = controlled_binding_for_endpoint(
             store, endpoint, parameter.name if parameter is not None else None
         )
         if binding is not None:
             retained.append(binding)
+        hierarchy = path_hierarchy(endpoint.path, endpoint.path, endpoint.resource.type)
+        updated_parameters: list[EndpointParameter] = []
+        for endpoint_parameter in endpoint.parameters:
+            assessment = endpoint_parameter.identifier_semantics
+            parameter_binding = next(
+                (
+                    item
+                    for item in retained
+                    if item.identifier == endpoint_parameter.name
+                    and item.actor_object_binding_observed
+                    and item.source in {"CONTROLLED_LIFECYCLE", "RESPONSE_BODY"}
+                ),
+                None,
+            )
+            semantic_resource = assessment.resource_type or endpoint.resource.type
+            matching_resources = {
+                item.id
+                for item in store.resources
+                if _type_key(item.resource_type) == _type_key(semantic_resource)
+                and item.collection_route_family == hierarchy.collection_route_family
+            }
+            shared_relationships = sorted(
+                item.id
+                for item in store.relationships
+                if item.relationship_type
+                in {
+                    BoundaryRelationshipType.SHARED_RESOURCE,
+                    BoundaryRelationshipType.PUBLIC_RESOURCE,
+                }
+                and item.source.id in matching_resources
+            )
+            evidence = list(assessment.evidence)
+            counterevidence = list(assessment.counterevidence)
+            sources = list(assessment.sources)
+            semantic_class = assessment.semantic_class
+            ownership_state = assessment.ownership_state
+            confidence = assessment.confidence
+            explanation = assessment.explanation
+            if parameter_binding is not None:
+                semantic_class = IdentifierSemanticClass.OWNED_OBJECT
+                ownership_state = OwnershipState.STRONG_INFERRED
+                confidence = "high"
+                sources.append(parameter_binding.source)
+                evidence.append(
+                    "Canonical actor/object evidence links this identifier to a successful "
+                    "controlled baseline."
+                )
+                evidence.extend(
+                    f"Relationship {item} retains lifecycle provenance."
+                    for item in parameter_binding.relationship_ids
+                    if item in relationship_ids
+                )
+                counterevidence.extend(parameter_binding.counterevidence)
+                explanation = (
+                    "The identifier selects a controlled object backed by explicit response or "
+                    "CREATE-to-use continuity; a second baseline is evaluated separately."
+                )
+            if shared_relationships:
+                counterevidence.append(
+                    "Successful normal behavior exposes the same parent-aware resource to "
+                    "multiple actors or without authentication."
+                )
+                counterevidence.extend(
+                    f"Relationship {item} records shared/public counterevidence."
+                    for item in shared_relationships
+                    if item in relationship_ids
+                )
+                sources.append("CONTROLLED_OWNERSHIP_MODEL")
+                if parameter_binding is not None:
+                    ownership_state = OwnershipState.CONTRADICTED
+                    explanation = (
+                        "Strong control evidence conflicts with shared/public access evidence; "
+                        "the identifier is not execution-ready until reviewed."
+                    )
+                else:
+                    ownership_state = OwnershipState.SHARED
+                    confidence = "high"
+                    if semantic_class in {
+                        IdentifierSemanticClass.REGION,
+                        IdentifierSemanticClass.SHARED_SCOPE,
+                    }:
+                        explanation = (
+                            "The identifier is shared/public scope and is not an exclusive "
+                            "actor-owned object."
+                        )
+                    elif semantic_class == IdentifierSemanticClass.OWNED_OBJECT:
+                        semantic_class = IdentifierSemanticClass.OBJECT_IDENTIFIER
+                        explanation = (
+                            "The scalar remains an object identifier, but successful access by "
+                            "multiple actors contradicts exclusive ownership."
+                        )
+                    else:
+                        explanation = (
+                            "Shared access is retained as ownership counterevidence without "
+                            "relabeling the identifier as global scope."
+                        )
+            updated_parameters.append(
+                endpoint_parameter.model_copy(
+                    update={
+                        "identifier_semantics": assessment.model_copy(
+                            update={
+                                "semantic_class": semantic_class,
+                                "ownership_state": ownership_state,
+                                "confidence": confidence,
+                                "evidence": sorted(set(evidence)),
+                                "counterevidence": sorted(set(counterevidence)),
+                                "sources": sorted(set(sources)),
+                                "explanation": explanation,
+                            }
+                        )
+                    }
+                )
+            )
         projected.append(
             endpoint.model_copy(
                 update={
                     "object_access": sorted(
                         retained, key=lambda item: (item.identifier, item.source)
-                    )
+                    ),
+                    "parameters": updated_parameters,
                 }
             )
         )

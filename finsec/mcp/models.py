@@ -121,6 +121,42 @@ class PassiveWorkflowSummary(McpModel):
     interpretation_rules: list[str]
 
 
+class MutationTargetSummary(McpModel):
+    """Exact mutation scalar without concrete request values."""
+
+    parameter: str | None
+    location: str | None
+    endpoint_ids: list[str]
+    expected_authorization_relationship: str
+
+
+class IdentifierSemanticsSummary(McpModel):
+    """Sanitized identifier meaning and ownership evidence."""
+
+    semantic_class: str
+    resource_role: str
+    resource_type: str | None
+    parent_resource_type: str | None
+    ownership_state: str
+    confidence: str
+    evidence: list[str]
+    counterevidence: list[str]
+    sources: list[str]
+    explanation: str
+
+
+class HypothesisExplanation(McpModel):
+    """Why a hypothesis is retained, distinct, and ready or blocked."""
+
+    mutation_target: MutationTargetSummary
+    identifier_semantics: IdentifierSemanticsSummary
+    readiness_reasons: list[str]
+    missing_prerequisites: list[str]
+    retention_reasons: list[str]
+    difference_reasons: list[str]
+    similar_hypothesis_ids: list[str]
+
+
 class HypothesisSummary(McpModel):
     """Stable backlog item summary."""
 
@@ -141,6 +177,7 @@ class HypothesisSummary(McpModel):
     cluster_id: str | None = None
     campaign_id: str | None = None
     relationship: str
+    explanation: HypothesisExplanation
 
 
 class HypothesisList(McpModel):
@@ -181,6 +218,13 @@ class EndpointParameterContext(McpModel):
     client_controlled: bool
     knowledge_status: str
     evidence: list[str]
+    identifier_semantic_class: str
+    identifier_resource_role: str
+    ownership_state: str
+    semantic_confidence: str
+    semantic_evidence: list[str]
+    semantic_counterevidence: list[str]
+    semantic_explanation: str
 
 
 class ObjectAccessContext(McpModel):

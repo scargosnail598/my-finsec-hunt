@@ -13,11 +13,13 @@ from finsec.hypotheses.contracts import (
     DecisionEvidence,
     DomainIntentAssessment,
     DomainOperation,
+    MutationTargetAssessment,
     SemanticConfidence,
     VisibilityIntent,
 )
 from finsec.modeling.models import Endpoint
 from finsec.modeling.relationships import structural_parent_resource
+from finsec.modeling.semantics import IdentifierSemanticClass, OwnershipState
 from finsec.normalization.path_semantics import path_resource_semantics
 
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
@@ -194,6 +196,7 @@ def assess_domain_intent(
     category: str,
     generation_rule_id: str,
     logic_details: Mapping[str, object] | None = None,
+    mutation_target: MutationTargetAssessment | None = None,
 ) -> DomainIntentAssessment:
     """Resolve the protected subject and boundary without treating names as policy proof."""
 
@@ -204,6 +207,8 @@ def assess_domain_intent(
     ambiguity: list[str] = []
     endpoint_resources = [endpoint.resource.type for endpoint in ordered]
     subject = endpoint_resources[0] if endpoint_resources else "Unknown"
+    if mutation_target is not None and mutation_target.semantics.resource_type is not None:
+        subject = mutation_target.semantics.resource_type
     parent: str | None = None
     structural_parents = {
         value for endpoint in ordered if (value := structural_parent_resource(endpoint)) is not None
@@ -280,6 +285,60 @@ def assess_domain_intent(
     owner_signals: list[DecisionEvidence] = []
     role_signals: list[DecisionEvidence] = []
     anonymous_read_observed = False
+    if mutation_target is not None and mutation_target.parameter is not None:
+        target_reference = mutation_target.parameter
+        target_semantics = mutation_target.semantics
+        positive.extend(
+            _evidence(target_reference, "ENDPOINT", item) for item in target_semantics.evidence
+        )
+        counter.extend(
+            _evidence(target_reference, "ENDPOINT", item)
+            for item in target_semantics.counterevidence
+        )
+        if target_semantics.semantic_class in {
+            IdentifierSemanticClass.REGION,
+            IdentifierSemanticClass.SHARED_SCOPE,
+            IdentifierSemanticClass.COLLECTION,
+            IdentifierSemanticClass.NON_SECURITY_RELEVANT,
+        }:
+            public_signals.append(
+                _evidence(
+                    target_reference,
+                    "ENDPOINT",
+                    f"Mutation target is classified as "
+                    f"{target_semantics.semantic_class.value}, not an owned object.",
+                )
+            )
+        elif (
+            target_semantics.semantic_class == IdentifierSemanticClass.OWNED_OBJECT
+            and target_semantics.ownership_state
+            in {OwnershipState.CONFIRMED, OwnershipState.STRONG_INFERRED}
+        ):
+            owner_signals.append(
+                _evidence(
+                    target_reference,
+                    "ENDPOINT",
+                    f"Mutation target has {target_semantics.ownership_state.value} "
+                    "actor/object control evidence.",
+                )
+            )
+            binding = (
+                BindingType.PRODUCER_CONSUMER
+                if "CONTROLLED_LIFECYCLE" in target_semantics.sources
+                else BindingType.OWNERSHIP
+            )
+        elif target_semantics.ownership_state == OwnershipState.CONTRADICTED:
+            ambiguity.append(
+                "Owned-object and shared/public evidence conflict for the mutation target."
+            )
+        elif target_semantics.semantic_class in {
+            IdentifierSemanticClass.OWNED_OBJECT,
+            IdentifierSemanticClass.OBJECT_IDENTIFIER,
+        }:
+            ambiguity.append(
+                "The mutation target is object-like, but ownership evidence remains weak or "
+                "unknown."
+            )
     for endpoint in ordered:
         if operation == DomainOperation.READ and endpoint.authentication.anonymous_success_observed:
             anonymous_read_observed = True
@@ -295,6 +354,12 @@ def assess_domain_intent(
                 "visibility policy."
             )
         for decision in endpoint.ownership_inference:
+            if (
+                mutation_target is not None
+                and mutation_target.parameter is not None
+                and _normalized(decision.parameter) != _normalized(mutation_target.parameter)
+            ):
+                continue
             if decision.classification == "PUBLIC_SHARED_SCOPE":
                 public_signals.append(
                     _evidence(
@@ -304,6 +369,12 @@ def assess_domain_intent(
                     )
                 )
         for access in endpoint.object_access:
+            if (
+                mutation_target is not None
+                and mutation_target.parameter is not None
+                and _normalized(access.identifier) != _normalized(mutation_target.parameter)
+            ):
+                continue
             if not access.actor_object_binding_observed:
                 continue
             if access.source == "PATH_PARENT_SCOPE":
@@ -322,8 +393,8 @@ def assess_domain_intent(
                     _evidence(
                         endpoint.id,
                         "ENDPOINT",
-                        f"{access.distinct_actors} controlled actors have distinct "
-                        "CREATE-produced, subsequently consumed resource baselines for "
+                        f"{access.distinct_actors} controlled actor(s) have "
+                        "CREATE-produced, subsequently consumed resource baseline(s) for "
                         f"{access.identifier}.",
                     )
                 )
@@ -337,8 +408,7 @@ def assess_domain_intent(
                     for relationship_id in access.relationship_ids
                 )
                 counter.extend(
-                    _evidence(endpoint.id, "ENDPOINT", item)
-                    for item in access.counterevidence
+                    _evidence(endpoint.id, "ENDPOINT", item) for item in access.counterevidence
                 )
                 ambiguity.extend(access.ambiguity)
                 if binding == BindingType.UNKNOWN:
@@ -359,11 +429,7 @@ def assess_domain_intent(
                     "owner-only access policy."
                 )
                 continue
-            source = (
-                BindingType.TENANT_ACCOUNT
-                if access.source == "PATH_PARENT_SCOPE"
-                else BindingType.OWNERSHIP
-            )
+            source = BindingType.OWNERSHIP
             owner_signals.append(
                 _evidence(
                     endpoint.id,

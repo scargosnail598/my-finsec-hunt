@@ -538,6 +538,9 @@ def test_malformed_and_unsupported_workspace_data_returns_safe_errors(tmp_path: 
     assert str(workspace.root) not in str(malformed.value)
 
     write_yaml(workspace.endpoints, {"version": 2, "endpoints": []})
+    assert service.workspace_summary().counts.endpoints == 0
+
+    write_yaml(workspace.endpoints, {"version": 3, "endpoints": []})
     with pytest.raises(FinsecMcpError, match="unsupported"):
         service.workspace_summary()
 

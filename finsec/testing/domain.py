@@ -89,12 +89,15 @@ class RequestMutation(EditableModel):
     target_resource_id: str | None = None
     source_parent_resource_id: str | None = None
     target_parent_resource_id: str | None = None
-    substitution_scope: Literal[
-        "SUBJECT_ONLY",
-        "PARENT_ONLY",
-        "SUBJECT_AND_PARENT",
-        "TENANT",
-    ] | None = None
+    substitution_scope: (
+        Literal[
+            "SUBJECT_ONLY",
+            "PARENT_ONLY",
+            "SUBJECT_AND_PARENT",
+            "TENANT",
+        ]
+        | None
+    ) = None
 
 
 class StructuredRequest(EditableModel):

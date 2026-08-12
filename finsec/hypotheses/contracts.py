@@ -5,6 +5,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from finsec.modeling.semantics import IdentifierSemanticAssessment
+
 
 class ContractModel(BaseModel):
     """Reject accidental drift in deterministic hypothesis decisions."""
@@ -118,6 +120,7 @@ class CapabilityKind(StrEnum):
     """Capabilities required to turn a security question into a bounded plan."""
 
     CONCRETE_TEST = "CONCRETE_TEST"
+    SEMANTIC_TARGET = "SEMANTIC_TARGET"
     ACTOR = "ACTOR"
     OWNERSHIP = "OWNERSHIP"
     BASELINE = "BASELINE"
@@ -170,6 +173,16 @@ class HypothesisReadinessAssessment(ContractModel):
     evidence_references: list[str] = Field(default_factory=list)
 
 
+class MutationTargetAssessment(ContractModel):
+    """Exact scalar mutation target and its canonical identifier semantics."""
+
+    parameter: str | None = None
+    location: str | None = None
+    endpoint_ids: list[str] = Field(default_factory=list)
+    semantics: IdentifierSemanticAssessment = Field(default_factory=IdentifierSemanticAssessment)
+    expected_authorization_relationship: str = "UNKNOWN"
+
+
 class SemanticRelationship(StrEnum):
     EXACT_DUPLICATE = "EXACT_DUPLICATE"
     OVERLAPPING_TEST_CAMPAIGN = "OVERLAPPING_TEST_CAMPAIGN"
@@ -193,6 +206,12 @@ class SemanticDescriptor(ContractModel):
     expected_effect: str = "UNKNOWN"
     oracle_family: str = "UNKNOWN"
     actor_requirements: list[str] = Field(default_factory=list)
+    mutation_parameter: str | None = None
+    mutation_location: str | None = None
+    identifier_semantic_class: str = "OPAQUE_UNKNOWN"
+    identifier_resource_role: str = "UNKNOWN"
+    ownership_state: str = "UNKNOWN"
+    expected_authorization_relationship: str = "UNKNOWN"
     workflow_family: str | None = None
     transition: str | None = None
     exact_key: str
@@ -218,6 +237,9 @@ class HypothesisPresentation(ContractModel):
     display_title: str | None = None
     suppression_reason: str | None = None
     next_action: str | None = None
+    retention_reasons: list[str] = Field(default_factory=list)
+    difference_reasons: list[str] = Field(default_factory=list)
+    similar_hypothesis_ids: list[str] = Field(default_factory=list)
 
 
 class HypothesisCampaign(ContractModel):

@@ -256,6 +256,7 @@ def _readiness_assessment(
         category=hypothesis.category,
         generation_rule_id=hypothesis.generation_rule.get("id", ""),
         logic_details=hypothesis.logic_details,
+        mutation_target=hypothesis.mutation_target,
     )
     claim = assess_claim_strength(
         generation_rule_id=hypothesis.generation_rule.get("id", ""),

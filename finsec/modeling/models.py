@@ -7,6 +7,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from finsec.captures.domain import CaptureMode, CaptureRelevance
+from finsec.modeling.semantics import IdentifierSemanticAssessment
 
 AuthenticationType = Literal["none", "bearer", "basic", "cookie", "api_key", "mixed"]
 ParameterType = Literal["string", "integer", "uuid", "ulid", "hash", "date", "version"]
@@ -198,6 +199,9 @@ class EndpointParameter(StrictModel):
     client_controlled: bool = True
     original_examples: list[str] = Field(default_factory=list)
     normalization_reasons: list[str] = Field(default_factory=list)
+    identifier_semantics: IdentifierSemanticAssessment = Field(
+        default_factory=IdentifierSemanticAssessment
+    )
 
 
 class NormalizationEvidence(StrictModel):

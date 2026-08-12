@@ -28,6 +28,12 @@ from finsec.testing.planner import generate_plan
 from finsec.utils.yaml_store import load_yaml, write_yaml
 
 
+@pytest.fixture(autouse=True)
+def _synthetic_runtime_auth(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("FINSEC_ACCOUNT_A_AUTH", "Bearer SYNTHETIC_ACCOUNT_A")
+    monkeypatch.setenv("FINSEC_ACCOUNT_B_AUTH", "Bearer SYNTHETIC_ACCOUNT_B")
+
+
 class BasketServer(ThreadingHTTPServer):
     """Local-only deterministic server with exact request accounting."""
 
@@ -135,7 +141,10 @@ def _entry(port: int, basket_id: int, owner_id: int) -> dict[str, Any]:
         "request": {
             "method": "GET",
             "url": f"http://127.0.0.1:{port}/rest/basket/{basket_id}",
-            "headers": [{"name": "Accept", "value": "application/json"}],
+            "headers": [
+                {"name": "Accept", "value": "application/json"},
+                {"name": "Authorization", "value": "Bearer SYNTHETIC_CAPTURE"},
+            ],
         },
         "response": {
             "status": 200,

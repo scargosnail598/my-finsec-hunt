@@ -11,6 +11,7 @@ from finsec.hypotheses.contracts import (
     HypothesisGrouping,
     HypothesisPresentation,
     HypothesisReadinessAssessment,
+    MutationTargetAssessment,
     SemanticDescriptor,
 )
 from finsec.modeling.domain import EditableModel, GenerationMetadata
@@ -138,6 +139,7 @@ class HypothesisRecord(EditableModel):
     readiness_assessment: HypothesisReadinessAssessment = Field(
         default_factory=HypothesisReadinessAssessment
     )
+    mutation_target: MutationTargetAssessment = Field(default_factory=MutationTargetAssessment)
     domain_intent: DomainIntentAssessment = Field(default_factory=DomainIntentAssessment)
     claim_strength: ClaimStrengthAssessment = Field(default_factory=ClaimStrengthAssessment)
     semantic_descriptor: SemanticDescriptor | None = None

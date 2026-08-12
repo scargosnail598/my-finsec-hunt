@@ -1295,6 +1295,11 @@ async function openHypothesis(hypothesisId) {
 
 function renderHypothesisDrawer(data) {
   const item = data.hypothesis;
+  const explanation = data.explanation || {};
+  const mutation = explanation.mutation_target || {};
+  const semantics = explanation.identifier_semantics || {};
+  const readiness = explanation.readiness || {};
+  const presentation = explanation.presentation || {};
   const plan = data.plan;
   const validation = data.validation;
   const evidence = data.evidence;
@@ -1317,6 +1322,24 @@ function renderHypothesisDrawer(data) {
     </section>
     ${drawerTextSection("Hypothesis", item.hypothesis)}
     ${drawerTextSection("Reasoning", item.reasoning)}
+    <section class="drawer-section">
+      <h3>Object semantics and ownership</h3>
+      <div class="check-grid">
+        ${scoreCell("Mutation target", mutation.parameter || "None")}
+        ${scoreCell("Semantic class", semantics.semantic_class || "OPAQUE_UNKNOWN")}
+        ${scoreCell("Resource role", semantics.resource_role || "UNKNOWN")}
+        ${scoreCell("Ownership", semantics.ownership_state || "UNKNOWN")}
+        ${scoreCell("Cluster", presentation.cluster_id || "None")}
+        ${scoreCell("Campaign", presentation.campaign_id || "None")}
+      </div>
+      <p class="spaced-copy">${escapeHtml(semantics.explanation || "Identifier semantics are not established.")}</p>
+      ${drawerListSection("Ownership evidence", semantics.evidence || [])}
+      ${drawerListSection("Counterevidence", semantics.counterevidence || [])}
+    </section>
+    ${drawerListSection("Readiness reasons", readiness.reasons || [])}
+    ${drawerListSection("Missing readiness prerequisites", readiness.missing_prerequisites || [])}
+    ${drawerListSection("Why retained", presentation.retention_reasons || [])}
+    ${drawerListSection("Why distinct", presentation.difference_reasons || [])}
     ${drawerListSection("Eligibility evidence", item.eligibility_evidence)}
     ${drawerListSection("Missing evidence", item.missing_evidence)}
     ${drawerTextSection("Expected secure behavior", item.expected_secure_behavior)}

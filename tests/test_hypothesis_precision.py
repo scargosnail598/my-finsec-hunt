@@ -13,6 +13,7 @@ from finsec.ingest.har import ingest_har
 from finsec.modeling.generator import generate_model
 from finsec.modeling.invariants import generate_invariants
 from finsec.modeling.models import EndpointStore
+from finsec.modeling.semantics import IdentifierSemanticClass, OwnershipState
 from finsec.normalization.inventory import build_inventory
 from finsec.testing.planner import generate_plan
 from finsec.utils.yaml_store import load_yaml, write_yaml
@@ -133,7 +134,9 @@ def _multi_actor_workspace(
     build_inventory(workspace)
     generate_model(workspace)
     generate_invariants(workspace)
-    generate_hypotheses(workspace)
+    invariants = load_yaml(workspace.invariants)
+    if invariants.get("invariants"):
+        generate_hypotheses(workspace)
     return workspace
 
 
@@ -702,8 +705,8 @@ def test_unauthenticated_account_scoped_basket_baselines_promote_one_bola(
         "Potential unauthenticated cross-account Basket access through basketId on "
         "GET /rest/basket/{basketId}"
     )
-    assert hypothesis.scores.total == 15
-    assert hypothesis.generation_rule == {"id": "AUTH_OBJECT_ACCESS", "version": "3"}
+    assert hypothesis.scores.total == 14
+    assert hypothesis.generation_rule == {"id": "AUTH_OBJECT_ACCESS", "version": "6"}
     assert "Cross-substitution has not yet been tested" in hypothesis.reasoning
     assert "no request authentication credential observed" in hypothesis.eligibility_evidence
     assert any("Account A requesting Account B" in item for item in hypothesis.missing_evidence)
@@ -753,15 +756,14 @@ def test_public_product_baselines_do_not_promote_bola(tmp_path: Path) -> None:
 
     endpoint = _endpoints(workspace).endpoints[0]
     assert endpoint.resource.type == "Product"
-    assert endpoint.object_access[0].actor_object_binding_observed is True
+    product_id = next(item for item in endpoint.parameters if item.name == "productId")
+    assert product_id.identifier_semantics.semantic_class == IdentifierSemanticClass.SHARED_SCOPE
+    assert product_id.identifier_semantics.ownership_state == OwnershipState.SHARED
+    assert endpoint.object_access == []
     authorization = [
         item for item in _records(workspace).hypotheses if item.category == "authorization"
     ]
-    assert authorization
-    assert all(item.kind == "RESEARCH_TASK" for item in authorization)
-    assert all(item.disposition != "ACTIVE" for item in authorization)
-    assert all(item.domain_intent.visibility == "PUBLIC" for item in authorization)
-    assert all(item.readiness == "RESEARCH_ONLY" for item in authorization)
+    assert authorization == []
 
 
 def test_multiple_objects_per_actor_preserve_account_scoped_binding(tmp_path: Path) -> None:

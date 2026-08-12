@@ -42,11 +42,13 @@ from finsec.modeling.models import (
     SideEffectEvidence,
 )
 from finsec.modeling.relationships import reconstruct_controlled_ownership
+from finsec.modeling.semantics import IdentifierSemanticClass, object_candidate
 from finsec.normalization.classification import (
     ClassificationContext,
     classify_observation,
     endpoint_disposition,
 )
+from finsec.normalization.identifier_semantics import classify_endpoint_parameters
 from finsec.normalization.ownership import (
     classify_ownership_scope_parameter,
     normalized_parameter_name,
@@ -593,7 +595,7 @@ def _response_object_access_evidence(
     identifiers = [
         parameter.name
         for parameter in path_parameters
-        if parameter.location == "path" and parameter.semantic_type == "object_identifier"
+        if parameter.location == "path" and object_candidate(parameter.identifier_semantics)
     ]
     grouped: dict[
         tuple[str, str],
@@ -1132,9 +1134,15 @@ def _security_relevance(
     request_parameters = [
         item for item in parameters if item.source == "request" and item.client_controlled
     ]
-    if any(item.semantic_type == "object_identifier" for item in request_parameters):
+    if any(
+        item.identifier_semantics.semantic_class == IdentifierSemanticClass.OWNED_OBJECT
+        for item in request_parameters
+    ):
         score += 2
-        reasons.append("client-controlled object identifier observed")
+        reasons.append("client-controlled ownership-relevant object identifier observed")
+    elif any(object_candidate(item.identifier_semantics) for item in request_parameters):
+        score += 2
+        reasons.append("client-controlled object identifier candidate observed")
     binding = next(
         (item for item in object_access if item.actor_object_binding_observed),
         None,
@@ -1262,7 +1270,13 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
             }
         )
         confidence = Confidence.MEDIUM if "repeated_numeric" in rules else Confidence.HIGH
-        path_parameters = _path_parameters(representative, observations)
+        path_parameters = classify_endpoint_parameters(
+            path=path,
+            endpoint_resource=resource_name,
+            parameters=_path_parameters(representative, observations),
+            observations=observations,
+            target=target,
+        )
         documented_observations = [item for item in observations if item.source == "OPENAPI"]
         documented_parameters = (
             _documented_path_parameters(path, documented_observations)
@@ -1271,12 +1285,26 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
         )
         existing_path_names = {item.name for item in path_parameters}
         path_parameters.extend(
-            item for item in documented_parameters if item.name not in existing_path_names
+            classify_endpoint_parameters(
+                path=path,
+                endpoint_resource=resource_name,
+                parameters=[item],
+                observations=observations,
+                target=target,
+            )[0]
+            for item in documented_parameters
+            if item.name not in existing_path_names
         )
         query_parameters = _query_parameters(observations)
         body_parameters = _body_parameters(observations)
         response_parameters = _response_parameters(observations)
-        parameters = path_parameters + query_parameters + body_parameters + response_parameters
+        parameters = classify_endpoint_parameters(
+            path=path,
+            endpoint_resource=resource_name,
+            parameters=(path_parameters + query_parameters + body_parameters + response_parameters),
+            observations=observations,
+            target=target,
+        )
         authentication = _authentication(observations)
         object_access, ownership_inference = _object_access_evidence(
             workspace,

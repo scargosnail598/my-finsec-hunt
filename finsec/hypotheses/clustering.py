@@ -23,9 +23,11 @@ from finsec.hypotheses.semantics import (
     assess_domain_intent,
     claim_strength_rank,
 )
+from finsec.hypotheses.targets import resolve_mutation_target
 from finsec.modeling.domain import ResourceStore
 from finsec.modeling.merge import stable_fingerprint
 from finsec.modeling.models import Endpoint, EndpointStore, ObservationStore
+from finsec.modeling.semantics import IdentifierSemanticClass, OwnershipState
 
 _SOURCE_SUPPRESSIONS = {
     "SUPPRESSED_STATIC_ASSET",
@@ -42,6 +44,20 @@ _AUTH_COVERAGE_CONTROLS = [
     "wrong audience",
     "wrong role",
 ]
+_DESCRIPTOR_DIFFERENCE_FIELDS = (
+    ("mutation target", "mutation_parameter"),
+    ("mutation location", "mutation_location"),
+    ("identifier class", "identifier_semantic_class"),
+    ("resource role", "identifier_resource_role"),
+    ("ownership state", "ownership_state"),
+    ("authorization relationship", "expected_authorization_relationship"),
+    ("HTTP method", "methods"),
+    ("route family", "route_families"),
+    ("operation", "operation"),
+    ("subject resource", "subject_resource"),
+    ("parent resource", "parent_resource"),
+    ("test operator", "test_operator"),
+)
 
 
 def _generator(record: HypothesisRecord) -> str:
@@ -202,6 +218,14 @@ def _descriptor(record: HypothesisRecord, endpoints: list[Endpoint]) -> Semantic
         "effect": effect,
         "oracle": oracle,
         "actors": _actor_requirements(record),
+        "mutation_parameter": record.mutation_target.parameter,
+        "mutation_location": record.mutation_target.location,
+        "identifier_semantic_class": record.mutation_target.semantics.semantic_class,
+        "identifier_resource_role": record.mutation_target.semantics.resource_role,
+        "ownership_state": record.mutation_target.semantics.ownership_state,
+        "expected_authorization_relationship": (
+            record.mutation_target.expected_authorization_relationship
+        ),
         "workflow": workflow_identity,
         "transition": transition_identity,
     }
@@ -242,6 +266,14 @@ def _descriptor(record: HypothesisRecord, endpoints: list[Endpoint]) -> Semantic
         expected_effect=effect,
         oracle_family=oracle,
         actor_requirements=_actor_requirements(record),
+        mutation_parameter=record.mutation_target.parameter,
+        mutation_location=record.mutation_target.location,
+        identifier_semantic_class=record.mutation_target.semantics.semantic_class.value,
+        identifier_resource_role=record.mutation_target.semantics.resource_role.value,
+        ownership_state=record.mutation_target.semantics.ownership_state.value,
+        expected_authorization_relationship=(
+            record.mutation_target.expected_authorization_relationship
+        ),
         workflow_family=workflow,
         transition=transition,
         exact_key=stable_fingerprint(exact_payload),
@@ -260,17 +292,7 @@ def _title(record: HypothesisRecord, endpoints: list[Endpoint]) -> str:
             return f"Unsigned JWT acceptance may bypass authentication on {route}"
         return f"Unsigned JWT may be accepted by the verifier on {route}"
     if record.category == "authorization" and rule.startswith("AUTH_OBJECT_ACCESS"):
-        parameter = next(
-            (
-                item.name
-                for endpoint_item in endpoints
-                for item in endpoint_item.parameters
-                if item.source == "request"
-                and item.client_controlled
-                and item.semantic_type == "object_identifier"
-            ),
-            "identifier",
-        )
+        parameter = record.mutation_target.parameter or "identifier"
         if operation == DomainOperation.READ:
             action = "access"
         elif operation == DomainOperation.CREATE_CHILD:
@@ -300,6 +322,7 @@ def _title(record: HypothesisRecord, endpoints: list[Endpoint]) -> str:
 
 def _calibrated_scores(record: HypothesisRecord) -> tuple[HypothesisScores, str]:
     values = record.scores.model_dump()
+    semantics = record.mutation_target.semantics
     if record.category == "authorization" and record.domain_intent.visibility in {
         VisibilityIntent.PUBLIC,
         VisibilityIntent.SHARED,
@@ -308,6 +331,27 @@ def _calibrated_scores(record: HypothesisRecord) -> tuple[HypothesisScores, str]
         values["confidence"] = min(values["confidence"], 2)
         values["testability"] = min(values["testability"], 2)
         values["likelihood"] = min(values["likelihood"], 2)
+    if semantics.semantic_class in {
+        IdentifierSemanticClass.REGION,
+        IdentifierSemanticClass.SHARED_SCOPE,
+        IdentifierSemanticClass.COLLECTION,
+        IdentifierSemanticClass.NON_SECURITY_RELEVANT,
+    }:
+        values["confidence"] = min(values["confidence"], 1)
+        values["testability"] = min(values["testability"], 1)
+        values["likelihood"] = min(values["likelihood"], 1)
+    elif semantics.semantic_class == IdentifierSemanticClass.OBJECT_IDENTIFIER:
+        values["confidence"] = min(values["confidence"], 2)
+        values["testability"] = min(values["testability"], 2)
+        values["likelihood"] = min(values["likelihood"], 2)
+    elif (
+        semantics.semantic_class == IdentifierSemanticClass.OWNED_OBJECT
+        and semantics.ownership_state in {OwnershipState.CONFIRMED, OwnershipState.STRONG_INFERRED}
+    ):
+        values["confidence"] = min(5, values["confidence"] + 1)
+        values["testability"] = min(5, values["testability"] + 1)
+    if semantics.counterevidence:
+        values["likelihood"] = max(1, values["likelihood"] - 1)
     if record.generation_rule.get("id", "").startswith("JWT_ALGORITHM_VALIDATION") and (
         claim_strength_rank(record.claim_strength.target_level) <= 2
     ):
@@ -381,6 +425,96 @@ def _refresh_checksum(record: HypothesisRecord) -> HypothesisRecord:
     return record.model_copy(update={"generation": record.generation.model_copy(update=generation)})
 
 
+def _display_descriptor_value(value: object) -> str:
+    if value is None:
+        return "none"
+    if isinstance(value, list):
+        return ", ".join(str(item) for item in value) or "none"
+    return str(value)
+
+
+def _difference_reasons(
+    record: HypothesisRecord,
+    peers: list[HypothesisRecord],
+) -> list[str]:
+    descriptor = record.semantic_descriptor
+    if descriptor is None:
+        return []
+    reasons: list[str] = []
+    for peer in sorted(peers, key=lambda item: item.id):
+        peer_descriptor = peer.semantic_descriptor
+        if peer_descriptor is None:
+            continue
+        differences = [
+            (
+                f"{label} is {_display_descriptor_value(getattr(descriptor, field))} "
+                f"instead of {_display_descriptor_value(getattr(peer_descriptor, field))}"
+            )
+            for label, field in _DESCRIPTOR_DIFFERENCE_FIELDS
+            if getattr(descriptor, field) != getattr(peer_descriptor, field)
+        ]
+        if differences:
+            reasons.append(f"Differs from {peer.id}: " + "; ".join(differences) + ".")
+    return reasons
+
+
+def _presentation_explanation(
+    record: HypothesisRecord,
+    records_by_id: dict[str, HypothesisRecord],
+) -> HypothesisPresentation:
+    grouping = record.grouping
+    descriptor = record.semantic_descriptor
+    related_ids = {
+        peer.id
+        for peer in records_by_id.values()
+        if peer.id != record.id
+        and descriptor is not None
+        and peer.semantic_descriptor is not None
+        and peer.semantic_descriptor.weakness_family == descriptor.weakness_family
+        and set(peer.semantic_descriptor.target_services).intersection(descriptor.target_services)
+        and set(peer.semantic_descriptor.route_families).intersection(descriptor.route_families)
+    }
+    similar_ids = sorted(
+        (set(grouping.campaign_member_ids or grouping.cluster_member_ids) | related_ids)
+        - {record.id}
+    )
+    peers = [records_by_id[item] for item in similar_ids if item in records_by_id]
+    differences = _difference_reasons(record, peers)
+    retention: list[str] = []
+    if record.presentation.visible:
+        if len(grouping.cluster_member_ids) > 1 and grouping.primary_hypothesis_id == record.id:
+            retention.append(
+                "Retained as the canonical representative of an exact semantic cluster; "
+                "duplicate provenance remains linked."
+            )
+        else:
+            retention.append(
+                "Retained because no other record has the same exact semantic fingerprint."
+            )
+        target = record.mutation_target
+        if target.parameter is not None:
+            retention.append(
+                f"Mutation target {target.parameter} at {target.location or 'unknown'} remains "
+                f"distinct as {target.semantics.semantic_class.value}/"
+                f"{target.semantics.resource_role.value} with ownership "
+                f"{target.semantics.ownership_state.value}."
+            )
+        if differences:
+            retention.append(
+                "Related campaign records remain separate because their semantic descriptors "
+                "differ."
+            )
+        if record.presentation.suppression_reason is None:
+            retention.append("No source, evidence, or semantic suppression rule applies.")
+    return record.presentation.model_copy(
+        update={
+            "retention_reasons": retention,
+            "difference_reasons": differences,
+            "similar_hypothesis_ids": similar_ids,
+        }
+    )
+
+
 def finalize_hypothesis_store(
     target: TargetDocument,
     observations: ObservationStore,
@@ -396,35 +530,48 @@ def finalize_hypothesis_store(
         selected = [
             endpoint_by_id[item] for item in record.source.endpoints if item in endpoint_by_id
         ]
+        mutation_target = resolve_mutation_target(record, selected)
+        semantic_record = record.model_copy(update={"mutation_target": mutation_target})
         intent = assess_domain_intent(
             target,
             selected,
-            category=record.category,
-            generation_rule_id=record.generation_rule.get("id", ""),
-            logic_details=record.logic_details,
+            category=semantic_record.category,
+            generation_rule_id=semantic_record.generation_rule.get("id", ""),
+            logic_details=semantic_record.logic_details,
+            mutation_target=mutation_target,
         )
         claim = assess_claim_strength(
-            generation_rule_id=record.generation_rule.get("id", ""),
-            category=record.category,
+            generation_rule_id=semantic_record.generation_rule.get("id", ""),
+            category=semantic_record.category,
             intent=intent,
-            eligibility_evidence=record.eligibility_evidence,
+            eligibility_evidence=semantic_record.eligibility_evidence,
         )
-        semantic_record = record
-        if record.category == "authorization" and intent.visibility in {
-            VisibilityIntent.PUBLIC,
-            VisibilityIntent.SHARED,
-        }:
-            semantic_record = record.model_copy(
+        target_class = mutation_target.semantics.semantic_class
+        if semantic_record.category == "authorization" and (
+            intent.visibility in {VisibilityIntent.PUBLIC, VisibilityIntent.SHARED}
+            or target_class
+            in {
+                IdentifierSemanticClass.REGION,
+                IdentifierSemanticClass.SHARED_SCOPE,
+                IdentifierSemanticClass.COLLECTION,
+                IdentifierSemanticClass.NON_SECURITY_RELEVANT,
+            }
+        ):
+            semantic_record = semantic_record.model_copy(
                 update={
                     "kind": "RESEARCH_TASK",
                     "disposition": (
-                        "NEEDS_RESEARCH" if record.disposition == "ACTIVE" else record.disposition
+                        "NEEDS_RESEARCH"
+                        if semantic_record.disposition == "ACTIVE"
+                        else semantic_record.disposition
                     ),
                     "priority": "P3",
                     "priority_rationale": [
-                        *record.priority_rationale,
-                        "Public/shared visibility remains a research question, not a BOLA "
-                        "priority.",
+                        *semantic_record.priority_rationale,
+                        (
+                            f"Mutation target {mutation_target.parameter or 'unknown'} is "
+                            f"classified as {target_class.value}, not an owned-object boundary."
+                        ),
                     ],
                 }
             )
@@ -617,7 +764,13 @@ def finalize_hypothesis_store(
             )
         )
 
-    finalized = [_refresh_checksum(updates[item]) for item in sorted(updates)]
+    explained = {
+        identifier: record.model_copy(
+            update={"presentation": _presentation_explanation(record, updates)}
+        )
+        for identifier, record in sorted(updates.items())
+    }
+    finalized = [_refresh_checksum(explained[item]) for item in sorted(explained)]
     return HypothesisStore(
         version=3, hypotheses=finalized, campaigns=sorted(campaigns, key=lambda item: item.id)
     )

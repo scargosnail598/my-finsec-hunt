@@ -111,14 +111,14 @@ def test_hypothesis_metrics_report_unknowns_and_raw_denominators_honestly(
 
     assert aggregate.labeled_precision_at_k["10"] == 1.0
     assert aggregate.hypothesis_precision_at_k["10"] == 1.0
-    assert aggregate.label_coverage_at_k["10"] == pytest.approx(7 / 38)
-    assert aggregate.unknown_rate_at_k["10"] == pytest.approx(31 / 38)
-    assert aggregate.precision_lower_bound_at_k["10"] == pytest.approx(7 / 38)
-    assert counts.emitted_predictions == 38
+    assert aggregate.label_coverage_at_k["10"] == pytest.approx(7 / 39)
+    assert aggregate.unknown_rate_at_k["10"] == pytest.approx(32 / 39)
+    assert aggregate.precision_lower_bound_at_k["10"] == pytest.approx(7 / 39)
+    assert counts.emitted_predictions == 39
     assert counts.labeled_predictions == 7
     assert counts.expected_predictions == 7
     assert counts.forbidden_predictions == 0
-    assert counts.unknown_predictions == 31
+    assert counts.unknown_predictions == 32
     assert counts.emitted_predictions == (
         counts.expected_predictions + counts.forbidden_predictions + counts.unknown_predictions
     )

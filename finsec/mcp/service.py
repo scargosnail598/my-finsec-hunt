@@ -43,9 +43,12 @@ from finsec.mcp.models import (
     HarIngestSummary,
     HypothesisClaims,
     HypothesisContext,
+    HypothesisExplanation,
     HypothesisList,
     HypothesisSummary,
+    IdentifierSemanticsSummary,
     InvariantContext,
+    MutationTargetSummary,
     ObjectAccessContext,
     ObservationContext,
     OwnershipInferenceContext,
@@ -75,7 +78,7 @@ from finsec.workflow import run_offline_workflow
 WORKSPACE_ENVIRONMENT_VARIABLE = "FINSEC_HUNT_WORKSPACE"
 IMPORT_ROOT_ENVIRONMENT_VARIABLE = "FINSEC_HUNT_IMPORT_ROOT"
 SUPPORTED_STORE_VERSION = 1
-HYPOTHESIS_ID_PATTERN = re.compile(r"^HYP-\d+$")
+HYPOTHESIS_ID_PATTERN = re.compile(r"^(?:HYP-\d+|BLH-[A-F0-9]{16})$")
 EXECUTION_REVISION_PATTERN = re.compile(r"^execution-v(\d+)\.yaml$")
 HAR_FILENAME_PATTERN = re.compile(r"^[^/\\\x00-\x1f]+\.har$", re.IGNORECASE)
 SUPPORTED_IMPORT_CHANNELS = {
@@ -533,7 +536,7 @@ class FinsecMcpService:
 
         normalized = hypothesis_id.strip().upper()
         if not HYPOTHESIS_ID_PATTERN.fullmatch(normalized):
-            raise FinsecMcpError("Hypothesis ID must use the form HYP-001.")
+            raise FinsecMcpError("Hypothesis ID must use the form HYP-001 or BLH-<16 hex>.")
         return normalized
 
     def _import_source(self, source_name: str) -> Path:
@@ -599,7 +602,12 @@ class FinsecMcpService:
         )
 
     def _endpoints(self) -> EndpointStore:
-        return self._load_versioned(self.workspace.endpoints, EndpointStore, "Endpoint store")
+        return self._load_versioned(
+            self.workspace.endpoints,
+            EndpointStore,
+            "Endpoint store",
+            supported_versions=frozenset({1, 2}),
+        )
 
     def _invariants(self) -> InvariantStore:
         return self._load_versioned(self.workspace.invariants, InvariantStore, "Invariant store")
@@ -685,6 +693,55 @@ class FinsecMcpService:
             cluster_id=hypothesis.grouping.cluster_id,
             campaign_id=hypothesis.grouping.campaign_id,
             relationship=hypothesis.grouping.relationship,
+            explanation=self._hypothesis_explanation(hypothesis),
+        )
+
+    def _hypothesis_explanation(self, hypothesis: HypothesisRecord) -> HypothesisExplanation:
+        target = hypothesis.mutation_target
+        semantics = target.semantics
+        return HypothesisExplanation(
+            mutation_target=MutationTargetSummary(
+                parameter=(
+                    self.sanitizer.identifier(target.parameter)
+                    if target.parameter is not None
+                    else None
+                ),
+                location=target.location,
+                endpoint_ids=sorted(
+                    self.sanitizer.identifier(item) for item in target.endpoint_ids
+                ),
+                expected_authorization_relationship=(target.expected_authorization_relationship),
+            ),
+            identifier_semantics=IdentifierSemanticsSummary(
+                semantic_class=semantics.semantic_class,
+                resource_role=semantics.resource_role,
+                resource_type=(
+                    self._safe_text(semantics.resource_type, maximum=120)
+                    if semantics.resource_type is not None
+                    else None
+                ),
+                parent_resource_type=(
+                    self._safe_text(semantics.parent_resource_type, maximum=120)
+                    if semantics.parent_resource_type is not None
+                    else None
+                ),
+                ownership_state=semantics.ownership_state,
+                confidence=semantics.confidence,
+                evidence=self._safe_text_list(semantics.evidence),
+                counterevidence=self._safe_text_list(semantics.counterevidence),
+                sources=self._safe_text_list(semantics.sources),
+                explanation=self._safe_text(semantics.explanation),
+            ),
+            readiness_reasons=self._safe_text_list(hypothesis.readiness_assessment.reasons),
+            missing_prerequisites=self._safe_text_list(
+                hypothesis.readiness_assessment.missing_prerequisites
+            ),
+            retention_reasons=self._safe_text_list(hypothesis.presentation.retention_reasons),
+            difference_reasons=self._safe_text_list(hypothesis.presentation.difference_reasons),
+            similar_hypothesis_ids=sorted(
+                self.sanitizer.identifier(item)
+                for item in hypothesis.presentation.similar_hypothesis_ids
+            ),
         )
 
     def _observation_context(
@@ -735,6 +792,15 @@ class FinsecMcpService:
                     client_controlled=item.client_controlled,
                     knowledge_status=str(item.knowledge_status),
                     evidence=sorted(item.evidence),
+                    identifier_semantic_class=item.identifier_semantics.semantic_class,
+                    identifier_resource_role=item.identifier_semantics.resource_role,
+                    ownership_state=item.identifier_semantics.ownership_state,
+                    semantic_confidence=item.identifier_semantics.confidence,
+                    semantic_evidence=self._safe_text_list(item.identifier_semantics.evidence),
+                    semantic_counterevidence=self._safe_text_list(
+                        item.identifier_semantics.counterevidence
+                    ),
+                    semantic_explanation=self._safe_text(item.identifier_semantics.explanation),
                 )
                 for item in sorted(endpoint.parameters, key=lambda item: (item.location, item.name))
             ],
@@ -1049,7 +1115,7 @@ class FinsecMcpService:
             return 0, 0
         sets = 0
         records = 0
-        for directory in sorted(root.glob("HYP-*")):
+        for directory in sorted(root.iterdir()):
             self._assert_confined(directory)
             if not HYPOTHESIS_ID_PATTERN.fullmatch(directory.name) or not directory.is_dir():
                 continue

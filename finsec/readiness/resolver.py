@@ -451,11 +451,18 @@ def _ownership_counts(endpoints: EndpointStore | None) -> dict[str, int]:
             if not binding.actor_object_binding_observed:
                 continue
             actors = {item.actor for item in binding.baselines}
-            confirmed = min(
-                binding.distinct_actors,
-                binding.distinct_objects,
-                binding.distinct_owner_values or binding.distinct_scope_values,
-            )
+            if binding.source == "CONTROLLED_LIFECYCLE":
+                confirmed = min(
+                    binding.distinct_actors,
+                    binding.distinct_objects,
+                    len({item.baseline_id for item in binding.baselines if item.baseline_id}),
+                )
+            else:
+                confirmed = min(
+                    binding.distinct_actors,
+                    binding.distinct_objects,
+                    binding.distinct_owner_values or binding.distinct_scope_values,
+                )
             for actor in actors:
                 counts[actor] = max(counts.get(actor, 0), confirmed)
     return counts
@@ -1123,7 +1130,13 @@ def resolve_workspace_readiness(
     observations_loaded = _load_artifact(
         paths, paths.observations, ObservationStore, "Observation store"
     )
-    endpoints_loaded = _load_artifact(paths, paths.endpoints, EndpointStore, "Endpoint inventory")
+    endpoints_loaded = _load_artifact(
+        paths,
+        paths.endpoints,
+        EndpointStore,
+        "Endpoint inventory",
+        supported_versions=frozenset({1, 2}),
+    )
     actors_loaded = _load_artifact(paths, paths.actors, ActorStore, "Actor model")
     resources_loaded = _load_artifact(paths, paths.resources, ResourceStore, "Resource model")
     invariants_loaded = _load_artifact(paths, paths.invariants, InvariantStore, "Invariant store")

@@ -10,6 +10,7 @@ from finsec.errors import FinsecError
 from finsec.modeling.domain import InvariantRecord, InvariantStore, ResourceStore
 from finsec.modeling.merge import merge_generated_records, stable_fingerprint
 from finsec.modeling.models import Confidence, Endpoint, EndpointStore, KnowledgeStatus
+from finsec.modeling.semantics import object_candidate
 from finsec.readiness.provenance import invariant_source_fingerprint, record_stage_provenance
 from finsec.utils.yaml_store import load_yaml, write_yaml
 
@@ -100,7 +101,7 @@ def _drafts(endpoints: EndpointStore, resources: ResourceStore) -> list[dict[str
             dict.fromkeys(
                 parameter.name
                 for parameter in endpoint.parameters
-                if parameter.semantic_type == "object_identifier" and parameter.client_controlled
+                if parameter.client_controlled and object_candidate(parameter.identifier_semantics)
             )
         )
         for parameter in object_parameters:

@@ -51,6 +51,7 @@ from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
 from finsec.modeling.merge import stable_fingerprint
 from finsec.modeling.models import EndpointStore, ObservationStore
+from finsec.modeling.semantics import IdentifierSemanticClass
 from finsec.utils.yaml_store import load_yaml, write_yaml
 
 TERMINAL_STATES = {
@@ -307,6 +308,17 @@ def _primary_resource_identifiers(facts: ExchangeFacts) -> set[tuple[str | None,
         (signal.resource_type, signal.fingerprint)
         for signal in _resource_signals(facts)
         if (signal.resource_type or "").lower() == primary_type
+        and signal.semantic_class
+        not in {
+            IdentifierSemanticClass.REGION,
+            IdentifierSemanticClass.SHARED_SCOPE,
+            IdentifierSemanticClass.TENANT_CONTAINER,
+            IdentifierSemanticClass.PARENT_CONTAINER,
+            IdentifierSemanticClass.COLLECTION,
+            IdentifierSemanticClass.ACTOR_IDENTIFIER,
+            IdentifierSemanticClass.AUTH_IDENTIFIER,
+            IdentifierSemanticClass.NON_SECURITY_RELEVANT,
+        }
     }
 
 
@@ -321,6 +333,17 @@ def _request_primary_resource_identifiers(
         for signal in facts.request_signals
         if signal.kind == "RESOURCE_IDENTIFIER"
         and (signal.resource_type or "").lower() == primary_type
+        and signal.semantic_class
+        not in {
+            IdentifierSemanticClass.REGION,
+            IdentifierSemanticClass.SHARED_SCOPE,
+            IdentifierSemanticClass.TENANT_CONTAINER,
+            IdentifierSemanticClass.PARENT_CONTAINER,
+            IdentifierSemanticClass.COLLECTION,
+            IdentifierSemanticClass.ACTOR_IDENTIFIER,
+            IdentifierSemanticClass.AUTH_IDENTIFIER,
+            IdentifierSemanticClass.NON_SECURITY_RELEVANT,
+        }
     }
 
 
@@ -339,6 +362,13 @@ def _resources(
         for signal in _resource_signals(item):
             resource_type = signal.resource_type or "resource"
             actor_scope = item.observation.actor
+            if signal.semantic_class in {
+                IdentifierSemanticClass.REGION,
+                IdentifierSemanticClass.SHARED_SCOPE,
+                IdentifierSemanticClass.COLLECTION,
+                IdentifierSemanticClass.NON_SECURITY_RELEVANT,
+            }:
+                actor_scope = "SHARED"
             if item.observation.actor == "UNKNOWN":
                 actor_scope = f"UNKNOWN:{_capture_identity(item)}"
             elif not observation_supports_normal_behavior(item.observation):
@@ -359,6 +389,8 @@ def _resources(
         observations = sorted({item.observation.id for item, _signal in items})
         actors = sorted({item.observation.actor for item, _signal in items})
         capture_modes = sorted({item.observation.capture_mode for item, _signal in items})
+        semantic_classes = sorted({signal.semantic_class for _item, signal in items})
+        ownership_states = sorted({signal.ownership_state for _item, signal in items})
         normal_behavior_observations = sorted(
             observation_id
             for observation_id in observations
@@ -382,6 +414,8 @@ def _resources(
                 observations=observations,
                 actors=actors,
                 capture_modes=capture_modes,
+                semantic_classes=semantic_classes,
+                ownership_states=ownership_states,
                 normal_behavior_observations=normal_behavior_observations,
                 probe_observations=probe_observations,
                 confidence=InferenceConfidence.HIGH_EVIDENCE,
@@ -394,15 +428,23 @@ def _resources(
             continue
         unique = sorted(set(resource_ids))
         for source_id in unique:
-            source = resource_by_id[source_id]
             for target_id in unique:
                 if source_id == target_id:
                     continue
                 target = resource_by_id[target_id]
-                relation: Literal["owned_by", "linked_to"] = (
-                    "owned_by"
+                relation: Literal["scoped_to", "linked_to"] = (
+                    "scoped_to"
                     if target.resource_type in SCOPE_RESOURCE_TYPES
-                    and source.resource_type not in SCOPE_RESOURCE_TYPES
+                    or any(
+                        item
+                        in {
+                            IdentifierSemanticClass.REGION,
+                            IdentifierSemanticClass.SHARED_SCOPE,
+                            IdentifierSemanticClass.TENANT_CONTAINER,
+                            IdentifierSemanticClass.PARENT_CONTAINER,
+                        }
+                        for item in target.semantic_classes
+                    )
                     else "linked_to"
                 )
                 raw_relationships[source_id].append(
@@ -1474,6 +1516,17 @@ def _workflow_instances(
                             for signal in item.request_signals
                             if signal.kind == "RESOURCE_IDENTIFIER"
                             and signal.resource_role != "SCOPE"
+                        }
+                    ),
+                    client_controlled_binding_fields=sorted(
+                        {
+                            signal.field
+                            for signal in item.request_signals
+                            if (
+                                signal.kind == "RESOURCE_IDENTIFIER"
+                                and signal.resource_role != "SCOPE"
+                            )
+                            or (signal.kind == "WORKFLOW_TOKEN" and signal.distinctive)
                         }
                     ),
                     state_observations=state_observations,

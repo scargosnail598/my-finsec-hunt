@@ -2858,6 +2858,41 @@ def hypotheses_command(
             item = hypotheses[0]
             intent = item.domain_intent
             readiness = item.readiness_assessment
+            target = item.mutation_target
+            semantics = target.semantics
+            console.print("\n[bold]Object semantics and ownership[/bold]")
+            console.print(
+                f"- Mutation target: {target.parameter or 'None'}; location: "
+                f"{target.location or 'None'}; endpoints: "
+                f"{', '.join(target.endpoint_ids) or 'None'}"
+            )
+            console.print(
+                f"- Semantic class: {semantics.semantic_class}; resource role: "
+                f"{semantics.resource_role}; resource: {semantics.resource_type or 'Unknown'}; "
+                f"parent: {semantics.parent_resource_type or 'None'}"
+            )
+            console.print(
+                f"- Ownership: {semantics.ownership_state}; classifier confidence: "
+                f"{semantics.confidence}; expected relationship: "
+                f"{target.expected_authorization_relationship}"
+            )
+            console.print(f"- Explanation: {semantics.explanation}")
+            for semantic_evidence in semantics.evidence:
+                console.print(f"- Ownership evidence: {semantic_evidence}")
+            for semantic_counterevidence in semantics.counterevidence:
+                console.print(f"- Counterevidence: {semantic_counterevidence}")
+            if semantics.sources:
+                console.print(f"- Semantic sources: {', '.join(semantics.sources)}")
+            console.print("\n[bold]Ranking rationale[/bold]")
+            console.print(
+                f"- Priority: {item.priority}; total score: {item.scores.total} "
+                f"(impact {item.scores.impact}, likelihood {item.scores.likelihood}, "
+                f"confidence {item.scores.confidence}, testability {item.scores.testability})"
+            )
+            for rationale in item.priority_rationale:
+                console.print(f"- {rationale}")
+            if semantics.counterevidence:
+                console.print("- Semantic counterevidence lowers the likelihood score.")
             console.print("\n[bold]Resolved domain intent[/bold]")
             console.print(
                 f"- Subject: {intent.subject_resource}; parent: "
@@ -2887,6 +2922,8 @@ def hypotheses_command(
             console.print(f"- Decision: {readiness.readiness}")
             for reason in readiness.reasons:
                 console.print(f"- {reason}")
+            for missing in readiness.missing_prerequisites:
+                console.print(f"- Missing prerequisite: {missing}")
             for blocker in readiness.blockers:
                 console.print(f"- Blocker [{blocker.stage}/{blocker.code}]: {blocker.summary}")
                 if blocker.next_action is not None:
@@ -2904,6 +2941,14 @@ def hypotheses_command(
                 f"- Primary: {grouping.primary_hypothesis_id or item.id}; members: "
                 f"{', '.join(grouping_members) or item.id}"
             )
+            console.print("\n[bold]Suppression and distinction[/bold]")
+            console.print(f"- Visible: {str(item.presentation.visible).lower()}")
+            if item.presentation.suppression_reason is not None:
+                console.print(f"- Suppression reason: {item.presentation.suppression_reason}")
+            for reason in item.presentation.retention_reasons:
+                console.print(f"- Retained: {reason}")
+            for reason in item.presentation.difference_reasons:
+                console.print(f"- Distinct: {reason}")
             if selected_campaign is not None:
                 console.print("\n[bold]Campaign details[/bold]")
                 console.print(f"- Title: {selected_campaign.title}")

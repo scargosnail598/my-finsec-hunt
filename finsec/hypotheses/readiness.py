@@ -18,11 +18,17 @@ from finsec.hypotheses.contracts import (
     DomainOperation,
     HypothesisReadinessAssessment,
     HypothesisReadinessValue,
+    MutationTargetAssessment,
     ReadinessIssue,
     VisibilityIntent,
 )
 from finsec.modeling.domain import ResourceStore
 from finsec.modeling.models import Endpoint, ObservationStore
+from finsec.modeling.semantics import (
+    IdentifierSemanticClass,
+    OwnershipState,
+    execution_ownership_supported,
+)
 
 RUNTIME_SOURCES = {"HAR", "BURP_XML", "CAIDO_JSON"}
 
@@ -217,6 +223,11 @@ def _required_actors(record: HypothesisLike) -> int:
     return 1
 
 
+def _mutation_target(record: HypothesisLike) -> MutationTargetAssessment:
+    value = getattr(record, "mutation_target", None)
+    return value if isinstance(value, MutationTargetAssessment) else MutationTargetAssessment()
+
+
 def _state_changing(intent: DomainIntentAssessment) -> bool:
     return intent.operation in {
         DomainOperation.CREATE,
@@ -280,6 +291,7 @@ def build_record_readiness_context(
     source_ids = {observation for endpoint in source for observation in endpoint.sources}
     runtime_source_ids = runtime_ids & source_ids
     rule = record.generation_rule.get("id", "")
+    mutation_target = _mutation_target(record)
     actor_count = sum(account.ownership == "researcher" for account in target.accounts)
     actors_required = _required_actors(record)
     actor_evidence = [
@@ -304,6 +316,48 @@ def build_record_readiness_context(
         missing=["Define one bounded mutation with a meaningful secure and vulnerable oracle."],
         next_action="Refine the discovery question into one concrete bounded test.",
     )
+    semantic_target_required = record.category == "authorization" and rule.startswith(
+        "AUTH_OBJECT_ACCESS"
+    )
+    semantic_target_satisfied = (
+        mutation_target.parameter is not None
+        and mutation_target.semantics.semantic_class == IdentifierSemanticClass.OWNED_OBJECT
+        and mutation_target.semantics.ownership_state
+        not in {OwnershipState.SHARED, OwnershipState.CONTRADICTED}
+    )
+    semantic_target_capability = _capability(
+        CapabilityKind.SEMANTIC_TARGET,
+        required=semantic_target_required,
+        satisfied=semantic_target_satisfied,
+        stage=BlockerStage.HYPOTHESIS_EVIDENCE,
+        summary="The mutation target must represent an ownership-relevant object.",
+        evidence=[
+            _evidence(
+                mutation_target.parameter or record.id,
+                "ENDPOINT",
+                (
+                    f"Identifier class is "
+                    f"{mutation_target.semantics.semantic_class.value}; resource role is "
+                    f"{mutation_target.semantics.resource_role.value}."
+                ),
+            )
+        ]
+        if mutation_target.parameter is not None
+        else [],
+        missing=[
+            (
+                f"Identifier is classified as "
+                f"{mutation_target.semantics.semantic_class.value}, therefore an owned-object "
+                "cross-account mutation is not constructable."
+                if mutation_target.parameter is not None
+                else "Identify the exact ownership-relevant mutation parameter."
+            )
+        ],
+        next_action=(
+            "Collect object lifecycle or explicit owner evidence; do not reinterpret shared "
+            "scope as ownership."
+        ),
+    )
     actor_capability = _capability(
         CapabilityKind.ACTOR,
         satisfied=actor_count >= actors_required,
@@ -321,14 +375,24 @@ def build_record_readiness_context(
     )
     ownership_required = record.category == "authorization" or binding_family
     ownership_satisfied = (
-        intent.visibility
+        execution_ownership_supported(mutation_target.semantics)
+        and intent.visibility
         in {
             VisibilityIntent.OWNER_SCOPED,
-            VisibilityIntent.ROLE_SCOPED,
             VisibilityIntent.ACTOR_BOUND,
         }
         and intent.binding.value != "UNKNOWN"
     )
+    if binding_family:
+        ownership_satisfied = (
+            intent.visibility
+            in {
+                VisibilityIntent.OWNER_SCOPED,
+                VisibilityIntent.ROLE_SCOPED,
+                VisibilityIntent.ACTOR_BOUND,
+            }
+            and intent.binding.value != "UNKNOWN"
+        )
     if rule == "FUNCTION_AUTHORIZATION":
         ownership_satisfied = intent.visibility == VisibilityIntent.ROLE_SCOPED
     ownership_capability = _capability(
@@ -348,14 +412,31 @@ def build_record_readiness_context(
         ),
     )
 
+    matching_access = [
+        access
+        for endpoint in source
+        for access in endpoint.object_access
+        if mutation_target.parameter is None
+        or access.identifier.lower() == mutation_target.parameter.lower()
+    ]
     distinct_baselines = any(
         access.actor_object_binding_observed
         and access.source in {"CONTROLLED_LIFECYCLE", "RESPONSE_BODY"}
         and access.distinct_actors >= 2
+        and access.distinct_objects >= 2
         and len(access.baselines) >= 2
-        for endpoint in source
-        for access in endpoint.object_access
+        for access in matching_access
     )
+    baseline_actors = {
+        baseline.actor
+        for access in matching_access
+        if access.source in {"CONTROLLED_LIFECYCLE", "RESPONSE_BODY"}
+        for baseline in access.baselines
+    }
+    controlled_actor_ids = [
+        account.id for account in target.accounts if account.ownership == "researcher"
+    ]
+    missing_baseline_actors = sorted(set(controlled_actor_ids) - baseline_actors)
     controlled_baseline_evidence = [
         _evidence(
             baseline.baseline_id or observation_id,
@@ -365,8 +446,7 @@ def build_record_readiness_context(
                 "is backed by explicit lifecycle or owner-binding evidence."
             ),
         )
-        for endpoint in source
-        for access in endpoint.object_access
+        for access in matching_access
         if access.actor_object_binding_observed
         and access.source in {"CONTROLLED_LIFECYCLE", "RESPONSE_BODY"}
         for baseline in access.baselines
@@ -420,7 +500,13 @@ def build_record_readiness_context(
         ]
         + controlled_baseline_evidence,
         missing=(
-            ["Capture two distinct controlled actor/subject baselines."]
+            (
+                [
+                    f"Missing controlled object baseline for {actor}."
+                    for actor in missing_baseline_actors
+                ]
+                or ["Capture two distinct controlled actor/subject baselines."]
+            )
             if record.category == "authorization" or binding_family
             else ["Capture a controlled pre-state through an authoritative safe read."]
         ),
@@ -614,6 +700,7 @@ def build_record_readiness_context(
         kind=record.kind,
         capabilities=(
             concrete_capability,
+            semantic_target_capability,
             actor_capability,
             ownership_capability,
             baseline_capability,

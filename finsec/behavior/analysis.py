@@ -458,7 +458,20 @@ def infer_business_invariants(inputs: _Inputs) -> list[BusinessInvariant]:
                 for field in step.client_controlled_resource_fields
             }
         )
-        if comparison_links and client_resource_fields and state_changing_actions:
+        client_binding_fields = sorted(
+            {
+                field
+                for instance in instances
+                for step in instance.steps
+                for field in step.client_controlled_binding_fields
+            }
+        )
+        distinct_resource_lifecycles = {
+            tuple(instance.resource_instance_ids)
+            for instance in instances
+            if instance.resource_instance_ids
+        }
+        if comparison_links and client_binding_fields and state_changing_actions:
             invariants.append(
                 _invariant(
                     family,
@@ -469,9 +482,16 @@ def infer_business_invariants(inputs: _Inputs) -> list[BusinessInvariant]:
                     [
                         f"Observed actors: {', '.join(family.actors)}.",
                         f"Cross-actor comparison links: {len(comparison_links)}.",
+                        f"Observed client-controlled binding fields: "
+                        f"{', '.join(client_binding_fields)}.",
                     ],
                 )
             )
+        if (
+            client_resource_fields
+            and len(distinct_resource_lifecycles) >= 2
+            and state_changing_actions
+        ):
             invariants.append(
                 _invariant(
                     family,
@@ -481,7 +501,9 @@ def infer_business_invariants(inputs: _Inputs) -> list[BusinessInvariant]:
                     _observations_for_actions(instances),
                     [
                         f"Observed typed client-controlled identifier fields: "
-                        f"{', '.join(client_resource_fields)}."
+                        f"{', '.join(client_resource_fields)}.",
+                        f"Observed distinct controlled resource lifecycles: "
+                        f"{len(distinct_resource_lifecycles)}.",
                     ],
                 )
             )
@@ -1591,16 +1613,43 @@ def generate_mutation_rejections(
             client_fields = sorted(
                 {field for step in action_steps for field in step.client_controlled_resource_fields}
             )
-            if not comparison_links or not client_fields:
-                reasons = []
-                if not client_fields:
-                    reasons.append("The action has no typed client-controlled resource identifier.")
-                if not comparison_links:
-                    reasons.append(
-                        "No separate controlled-actor/object baseline is available for comparison."
+            binding_fields = sorted(
+                {field for step in action_steps for field in step.client_controlled_binding_fields}
+            )
+            if not comparison_links or not binding_fields:
+                actor_reasons = []
+                if not binding_fields:
+                    actor_reasons.append(
+                        "The action has no typed client-controlled resource or workflow binding."
                     )
-                add(family, "ACTOR_SWITCH", mutation_action, reasons, observations)
-                add(family, "RESOURCE_SWITCH", mutation_action, reasons, observations)
+                if not comparison_links:
+                    actor_reasons.append(
+                        "No separate controlled-actor baseline is available for comparison."
+                    )
+                add(family, "ACTOR_SWITCH", mutation_action, actor_reasons, observations)
+
+            distinct_resource_lifecycles = {
+                tuple(instance.resource_instance_ids)
+                for instance in instances
+                if instance.resource_instance_ids
+            }
+            if not client_fields or len(distinct_resource_lifecycles) < 2:
+                resource_reasons = []
+                if not client_fields:
+                    resource_reasons.append(
+                        "The action has no typed client-controlled resource identifier."
+                    )
+                if len(distinct_resource_lifecycles) < 2:
+                    resource_reasons.append(
+                        "Fewer than two distinct controlled resource lifecycles are available."
+                    )
+                add(
+                    family,
+                    "RESOURCE_SWITCH",
+                    mutation_action,
+                    resource_reasons,
+                    observations,
+                )
 
         for action in changing_actions:
             action_observations = _observations_for_actions(instances, {action})

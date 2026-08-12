@@ -24,6 +24,7 @@ from finsec.hypotheses.generator import find_hypothesis
 from finsec.modeling.domain import ResourceStore
 from finsec.modeling.merge import stable_fingerprint
 from finsec.modeling.models import Endpoint, EndpointStore, ObservationStore
+from finsec.modeling.semantics import execution_ownership_supported
 from finsec.testing.domain import PlanApproval, StructuredRequest, TestPlanRecord, TestPlanStore
 from finsec.testing.planner import plan_source_fingerprint
 from finsec.testing.templates import PUBLIC_READ_RESOURCES
@@ -301,6 +302,7 @@ def _validate_object_binding(
     plan: TestPlanRecord,
     endpoints: list[Endpoint],
     controlled_accounts: set[str],
+    hypothesis: HypothesisRecord,
 ) -> None:
     if len(plan.requests) != 2 or not endpoints:
         raise FinsecError("Execution refused: object substitution requires exactly two requests.")
@@ -328,11 +330,21 @@ def _validate_object_binding(
         or mutation.from_value == mutation.to_value
     ):
         raise FinsecError("Execution refused: object mutation references an uncontrolled actor.")
+    semantic_target = hypothesis.mutation_target
+    if (
+        semantic_target.parameter is None
+        or mutation.parameter.lower() != semantic_target.parameter.lower()
+        or not execution_ownership_supported(semantic_target.semantics)
+    ):
+        raise FinsecError(
+            "Execution refused: object mutation is not bound to the hypothesis semantic target."
+        )
     binding = next(
         (
             item
             for item in endpoint.object_access
-            if item.identifier == mutation.parameter and item.actor_object_binding_observed
+            if item.identifier.lower() == mutation.parameter.lower()
+            and item.actor_object_binding_observed
         ),
         None,
     )
@@ -344,12 +356,12 @@ def _validate_object_binding(
             for item in binding.baselines
             if item.scope_value_fingerprint is not None
         }
-        source = (mutation.source_actor, mutation.from_value)
-        target = (mutation.target_actor, mutation.to_value or "")
+        source_pair = (mutation.source_actor, mutation.from_value)
+        target_pair = (mutation.target_actor, mutation.to_value or "")
         scope_parameter = binding.scope_parameter or binding.identifier
         if (
-            source not in available
-            or target not in available
+            source_pair not in available
+            or target_pair not in available
             or baseline.expected.ownership_source != "PATH_PARENT_SCOPE"
             or mutated.expected.ownership_source != "PATH_PARENT_SCOPE"
             or baseline.expected.scope_parameter != scope_parameter
@@ -576,6 +588,7 @@ def _validate_supported_shape(
     plan: TestPlanRecord,
     endpoints: list[Endpoint],
     controlled_accounts: set[str],
+    hypothesis: HypothesisRecord,
 ) -> None:
     if not plan.execution.supported or plan.execution.pattern == "UNSUPPORTED":
         detail = "; ".join(plan.execution.blockers) or "plan is manual-only"
@@ -583,7 +596,7 @@ def _validate_supported_shape(
     if len(plan.execution.mutation_dimensions) != 1:
         raise FinsecError("Execution refused: exactly one mutation dimension is permitted.")
     if plan.execution.pattern == "OBJECT_SUBSTITUTION":
-        _validate_object_binding(plan, endpoints, controlled_accounts)
+        _validate_object_binding(plan, endpoints, controlled_accounts, hypothesis)
     elif plan.execution.pattern == "AUTHENTICATION_COMPARISON":
         _validate_authentication_comparison(plan, endpoints)
     elif plan.execution.pattern in {"VERSION_COMPARISON", "CHANNEL_COMPARISON"}:
@@ -666,7 +679,7 @@ def _validate_static_policy(
         raise FinsecError("Execution refused: a request targets an uncontrolled actor.")
     for request in plan.requests:
         _validate_request_secrets(request)
-    _validate_supported_shape(plan, endpoints, controlled)
+    _validate_supported_shape(plan, endpoints, controlled, hypothesis)
 
 
 def _resolve_host(host: str, port: int, local_lab: bool) -> tuple[str, ...]:

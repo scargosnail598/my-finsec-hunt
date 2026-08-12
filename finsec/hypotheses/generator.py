@@ -31,6 +31,7 @@ from finsec.modeling.models import (
     Observation,
     ObservationStore,
 )
+from finsec.modeling.semantics import object_candidate
 from finsec.readiness.provenance import hypothesis_source_fingerprint, record_stage_provenance
 from finsec.utils.yaml_store import load_yaml, write_yaml
 
@@ -1616,7 +1617,7 @@ def _drafts(
                 (
                     item
                     for item in endpoint.parameters
-                    if item.name == parameter and item.semantic_type == "object_identifier"
+                    if item.name == parameter and object_candidate(item.identifier_semantics)
                 ),
                 None,
             )
@@ -1655,6 +1656,19 @@ def _drafts(
                 eligibility_evidence = [
                     "authenticated endpoint observed",
                     f"client-controlled {parameter} found in {parameter_record.location}",
+                    (
+                        f"identifier semantic class is "
+                        f"{parameter_record.identifier_semantics.semantic_class.value}"
+                    ),
+                    (
+                        f"identifier resource role is "
+                        f"{parameter_record.identifier_semantics.resource_role.value}"
+                    ),
+                    *parameter_record.identifier_semantics.evidence,
+                    *(
+                        f"counterevidence: {item}"
+                        for item in parameter_record.identifier_semantics.counterevidence
+                    ),
                     "two researcher-controlled actors are configured",
                     *endpoint.relevance_reasons,
                 ]
@@ -1717,11 +1731,27 @@ def _drafts(
                     if not authenticated_runtime:
                         eligibility_evidence.append("no request authentication credential observed")
                     eligibility_evidence = [*dict.fromkeys(eligibility_evidence)]
-                    missing_evidence = [
-                        "Account A requesting Account B's object has not been tested",
-                        "Account B requesting Account A's object has not been tested",
-                        "server-side authorization behavior is not yet confirmed",
-                    ]
+                    if binding.distinct_actors >= 2 and binding.distinct_objects >= 2:
+                        missing_evidence = [
+                            "Account A requesting Account B's object has not been tested",
+                            "Account B requesting Account A's object has not been tested",
+                            "server-side authorization behavior is not yet confirmed",
+                        ]
+                    else:
+                        observed_actors = {item.actor for item in binding.baselines}
+                        missing_actors = [
+                            account.id
+                            for account in target.accounts
+                            if account.ownership == "researcher"
+                            and account.id not in observed_actors
+                        ]
+                        missing_evidence = [
+                            *(
+                                f"Missing controlled object baseline for {actor}"
+                                for actor in missing_actors
+                            ),
+                            "A second distinct actor/object baseline is required for planning",
+                        ]
                 draft.update(
                     {
                         "eligibility_evidence": eligibility_evidence,
@@ -1732,12 +1762,18 @@ def _drafts(
                                 "4"
                                 if binding is not None and binding.source == "PATH_PARENT_SCOPE"
                                 else "5"
-                                if binding is not None
-                                and binding.source == "CONTROLLED_LIFECYCLE"
-                                else "3"
+                                if binding is not None and binding.source == "CONTROLLED_LIFECYCLE"
+                                else "6"
                             ),
                         },
-                        "priority_rationale": endpoint.relevance_reasons,
+                        "priority_rationale": [
+                            *endpoint.relevance_reasons,
+                            parameter_record.identifier_semantics.explanation,
+                            *(
+                                f"Negative evidence: {item}"
+                                for item in parameter_record.identifier_semantics.counterevidence
+                            ),
+                        ],
                     }
                 )
                 drafts.append(draft)
