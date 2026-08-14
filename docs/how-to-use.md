@@ -413,6 +413,50 @@ a different actor or channel, the existing observation IDs remain stable and the
 refreshed. If one capture fails after earlier captures succeeded, the successful passive imports
 remain in the workspace; fix the failed input and rerun.
 
+### Create The Preliminary Post-Ingest Report
+
+The normal post-ingest workflow can produce one consolidated Markdown report without manually
+running each inspection command:
+
+```bash
+hunt ingest-wizard \
+  -w workspaces/<slug> \
+  --capture-root captures/<slug>
+
+hunt workspace report \
+  -w workspaces/<slug>
+```
+
+`hunt workspace report` validates the workspace, runs missing or stale deterministic offline
+analysis in dependency order, and writes a timestamped report under `reports/workspace/`. It does
+not ingest captures, send target requests, create or approve plans, execute hypotheses, promote
+evidence, change hypothesis status, or confirm vulnerabilities.
+
+Useful modes are:
+
+```bash
+# Read existing artifacts without regenerating derived analysis
+hunt workspace report -w workspaces/<slug> --report-only
+
+# Rebuild every applicable safe offline derived stage
+hunt workspace report -w workspaces/<slug> --force
+
+# Write to a stable path and include sanitized stage diagnostics
+hunt workspace report -w workspaces/<slug> \
+  --output workspaces/<slug>/reports/workspace/initial-analysis.md \
+  --include-command-output
+```
+
+The report is preliminary even when a hypothesis is `TEST_READY`; test readiness, human approval,
+environment policy, active execution permission, and confirmed evidence remain separate facts.
+Use `--strict` when automation should fail for unavailable required stages, and
+`--no-include-suppressed` only when the complete suppressed appendix is not wanted.
+
+This command is intentionally distinct from `hunt report HYP-002`. The hypothesis command still
+requires current `CONFIRMED` evidence and produces an immutable version under `reports/` for one
+finding. The workspace command requires no confirmation and produces a whole-workspace analysis
+under `reports/workspace/`.
+
 ## 7. Import Other Passive Artifacts
 
 HAR:
@@ -712,6 +756,10 @@ revision:
 reports/HYP-002-report-v1.md
 reports/HYP-002-report-v2.md
 ```
+
+Do not use this command for preliminary post-ingest review. The separate whole-workspace command is
+`hunt workspace report -w workspaces/<slug>`; it never weakens this confirmed-evidence gate or
+writes into the immutable hypothesis-report namespace.
 
 ## 15. Delete A Workspace
 

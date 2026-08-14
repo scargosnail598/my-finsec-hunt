@@ -43,6 +43,7 @@
    - 4.10 Stage 10: Dual-Checksum Approval & Bounded Execution
    - 4.11 Stage 11: Evidence Indexing & Skeptical Validation Engine
    - 4.12 Stage 12: Immutable Jinja2 Markdown Report Generation
+   - 4.12A Preliminary Post-Ingest Workspace Analysis Reporting
    - 4.13 Canonical Readiness & Blocker Engine
 5. [EXECUTION SAFETY ENGINE & POLICY CONTROLS](#5-execution-safety-engine--policy-controls)
    - 5.1 Dual-Checksum Human Approval Gate
@@ -220,7 +221,9 @@ my-finsec-hunt/
 │       ├── approved_plans.yaml        # Dual-checksum human approval records
 │       ├── evidence/
 │       │   └── HYP-xxx/               # Evidence metadata, artifacts, & conclusions
-│       └── reports/                   # Immutable Markdown reports (HYP-xxx-report-vN.md)
+│       └── reports/
+│           ├── HYP-xxx-report-vN.md   # Immutable confirmed-hypothesis reports
+│           └── workspace/             # Preliminary whole-workspace analysis reports
 │
 └── workspaces/.finsec-secrets/        # Isolated Secret Storage (Directory permissions: 0700)
     └── <slug>.json                    # Actor secrets file (File permissions: 0600)
@@ -375,6 +378,24 @@ fixture, and incomplete-capture troubleshooting are documented in
 - **CLI**: `hunt report <hyp-id>`
 - **Operation**: Renders final audit reports using Jinja2 templates (`report.md.j2`). Requires `CONFIRMED` validation disposition; refuses unvalidated findings. Produces versioned, immutable Markdown reports (`reports/HYP-xxx-report-v1.md`).
 
+### 4.12A Preliminary Post-Ingest Workspace Analysis Reporting
+
+- **Module**: `finsec/workspace_analysis/`
+- **CLI**: `hunt workspace report -w <workspace>`
+- **Operation**: Validates the workspace, runs missing or stale safe offline derived stages in
+  dependency order, collects typed workspace state, and atomically writes one preliminary Markdown
+  report beneath `reports/workspace/`.
+- **Modes**: `--report-only` prevents derived-artifact regeneration, `--force` rebuilds every
+  applicable safe offline stage, and `--strict` returns a failing exit status when required stages
+  or data are unavailable while still attempting to write a diagnostic report.
+- **Safety**: The orchestrator never ingests, plans, approves, executes, sends network requests,
+  promotes evidence, or changes hypothesis status. Hypothesis readiness and active-execution
+  permission remain independent.
+
+This report is a preliminary workspace-wide analysis and does not require confirmed evidence. It
+does not call or replace `hunt report <hyp-id>`, whose evidence gate, immutable versioning, and
+`reports/HYP-xxx-report-vN.md` layout remain unchanged.
+
 ### 4.13 Canonical Readiness & Blocker Engine
 
 The authoritative status entry point is:
@@ -485,6 +506,7 @@ The validator (`finsec/validation/validator.py`) evaluates 15 deterministic chec
 | `hunt workspace use` | `<workspace>` | Persist the default workspace for commands that omit `-w`. |
 | `hunt workspace current` | none | Show the configured default workspace. |
 | `hunt workspace clear` | none | Clear the configured default and return to automatic discovery. |
+| `hunt workspace report` | `-w <workspace> [-o <path>] [--report-only] [--force] [--no-include-suppressed] [--include-command-output] [--strict]` | Run safe offline post-ingest analysis and render a preliminary whole-workspace Markdown report. |
 | `hunt status` | `-w <workspace>` | Show concise canonical readiness, actor dimensions, blockers, and next actions. |
 | `hunt status --json` | `-w <workspace>` | Emit the complete canonical `ReadinessReport` for automation and adapter parity. |
 | `hunt ingest` | `<file.har> -w <workspace> --actor <actor> --capture-mode <mode> [--intent-action <action> --intent-resource <type>]` | Ingest HAR observations and associate session context. |
@@ -510,7 +532,7 @@ The validator (`finsec/validation/validator.py`) evaluates 15 deterministic chec
 | `hunt execute` | `<HYP-xxx> -w <workspace> [--dry-run]` | Execute read-only test plan over network. |
 | `hunt evidence` | `<HYP-xxx> -w <workspace> [--add <file> --kind <kind>]` | Manage evidence artifacts for hypothesis. |
 | `hunt validate` | `<HYP-xxx> -w <workspace>` | Run 15 skeptical validation checks. |
-| `hunt report` | `<HYP-xxx> -w <workspace>` | Render versioned Markdown report. |
+| `hunt report` | `<HYP-xxx> -w <workspace>` | Render an immutable versioned report only from current confirmed evidence. |
 | `hunt workspace delete` | `-w <workspace> [--purge] [--confirm <slug>]` | Safely delete or purge workspace & data. |
 
 For workspace-aware commands, `-w` is optional after `hunt workspace use <workspace>`. Explicit

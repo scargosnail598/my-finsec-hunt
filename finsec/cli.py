@@ -112,6 +112,8 @@ from finsec.workflow import (
     merge_workflow_assignments,
     run_offline_workflow,
 )
+from finsec.workspace_analysis import WorkspaceAnalysisOrchestrator
+from finsec.workspace_analysis.domain import WorkspaceAnalysisStageStatus
 
 app = typer.Typer(
     name="hunt",
@@ -484,6 +486,107 @@ def workspace_migrate_auth_command(workspace: WorkspaceOption = None) -> None:
     console.print(
         "Environment variables remain a temporary legacy fallback; import credentials next."
     )
+
+
+@workspace_app.command("report")
+def workspace_report_command(
+    workspace: WorkspaceOption = None,
+    output: Annotated[
+        Path | None,
+        typer.Option(
+            "--output",
+            "-o",
+            help="Markdown output path; defaults to reports/workspace with a UTC timestamp.",
+        ),
+    ] = None,
+    report_only: Annotated[
+        bool,
+        typer.Option(
+            "--report-only",
+            help="Read current artifacts without regenerating derived analysis.",
+        ),
+    ] = False,
+    force: Annotated[
+        bool,
+        typer.Option(
+            "--force",
+            help="Rebuild every applicable deterministic safe offline stage.",
+        ),
+    ] = False,
+    include_suppressed: Annotated[
+        bool,
+        typer.Option(
+            "--include-suppressed/--no-include-suppressed",
+            help="Include suppressed hypotheses and endpoints in the complete appendix.",
+        ),
+    ] = True,
+    include_command_output: Annotated[
+        bool,
+        typer.Option(
+            "--include-command-output",
+            help="Include sanitized logical-stage diagnostics in the Markdown appendix.",
+        ),
+    ] = False,
+    strict: Annotated[
+        bool,
+        typer.Option(
+            "--strict",
+            help="Return a failing exit code when required stages or data are unavailable.",
+        ),
+    ] = False,
+) -> None:
+    """Run safe offline analysis and write a preliminary whole-workspace report."""
+
+    try:
+        paths = resolve_workspace(workspace)
+        result = WorkspaceAnalysisOrchestrator(paths).run(
+            output=output,
+            report_only=report_only,
+            force=force,
+            include_suppressed=include_suppressed,
+            include_command_output=include_command_output,
+            strict=strict,
+        )
+    except (FinsecError, OSError, ValidationError) as error:
+        _abort(error)
+
+    stage_counts = {
+        status: sum(item.status == status for item in result.report.stages)
+        for status in WorkspaceAnalysisStageStatus
+    }
+    metrics = result.report.metrics
+    headline = (
+        "[yellow]Partial workspace analysis report generated.[/yellow]"
+        if result.partial
+        else "[bold green]Workspace analysis report generated.[/bold green]"
+    )
+    console.print(headline)
+    console.print(f"\nWorkspace: {paths.root}")
+    console.print(
+        "Pipeline: "
+        f"{stage_counts[WorkspaceAnalysisStageStatus.SUCCESS]} succeeded, "
+        f"{stage_counts[WorkspaceAnalysisStageStatus.WARNING]} warnings, "
+        f"{stage_counts[WorkspaceAnalysisStageStatus.SKIPPED]} skipped, "
+        f"{stage_counts[WorkspaceAnalysisStageStatus.FAILED]} failed"
+    )
+    for label, count in (
+        ("Observations", metrics.observations),
+        ("Endpoints", metrics.endpoint_families),
+        ("Actors", metrics.actors),
+        ("Workflows", metrics.workflow_instances),
+        ("Invariants", metrics.active_invariants),
+        ("Active hypotheses", metrics.active_hypotheses),
+        ("Research tasks", metrics.research_tasks),
+        ("TEST_READY", metrics.test_ready),
+        ("REVIEW_REQUIRED", metrics.review_required),
+        ("RESEARCH_ONLY", metrics.research_only),
+    ):
+        console.print(f"{label}: {count}")
+    if result.report.primary_blocker:
+        console.print(f"\nPrimary blocker:\n{result.report.primary_blocker}")
+    console.print(f"\nReport:\n{result.path}")
+    if result.strict_failure:
+        raise typer.Exit(code=1)
 
 
 def _print_authentication_preflight(preflight: Any) -> None:

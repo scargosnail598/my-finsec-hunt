@@ -101,7 +101,7 @@ def redact_text(value: str) -> str:
                     )
                 )
 
-    if "://" not in value and "=" in value and "\n" not in value and "\r" not in value:
+    if "://" not in value and "=" in value and not re.search(r"\s", value):
         pairs = parse_qsl(value, keep_blank_values=True)
         if pairs and any(is_sensitive_name(name) for name, _ in pairs):
             return urlencode([(name, redact_named_value(name, item)) for name, item in pairs])

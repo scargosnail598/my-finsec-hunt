@@ -250,9 +250,10 @@ Use this sequence:
    `captures/<slug>/incoming/`.
 3. Run `hunt ingest-wizard -w workspaces/<slug>` to review and import new captures, or edit
    `captures/<slug>/workflow.yaml` directly.
-4. Inspect context with `hunt captures -w workspaces/<slug>`.
-5. Run `hunt workflow --workspace workspaces/<slug>`.
-6. Review active hypotheses and research tasks; the workflow stops before active testing.
+4. Run `hunt workspace report -w workspaces/<slug>` to refresh safe offline analysis and create
+   one preliminary workspace report.
+5. Review captures, models, hypotheses, research tasks, blockers, and next actions in that report;
+   the command stops before planning or active testing.
 
 If sanitized HAR or Burp XML files are staged before interactive setup finishes,
 setup offers to launch the ingest wizard immediately. The wizard still requires an explicit actor
@@ -312,6 +313,38 @@ existing observation IDs are retained and only those labels are refreshed.
 
 The workflow stops after hypotheses and research tasks. It does not approve or execute a plan,
 collect evidence, confirm a finding, or generate a report.
+
+## Post-Ingest Workspace Analysis Report
+
+After importing reviewed captures, run one command to refresh the applicable deterministic
+offline stages and collect the current workspace state into one Markdown document:
+
+```bash
+hunt ingest-wizard \
+  -w workspaces/example-fintech \
+  --capture-root captures/example-fintech
+
+hunt workspace report \
+  -w workspaces/example-fintech
+```
+
+The report covers pipeline results, capture quality, actors, authentication and ownership,
+endpoints, resources, workflows, invariants, visible hypotheses, research tasks, campaigns,
+suppression decisions, readiness blockers, next actions, and artifact links. It is preliminary:
+hypotheses remain investigation leads, and the command never plans, approves, executes, contacts a
+target, promotes evidence, or confirms a vulnerability.
+
+By default, missing or stale safe offline artifacts are regenerated. Use `--report-only` to read
+the current workspace without rebuilding derived analysis, or `--force` to rebuild every
+applicable safe offline stage. Reports default to timestamped files under
+`reports/workspace/`; `--output` selects a fixed path, `--no-include-suppressed` omits the
+suppressed appendix, `--include-command-output` adds sanitized diagnostics, and `--strict`
+returns a failing status when required stages or data are unavailable.
+
+`hunt workspace report` is separate from `hunt report HYP-xxx`. The former is a workspace-wide,
+preliminary post-ingest analysis that needs no confirmed evidence. The latter remains the
+immutable, versioned report for one hypothesis and refuses to run until current evidence is
+`CONFIRMED`.
 
 ## Manual Passive Imports
 
@@ -501,6 +534,9 @@ EXPECTED_BEHAVIOR
 
 Reports require a current `CONFIRMED`, report-ready validation and are written as immutable
 `reports/HYP-xxx-report-vN.md` revisions.
+
+These confirmed-hypothesis reports are never written into `reports/workspace/`, and workspace
+analysis reports never use the confirmed report generator.
 
 ## Delete A Workspace Safely
 
