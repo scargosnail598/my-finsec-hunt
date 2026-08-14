@@ -37,13 +37,14 @@ def test_invariants_are_specific_traceable_and_never_confirmed(
     assert result.invariants == 3
     assert result.conflicts == ()
     assert "authentication:EP-001" in by_key
-    assert "object-authorization:EP-001:paymentId" in by_key
-    assert "object-authorization:EP-003:transactionId" in by_key
+    assert "object-authorization:EP-001:path:paymentId" in by_key
+    assert "object-authorization:EP-003:path:transactionId" in by_key
     assert all(item.validation_status == "NOT_CONFIRMED" for item in store.invariants)
     assert all(item.knowledge_status != KnowledgeStatus.CONFIRMED for item in store.invariants)
     assert by_key["authentication:EP-001"].knowledge_status == KnowledgeStatus.INFERRED
     assert (
-        by_key["object-authorization:EP-001:paymentId"].knowledge_status == KnowledgeStatus.ASSUMED
+        by_key["object-authorization:EP-001:path:paymentId"].knowledge_status
+        == KnowledgeStatus.ASSUMED
     )
     assert by_key["authentication:EP-001"].evidence == [
         "EP-001",

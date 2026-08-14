@@ -5,7 +5,11 @@ from typing import Literal
 
 from pydantic import Field
 
-from finsec.hypotheses.contracts import HypothesisReadinessAssessment, ReadinessIssue
+from finsec.hypotheses.contracts import (
+    HypothesisReadinessAssessment,
+    MutationTargetAssessment,
+    ReadinessIssue,
+)
 from finsec.modeling.domain import EditableModel, GenerationMetadata
 
 
@@ -170,6 +174,7 @@ class TestPlanRecord(EditableModel):
     requests: list[StructuredRequest] = Field(default_factory=list)
     authentication: list[PlanActorAuthentication] = Field(default_factory=list)
     execution: PlanExecutionConfig = Field(default_factory=PlanExecutionConfig)
+    mutation_target: MutationTargetAssessment = Field(default_factory=MutationTargetAssessment)
     readiness_assessment: HypothesisReadinessAssessment = Field(
         default_factory=HypothesisReadinessAssessment
     )

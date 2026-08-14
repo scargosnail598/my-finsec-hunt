@@ -88,7 +88,7 @@ def test_hypothesis_lifecycle_fields_survive_regeneration(
 
     conflict = generate_hypotheses(phase3_workspace)
     assert conflict.conflicts == (
-        "auth-object-access:get:/api/payments/{paymentId}:payment:paymentid",
+        "auth-object-access:get:/api/payments/{paymentId}:payment:path:paymentid",
     )
     store = HypothesisStore.model_validate(load_yaml(phase3_workspace.hypotheses))
     payment_record = next(item for item in store.hypotheses if item.id == payment_id)
@@ -108,7 +108,7 @@ def test_legacy_candidate_is_suppressed_when_it_no_longer_passes_gates(
     payment = next(
         item
         for item in store.hypotheses
-        if item.key == "auth-object-access:get:/api/payments/{paymentId}:payment:paymentid"
+        if item.key == "auth-object-access:get:/api/payments/{paymentId}:payment:path:paymentid"
     )
 
     assert payment.disposition == "SUPPRESSED_INSUFFICIENT_EVIDENCE"

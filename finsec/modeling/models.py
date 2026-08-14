@@ -220,10 +220,13 @@ class ActorObjectBaseline(StrictModel):
     owner_value_fingerprint: str | None = None
     scope_value_fingerprint: str | None = None
     subject_resource_id: str | None = None
+    subject_resource_type: str | None = None
     parent_resource_id: str | None = None
     parent_resource_type: str | None = None
     parent_value: str | None = None
     endpoint_id: str | None = None
+    route_family: str | None = None
+    collection_route_family: str | None = None
     baseline_id: str | None = None
     relationship_ids: list[str] = Field(default_factory=list)
     capture_ids: list[str] = Field(default_factory=list)

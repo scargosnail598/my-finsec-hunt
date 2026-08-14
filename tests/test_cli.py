@@ -182,6 +182,7 @@ def test_full_cli_flow(tmp_path: Path, sample_har: tuple[Path, dict[str, Any]]) 
     assert "Evidence Sets" in status.output
     assert "Validations" in status.output
     assert "Reports" in status.output
+    assert "hypothesis-specific" in status.output
     assert "TEST_PLANNED" in status.output
     assert "hunt show HYP-002" in status.output
     assert "5" in status.output

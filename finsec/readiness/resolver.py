@@ -22,6 +22,7 @@ from finsec.evidence.domain import EvidenceMetadata
 from finsec.execution.domain import ExecutionAuditRecord
 from finsec.execution.policy import plan_checksum, target_policy_checksum
 from finsec.hypotheses.domain import HypothesisRecord, HypothesisStore
+from finsec.hypotheses.population import hypothesis_population
 from finsec.modeling.domain import ActorStore, InvariantStore, ResourceStore
 from finsec.modeling.merge import stable_fingerprint
 from finsec.modeling.models import EndpointStore, ObservationStore
@@ -33,6 +34,7 @@ from finsec.readiness.domain import (
     BlockerCode,
     BlockerScope,
     CredentialReadiness,
+    FocusedComparisonReadiness,
     IdentityConfirmationReadiness,
     LifecycleStatus,
     NextAction,
@@ -59,7 +61,7 @@ from finsec.readiness.provenance import (
     validation_source_fingerprint,
 )
 from finsec.testing.domain import TestPlanRecord, TestPlanStore
-from finsec.testing.planner import plan_source_fingerprint
+from finsec.testing.planner import inspect_plan_alignment, plan_source_fingerprint
 from finsec.utils.yaml_store import load_yaml
 from finsec.validation.domain import ValidationRecord, ValidationStore
 
@@ -442,32 +444,6 @@ def _provenance_blocker(
     )
 
 
-def _ownership_counts(endpoints: EndpointStore | None) -> dict[str, int]:
-    counts: dict[str, int] = {}
-    if endpoints is None:
-        return counts
-    for endpoint in endpoints.endpoints:
-        for binding in endpoint.object_access:
-            if not binding.actor_object_binding_observed:
-                continue
-            actors = {item.actor for item in binding.baselines}
-            if binding.source == "CONTROLLED_LIFECYCLE":
-                confirmed = min(
-                    binding.distinct_actors,
-                    binding.distinct_objects,
-                    len({item.baseline_id for item in binding.baselines if item.baseline_id}),
-                )
-            else:
-                confirmed = min(
-                    binding.distinct_actors,
-                    binding.distinct_objects,
-                    binding.distinct_owner_values or binding.distinct_scope_values,
-                )
-            for actor in actors:
-                counts[actor] = max(counts.get(actor, 0), confirmed)
-    return counts
-
-
 def _credential_available(workspace: WorkspacePaths, account: AccountConfig) -> bool:
     authentication = account.authentication
     if authentication is None:
@@ -493,7 +469,6 @@ def _credential_available(workspace: WorkspacePaths, account: AccountConfig) -> 
 def _actor_readiness(
     workspace: WorkspacePaths,
     account: AccountConfig,
-    ownership_counts: dict[str, int],
 ) -> tuple[ActorReadiness, list[ReadinessBlocker], list[ReadinessBlocker]]:
     stage = PipelineStage.AUTH
     actor_scope = BlockerScope(workspace=workspace.root.name, actor_ids=[account.id])
@@ -508,14 +483,13 @@ def _actor_readiness(
                 credential=CredentialReadiness(
                     available=True,
                     type="none",
+                    status="NOT_REQUIRED",
                     expiration="not_applicable",
                     locally_usable=True,
                 ),
                 target_validation=TargetValidationReadiness(recorded=True),
                 identity_confirmation=IdentityConfirmationReadiness(confirmed=True),
-                ownership=OwnershipReadiness(
-                    confirmed_baselines=ownership_counts.get(account.id, 0)
-                ),
+                ownership=OwnershipReadiness(),
                 capabilities=ActorCapabilities(planning=True, authorization_execution=False),
             ),
             [],
@@ -633,22 +607,20 @@ def _actor_readiness(
             )
         )
     locally_usable = available and not expired and not unusable
-    confirmed_baselines = ownership_counts.get(account.id, 0)
-    authorization_execution = (
-        locally_usable and target_validated and identity_confirmed and confirmed_baselines >= 2
-    )
+    authorization_execution = False
     return (
         ActorReadiness(
             actor_id=account.id,
             credential=CredentialReadiness(
                 available=available,
                 type=auth_type,
+                status=authentication.status if authentication is not None else "MISSING",
                 expiration=expiration,
                 locally_usable=locally_usable,
             ),
             target_validation=TargetValidationReadiness(recorded=target_validated),
             identity_confirmation=IdentityConfirmationReadiness(confirmed=identity_confirmed),
-            ownership=OwnershipReadiness(confirmed_baselines=confirmed_baselines),
+            ownership=OwnershipReadiness(),
             capabilities=ActorCapabilities(
                 planning=locally_usable,
                 authorization_execution=authorization_execution,
@@ -663,11 +635,7 @@ def _active_hypotheses(store: HypothesisStore | None) -> list[HypothesisRecord]:
     if store is None:
         return []
     return sorted(
-        (
-            item
-            for item in store.hypotheses
-            if item.kind == "SECURITY_HYPOTHESIS" and item.disposition == "ACTIVE"
-        ),
+        hypothesis_population(store.hypotheses).visible_active_hypotheses,
         key=lambda item: (item.priority, -item.scores.total, item.id),
     )
 
@@ -1208,14 +1176,11 @@ def resolve_workspace_readiness(
         )
         endpoint_artifact = _with_provenance(endpoint_artifact, inventory_state)
 
-    ownership_counts = _ownership_counts(
-        endpoints if inventory_state is not None and inventory_state.status == "CURRENT" else None
-    )
     actor_reports: list[ActorReadiness] = []
     auth_blockers: list[ReadinessBlocker] = []
     auth_warnings: list[ReadinessBlocker] = []
     for account in sorted(target.accounts, key=lambda item: item.id):
-        actor_report, blockers, warnings = _actor_readiness(paths, account, ownership_counts)
+        actor_report, blockers, warnings = _actor_readiness(paths, account)
         actor_reports.append(actor_report)
         auth_blockers.extend(blockers)
         auth_warnings.extend(warnings)
@@ -1690,10 +1655,12 @@ def resolve_workspace_readiness(
                 actions=[hypothesis_action],
             )
         ]
-    active_hypotheses = _active_hypotheses(hypotheses)
-    research_tasks = (
-        sum(item.kind == "RESEARCH_TASK" for item in hypotheses.hypotheses) if hypotheses else 0
+    population = hypothesis_population(hypotheses.hypotheses if hypotheses else [])
+    active_hypotheses = sorted(
+        population.visible_active_hypotheses,
+        key=lambda item: (item.priority, -item.scores.total, item.id),
     )
+    research_tasks = len(population.visible_research_tasks)
     hypothesis_stage = _stage(
         PipelineStage.HYPOTHESIZE,
         hypothesis_status,
@@ -1708,6 +1675,41 @@ def resolve_workspace_readiness(
         result_count=len(active_hypotheses) + research_tasks,
         actions=[hypothesis_action],
     )
+
+    focused_comparison: FocusedComparisonReadiness | None = None
+    if hypothesis_stage.status == LifecycleStatus.COMPLETE:
+        focused_hypothesis = next(
+            (
+                item
+                for item in active_hypotheses
+                if item.readiness_assessment.comparison_coverage.required_distinct_actors > 0
+            ),
+            None,
+        )
+        if focused_hypothesis is not None:
+            coverage = focused_hypothesis.readiness_assessment.comparison_coverage
+            focused_comparison = FocusedComparisonReadiness(
+                hypothesis_id=focused_hypothesis.id,
+                resource_type=coverage.resource_type,
+                required_distinct_actors=coverage.required_distinct_actors,
+                observed_distinct_actors=coverage.observed_distinct_actors,
+                distinct_controlled_objects=coverage.distinct_controlled_objects,
+                baseline_actor_ids=coverage.baseline_actor_ids,
+                missing_actor_ids=coverage.missing_actor_ids,
+            )
+            baseline_actors = set(coverage.baseline_actor_ids)
+            actor_reports = [
+                report.model_copy(
+                    update={
+                        "ownership": OwnershipReadiness(
+                            confirmed_baselines=(1 if report.actor_id in baseline_actors else 0),
+                            hypothesis_id=focused_hypothesis.id,
+                            resource_type=coverage.resource_type,
+                        )
+                    }
+                )
+                for report in actor_reports
+            ]
 
     hypothesis_by_id = {item.id: item for item in active_hypotheses}
     current_plans: list[TestPlanRecord] = []
@@ -1726,13 +1728,53 @@ def resolve_workspace_readiness(
                 current_plans.append(plan_record)
             else:
                 stale_plans.append(plan_record)
+    actionable_hypotheses: list[HypothesisRecord] = []
+    hypothesis_plan_blockers: list[ReadinessBlocker] = []
+    if hypothesis_stage.status == LifecycleStatus.COMPLETE:
+        for item in active_hypotheses:
+            alignment = inspect_plan_alignment(paths, item.id)
+            if alignment.readiness.actionable_plan and alignment.plan_status == "READY_FOR_REVIEW":
+                actionable_hypotheses.append(item)
+                continue
+            for blocker in alignment.readiness.blockers:
+                hypothesis_plan_blockers.append(
+                    _blocker(
+                        (
+                            BlockerCode.OWNERSHIP_BASELINES_MISSING
+                            if blocker.capability is not None
+                            and blocker.capability.value == "BASELINE"
+                            else BlockerCode.PLAN_REQUEST_BUDGET_MISMATCH
+                            if blocker.capability is not None
+                            and blocker.capability.value == "BUDGET"
+                            else BlockerCode.HYPOTHESIS_REQUIRES_MORE_EVIDENCE
+                        ),
+                        PipelineStage.PLAN,
+                        blocker.summary,
+                        scope=BlockerScope(
+                            workspace=paths.root.name,
+                            hypothesis_id=item.id,
+                            actor_ids=(
+                                alignment.readiness.comparison_coverage.missing_actor_ids
+                                if blocker.capability is not None
+                                and blocker.capability.value == "BASELINE"
+                                else []
+                            ),
+                        ),
+                        details=blocker.code,
+                        actions=(
+                            [_manual_action(blocker.next_action)]
+                            if blocker.next_action is not None
+                            else []
+                        ),
+                    )
+                )
     plan_actions = [
         _cli_action(
             f"Generate a plan for {item.id}",
             _workspace_command(f"hunt plan {shlex.quote(item.id)}", paths),
             safety="requires_review",
         )
-        for item in active_hypotheses[:3]
+        for item in actionable_hypotheses[:3]
     ]
     plan_blockers: list[ReadinessBlocker] = []
     plan_warnings: list[ReadinessBlocker] = []
@@ -1751,8 +1793,17 @@ def resolve_workspace_readiness(
         plan_status = LifecycleStatus.BLOCKED
         plan_blockers.append(_artifact_failure_blocker(paths, PipelineStage.PLAN, plans_loaded))
     elif current_plans:
-        plan_status = LifecycleStatus.COMPLETE
-        for item in stale_plans:
+        review_ready_plans = [item for item in current_plans if item.status == "READY_FOR_REVIEW"]
+        blocked_current_plans = [item for item in current_plans if item.status == "BLOCKED"]
+        if review_ready_plans:
+            plan_status = LifecycleStatus.COMPLETE
+        else:
+            plan_status = LifecycleStatus.BLOCKED
+            for blocked_plan in blocked_current_plans:
+                hypothesis = hypothesis_by_id.get(blocked_plan.hypothesis_id)
+                if hypothesis is not None:
+                    plan_blockers.extend(_mapped_plan_blockers(paths, hypothesis, blocked_plan))
+        for stale_plan in stale_plans:
             plan_warnings.append(
                 _blocker(
                     BlockerCode.PLAN_STALE,
@@ -1761,14 +1812,14 @@ def resolve_workspace_readiness(
                     severity="warning",
                     scope=BlockerScope(
                         workspace=paths.root.name,
-                        hypothesis_id=item.hypothesis_id,
-                        plan_id=item.id,
+                        hypothesis_id=stale_plan.hypothesis_id,
+                        plan_id=stale_plan.id,
                     ),
                 )
             )
     elif stale_plans:
         plan_status = LifecycleStatus.STALE
-        for item in stale_plans:
+        for stale_plan in stale_plans:
             plan_blockers.append(
                 _blocker(
                     BlockerCode.PLAN_STALE,
@@ -1776,21 +1827,21 @@ def resolve_workspace_readiness(
                     "Plan inputs or generated content changed after generation.",
                     scope=BlockerScope(
                         workspace=paths.root.name,
-                        hypothesis_id=item.hypothesis_id,
-                        plan_id=item.id,
+                        hypothesis_id=stale_plan.hypothesis_id,
+                        plan_id=stale_plan.id,
                     ),
                     actions=[
                         _cli_action(
-                            f"Regenerate {item.hypothesis_id}",
+                            f"Regenerate {stale_plan.hypothesis_id}",
                             _workspace_command(
-                                f"hunt plan {shlex.quote(item.hypothesis_id)}", paths
+                                f"hunt plan {shlex.quote(stale_plan.hypothesis_id)}", paths
                             ),
                             safety="requires_review",
                         )
                     ],
                 )
             )
-    elif active_hypotheses:
+    elif actionable_hypotheses:
         plan_status = LifecycleStatus.READY
         plan_warnings.append(
             _blocker(
@@ -1800,10 +1851,22 @@ def resolve_workspace_readiness(
                 severity="warning",
                 scope=BlockerScope(
                     workspace=paths.root.name,
-                    hypothesis_id=active_hypotheses[0].id,
+                    hypothesis_id=actionable_hypotheses[0].id,
                 ),
             )
         )
+    elif active_hypotheses:
+        plan_status = LifecycleStatus.BLOCKED
+        plan_blockers.extend(hypothesis_plan_blockers)
+        if not hypothesis_plan_blockers:
+            plan_blockers.append(
+                _blocker(
+                    BlockerCode.HYPOTHESIS_REQUIRES_MORE_EVIDENCE,
+                    PipelineStage.PLAN,
+                    "No active hypothesis currently has an actionable constructable plan.",
+                    scope=BlockerScope(workspace=paths.root.name),
+                )
+            )
     else:
         plan_status = LifecycleStatus.BLOCKED
         code = (
@@ -2233,7 +2296,13 @@ def resolve_workspace_readiness(
         "requires_human_approval": 2,
     }
     action_candidates = actionable_candidates or blocked_candidates
-    action_candidates.sort(key=lambda item: (safety_rank[item[0].safety], item[1]))
+    action_candidates.sort(
+        key=(
+            (lambda item: (safety_rank[item[0].safety], item[1]))
+            if actionable_candidates
+            else (lambda item: (item[1], safety_rank[item[0].safety]))
+        )
+    )
     next_actions = _deduplicate_actions([item[0] for item in action_candidates])[:5]
     next_stage = action_candidates[0][2] if action_candidates else None
 
@@ -2260,6 +2329,8 @@ def resolve_workspace_readiness(
         business_invariants=_safe_yaml_list_count(paths.business_invariants, "business_invariants"),
         active_hypotheses=len(active_hypotheses),
         research_tasks=research_tasks,
+        raw_active_hypotheses=population.raw_active_hypotheses,
+        raw_research_tasks=population.raw_research_tasks,
         logic_hypotheses=_safe_yaml_list_count(paths.business_logic_hypotheses, "hypotheses"),
         logic_research_tasks=sum(
             item.kind == "RESEARCH_TASK"
@@ -2286,6 +2357,7 @@ def resolve_workspace_readiness(
         overall=OverallReadiness(status=overall_status, next_stage=next_stage),
         stages=stages,
         actors=actor_reports,
+        focused_comparison=focused_comparison,
         metrics=metrics,
         next_actions=next_actions,
     )

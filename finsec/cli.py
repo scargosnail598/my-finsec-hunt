@@ -89,6 +89,7 @@ from finsec.hypotheses.generator import (
     generate_hypotheses,
     load_hypotheses,
 )
+from finsec.hypotheses.population import hypothesis_population
 from finsec.ingest.har import ingest_har
 from finsec.ingest.openapi import ingest_openapi
 from finsec.ingest.traffic import ingest_burp_xml, ingest_caido_json
@@ -888,6 +889,8 @@ def workflow_command(
         ("Business invariants", result.business_invariants),
         ("Active hypotheses", result.active_hypotheses),
         ("Research tasks", result.research_tasks),
+        ("Raw active hypotheses", result.raw_active_hypotheses),
+        ("Raw research tasks", result.raw_research_tasks),
         ("Logic hypotheses", result.logic_hypotheses),
         ("Logic research tasks", result.logic_research_tasks),
     ):
@@ -2832,15 +2835,9 @@ def hypotheses_command(
         ),
         key=lambda item: ({"P1": 0, "P2": 1, "P3": 2}[item.priority], -item.scores.total, item.id),
     )
-    presented_store = _canonical_backlog_presentation(paths, stored_hypotheses)
-    active_count = sum(
-        item.kind == "SECURITY_HYPOTHESIS" and item.disposition == "ACTIVE"
-        for item in presented_store
-    )
-    task_count = sum(
-        item.kind == "RESEARCH_TASK" and not item.disposition.startswith("SUPPRESSED_")
-        for item in presented_store
-    )
+    population = hypothesis_population(stored_hypotheses)
+    active_count = len(population.visible_active_hypotheses)
+    task_count = len(population.visible_research_tasks)
     console.print(
         f"[green]Backlog contains {active_count} active hypotheses and "
         f"{task_count} research tasks.[/green]"
@@ -2863,7 +2860,7 @@ def hypotheses_command(
             console.print("\n[bold]Object semantics and ownership[/bold]")
             console.print(
                 f"- Mutation target: {target.parameter or 'None'}; location: "
-                f"{target.location or 'None'}; endpoints: "
+                f"{target.location or 'None'}; JSON path: {target.json_path or 'None'}; endpoints: "
                 f"{', '.join(target.endpoint_ids) or 'None'}"
             )
             console.print(
@@ -2928,6 +2925,20 @@ def hypotheses_command(
                 console.print(f"- Blocker [{blocker.stage}/{blocker.code}]: {blocker.summary}")
                 if blocker.next_action is not None:
                     console.print(f"  Next action: {blocker.next_action}")
+            coverage = readiness.comparison_coverage
+            if coverage.required_distinct_actors:
+                console.print(
+                    "- Comparison coverage: "
+                    f"{coverage.observed_distinct_actors}/"
+                    f"{coverage.required_distinct_actors} actors; "
+                    f"{coverage.distinct_controlled_objects} distinct object(s)."
+                )
+                if coverage.baseline_actor_ids:
+                    console.print("- Baseline actors: " + ", ".join(coverage.baseline_actor_ids))
+                if coverage.missing_actor_ids:
+                    console.print(
+                        "- Missing baseline actors: " + ", ".join(coverage.missing_actor_ids)
+                    )
             for warning in readiness.warnings:
                 console.print(f"- Gate [{warning.stage}/{warning.code}]: {warning.summary}")
             grouping = item.grouping
@@ -2965,6 +2976,10 @@ def hypotheses_command(
                 console.print(
                     f"- Resources: {', '.join(selected_campaign.affected_resources) or 'None'}"
                 )
+                for setup_item in selected_campaign.shared_setup:
+                    console.print(f"- Shared setup: {setup_item}")
+                for distinction in selected_campaign.distinctions:
+                    console.print(f"- Distinction: {distinction}")
                 for control in selected_campaign.missing_controls:
                     console.print(f"- Missing control: {control}")
                 console.print(f"- Next action: {selected_campaign.next_action}")
@@ -3067,6 +3082,11 @@ def plan_command(
     console.print(f"Plan store: {result.path}")
     console.print("Research status: active hypothesis; this plan does not confirm a finding.")
     console.print(f"Policy decision: {plan.risk.decision}")
+    console.print(
+        "Mutation target: "
+        f"{plan.mutation_target.location or 'unknown'}:"
+        f"{plan.mutation_target.json_path or plan.mutation_target.parameter or 'unresolved'}"
+    )
     if plan.risk.decision == "BLOCKED":
         console.print("[red]Policy blockers:[/red]")
         for reason in plan.risk.reasons:
@@ -3486,6 +3506,8 @@ def status_command(
         ("Active Invariants", report.metrics.invariants),
         ("Active Hypotheses", report.metrics.active_hypotheses),
         ("Research Tasks", report.metrics.research_tasks),
+        ("Raw Active Hypotheses", report.metrics.raw_active_hypotheses),
+        ("Raw Research Tasks", report.metrics.raw_research_tasks),
         ("Suppressed Endpoints", report.metrics.suppressed_endpoints),
         ("Evidence Sets", report.metrics.evidence_sets),
         ("Validations", report.metrics.validations),
@@ -3514,11 +3536,7 @@ def status_command(
         except (OSError, TypeError, ValueError, ValidationError):
             hypotheses = HypothesisStore()
         highest = sorted(
-            (
-                item
-                for item in hypotheses.hypotheses
-                if item.kind == "SECURITY_HYPOTHESIS" and item.disposition == "ACTIVE"
-            ),
+            hypothesis_population(hypotheses.hypotheses).visible_active_hypotheses,
             key=lambda item: (
                 {"P1": 0, "P2": 1, "P3": 2}[item.priority],
                 -item.scores.total,
@@ -3543,21 +3561,38 @@ def status_command(
         console.print("\n[bold]Actor readiness[/bold]")
         actor_table = Table(box=None, pad_edge=False)
         actor_table.add_column("Actor")
-        actor_table.add_column("Credential")
+        actor_table.add_column("Credential", no_wrap=True)
         actor_table.add_column("Target")
         actor_table.add_column("Identity")
         actor_table.add_column("Ownership")
         actor_table.add_column("Authz execute")
         for actor in report.actors:
+            ownership_context = actor.ownership.resource_type or "focused baseline"
             actor_table.add_row(
                 actor.actor_id,
-                "available" if actor.credential.available else "missing",
+                actor.credential.status,
                 "validated" if actor.target_validation.recorded else "unverified",
                 "confirmed" if actor.identity_confirmation.confirmed else "unconfirmed",
-                f"{actor.ownership.confirmed_baselines}/{actor.ownership.required_baselines}",
-                "ready" if actor.capabilities.authorization_execution else "blocked",
+                f"{ownership_context} {'yes' if actor.ownership.confirmed_baselines else 'no'}",
+                "hypothesis-specific",
             )
         console.print(actor_table)
+        for actor in report.actors:
+            if actor.credential.status not in {"READY", "NOT_REQUIRED"} or not (
+                actor.identity_confirmation.confirmed
+            ):
+                identity = "confirmed" if actor.identity_confirmation.confirmed else "unconfirmed"
+                console.print(
+                    f"{actor.actor_id} auth status: {actor.credential.status}; identity: {identity}"
+                )
+        if report.focused_comparison is not None:
+            comparison = report.focused_comparison
+            console.print(
+                f"{comparison.hypothesis_id} comparison coverage = "
+                f"{comparison.observed_distinct_actors}/"
+                f"{comparison.required_distinct_actors} actors; "
+                f"{comparison.distinct_controlled_objects} distinct object(s)."
+            )
 
     if report.next_actions:
         console.print("\n[bold]Next actions[/bold]")

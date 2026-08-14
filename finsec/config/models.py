@@ -30,7 +30,6 @@ DEFAULT_PUBLIC_SHARED_SCOPE_PARAMETERS = [
     "regionId",
     "zoneId",
     "productId",
-    "planId",
     "categoryId",
     "countryId",
     "languageId",
@@ -450,6 +449,50 @@ class DomainIntentRule(StrictModel):
         return self
 
 
+class CleanupControlRule(StrictModel):
+    """Reviewed cleanup capability for one stable semantic hypothesis target."""
+
+    semantic_fingerprint: str
+    strategy: Literal[
+        "DISPOSABLE_RESEARCHER_RESOURCE",
+        "REVERSIBLE_ROLLBACK_OR_RECREATION",
+        "MANUAL_CONTROLLED_RESTORE",
+    ]
+    actor_ids: list[str] = Field(min_length=1)
+    resource_type: str
+    route_family: str
+    parent_resource_type: str | None = None
+    resource_refs: list[str] = Field(min_length=1)
+    oracle_refs: list[str] = Field(min_length=1)
+    source_checksum: str
+    rationale: str
+
+    @field_validator(
+        "semantic_fingerprint",
+        "resource_type",
+        "route_family",
+        "parent_resource_type",
+        "source_checksum",
+        "rationale",
+    )
+    @classmethod
+    def cleanup_text_is_not_empty(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("value cannot be empty")
+        return normalized
+
+    @field_validator("actor_ids", "resource_refs", "oracle_refs")
+    @classmethod
+    def cleanup_lists_are_not_empty(cls, value: list[str]) -> list[str]:
+        normalized = [item.strip() for item in value]
+        if any(not item for item in normalized):
+            raise ValueError("cleanup controls cannot contain empty values")
+        return list(dict.fromkeys(normalized))
+
+
 class AnalysisConfig(StrictModel):
     """Researcher-editable deterministic classification and gating policy."""
 
@@ -498,6 +541,7 @@ class AnalysisConfig(StrictModel):
     jwt_algorithm_rules: list[JwtAlgorithmRule] = Field(default_factory=list)
     endpoint_side_effect_rules: list[EndpointSideEffectRule] = Field(default_factory=list)
     domain_intent_rules: list[DomainIntentRule] = Field(default_factory=list)
+    cleanup_controls: list[CleanupControlRule] = Field(default_factory=list)
     classification_overrides: dict[str, ClassificationOverride] = Field(default_factory=dict)
 
     @model_validator(mode="after")
@@ -519,6 +563,9 @@ class AnalysisConfig(StrictModel):
         domain_intent_keys = [(item.method, item.path) for item in self.domain_intent_rules]
         if len(domain_intent_keys) != len(set(domain_intent_keys)):
             raise ValueError("domain-intent rules must use unique method/path pairs")
+        cleanup_keys = [item.semantic_fingerprint for item in self.cleanup_controls]
+        if len(cleanup_keys) != len(set(cleanup_keys)):
+            raise ValueError("cleanup controls must use unique semantic fingerprints")
         return self
 
 

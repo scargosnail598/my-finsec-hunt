@@ -106,6 +106,10 @@ def test_nested_body_fields_preserve_json_paths_and_semantics(tmp_path: Path) ->
 
     assert ("$.payment.accountId", "object_identifier") in parameters
     assert ("$.destination.id", "object_identifier") in parameters
+    assert ("$.sender.id", "object_identifier") in parameters
+    assert ("$.recipient.id", "object_identifier") in parameters
+    assert ("$.billing.account.id", "object_identifier") in parameters
+    assert ("$.shipping.account.id", "object_identifier") in parameters
     assert ("$.items[*].paymentId", "object_identifier") in parameters
     assert ("$.amount", "monetary_value") in parameters
 

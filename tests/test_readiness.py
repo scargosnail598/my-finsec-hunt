@@ -30,7 +30,7 @@ from finsec.modeling.invariants import generate_invariants
 from finsec.readiness.domain import BlockerCode, LifecycleStatus, PipelineStage
 from finsec.readiness.resolver import resolve_workspace_readiness
 from finsec.reporting.generator import generate_report
-from finsec.testing.planner import generate_plan
+from finsec.testing.planner import generate_plan, inspect_plan_alignment
 from finsec.utils.yaml_store import load_yaml, write_yaml
 from finsec.web.service import load_snapshot, workspace_overview
 from finsec.workflow import run_offline_workflow
@@ -129,7 +129,7 @@ def test_empty_and_partial_workspaces_use_all_lifecycle_states(
     assert _stage(complete, PipelineStage.CLASSIFY).status == LifecycleStatus.COMPLETE
     assert _stage(complete, PipelineStage.MODEL).status == LifecycleStatus.COMPLETE
     assert _stage(complete, PipelineStage.HYPOTHESIZE).status == LifecycleStatus.COMPLETE
-    assert _stage(complete, PipelineStage.PLAN).status == LifecycleStatus.READY
+    assert _stage(complete, PipelineStage.PLAN).status == LifecycleStatus.BLOCKED
 
 
 def test_new_observation_stales_only_observation_derived_artifacts(
@@ -216,6 +216,23 @@ def test_credential_identity_and_ownership_are_separate_and_redacted(tmp_path: P
     assert "actor-auth-account-a-token" not in serialized
 
 
+def test_auth_context_changed_is_explicit_in_status(tmp_path: Path) -> None:
+    workspace = _configured_workspace(tmp_path, accounts=1)
+    _install_credential(workspace, baseline_confirmed=False)
+    target = load_yaml(workspace.target)
+    target["accounts"][0]["authentication"]["status"] = "AUTH_CONTEXT_CHANGED"
+    write_yaml(workspace.target, target)
+
+    report = resolve_workspace_readiness(workspace)
+    status = RUNNER.invoke(app, ["status", "--workspace", str(workspace.root)])
+
+    assert report.actors[0].credential.status == "AUTH_CONTEXT_CHANGED"
+    assert report.actors[0].identity_confirmation.confirmed is False
+    assert status.exit_code == 0, status.output
+    assert "AUTH_CONTEXT_CHANGED" in status.output
+    assert "unconfirmed" in status.output
+
+
 def test_anonymous_actor_is_not_authorization_execution_ready(tmp_path: Path) -> None:
     workspace = _configured_workspace(tmp_path)
     target = load_yaml(workspace.target)
@@ -278,8 +295,19 @@ def test_controlled_ownership_baselines_are_reported_for_applicable_actors(
     report = resolve_workspace_readiness(phase4_workspace)
     by_actor = {item.actor_id: item for item in report.actors}
 
-    assert by_actor["ACCOUNT_A"].ownership.confirmed_baselines >= 2
-    assert by_actor["ACCOUNT_B"].ownership.confirmed_baselines >= 2
+    assert by_actor["ACCOUNT_A"].ownership.confirmed_baselines >= 1
+    assert by_actor["ACCOUNT_B"].ownership.confirmed_baselines >= 1
+    assert all(item.ownership.required_baselines == 1 for item in by_actor.values())
+    assert report.focused_comparison is not None
+    assert report.focused_comparison.observed_distinct_actors == 2
+    assert all(
+        item.ownership.hypothesis_id == report.focused_comparison.hypothesis_id
+        for item in by_actor.values()
+    )
+    assert all(
+        item.ownership.resource_type == report.focused_comparison.resource_type
+        for item in by_actor.values()
+    )
 
 
 def test_unapproved_plan_and_disabled_execution_have_distinct_blockers(
@@ -291,6 +319,25 @@ def test_unapproved_plan_and_disabled_execution_have_distinct_blockers(
     assert BlockerCode.HUMAN_APPROVAL_MISSING in codes
     assert BlockerCode.ACTIVE_EXECUTION_DISABLED in codes
     assert _stage(report, PipelineStage.PLAN).status == LifecycleStatus.COMPLETE
+
+
+def test_blocked_canonical_plan_never_makes_status_plan_ready(
+    phase4_workspace: WorkspacePaths,
+) -> None:
+    target = load_yaml(phase4_workspace.target)
+    target["testing"]["maximum_requests_per_plan"] = 1
+    write_yaml(phase4_workspace.target, target)
+    generate_hypotheses(phase4_workspace)
+    plan = generate_plan(phase4_workspace, "HYP-002").plan
+
+    alignment = inspect_plan_alignment(phase4_workspace, "HYP-002")
+    report = resolve_workspace_readiness(phase4_workspace)
+
+    assert plan.status == "BLOCKED"
+    assert alignment.plan_status == "BLOCKED"
+    assert alignment.agrees is True
+    assert _stage(report, PipelineStage.PLAN).status == LifecycleStatus.BLOCKED
+    assert _stage(report, PipelineStage.PLAN).status != LifecycleStatus.READY
 
 
 def test_state_changing_validation_requires_before_and_after_evidence(

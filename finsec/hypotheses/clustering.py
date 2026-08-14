@@ -28,6 +28,7 @@ from finsec.modeling.domain import ResourceStore
 from finsec.modeling.merge import stable_fingerprint
 from finsec.modeling.models import Endpoint, EndpointStore, ObservationStore
 from finsec.modeling.semantics import IdentifierSemanticClass, OwnershipState
+from finsec.normalization.path_semantics import path_hierarchy
 
 _SOURCE_SUPPRESSIONS = {
     "SUPPRESSED_STATIC_ASSET",
@@ -47,6 +48,7 @@ _AUTH_COVERAGE_CONTROLS = [
 _DESCRIPTOR_DIFFERENCE_FIELDS = (
     ("mutation target", "mutation_parameter"),
     ("mutation location", "mutation_location"),
+    ("mutation JSON path", "mutation_json_path"),
     ("identifier class", "identifier_semantic_class"),
     ("resource role", "identifier_resource_role"),
     ("ownership state", "ownership_state"),
@@ -56,6 +58,7 @@ _DESCRIPTOR_DIFFERENCE_FIELDS = (
     ("operation", "operation"),
     ("subject resource", "subject_resource"),
     ("parent resource", "parent_resource"),
+    ("parent context", "parent_contexts"),
     ("test operator", "test_operator"),
 )
 
@@ -83,12 +86,12 @@ def _campaign_eligible(record: HypothesisRecord) -> bool:
     }
 
 
-def _canonical_route(path: str) -> str:
-    return "/" + "/".join(
-        "{id}" if item.startswith("{") and item.endswith("}") else item.lower()
-        for item in path.strip("/").split("/")
-        if item
-    )
+def _canonical_route(endpoint: Endpoint) -> str:
+    return path_hierarchy(
+        endpoint.path,
+        endpoint.path,
+        endpoint.resource.type,
+    ).route_family
 
 
 def _services(endpoint: Endpoint) -> list[str]:
@@ -177,7 +180,15 @@ def _actor_requirements(record: HypothesisRecord) -> list[str]:
 
 def _descriptor(record: HypothesisRecord, endpoints: list[Endpoint]) -> SemanticDescriptor:
     services = sorted({service for item in endpoints for service in _services(item)})
-    routes = sorted({_canonical_route(item.path) for item in endpoints})
+    routes = sorted({_canonical_route(item) for item in endpoints})
+    parent_contexts = sorted(
+        {
+            hierarchy.parent.value
+            for endpoint in endpoints
+            for hierarchy in [path_hierarchy(endpoint.path, endpoint.path, endpoint.resource.type)]
+            if hierarchy.parent is not None and hierarchy.parent.value is not None
+        }
+    )
     methods = sorted({item.method for item in endpoints})
     weakness = _weakness_family(record)
     operator = _test_operator(record)
@@ -211,6 +222,7 @@ def _descriptor(record: HypothesisRecord, endpoints: list[Endpoint]) -> Semantic
             if record.domain_intent.parent_resource is not None
             else None
         ),
+        "parent_contexts": parent_contexts,
         "visibility": record.domain_intent.visibility,
         "binding": record.domain_intent.binding,
         "weakness": weakness,
@@ -220,6 +232,7 @@ def _descriptor(record: HypothesisRecord, endpoints: list[Endpoint]) -> Semantic
         "actors": _actor_requirements(record),
         "mutation_parameter": record.mutation_target.parameter,
         "mutation_location": record.mutation_target.location,
+        "mutation_json_path": record.mutation_target.json_path,
         "identifier_semantic_class": record.mutation_target.semantics.semantic_class,
         "identifier_resource_role": record.mutation_target.semantics.resource_role,
         "ownership_state": record.mutation_target.semantics.ownership_state,
@@ -259,6 +272,7 @@ def _descriptor(record: HypothesisRecord, endpoints: list[Endpoint]) -> Semantic
             if record.domain_intent.parent_resource is not None
             else None
         ),
+        parent_contexts=parent_contexts,
         visibility=record.domain_intent.visibility,
         binding=record.domain_intent.binding,
         weakness_family=weakness,
@@ -268,6 +282,7 @@ def _descriptor(record: HypothesisRecord, endpoints: list[Endpoint]) -> Semantic
         actor_requirements=_actor_requirements(record),
         mutation_parameter=record.mutation_target.parameter,
         mutation_location=record.mutation_target.location,
+        mutation_json_path=record.mutation_target.json_path,
         identifier_semantic_class=record.mutation_target.semantics.semantic_class.value,
         identifier_resource_role=record.mutation_target.semantics.resource_role.value,
         ownership_state=record.mutation_target.semantics.ownership_state.value,
@@ -349,7 +364,18 @@ def _calibrated_scores(record: HypothesisRecord) -> tuple[HypothesisScores, str]
         and semantics.ownership_state in {OwnershipState.CONFIRMED, OwnershipState.STRONG_INFERRED}
     ):
         values["confidence"] = min(5, values["confidence"] + 1)
-        values["testability"] = min(5, values["testability"] + 1)
+        coverage = record.readiness_assessment.comparison_coverage
+        if coverage.observed_distinct_actors >= coverage.required_distinct_actors:
+            values["testability"] = min(5, values["testability"] + 1)
+        else:
+            values["testability"] = min(values["testability"], 3)
+    if any(
+        item.capability in {CapabilityKind.BASELINE, CapabilityKind.BUDGET, CapabilityKind.CLEANUP}
+        and item.required
+        and not item.satisfied
+        for item in record.readiness_assessment.capabilities
+    ):
+        values["testability"] = min(values["testability"], 3)
     if semantics.counterevidence:
         values["likelihood"] = max(1, values["likelihood"] - 1)
     if record.generation_rule.get("id", "").startswith("JWT_ALGORITHM_VALIDATION") and (
@@ -411,6 +437,31 @@ def _campaign_relationship(records: list[HypothesisRecord]) -> SemanticRelations
         SemanticRelationship.OVERLAPPING_TEST_CAMPAIGN
         if len(routes) == 1
         else SemanticRelationship.RELATED_DISTINCT
+    )
+
+
+def _campaign_shared_setup(primary: HypothesisRecord) -> list[str]:
+    descriptor = primary.semantic_descriptor
+    assert descriptor is not None
+    services = ", ".join(descriptor.target_services) or "the reviewed target service"
+    routes = ", ".join(descriptor.route_families) or "the reviewed route family"
+    return [
+        f"Reuse the same reviewed target scope and authentication context for {services}.",
+        (
+            f"Reuse controlled {primary.domain_intent.subject_resource} lifecycle baselines only "
+            f"when they match {routes}; preserve each member's concrete parent context."
+        ),
+    ]
+
+
+def _campaign_distinctions(members: list[HypothesisRecord]) -> list[str]:
+    return sorted(
+        {
+            reason
+            for index, member in enumerate(members)
+            for peer in members[index + 1 :]
+            for reason in _difference_reasons(member, [peer])
+        }
     )
 
 
@@ -708,7 +759,9 @@ def finalize_hypothesis_store(
                     "presentation": existing.presentation.model_copy(
                         update={
                             "visible": visible,
-                            "display_title": title if existing.id == primary.id else None,
+                            "display_title": (
+                                title if auth_campaign and existing.id == primary.id else None
+                            ),
                             "suppression_reason": suppression,
                             "next_action": (
                                 "Collect one bounded authentication-control matrix for the "
@@ -752,6 +805,8 @@ def finalize_hypothesis_store(
                 affected_resources=sorted(
                     {item.domain_intent.subject_resource for item in all_members}
                 ),
+                shared_setup=_campaign_shared_setup(primary),
+                distinctions=_campaign_distinctions(all_members),
                 missing_controls=_AUTH_COVERAGE_CONTROLS if auth_campaign else [],
                 next_action=(
                     "Collect one authorized bounded control matrix across the affected endpoints."

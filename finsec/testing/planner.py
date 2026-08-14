@@ -427,6 +427,7 @@ def _draft(
         ],
         "authentication": plan_authentication,
         "execution": execution_templates.execution.model_dump(mode="json"),
+        "mutation_target": hypothesis.mutation_target.model_dump(mode="json", exclude_none=True),
         "readiness_assessment": assessment.model_dump(mode="json", exclude_none=True),
         "planning_blockers": [
             item.model_dump(mode="json", exclude_none=True) for item in planning_issues

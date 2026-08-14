@@ -589,6 +589,8 @@ def test_web_ingest_uploads_assigns_and_runs_passive_pipeline(
     assert result["analysis"]["observations"] == 5
     assert result["analysis"]["endpoints"] == 4
     assert result["analysis"]["active_hypotheses"] >= 1
+    assert result["analysis"]["raw_active_hypotheses"] >= result["analysis"]["active_hypotheses"]
+    assert result["analysis"]["raw_research_tasks"] >= result["analysis"]["research_tasks"]
     assert load_yaml(capture_root / "web-ingest-demo/workflow.yaml")["captures"] == [
         {"file": "account-a.har", "actor": "ACCOUNT_A", "channel": "WEB", "enabled": True}
     ]

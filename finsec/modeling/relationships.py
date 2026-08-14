@@ -29,6 +29,13 @@ from finsec.modeling.models import (
 )
 from finsec.modeling.semantics import IdentifierSemanticClass, OwnershipState
 from finsec.normalization.ownership import classify_ownership_scope_parameter
+from finsec.normalization.path_semantics import (
+    display_resource,
+    path_hierarchy,
+)
+from finsec.normalization.path_semantics import (
+    structural_parent_resource as canonical_structural_parent_resource,
+)
 from finsec.utils.redaction import REDACTED
 from finsec.utils.yaml_store import load_yaml, write_yaml
 
@@ -209,24 +216,6 @@ class RelationshipBuildResult:
 
 
 @dataclass(frozen=True)
-class _PathNode:
-    resource_type: str
-    collection_index: int
-    value_index: int | None
-    parameter: str | None
-    value: str | None
-
-
-@dataclass(frozen=True)
-class _PathHierarchy:
-    nodes: tuple[_PathNode, ...]
-    subject: _PathNode | None
-    parent: _PathNode | None
-    route_family: str
-    collection_route_family: str
-
-
-@dataclass(frozen=True)
 class _Occurrence:
     facts: ExchangeFacts
     resource_id: str
@@ -243,65 +232,6 @@ class _Occurrence:
     collection_route_family: str
 
 
-GENERIC_SEGMENTS = {
-    "api",
-    "app",
-    "cdn",
-    "data",
-    "graphql",
-    "internal",
-    "public",
-    "rest",
-    "service",
-}
-ACTION_SEGMENTS = {
-    "accept",
-    "activate",
-    "add",
-    "approve",
-    "cancel",
-    "change",
-    "claim",
-    "close",
-    "complete",
-    "confirm",
-    "create",
-    "deactivate",
-    "delete",
-    "disable",
-    "edit",
-    "enable",
-    "execute",
-    "expire",
-    "filter",
-    "history",
-    "list",
-    "lookup",
-    "pay",
-    "preview",
-    "publish",
-    "read",
-    "redeem",
-    "refund",
-    "reject",
-    "remove",
-    "replace",
-    "request",
-    "resend",
-    "return",
-    "revoke",
-    "rotate",
-    "search",
-    "settle",
-    "status",
-    "submit",
-    "suspend",
-    "transfer",
-    "update",
-    "verify",
-    "withdraw",
-}
-IDENTITY_SELECTORS = {"current", "me", "mine", "own", "self"}
 SCOPE_RESOURCE_TYPES = {"account", "customer", "organization", "owner", "tenant", "user"}
 CONFIDENCE_RANK = {Confidence.LOW: 0, Confidence.MEDIUM: 1, Confidence.HIGH: 2}
 
@@ -310,157 +240,10 @@ def _type_key(value: str) -> str:
     return re.sub(r"[^a-z0-9]", "", value.lower())
 
 
-def _snake(value: str) -> str:
-    split = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "_", value)
-    return re.sub(r"[^a-z0-9]+", "_", split.lower()).strip("_")
-
-
-def _singular(value: str) -> str:
-    if value.endswith("ies") and len(value) > 3:
-        return f"{value[:-3]}y"
-    if value.endswith("sses"):
-        return value[:-2]
-    if value.endswith("s") and not value.endswith(("ss", "us")):
-        return value[:-1]
-    return value
-
-
-def _display_resource(value: str) -> str:
-    return "".join(item[:1].upper() + item[1:] for item in _snake(value).split("_"))
-
-
-def _is_version(value: str) -> bool:
-    normalized = value.lower()
-    return bool(re.fullmatch(r"v?\d+(?:\.\d+){0,2}", normalized))
-
-
-def _placeholder(value: str) -> str | None:
-    return value[1:-1] if value.startswith("{") and value.endswith("}") else None
-
-
-def _is_collection(value: str, subject_key: str) -> bool:
-    if _placeholder(value) is not None:
-        return False
-    normalized = _snake(value)
-    if (
-        not normalized
-        or normalized in GENERIC_SEGMENTS
-        or normalized in ACTION_SEGMENTS
-        or normalized in IDENTITY_SELECTORS
-        or _is_version(normalized)
-    ):
-        return False
-    singular = _singular(normalized)
-    return normalized.endswith("s") or _type_key(singular) == subject_key
-
-
-def _parameter_name(resource_type: str) -> str:
-    snake = _snake(resource_type)
-    parts = snake.split("_")
-    return parts[0] + "".join(item.title() for item in parts[1:]) + "Id"
-
-
-def path_hierarchy(
-    template_path: str,
-    concrete_path: str,
-    subject_resource: str,
-) -> _PathHierarchy:
-    """Reconstruct a structural resource chain without promoting it to ownership."""
-
-    template = [item for item in template_path.split("/") if item]
-    concrete = [item for item in concrete_path.split("/") if item]
-    if len(template) != len(concrete):
-        concrete = template
-    subject_key = _type_key(subject_resource)
-    collection_indices = [
-        index for index, item in enumerate(template) if _is_collection(item, subject_key)
-    ]
-    matching = [
-        index
-        for index in collection_indices
-        if _type_key(_singular(_snake(template[index]))) == subject_key
-    ]
-    subject_index = (
-        matching[-1] if matching else collection_indices[-1] if collection_indices else None
-    )
-    nodes: list[_PathNode] = []
-    value_positions: dict[int, str] = {}
-    for position, collection_index in enumerate(collection_indices):
-        next_collection = (
-            collection_indices[position + 1]
-            if position + 1 < len(collection_indices)
-            else len(template)
-        )
-        resource_token = _singular(_snake(template[collection_index]))
-        resource_type = _display_resource(resource_token)
-        candidate = collection_index + 1
-        value_index: int | None = None
-        parameter: str | None = None
-        value: str | None = None
-        if candidate < len(template) and candidate < next_collection:
-            candidate_token = _snake(template[candidate])
-            candidate_parameter = _placeholder(template[candidate])
-            candidate_is_action = (
-                candidate_token in ACTION_SEGMENTS
-                or candidate_token in IDENTITY_SELECTORS
-                or _is_version(candidate_token)
-            )
-            if candidate_parameter is not None or not candidate_is_action:
-                value_index = candidate
-                parameter = candidate_parameter or _parameter_name(resource_type)
-                candidate_value = concrete[candidate]
-                value = None if _placeholder(candidate_value) is not None else candidate_value
-                value_positions[candidate] = _snake(resource_type)
-        nodes.append(
-            _PathNode(
-                resource_type=resource_type,
-                collection_index=collection_index,
-                value_index=value_index,
-                parameter=parameter,
-                value=value,
-            )
-        )
-
-    family_segments: list[str] = []
-    for index, item in enumerate(template):
-        if index in value_positions:
-            family_segments.append("{" + value_positions[index] + "}")
-        elif _placeholder(item) is not None:
-            previous = template[index - 1] if index else "resource"
-            family_segments.append("{" + _singular(_snake(previous)) + "}")
-        else:
-            family_segments.append(item)
-    route_family = "/" + "/".join(family_segments)
-    if template_path.endswith("/") and route_family != "/":
-        route_family += "/"
-
-    subject = next((item for item in nodes if item.collection_index == subject_index), None)
-    parent = None
-    if subject is not None:
-        parent = next(
-            (
-                item
-                for item in reversed(nodes)
-                if item.collection_index < subject.collection_index and item.value is not None
-            ),
-            None,
-        )
-    collection_end = subject.collection_index + 1 if subject is not None else len(family_segments)
-    collection_route_family = "/" + "/".join(family_segments[:collection_end])
-    return _PathHierarchy(
-        nodes=tuple(nodes),
-        subject=subject,
-        parent=parent,
-        route_family=route_family,
-        collection_route_family=collection_route_family,
-    )
-
-
 def structural_parent_resource(endpoint: Endpoint) -> str | None:
     """Return the nested structural parent type, without asserting a control boundary."""
 
-    hierarchy = path_hierarchy(endpoint.path, endpoint.path, endpoint.resource.type)
-    return hierarchy.parent.resource_type if hierarchy.parent is not None else None
+    return canonical_structural_parent_resource(endpoint.path, endpoint.resource.type)
 
 
 def _entity(
@@ -1001,7 +784,7 @@ def reconstruct_controlled_ownership(
         ]
         subject_resources = sorted({item.resource_id for item in signal_occurrences})
         for scope_signal in response_scopes:
-            tenant_type = _display_resource(scope_signal.resource_type or "tenant")
+            tenant_type = display_resource(scope_signal.resource_type or "tenant")
             tenant_id = ensure_resource(
                 tenant_type,
                 scope_signal.value,
@@ -1539,10 +1322,13 @@ def controlled_binding_for_endpoint(
             requested_value=item.subject_identifier,
             response_object_path=item.response_object_path,
             subject_resource_id=item.subject_resource_id,
+            subject_resource_type=item.subject_resource_type,
             parent_resource_id=item.parent_resource_id,
             parent_resource_type=item.parent_resource_type,
             parent_value=item.parent_identifier,
             endpoint_id=item.endpoint_id,
+            route_family=item.route_family,
+            collection_route_family=item.collection_route_family,
             observations=[item.observation_id],
             baseline_id=item.id,
             relationship_ids=item.relationship_ids,

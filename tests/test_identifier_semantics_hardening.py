@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
 from typer.testing import CliRunner
 
+import finsec.cli as cli_module
 from finsec.cli import app
 from finsec.config.models import TargetDocument
 from finsec.config.workspace import WorkspacePaths, create_workspace
@@ -16,7 +18,7 @@ from finsec.hypotheses.clustering import finalize_hypothesis_store
 from finsec.hypotheses.domain import HypothesisRecord, HypothesisStore
 from finsec.ingest.har import ingest_har
 from finsec.mcp.service import FinsecMcpService
-from finsec.modeling.domain import ResourceStore
+from finsec.modeling.domain import ActorStore, InvariantStore, ResourceStore
 from finsec.modeling.generator import generate_model
 from finsec.modeling.invariants import generate_invariants
 from finsec.modeling.models import (
@@ -45,9 +47,22 @@ from finsec.modeling.semantics import (
 )
 from finsec.normalization.identifier_semantics import classify_identifier_semantics
 from finsec.normalization.inventory import build_inventory
+from finsec.readiness.domain import (
+    LifecycleStatus,
+    OverallReadiness,
+    ReadinessMetrics,
+    ReadinessReport,
+)
+from finsec.testing.domain import TestPlanStore as PlanStore
 from finsec.testing.planner import generate_plan
 from finsec.utils.yaml_store import load_yaml, write_yaml
-from finsec.web.service import hypothesis_detail, load_snapshot
+from finsec.validation.domain import ValidationStore
+from finsec.web.service import (
+    WorkspaceSnapshot,
+    hypotheses_payload,
+    hypothesis_detail,
+    load_snapshot,
+)
 
 RUNNER = CliRunner()
 HOST = "api.semantic-hardening.test"
@@ -203,6 +218,24 @@ def _finalize(
     )
 
 
+def _owned_semantics(
+    resource_type: str,
+    *,
+    role: IdentifierResourceRole = IdentifierResourceRole.SUBJECT,
+    parent_resource_type: str | None = None,
+) -> IdentifierSemanticAssessment:
+    return IdentifierSemanticAssessment(
+        semantic_class=IdentifierSemanticClass.OWNED_OBJECT,
+        resource_role=role,
+        resource_type=resource_type,
+        parent_resource_type=parent_resource_type,
+        ownership_state=OwnershipState.STRONG_INFERRED,
+        confidence="high",
+        evidence=["Synthetic controlled lifecycle evidence."],
+        explanation="The exact synthetic object target is controlled by the researcher.",
+    )
+
+
 def test_case_a_shared_region_is_not_an_owned_object_boundary() -> None:
     observations = [
         _observation("OBS-A", "ACCOUNT_A", "/v1/regions/ir-thr-ba1/instances/a"),
@@ -296,12 +329,12 @@ def test_cases_b_and_g_distinct_firewalls_under_shared_region_are_secure_scoping
         ),
         (
             "collectionId",
-            "/v1/items",
-            "Item",
-            "query",
+            "/v1/collections/{collectionId}",
+            "Collection",
+            "path",
             "object_identifier",
-            IdentifierSemanticClass.COLLECTION,
-            IdentifierResourceRole.COLLECTION,
+            IdentifierSemanticClass.OBJECT_IDENTIFIER,
+            IdentifierResourceRole.CHILD_OBJECT,
         ),
         (
             "userId",
@@ -323,12 +356,30 @@ def test_cases_b_and_g_distinct_firewalls_under_shared_region_are_secure_scoping
         ),
         (
             "planId",
-            "/v1/plans",
+            "/v1/plans/{planId}",
             "Plan",
-            "query",
+            "path",
             "object_identifier",
-            IdentifierSemanticClass.SHARED_SCOPE,
-            IdentifierResourceRole.SHARED_SCOPE,
+            IdentifierSemanticClass.OBJECT_IDENTIFIER,
+            IdentifierResourceRole.CHILD_OBJECT,
+        ),
+        (
+            "code",
+            "/v1/coupons/{code}",
+            "Coupon",
+            "path",
+            "object_identifier",
+            IdentifierSemanticClass.OBJECT_IDENTIFIER,
+            IdentifierResourceRole.CHILD_OBJECT,
+        ),
+        (
+            "profileId",
+            "/v1/profiles/{profileId}",
+            "Profile",
+            "path",
+            "object_identifier",
+            IdentifierSemanticClass.OBJECT_IDENTIFIER,
+            IdentifierResourceRole.CHILD_OBJECT,
         ),
         (
             "opaqueKey",
@@ -457,7 +508,7 @@ def test_negative_semantic_evidence_reduces_authorization_likelihood() -> None:
 
     assert hypothesis.scores.likelihood == 2
     assert hypothesis.scores.confidence == 4
-    assert hypothesis.scores.testability == 4
+    assert hypothesis.scores.testability == 3
 
 
 def test_case_d_nested_dns_record_targets_child_not_parent() -> None:
@@ -506,6 +557,288 @@ def test_case_d_nested_dns_record_targets_child_not_parent() -> None:
     assert store.hypotheses[0].readiness != "TEST_READY"
 
 
+def test_nested_json_mutation_identity_is_exact_and_reaches_blocked_plan(
+    tmp_path: Path,
+) -> None:
+    semantics = _owned_semantics("Transfer")
+    json_paths = [
+        "$.sender.id",
+        "$.recipient.id",
+        "$.billing.account.id",
+        "$.shipping.account.id",
+        "$.id",
+    ]
+    parameters = [
+        _parameter("id", semantics=semantics),
+        *[
+            _parameter("id", semantics=semantics).model_copy(
+                update={"location": "body", "json_path": json_path}
+            )
+            for json_path in json_paths
+        ],
+    ]
+    endpoint = _endpoint(
+        parameters,
+        path="/v1/transfers/{id}",
+        resource="Transfer",
+    )
+    observations = [
+        _observation("OBS-A", "ACCOUNT_A", "/v1/transfers/transfer-a"),
+        _observation("OBS-B", "ACCOUNT_B", "/v1/transfers/transfer-b"),
+    ]
+    requested_targets = [
+        ("HYP-001", "path", "id", None),
+        ("HYP-002", "body", "sender.id", "$.sender.id"),
+        ("HYP-003", "body", "recipient.id", "$.recipient.id"),
+        ("HYP-004", "body", "billing.account.id", "$.billing.account.id"),
+        ("HYP-005", "body", "shipping.account.id", "$.shipping.account.id"),
+        ("HYP-006", "body", "id", "$.id"),
+    ]
+    records: list[HypothesisRecord] = []
+    for identifier, location, requested, _ in requested_targets:
+        record = _record(identifier, endpoint, requested)
+        records.append(
+            record.model_copy(
+                update={"key": (f"auth-object-access:get:{endpoint.path}:{location}:{requested}")}
+            )
+        )
+
+    store = _finalize(endpoint, records, observations)
+    by_id = {item.id: item for item in store.hypotheses}
+
+    for identifier, location, _, json_path in requested_targets:
+        target = by_id[identifier].mutation_target
+        assert target.location == location
+        assert target.json_path == json_path
+    assert by_id["HYP-002"].semantic_descriptor is not None
+    assert by_id["HYP-003"].semantic_descriptor is not None
+    assert by_id["HYP-004"].semantic_descriptor is not None
+    assert by_id["HYP-005"].semantic_descriptor is not None
+    assert by_id["HYP-001"].semantic_descriptor is not None
+    assert by_id["HYP-006"].semantic_descriptor is not None
+    assert (
+        by_id["HYP-002"].semantic_descriptor.exact_key
+        != by_id["HYP-003"].semantic_descriptor.exact_key
+    )
+    assert (
+        by_id["HYP-004"].semantic_descriptor.exact_key
+        != by_id["HYP-005"].semantic_descriptor.exact_key
+    )
+    assert (
+        by_id["HYP-001"].semantic_descriptor.exact_key
+        != by_id["HYP-006"].semantic_descriptor.exact_key
+    )
+
+    workspace = create_workspace("nested-targets", tmp_path / "workspaces")
+    write_yaml(workspace.target, _target().model_dump(mode="json", exclude_none=True))
+    write_yaml(
+        workspace.observations,
+        ObservationStore(observations=observations).model_dump(mode="json", exclude_none=True),
+    )
+    write_yaml(
+        workspace.endpoints,
+        EndpointStore(endpoints=[endpoint]).model_dump(mode="json", exclude_none=True),
+    )
+    write_yaml(workspace.resources, ResourceStore().model_dump(mode="json", exclude_none=True))
+    write_yaml(workspace.hypotheses, store.model_dump(mode="json", exclude_none=True))
+
+    plan = generate_plan(workspace, "HYP-002").plan
+
+    assert plan.mutation_target.location == "body"
+    assert plan.mutation_target.json_path == "$.sender.id"
+    assert plan.requests == []
+    assert plan.execution.supported is False
+    assert any("exact path targets only" in item for item in plan.execution.blockers)
+    web_target = hypothesis_detail(load_snapshot(workspace), "HYP-002")["explanation"][
+        "mutation_target"
+    ]
+    mcp_target = (
+        FinsecMcpService.from_workspace_path(workspace.root)
+        .hypothesis_context("HYP-002")
+        .hypothesis.explanation.mutation_target
+    )
+    assert web_target["location"] == "body"
+    assert web_target["json_path"] == "$.sender.id"
+    assert mcp_target.location == "body"
+    assert mcp_target.json_path == "$.sender.id"
+
+
+def test_literal_dns_parents_share_campaign_without_replacing_member_titles(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    semantics = _owned_semantics(
+        "DnsRecord",
+        role=IdentifierResourceRole.CHILD_OBJECT,
+        parent_resource_type="Domain",
+    )
+    endpoints: list[Endpoint] = []
+    observations: list[Observation] = []
+    records: list[HypothesisRecord] = []
+    for index, domain in enumerate(("a.test", "b.test"), start=3):
+        observation_id = f"OBS-{index}"
+        endpoint = _endpoint(
+            [_parameter("dnsRecordId", semantics=semantics)],
+            path=f"/cdn/4.0/domains/{domain}/dns-records/{{dnsRecordId}}",
+            resource="DnsRecord",
+            sources=[observation_id],
+        ).model_copy(
+            update={
+                "id": f"EP-{index}",
+                "method": "DELETE",
+                "action": EndpointAction(
+                    name="delete", type="mutation", confidence=Confidence.HIGH
+                ),
+                "state_change": True,
+                "state_change_reasons": ["Synthetic DELETE regression."],
+            }
+        )
+        observation = _observation(
+            observation_id,
+            "ACCOUNT_A" if index == 3 else "ACCOUNT_B",
+            f"/cdn/4.0/domains/{domain}/dns-records/record-{index}",
+        ).model_copy(update={"method": "DELETE", "status_code": 204})
+        record = _record(f"HYP-00{index}", endpoint, "dnsRecordId").model_copy(
+            update={"key": (f"auth-object-access:delete:{endpoint.path}:path:dnsRecordId")}
+        )
+        endpoints.append(endpoint)
+        observations.append(observation)
+        records.append(record)
+
+    first = finalize_hypothesis_store(
+        _target(),
+        ObservationStore(observations=observations),
+        EndpointStore(endpoints=endpoints),
+        ResourceStore(),
+        HypothesisStore(hypotheses=records),
+    )
+    second = finalize_hypothesis_store(
+        _target(),
+        ObservationStore(observations=list(reversed(observations))),
+        EndpointStore(endpoints=list(reversed(endpoints))),
+        ResourceStore(),
+        HypothesisStore(hypotheses=list(reversed(records))),
+    )
+    assert first.model_dump(mode="json") == second.model_dump(mode="json")
+
+    by_id = {item.id: item for item in first.hypotheses}
+    campaign = first.campaigns[0]
+    assert campaign.relationship == "OVERLAPPING_TEST_CAMPAIGN"
+    assert campaign.member_ids == ["HYP-003", "HYP-004"]
+    assert campaign.shared_setup
+    assert campaign.distinctions
+    assert by_id["HYP-003"].grouping.campaign_id == campaign.id
+    assert by_id["HYP-004"].grouping.campaign_id == campaign.id
+    assert by_id["HYP-003"].grouping.cluster_id != by_id["HYP-004"].grouping.cluster_id
+    assert by_id["HYP-003"].title != campaign.title
+    assert by_id["HYP-004"].title != campaign.title
+    assert by_id["HYP-003"].domain_intent.parent_resource == "Domain"
+    assert by_id["HYP-004"].domain_intent.parent_resource == "Domain"
+    assert by_id["HYP-003"].mutation_target.semantics.parent_resource_type == "Domain"
+    assert by_id["HYP-004"].mutation_target.semantics.parent_resource_type == "Domain"
+    assert by_id["HYP-003"].semantic_descriptor is not None
+    assert by_id["HYP-004"].semantic_descriptor is not None
+    assert by_id["HYP-003"].semantic_descriptor.parent_contexts == ["a.test"]
+    assert by_id["HYP-004"].semantic_descriptor.parent_contexts == ["b.test"]
+
+    workspace = create_workspace("dns-campaign", tmp_path / "workspaces")
+    write_yaml(workspace.target, _target().model_dump(mode="json", exclude_none=True))
+    write_yaml(workspace.hypotheses, first.model_dump(mode="json", exclude_none=True))
+    snapshot = WorkspaceSnapshot(
+        paths=workspace,
+        target=_target(),
+        observations=ObservationStore(observations=observations),
+        endpoints=EndpointStore(endpoints=endpoints),
+        actors=ActorStore(),
+        resources=ResourceStore(),
+        invariants=InvariantStore(),
+        hypotheses=first,
+        plans=PlanStore(),
+        validations=ValidationStore(),
+    )
+    web_rows = {item["id"]: item for item in hypotheses_payload(snapshot)["hypotheses"]}
+    mcp_rows = {
+        item.id: item
+        for item in FinsecMcpService.from_workspace_path(workspace.root)
+        .list_hypotheses(active_only=False, include_research_tasks=True)
+        .hypotheses
+    }
+    for identifier in ("HYP-003", "HYP-004"):
+        assert web_rows[identifier]["title"] == by_id[identifier].title
+        assert web_rows[identifier]["member_title"] == by_id[identifier].title
+        assert web_rows[identifier]["campaign_title"] == campaign.title
+        assert mcp_rows[identifier].title == by_id[identifier].title
+        assert mcp_rows[identifier].member_title == by_id[identifier].title
+        assert mcp_rows[identifier].campaign_title == campaign.title
+
+    monkeypatch.setattr(cli_module, "resolve_workspace", lambda _: workspace)
+    monkeypatch.setattr(
+        cli_module,
+        "generate_hypotheses",
+        lambda _: SimpleNamespace(conflicts=[]),
+    )
+    monkeypatch.setattr(cli_module, "load_hypotheses", lambda _: first)
+    monkeypatch.setattr(
+        cli_module,
+        "inspect_plan_alignment",
+        lambda *_: SimpleNamespace(plan_status="BLOCKED", agrees=True, violation=None),
+    )
+    environment = {"COLUMNS": "240"}
+    listed = RUNNER.invoke(
+        app,
+        ["hypotheses", "--workspace", str(workspace.root)],
+        env=environment,
+    )
+    campaigns = RUNNER.invoke(
+        app,
+        ["hypotheses", "--workspace", str(workspace.root), "--campaigns"],
+        env=environment,
+    )
+    member = RUNNER.invoke(
+        app,
+        ["hypotheses", "--workspace", str(workspace.root), "--explain", "HYP-004"],
+        env=environment,
+    )
+    campaign_explain = RUNNER.invoke(
+        app,
+        ["hypotheses", "--workspace", str(workspace.root), "--explain", campaign.id],
+        env=environment,
+    )
+    for result in (listed, campaigns, member, campaign_explain):
+        assert result.exit_code == 0, result.output
+    assert by_id["HYP-003"].title in listed.output
+    assert by_id["HYP-004"].title in listed.output
+    assert campaign.title not in listed.output
+    assert campaign.title in campaigns.output
+    assert by_id["HYP-004"].title in member.output
+    assert campaign.title not in member.output
+    assert campaign.title in campaign_explain.output
+    assert "HYP-003, HYP-004" in campaign_explain.output
+    assert "Shared setup:" in campaign_explain.output
+    assert "Distinction:" in campaign_explain.output
+    assert "Next action:" in campaign_explain.output
+
+    report = ReadinessReport(
+        workspace="dns-campaign",
+        overall=OverallReadiness(status=LifecycleStatus.BLOCKED),
+        stages=[],
+        metrics=ReadinessMetrics(
+            active_hypotheses=2,
+            hypotheses_not_tested=2,
+        ),
+    )
+    monkeypatch.setattr(cli_module, "resolve_workspace_readiness", lambda _: report)
+    status = RUNNER.invoke(
+        app,
+        ["status", "--workspace", str(workspace.root)],
+        env=environment,
+    )
+    assert status.exit_code == 0, status.output
+    assert by_id["HYP-003"].title in status.output
+    assert by_id["HYP-004"].title in status.output
+    assert campaign.title not in status.output
+
+
 def test_case_e_one_controlled_baseline_is_not_test_ready() -> None:
     semantics = IdentifierSemanticAssessment(
         semantic_class=IdentifierSemanticClass.OWNED_OBJECT,
@@ -549,7 +882,10 @@ def test_case_e_one_controlled_baseline_is_not_test_ready() -> None:
         observations,
     ).hypotheses[0]
 
-    assert hypothesis.readiness != "TEST_READY"
+    assert hypothesis.readiness == "REVIEW_REQUIRED"
+    assert hypothesis.readiness_assessment.comparison_coverage.observed_distinct_actors == 1
+    assert hypothesis.readiness_assessment.comparison_coverage.distinct_controlled_objects == 1
+    assert hypothesis.readiness_assessment.comparison_coverage.missing_actor_ids == ["ACCOUNT_B"]
     assert any(
         "Missing controlled object baseline for ACCOUNT_B" in item
         for item in hypothesis.readiness_assessment.missing_prerequisites

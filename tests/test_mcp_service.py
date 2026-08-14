@@ -650,6 +650,10 @@ def test_mcp_can_setup_import_and_generate_only_passive_artifacts(
     assert workflow.observations == 5
     assert workflow.endpoints > 0
     assert workflow.hypotheses_generated is True
+    assert workflow.raw_active_hypotheses is not None
+    assert workflow.raw_research_tasks is not None
+    assert workflow.raw_active_hypotheses >= workflow.active_hypotheses
+    assert workflow.raw_research_tasks >= workflow.research_tasks
     assert not (workspace_path / "tests" / "plans" / "plans.yaml").exists()
     assert list((workspace_path / "tests" / "executions").iterdir()) == []
     assert imported_source.is_file()

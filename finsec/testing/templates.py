@@ -315,6 +315,12 @@ def _object_substitution(
             f"with ownership state {mutation_target.semantics.ownership_state}; strong "
             "owned-object evidence is required."
         )
+    if mutation_target.location != "path" or mutation_target.json_path is not None:
+        blockers.append(
+            "Automated object substitution supports exact path targets only; the semantic "
+            "target remains available for manual review."
+        )
+        return ExecutionTemplateResult([], _execution(target, "UNSUPPORTED", [], None, blockers))
     binding = next(
         (
             item

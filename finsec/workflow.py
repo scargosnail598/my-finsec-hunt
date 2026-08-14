@@ -21,9 +21,9 @@ from finsec.captures.domain import (
 from finsec.config.models import TargetDocument
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
-from finsec.hypotheses.clustering import presentation_visible
 from finsec.hypotheses.domain import HypothesisStore
 from finsec.hypotheses.generator import generate_hypotheses
+from finsec.hypotheses.population import hypothesis_population
 from finsec.ingest.common import PassiveIngestResult
 from finsec.ingest.har import IngestResult, ingest_har
 from finsec.ingest.traffic import ingest_burp_xml
@@ -161,6 +161,8 @@ class WorkflowResult:
     business_invariants: int
     active_hypotheses: int
     research_tasks: int
+    raw_active_hypotheses: int
+    raw_research_tasks: int
     logic_hypotheses: int
     logic_research_tasks: int
     hypotheses_generated: bool
@@ -364,16 +366,9 @@ def run_offline_workflow(
     behavior_states = load_yaml(workspace.behavior_states) or {}
     behavior_transitions = load_yaml(workspace.behavior_transitions) or {}
 
-    active_hypotheses = sum(
-        presentation_visible(item)
-        and item.kind == "SECURITY_HYPOTHESIS"
-        and item.disposition == "ACTIVE"
-        for item in hypotheses.hypotheses
-    )
-    research_tasks = sum(
-        presentation_visible(item) and item.kind == "RESEARCH_TASK"
-        for item in hypotheses.hypotheses
-    )
+    population = hypothesis_population(hypotheses.hypotheses)
+    active_hypotheses = len(population.visible_active_hypotheses)
+    research_tasks = len(population.visible_research_tasks)
     conflicts = tuple(
         dict.fromkeys(
             [
@@ -399,6 +394,8 @@ def run_offline_workflow(
         business_invariants=logic_result.business_invariants,
         active_hypotheses=active_hypotheses,
         research_tasks=research_tasks,
+        raw_active_hypotheses=population.raw_active_hypotheses,
+        raw_research_tasks=population.raw_research_tasks,
         logic_hypotheses=logic_result.hypotheses,
         logic_research_tasks=logic_result.research_tasks,
         hypotheses_generated=hypotheses_generated,

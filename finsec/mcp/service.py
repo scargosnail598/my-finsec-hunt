@@ -28,6 +28,7 @@ from finsec.execution.domain import (
 from finsec.execution.policy import plan_checksum
 from finsec.hypotheses.clustering import presentation_title, presentation_visible
 from finsec.hypotheses.domain import HypothesisRecord, HypothesisStore
+from finsec.hypotheses.population import hypothesis_population
 from finsec.ingest.har import ingest_har
 from finsec.mcp.models import (
     AssessmentProgress,
@@ -287,6 +288,8 @@ class FinsecMcpService:
             invariants=result.invariants,
             active_hypotheses=result.active_hypotheses,
             research_tasks=result.research_tasks,
+            raw_active_hypotheses=result.raw_active_hypotheses,
+            raw_research_tasks=result.raw_research_tasks,
             hypotheses_generated=result.hypotheses_generated,
             conflicts=[self._safe_text(item, maximum=500) for item in result.conflicts],
             interpretation_rules=[
@@ -307,16 +310,9 @@ class FinsecMcpService:
         executions = self._execution_audits()
         evidence_sets, evidence_records = self._evidence_counts()
         authentication_states = self._authentication_counts(observations.observations)
-        active_hypotheses = sum(
-            presentation_visible(item)
-            and item.kind == "SECURITY_HYPOTHESIS"
-            and item.disposition == "ACTIVE"
-            for item in hypotheses.hypotheses
-        )
-        research_tasks = sum(
-            presentation_visible(item) and item.kind == "RESEARCH_TASK"
-            for item in hypotheses.hypotheses
-        )
+        population = hypothesis_population(hypotheses.hypotheses)
+        active_hypotheses = len(population.visible_active_hypotheses)
+        research_tasks = len(population.visible_research_tasks)
         return WorkspaceSummary(
             target_name=self.sanitizer.text(target.target.name, maximum=200) or "",
             in_scope_hosts=sorted(self.sanitizer.identifier(host) for host in target.scope.hosts),
@@ -331,6 +327,8 @@ class FinsecMcpService:
                 invariants=sum(item.disposition == "ACTIVE" for item in invariants.invariants),
                 active_hypotheses=active_hypotheses,
                 research_tasks=research_tasks,
+                raw_active_hypotheses=population.raw_active_hypotheses,
+                raw_research_tasks=population.raw_research_tasks,
                 executions=len(executions),
                 evidence_sets=evidence_sets,
                 evidence_records=evidence_records,
@@ -673,10 +671,22 @@ class FinsecMcpService:
         return match
 
     def _hypothesis_summary(self, hypothesis: HypothesisRecord) -> HypothesisSummary:
+        campaign = next(
+            (
+                item
+                for item in self._hypotheses().campaigns
+                if item.id == hypothesis.grouping.campaign_id
+            ),
+            None,
+        )
         return HypothesisSummary(
             id=hypothesis.id,
             kind=hypothesis.kind,
             title=self._safe_text(presentation_title(hypothesis), maximum=300),
+            member_title=self._safe_text(hypothesis.title, maximum=300),
+            campaign_title=(
+                self._safe_text(campaign.title, maximum=300) if campaign is not None else None
+            ),
             category=hypothesis.category,
             priority=hypothesis.priority,
             score=hypothesis.scores.total,
@@ -707,6 +717,7 @@ class FinsecMcpService:
                     else None
                 ),
                 location=target.location,
+                json_path=target.json_path,
                 endpoint_ids=sorted(
                     self.sanitizer.identifier(item) for item in target.endpoint_ids
                 ),
@@ -736,6 +747,7 @@ class FinsecMcpService:
             missing_prerequisites=self._safe_text_list(
                 hypothesis.readiness_assessment.missing_prerequisites
             ),
+            comparison_coverage=hypothesis.readiness_assessment.comparison_coverage,
             retention_reasons=self._safe_text_list(hypothesis.presentation.retention_reasons),
             difference_reasons=self._safe_text_list(hypothesis.presentation.difference_reasons),
             similar_hypothesis_ids=sorted(

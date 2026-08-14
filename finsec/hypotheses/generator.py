@@ -192,6 +192,7 @@ def _object_authorization_hypothesis(
     endpoint: Endpoint,
     resource: ResourceRecord,
     parameter: str,
+    parameter_location: str,
     researcher_accounts: int,
     binding: ObjectAccessEvidence | None = None,
 ) -> dict[str, Any]:
@@ -201,7 +202,11 @@ def _object_authorization_hypothesis(
     confidence = _confidence_score(invariant.confidence)
     if binding is not None:
         confidence = max(confidence, 3)
-    testability = 5 if researcher_accounts >= 2 else 2
+    comparison_actors = binding.distinct_actors if binding is not None else 0
+    comparison_objects = binding.distinct_objects if binding is not None else 0
+    testability = 4 if comparison_actors >= 2 and comparison_objects >= 2 else 3
+    if researcher_accounts < 2:
+        testability = 2
     scores = _score(impact, likelihood, confidence, testability)
     action = "modification" if endpoint.state_change else "access"
     unauthenticated_binding = binding is not None and not endpoint.authentication.required
@@ -285,7 +290,7 @@ def _object_authorization_hypothesis(
     return {
         "key": (
             f"auth-object-access:{endpoint.method.lower()}:{endpoint.path}:"
-            f"{resource.name.lower()}:{parameter.lower()}"
+            f"{resource.name.lower()}:{parameter_location}:{parameter.casefold()}"
         ),
         "title": title,
         "category": "authorization",
@@ -1613,11 +1618,21 @@ def _drafts(
                 authentication_research[resource.name].append((invariant, endpoint, resource))
         elif invariant.category == "authorization":
             parameter = invariant.key.rsplit(":", 1)[-1]
+            requested_location = (
+                invariant.key.rsplit(":", 2)[-2] if invariant.key.count(":") >= 3 else None
+            )
+            parameter_terminal = parameter.rsplit(".", 1)[-1]
             parameter_record = next(
                 (
                     item
                     for item in endpoint.parameters
-                    if item.name == parameter and object_candidate(item.identifier_semantics)
+                    if item.name == parameter_terminal
+                    and (requested_location is None or item.location == requested_location)
+                    and (
+                        item.json_path is None
+                        or item.json_path.removeprefix("$.").replace("[*]", "[]") == parameter
+                    )
+                    and object_candidate(item.identifier_semantics)
                 ),
                 None,
             )
@@ -1625,7 +1640,7 @@ def _drafts(
                 (
                     item
                     for item in endpoint.object_access
-                    if item.identifier == parameter and item.actor_object_binding_observed
+                    if item.identifier == parameter_terminal and item.actor_object_binding_observed
                 ),
                 None,
             )
@@ -1650,6 +1665,7 @@ def _drafts(
                     endpoint,
                     resource,
                     parameter,
+                    parameter_record.location,
                     researcher_accounts,
                     binding,
                 )

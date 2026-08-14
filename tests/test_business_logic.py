@@ -1011,11 +1011,11 @@ def test_planner_refuses_unsafe_or_under_evidenced_execution(
     assert result.plan.execution_default == "DO_NOT_EXECUTE"
     readiness = resolve_workspace_readiness(logic_workspace)
     plan_stage = next(item for item in readiness.stages if item.id == PipelineStage.PLAN)
-    assert plan_stage.status == LifecycleStatus.COMPLETE
+    assert plan_stage.status == LifecycleStatus.BLOCKED
     analyze_business_logic(logic_workspace)
     refreshed = resolve_workspace_readiness(logic_workspace)
     refreshed_plan = next(item for item in refreshed.stages if item.id == PipelineStage.PLAN)
-    assert refreshed_plan.status == LifecycleStatus.COMPLETE
+    assert refreshed_plan.status == LifecycleStatus.BLOCKED
 
 
 def _assessment(*, secure_observed: bool) -> dict[str, bool]:

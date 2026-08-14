@@ -53,7 +53,7 @@ from finsec.normalization.ownership import (
     classify_ownership_scope_parameter,
     normalized_parameter_name,
 )
-from finsec.normalization.path_semantics import path_resource_semantics
+from finsec.normalization.path_semantics import path_hierarchy, path_resource_semantics
 from finsec.normalization.paths import NormalizedPath, normalize_paths
 from finsec.readiness.provenance import (
     inventory_source_fingerprint,
@@ -583,7 +583,9 @@ def _response_scope_conflict(response: Any, identifier: str, requested: str) -> 
 
 def _response_object_access_evidence(
     workspace: WorkspacePaths,
+    endpoint_id: str,
     path: str,
+    resource_type: str,
     observations: list[Observation],
     path_parameters: list[EndpointParameter],
     target: TargetDocument,
@@ -592,6 +594,7 @@ def _response_object_access_evidence(
     controlled_actors = {
         account.id for account in target.accounts if account.ownership == "researcher"
     }
+    hierarchy = path_hierarchy(path, path, resource_type)
     identifiers = [
         parameter.name
         for parameter in path_parameters
@@ -649,6 +652,14 @@ def _response_object_access_evidence(
                 requested_value=requested,
                 response_object_path=object_path,
                 owner_value_fingerprint=fingerprint,
+                subject_resource_type=resource_type,
+                parent_resource_type=(
+                    hierarchy.parent.resource_type if hierarchy.parent is not None else None
+                ),
+                parent_value=hierarchy.parent.value if hierarchy.parent is not None else None,
+                endpoint_id=endpoint_id,
+                route_family=hierarchy.route_family,
+                collection_route_family=hierarchy.collection_route_family,
                 observations=sorted(observation_ids),
             )
             for (actor, requested, object_path, fingerprint), observation_ids in sorted(
@@ -897,7 +908,9 @@ def _path_scope_evidence(
 
 def _object_access_evidence(
     workspace: WorkspacePaths,
+    endpoint_id: str,
     path: str,
+    resource_type: str,
     observations: list[Observation],
     path_parameters: list[EndpointParameter],
     target: TargetDocument,
@@ -905,7 +918,14 @@ def _object_access_evidence(
     cache: dict[Path, list[Any] | None],
 ) -> tuple[list[ObjectAccessEvidence], list[OwnershipInference]]:
     response_evidence = _response_object_access_evidence(
-        workspace, path, observations, path_parameters, target, cache
+        workspace,
+        endpoint_id,
+        path,
+        resource_type,
+        observations,
+        path_parameters,
+        target,
+        cache,
     )
     path_evidence, decisions = _path_scope_evidence(
         workspace,
@@ -1308,7 +1328,9 @@ def build_inventory(workspace: WorkspacePaths) -> InventoryResult:
         authentication = _authentication(observations)
         object_access, ownership_inference = _object_access_evidence(
             workspace,
+            endpoint_id,
             path,
+            resource_name,
             observations,
             path_parameters,
             target,

@@ -359,6 +359,7 @@ def _parameter_semantics(
     field_name: str,
     location: str,
     direction: Literal["REQUEST", "RESPONSE"],
+    field_path: str | None = None,
 ) -> IdentifierSemanticAssessment | None:
     if endpoint is None:
         return None
@@ -376,6 +377,15 @@ def _parameter_semantics(
         and item.source == direction.lower()
         and (not expected_locations or item.location in expected_locations)
     ]
+    if field_path is not None and location == "BODY":
+        exact_path = [
+            item
+            for item in candidates
+            if item.json_path is not None
+            and item.json_path.replace("[*]", "[]") == field_path.replace("[*]", "[]")
+        ]
+        if exact_path:
+            candidates = exact_path
     if candidates:
         return sorted(candidates, key=lambda item: (item.location, item.name))[
             0
@@ -542,7 +552,13 @@ def _signal(
     if not value or value == REDACTED or len(value) > 256:
         return None
     field_name = _terminal_field(field_path)
-    parameter_semantics = _parameter_semantics(endpoint, field_name, location, direction)
+    parameter_semantics = _parameter_semantics(
+        endpoint,
+        field_name,
+        location,
+        direction,
+        field_path=field_path,
+    )
     kind = _signal_kind(field_name, location, raw_value)
     if kind is None:
         return None

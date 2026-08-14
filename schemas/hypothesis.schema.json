@@ -123,6 +123,7 @@
     },
     "readiness": {"enum": ["RESEARCH_ONLY", "REVIEW_REQUIRED", "TEST_READY"]},
     "readiness_assessment": {"$ref": "#/$defs/readinessAssessment"},
+    "mutation_target": {"type": "object"},
     "domain_intent": {"$ref": "#/$defs/domainIntent"},
     "claim_strength": {"$ref": "#/$defs/claimStrength"},
     "semantic_descriptor": {
@@ -333,6 +334,7 @@
         "blockers",
         "warnings",
         "capabilities",
+        "comparison_coverage",
         "evidence_references"
       ],
       "properties": {
@@ -345,7 +347,68 @@
         "blockers": {"type": "array", "items": {"$ref": "#/$defs/readinessIssue"}},
         "warnings": {"type": "array", "items": {"$ref": "#/$defs/readinessIssue"}},
         "capabilities": {"type": "array", "items": {"type": "object"}},
+        "comparison_coverage": {"$ref": "#/$defs/comparisonCoverage"},
         "evidence_references": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "comparisonBaseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actor_id",
+        "object_reference",
+        "baseline_ids",
+        "endpoint_ids",
+        "supporting_relationship_ids",
+        "observation_ids"
+      ],
+      "properties": {
+        "actor_id": {"type": "string"},
+        "object_reference": {"type": "string"},
+        "parent_reference": {"type": ["string", "null"]},
+        "resource_type": {"type": ["string", "null"]},
+        "parent_resource_type": {"type": ["string", "null"]},
+        "route_family": {"type": ["string", "null"]},
+        "collection_route_family": {"type": ["string", "null"]},
+        "operation": {"type": ["string", "null"]},
+        "baseline_ids": {"type": "array", "items": {"type": "string"}},
+        "endpoint_ids": {"type": "array", "items": {"type": "string"}},
+        "supporting_relationship_ids": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "observation_ids": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "comparisonCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required_distinct_actors",
+        "observed_distinct_actors",
+        "distinct_controlled_objects",
+        "baseline_actor_ids",
+        "missing_actor_ids",
+        "route_families",
+        "baseline_ids",
+        "evidence_references",
+        "baselines"
+      ],
+      "properties": {
+        "required_distinct_actors": {"type": "integer", "minimum": 0},
+        "observed_distinct_actors": {"type": "integer", "minimum": 0},
+        "distinct_controlled_objects": {"type": "integer", "minimum": 0},
+        "baseline_actor_ids": {"type": "array", "items": {"type": "string"}},
+        "missing_actor_ids": {"type": "array", "items": {"type": "string"}},
+        "resource_type": {"type": ["string", "null"]},
+        "route_families": {"type": "array", "items": {"type": "string"}},
+        "parent_resource_type": {"type": ["string", "null"]},
+        "baseline_ids": {"type": "array", "items": {"type": "string"}},
+        "evidence_references": {"type": "array", "items": {"type": "string"}},
+        "baselines": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/comparisonBaseline"}
+        }
       }
     },
     "semanticDescriptor": {
@@ -359,6 +422,7 @@
         "operation": {"type": "string"},
         "subject_resource": {"type": "string"},
         "parent_resource": {"type": ["string", "null"]},
+        "parent_contexts": {"type": "array", "items": {"type": "string"}},
         "visibility": {"type": "string"},
         "binding": {"type": "string"},
         "weakness_family": {"type": "string"},
@@ -366,6 +430,13 @@
         "expected_effect": {"type": "string"},
         "oracle_family": {"type": "string"},
         "actor_requirements": {"type": "array", "items": {"type": "string"}},
+        "mutation_parameter": {"type": ["string", "null"]},
+        "mutation_location": {"type": ["string", "null"]},
+        "mutation_json_path": {"type": ["string", "null"]},
+        "identifier_semantic_class": {"type": "string"},
+        "identifier_resource_role": {"type": "string"},
+        "ownership_state": {"type": "string"},
+        "expected_authorization_relationship": {"type": "string"},
         "workflow_family": {"type": ["string", "null"]},
         "transition": {"type": ["string", "null"]},
         "exact_key": {"type": "string"},

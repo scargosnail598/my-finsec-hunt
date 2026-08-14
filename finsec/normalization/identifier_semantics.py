@@ -17,6 +17,10 @@ from finsec.modeling.semantics import (
     OwnershipState,
 )
 from finsec.normalization.ownership import normalized_parameter_name
+from finsec.normalization.path_semantics import path_hierarchy
+from finsec.normalization.path_semantics import (
+    structural_parent_resource as canonical_structural_parent_resource,
+)
 
 TENANT_NAMES = {
     "account",
@@ -39,8 +43,6 @@ ACTOR_NAMES = {
     "memberid",
     "owner",
     "ownerid",
-    "profile",
-    "profileid",
     "user",
     "userid",
 }
@@ -49,14 +51,13 @@ AUTH_NAMES = {
     "authorization",
     "challenge",
     "challengeid",
-    "code",
     "nonce",
     "session",
     "sessionid",
     "token",
 }
 REGION_NAMES = {"az", "availabilityzone", "availabilityzoneid", "region", "regionid"}
-COLLECTION_NAMES = {"collection", "collectionid", "cursor", "limit", "offset", "page"}
+COLLECTION_NAMES = {"cursor", "limit", "offset", "page"}
 SHARED_NAMES = {
     "category",
     "categoryid",
@@ -127,67 +128,37 @@ def structural_parameter_role(
 ) -> StructuralParameterRole:
     """Resolve parent/child position without treating path nesting as ownership."""
 
-    segments = [item for item in path.split("/") if item]
-    marker = f"{{{parameter}}}"
-    if marker not in segments:
+    hierarchy = path_hierarchy(path, path, endpoint_resource)
+    node = next((item for item in hierarchy.nodes if item.parameter == parameter), None)
+    if node is None:
         return StructuralParameterRole(IdentifierResourceRole.UNKNOWN, None, None)
-    index = segments.index(marker)
-    collection = segments[index - 1] if index else "resource"
-    resource_type = _display_resource(_singular(collection))
-    later_collections = [
-        item
-        for position, item in enumerate(segments[index + 1 :], start=index + 1)
-        if not (item.startswith("{") and item.endswith("}"))
-        and position + 1 < len(segments)
-        and segments[position + 1].startswith("{")
-    ]
-    endpoint_key = normalized_parameter_name(endpoint_resource)
-    resource_key = normalized_parameter_name(resource_type)
-    if later_collections:
+    if hierarchy.subject is not None and node.collection_index < hierarchy.subject.collection_index:
         role = IdentifierResourceRole.PARENT
-    elif resource_key == endpoint_key:
+    elif normalized_parameter_name(node.resource_type) == normalized_parameter_name(
+        endpoint_resource
+    ):
         role = IdentifierResourceRole.CHILD_OBJECT
     else:
         role = IdentifierResourceRole.SUBJECT
-    parent_type = None
-    earlier_markers = [
-        position
-        for position, item in enumerate(segments[:index])
-        if item.startswith("{") and item.endswith("}")
-    ]
-    if earlier_markers:
-        parent_index = earlier_markers[-1]
-        parent_type = _display_resource(_singular(segments[parent_index - 1]))
-    return StructuralParameterRole(role, resource_type, parent_type)
+    parent = next(
+        (
+            item
+            for item in reversed(hierarchy.nodes)
+            if item.collection_index < node.collection_index and item.value_index is not None
+        ),
+        None,
+    )
+    return StructuralParameterRole(
+        role,
+        node.resource_type,
+        parent.resource_type if parent is not None else None,
+    )
 
 
 def structural_parent_resource(path: str, endpoint_resource: str) -> str | None:
     """Return the immediate nested parent resource type for an endpoint route."""
 
-    segments = [item for item in path.split("/") if item]
-    endpoint_key = normalized_parameter_name(endpoint_resource)
-    collections = [
-        (index, _display_resource(_singular(item)))
-        for index, item in enumerate(segments)
-        if index + 1 < len(segments)
-        and not (item.startswith("{") and item.endswith("}"))
-        and (
-            segments[index + 1].startswith("{")
-            or normalized_parameter_name(_display_resource(_singular(item))) == endpoint_key
-        )
-    ]
-    subject_index = next(
-        (
-            index
-            for index, resource_type in reversed(collections)
-            if normalized_parameter_name(resource_type) == endpoint_key
-        ),
-        None,
-    )
-    if subject_index is None:
-        return None
-    parents = [resource_type for index, resource_type in collections if index < subject_index]
-    return parents[-1] if parents else None
+    return canonical_structural_parent_resource(path, endpoint_resource)
 
 
 def _actor_value_evidence(
@@ -301,7 +272,7 @@ def classify_identifier_semantics(
             normalized_parameter_name(item)
             for item in target.analysis.ownership_inference.trusted_parent_parameters
         }
-        if normalized in configured_shared or normalized in SHARED_NAMES:
+        if normalized in configured_shared:
             semantic_class = IdentifierSemanticClass.SHARED_SCOPE
             resource_role = IdentifierResourceRole.SHARED_SCOPE
             ownership_state = OwnershipState.SHARED
@@ -330,6 +301,13 @@ def classify_identifier_semantics(
                 "object-identifier candidate; ownership requires independent evidence."
             )
             sources.append("PATH_STRUCTURE")
+        elif normalized in SHARED_NAMES:
+            semantic_class = IdentifierSemanticClass.OPAQUE_UNKNOWN
+            confidence = "low"
+            evidence.append(
+                "Parameter name suggests shared scope, but name-only evidence is insufficient."
+            )
+            sources.append("PARAMETER_NAME")
         elif parameter.location == "path" and normalized == "filename":
             semantic_class = IdentifierSemanticClass.NON_SECURITY_RELEVANT
             confidence = "high"

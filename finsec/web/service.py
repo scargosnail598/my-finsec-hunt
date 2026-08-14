@@ -17,7 +17,9 @@ from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError, WorkspaceError
 from finsec.evidence.domain import EvidenceMetadata
 from finsec.hypotheses.clustering import presentation_title, presentation_visible
+from finsec.hypotheses.contracts import HypothesisCampaign
 from finsec.hypotheses.domain import HypothesisRecord, HypothesisStore
+from finsec.hypotheses.population import hypothesis_population
 from finsec.modeling.domain import ActorStore, InvariantStore, ResourceStore
 from finsec.modeling.models import Endpoint, EndpointStore, ObservationStore
 from finsec.readiness.domain import LifecycleStatus, ReadinessReport
@@ -194,12 +196,9 @@ def workspace_overview(snapshot: WorkspaceSnapshot) -> dict[str, Any]:
     active_invariants = [
         item for item in snapshot.invariants.invariants if item.disposition == "ACTIVE"
     ]
-    active_hypotheses = _active_hypotheses(snapshot.hypotheses.hypotheses)
-    research_tasks = [
-        item
-        for item in snapshot.hypotheses.hypotheses
-        if item.kind == "RESEARCH_TASK" and presentation_visible(item)
-    ]
+    population = hypothesis_population(snapshot.hypotheses.hypotheses)
+    active_hypotheses = list(population.visible_active_hypotheses)
+    research_tasks = list(population.visible_research_tasks)
     evidence_sets = _evidence_metadata(snapshot.paths)
     reports = _report_files(snapshot.paths)
     counts = {
@@ -214,6 +213,8 @@ def workspace_overview(snapshot: WorkspaceSnapshot) -> dict[str, Any]:
         "active_invariants": len(active_invariants),
         "active_hypotheses": len(active_hypotheses),
         "research_tasks": len(research_tasks),
+        "raw_active_hypotheses": population.raw_active_hypotheses,
+        "raw_research_tasks": population.raw_research_tasks,
         "plans": len(snapshot.plans.plans),
         "evidence_sets": len(evidence_sets),
         "validations": len(snapshot.validations.validations),
@@ -255,7 +256,9 @@ def workspace_overview(snapshot: WorkspaceSnapshot) -> dict[str, Any]:
                 item.classification.primary for item in active_endpoints
             ),
         },
-        "highest_priority": [_hypothesis_summary(item) for item in highest],
+        "highest_priority": [
+            _hypothesis_summary(item, snapshot.hypotheses.campaigns) for item in highest
+        ],
         "next_action": _next_action(readiness),
         "knowledge_legend": [
             {"state": "Observed", "description": "Recorded from supplied runtime material."},
@@ -343,7 +346,7 @@ def hypotheses_payload(snapshot: WorkspaceSnapshot) -> dict[str, Any]:
     )
     rows: list[dict[str, Any]] = []
     for item in hypotheses:
-        row = _hypothesis_summary(item)
+        row = _hypothesis_summary(item, snapshot.hypotheses.campaigns)
         plan = plans.get(item.id)
         validation = validations.get(item.id)
         metadata = evidence.get(item.id)
@@ -562,10 +565,18 @@ def _authentication_preflight_payload(preflight: AuthenticationPreflight) -> dic
     }
 
 
-def _hypothesis_summary(item: HypothesisRecord) -> dict[str, Any]:
+def _hypothesis_summary(
+    item: HypothesisRecord, campaigns: list[HypothesisCampaign] | None = None
+) -> dict[str, Any]:
+    campaign = next(
+        (candidate for candidate in campaigns or [] if candidate.id == item.grouping.campaign_id),
+        None,
+    )
     return {
         "id": item.id,
         "title": presentation_title(item),
+        "member_title": item.title,
+        "campaign_title": campaign.title if campaign is not None else None,
         "kind": item.kind,
         "disposition": item.disposition,
         "category": item.category,
@@ -603,6 +614,7 @@ def _hypothesis_explanation(item: HypothesisRecord) -> dict[str, Any]:
         "mutation_target": {
             "parameter": target.parameter,
             "location": target.location,
+            "json_path": target.json_path,
             "endpoint_ids": list(target.endpoint_ids),
             "expected_authorization_relationship": target.expected_authorization_relationship,
         },
@@ -622,6 +634,9 @@ def _hypothesis_explanation(item: HypothesisRecord) -> dict[str, Any]:
             "decision": item.readiness_assessment.readiness,
             "reasons": list(item.readiness_assessment.reasons),
             "missing_prerequisites": list(item.readiness_assessment.missing_prerequisites),
+            "comparison_coverage": item.readiness_assessment.comparison_coverage.model_dump(
+                mode="json"
+            ),
         },
         "presentation": {
             "visible": item.presentation.visible,

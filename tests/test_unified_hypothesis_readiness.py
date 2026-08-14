@@ -7,10 +7,14 @@ from pathlib import Path
 import pytest
 
 from finsec.behavior.queue_evaluation import compare_workspace_queues
-from finsec.config.models import TargetDocument
+from finsec.config.models import CleanupControlRule, TargetDocument
 from finsec.config.workspace import WorkspacePaths, create_workspace
 from finsec.hypotheses.clustering import finalize_hypothesis_store, presentation_visible
-from finsec.hypotheses.contracts import CapabilityKind, ClaimStrengthLevel
+from finsec.hypotheses.contracts import (
+    CapabilityKind,
+    ClaimStrengthLevel,
+    HypothesisReadinessAssessment,
+)
 from finsec.hypotheses.domain import (
     HypothesisRecord,
     HypothesisScores,
@@ -19,7 +23,11 @@ from finsec.hypotheses.domain import (
     PotentialImpact,
 )
 from finsec.hypotheses.generator import load_hypotheses
-from finsec.hypotheses.readiness import assess_record_readiness
+from finsec.hypotheses.readiness import (
+    assess_record_readiness,
+    cleanup_control_fingerprint,
+    cleanup_control_source_checksum,
+)
 from finsec.hypotheses.semantics import assess_claim_strength, assess_domain_intent
 from finsec.modeling.domain import GenerationMetadata, ResourceStore
 from finsec.modeling.models import (
@@ -42,6 +50,7 @@ from finsec.modeling.models import (
     SideEffectEvidence,
 )
 from finsec.normalization.inventory import _action
+from finsec.normalization.path_semantics import path_hierarchy
 from finsec.testing.planner import inspect_plan_alignment
 from finsec.utils.yaml_store import write_yaml
 
@@ -143,11 +152,13 @@ def _endpoint(
                     ActorObjectBaseline(
                         actor="ACCOUNT_1",
                         requested_value="redacted-a",
+                        endpoint_id=identifier,
                         observations=[observations[0]],
                     ),
                     ActorObjectBaseline(
                         actor="ACCOUNT_2",
                         requested_value="redacted-b",
+                        endpoint_id=identifier,
                         observations=[observations[-1]],
                     ),
                 ],
@@ -186,6 +197,98 @@ def _endpoint(
         sources=list(observations),
         confidence=Confidence.HIGH,
         normalization=NormalizationEvidence(observed_paths=[path]),
+    )
+
+
+def _typed_baseline(
+    endpoint: Endpoint,
+    *,
+    actor: str,
+    object_id: str,
+    subject_resource_type: str | None = None,
+    collection_route_family: str | None = None,
+    parent_resource_type: str | None = None,
+    parent_value: str | None = None,
+    endpoint_id: str | None = None,
+) -> ActorObjectBaseline:
+    hierarchy = path_hierarchy(endpoint.path, endpoint.path, endpoint.resource.type)
+    return ActorObjectBaseline(
+        actor=actor,
+        requested_value=object_id,
+        subject_resource_id=f"RSC-{object_id}",
+        subject_resource_type=subject_resource_type or endpoint.resource.type,
+        parent_resource_type=(
+            parent_resource_type
+            if parent_resource_type is not None
+            else hierarchy.parent.resource_type
+            if hierarchy.parent is not None
+            else None
+        ),
+        parent_value=(
+            parent_value
+            if parent_value is not None
+            else hierarchy.parent.value
+            if hierarchy.parent is not None
+            else None
+        ),
+        endpoint_id=endpoint_id or endpoint.id,
+        route_family=hierarchy.route_family,
+        collection_route_family=(collection_route_family or hierarchy.collection_route_family),
+        baseline_id=f"BASE-{actor}-{object_id}",
+        observations=[endpoint.sources[0]],
+    )
+
+
+def _authorization_assessment(
+    endpoint: Endpoint,
+    baselines: list[ActorObjectBaseline],
+    *,
+    provenance_endpoints: list[Endpoint] | None = None,
+) -> HypothesisReadinessAssessment:
+    access = ObjectAccessEvidence(
+        identifier=endpoint.parameters[0].name,
+        source="CONTROLLED_LIFECYCLE",
+        baselines=baselines,
+        distinct_actors=len({item.actor for item in baselines}),
+        distinct_objects=len(
+            {item.subject_resource_id or item.requested_value for item in baselines}
+        ),
+        actor_object_binding_observed=True,
+    )
+    endpoint = endpoint.model_copy(update={"object_access": [access]})
+    record = _record("HYP-001", endpoint)
+    observations = ObservationStore(
+        observations=[
+            _observation(
+                endpoint.sources[0],
+                method=endpoint.method,
+                path=endpoint.path,
+            )
+        ]
+    )
+    target = _target()
+    intent = assess_domain_intent(
+        target,
+        [endpoint],
+        category=record.category,
+        generation_rule_id=record.generation_rule["id"],
+        mutation_target=record.mutation_target,
+    )
+    claim = assess_claim_strength(
+        generation_rule_id=record.generation_rule["id"],
+        category=record.category,
+        intent=intent,
+        eligibility_evidence=[],
+    )
+    all_endpoints = [endpoint, *(provenance_endpoints or [])]
+    return assess_record_readiness(
+        target,
+        observations,
+        all_endpoints,
+        ResourceStore(),
+        record,
+        intent,
+        claim,
     )
 
 
@@ -308,6 +411,193 @@ def test_controllable_identifier_without_binding_is_not_owner_scoped_or_ready() 
     assert intent.binding == "UNKNOWN"
     assert assessment.readiness == "REVIEW_REQUIRED"
     assert any(item.capability == CapabilityKind.OWNERSHIP for item in assessment.blockers)
+
+
+def test_comparison_coverage_counts_actors_not_objects() -> None:
+    endpoint = _endpoint("EP-1")
+    baselines = [
+        _typed_baseline(endpoint, actor="ACCOUNT_1", object_id="order-a"),
+        _typed_baseline(endpoint, actor="ACCOUNT_1", object_id="order-b"),
+    ]
+
+    assessment = _authorization_assessment(endpoint, baselines)
+
+    assert assessment.comparison_coverage.observed_distinct_actors == 1
+    assert assessment.comparison_coverage.distinct_controlled_objects == 2
+    assert assessment.comparison_coverage.missing_actor_ids == ["ACCOUNT_2"]
+    assert any(item.capability == CapabilityKind.BASELINE for item in assessment.blockers)
+
+
+@pytest.mark.parametrize(
+    ("resource_type", "collection_route_family", "parent_resource_type"),
+    [
+        ("Firewall", None, "Domain"),
+        ("DnsRecord", "/v1/firewalls", "Domain"),
+        ("DnsRecord", None, "Account"),
+    ],
+)
+def test_incompatible_baseline_provenance_does_not_satisfy_dns_readiness(
+    resource_type: str,
+    collection_route_family: str | None,
+    parent_resource_type: str,
+) -> None:
+    endpoint = _endpoint(
+        "EP-DNS",
+        path="/cdn/4.0/domains/{domain}/dns-records/{dnsRecordId}",
+        resource="DnsRecord",
+    )
+    valid = _typed_baseline(endpoint, actor="ACCOUNT_1", object_id="record-a")
+    incompatible = _typed_baseline(
+        endpoint,
+        actor="ACCOUNT_2",
+        object_id="record-b",
+        subject_resource_type=resource_type,
+        collection_route_family=collection_route_family,
+        parent_resource_type=parent_resource_type,
+    )
+
+    assessment = _authorization_assessment(endpoint, [valid, incompatible])
+
+    assert assessment.comparison_coverage.observed_distinct_actors == 1
+    assert assessment.comparison_coverage.baseline_actor_ids == ["ACCOUNT_1"]
+    assert assessment.comparison_coverage.missing_actor_ids == ["ACCOUNT_2"]
+
+
+def test_matching_typed_provenance_satisfies_two_actor_comparison_coverage() -> None:
+    endpoint = _endpoint(
+        "EP-DNS",
+        path="/cdn/4.0/domains/{domain}/dns-records/{dnsRecordId}",
+        resource="DnsRecord",
+    )
+    baselines = [
+        _typed_baseline(endpoint, actor="ACCOUNT_1", object_id="record-a"),
+        _typed_baseline(endpoint, actor="ACCOUNT_2", object_id="record-b"),
+    ]
+
+    assessment = _authorization_assessment(endpoint, baselines)
+
+    assert assessment.comparison_coverage.observed_distinct_actors == 2
+    assert assessment.comparison_coverage.distinct_controlled_objects == 2
+    assert assessment.comparison_coverage.missing_actor_ids == []
+    baseline = next(
+        item for item in assessment.capabilities if item.capability == CapabilityKind.BASELINE
+    )
+    assert baseline.satisfied is True
+
+
+def test_legacy_baseline_from_another_controlled_parent_in_same_family_counts() -> None:
+    endpoint = _endpoint(
+        "EP-DNS-A",
+        path="/cdn/4.0/domains/example-a.test/dns-records/{dnsRecordId}",
+        resource="DnsRecord",
+    )
+    provenance_endpoint = _endpoint(
+        "EP-DNS-B",
+        path="/cdn/4.0/domains/example-b.test/dns-records/{dnsRecordId}",
+        resource="DnsRecord",
+        observations=("OBS-2",),
+    )
+    legacy_baseline = ActorObjectBaseline(
+        actor="ACCOUNT_1",
+        requested_value="record-a",
+        endpoint_id=provenance_endpoint.id,
+        observations=[provenance_endpoint.sources[0]],
+    )
+
+    assessment = _authorization_assessment(
+        endpoint,
+        [legacy_baseline],
+        provenance_endpoints=[provenance_endpoint],
+    )
+
+    assert assessment.comparison_coverage.observed_distinct_actors == 1
+    assert assessment.comparison_coverage.baseline_actor_ids == ["ACCOUNT_1"]
+    assert assessment.comparison_coverage.missing_actor_ids == ["ACCOUNT_2"]
+    baseline = assessment.comparison_coverage.baselines[0]
+    assert baseline.resource_type == "DnsRecord"
+    assert baseline.parent_resource_type == "Domain"
+    assert baseline.parent_reference is not None
+
+
+def test_baseline_parent_value_must_match_its_provenance_endpoint() -> None:
+    endpoint = _endpoint(
+        "EP-DNS-A",
+        path="/cdn/4.0/domains/example-a.test/dns-records/{dnsRecordId}",
+        resource="DnsRecord",
+    )
+    provenance_endpoint = _endpoint(
+        "EP-DNS-B",
+        path="/cdn/4.0/domains/example-b.test/dns-records/{dnsRecordId}",
+        resource="DnsRecord",
+        observations=("OBS-2",),
+    )
+    valid = _typed_baseline(endpoint, actor="ACCOUNT_1", object_id="record-a")
+    inconsistent_parent = _typed_baseline(
+        provenance_endpoint,
+        actor="ACCOUNT_2",
+        object_id="record-b",
+        parent_value="example-c.test",
+    )
+
+    assessment = _authorization_assessment(
+        endpoint,
+        [valid, inconsistent_parent],
+        provenance_endpoints=[provenance_endpoint],
+    )
+
+    assert assessment.comparison_coverage.baseline_actor_ids == ["ACCOUNT_1"]
+    assert assessment.comparison_coverage.missing_actor_ids == ["ACCOUNT_2"]
+
+
+def test_corroborating_relationships_remain_one_canonical_baseline() -> None:
+    endpoint = _endpoint("EP-1")
+    first = _typed_baseline(endpoint, actor="ACCOUNT_1", object_id="order-a").model_copy(
+        update={"relationship_ids": ["REL-A", "REL-B"]}
+    )
+    corroborating = first.model_copy(
+        update={
+            "baseline_id": "BASE-ACCOUNT_1-order-a-corroborating",
+            "relationship_ids": ["REL-C"],
+        }
+    )
+    second = _typed_baseline(endpoint, actor="ACCOUNT_2", object_id="order-b").model_copy(
+        update={"relationship_ids": ["REL-D"]}
+    )
+
+    assessment = _authorization_assessment(endpoint, [first, corroborating, second])
+    account_one = next(
+        item for item in assessment.comparison_coverage.baselines if item.actor_id == "ACCOUNT_1"
+    )
+
+    assert assessment.comparison_coverage.observed_distinct_actors == 2
+    assert assessment.comparison_coverage.distinct_controlled_objects == 2
+    assert len(assessment.comparison_coverage.baselines) == 2
+    assert account_one.baseline_ids == [
+        "BASE-ACCOUNT_1-order-a",
+        "BASE-ACCOUNT_1-order-a-corroborating",
+    ]
+    assert account_one.supporting_relationship_ids == ["REL-A", "REL-B", "REL-C"]
+
+
+def test_legacy_baseline_requires_exact_source_endpoint() -> None:
+    endpoint = _endpoint("EP-1")
+    exact = ActorObjectBaseline(
+        actor="ACCOUNT_1",
+        requested_value="order-a",
+        endpoint_id=endpoint.id,
+        observations=[endpoint.sources[0]],
+    )
+    unrelated = ActorObjectBaseline(
+        actor="ACCOUNT_2",
+        requested_value="order-b",
+        endpoint_id="EP-OTHER",
+        observations=[endpoint.sources[0]],
+    )
+
+    assessment = _authorization_assessment(endpoint, [exact, unrelated])
+
+    assert assessment.comparison_coverage.baseline_actor_ids == ["ACCOUNT_1"]
+    assert assessment.comparison_coverage.missing_actor_ids == ["ACCOUNT_2"]
 
 
 def test_authentication_alone_does_not_satisfy_actor_switch_binding() -> None:
@@ -524,6 +814,148 @@ def test_state_change_requires_strategy_but_not_a_future_after_snapshot() -> Non
     assert {item.capability for item in missing_strategy.blockers}.issuperset(
         {CapabilityKind.BASELINE, CapabilityKind.ORACLE}
     )
+
+
+def test_typed_cleanup_control_matches_canonical_family_and_stales_on_source_change() -> None:
+    mutation = _endpoint(
+        "EP-1",
+        method="DELETE",
+        path="/cdn/4.0/domains/example.test/dns-records/{dnsRecordId}",
+        resource="DnsRecord",
+        action="delete",
+        state_change=True,
+        observations=("OBS-1",),
+    )
+    oracle = _endpoint(
+        "EP-2",
+        method="GET",
+        path="/cdn/4.0/domains/example.test/dns-records/{dnsRecordId}",
+        resource="DnsRecord",
+        observations=("OBS-2",),
+    )
+    record = _record(
+        "HYP-001",
+        mutation,
+        category="value_validation",
+        rule="VALUE_VALIDATION",
+        mutation_dimensions=["VALUE"],
+    )
+    observations = ObservationStore(
+        observations=[
+            _observation("OBS-1", method=mutation.method, path=mutation.path),
+            _observation("OBS-2", method=oracle.method, path=oracle.path),
+        ]
+    )
+    target = _target(accounts=1).model_copy(
+        update={
+            "testing": _target(accounts=1).testing.model_copy(
+                update={
+                    "synthetic": False,
+                    "local_lab": False,
+                    "maximum_requests_per_plan": 3,
+                }
+            )
+        }
+    )
+    intent = assess_domain_intent(
+        target,
+        [mutation],
+        category=record.category,
+        generation_rule_id=record.generation_rule["id"],
+    )
+    claim = assess_claim_strength(
+        generation_rule_id=record.generation_rule["id"],
+        category=record.category,
+        intent=intent,
+        eligibility_evidence=[],
+    )
+    missing = assess_record_readiness(
+        target,
+        observations,
+        [mutation, oracle],
+        ResourceStore(),
+        record,
+        intent,
+        claim,
+    )
+    cleanup = next(
+        item for item in missing.capabilities if item.capability == CapabilityKind.CLEANUP
+    )
+    budget = next(item for item in missing.capabilities if item.capability == CapabilityKind.BUDGET)
+    assert cleanup.satisfied is False
+    assert budget.satisfied is False
+    assert "requires 4 request(s), but policy permits 3" in budget.missing[0]
+    hierarchy = path_hierarchy(mutation.path, mutation.path, intent.subject_resource)
+    fingerprint = cleanup_control_fingerprint(record, intent, record.mutation_target, [mutation])
+    checksum = cleanup_control_source_checksum(
+        target,
+        observations,
+        record,
+        intent,
+        record.mutation_target,
+        [mutation],
+    )
+    control = CleanupControlRule(
+        semantic_fingerprint=fingerprint,
+        strategy="MANUAL_CONTROLLED_RESTORE",
+        actor_ids=["ACCOUNT_1"],
+        resource_type=intent.subject_resource,
+        route_family=hierarchy.collection_route_family,
+        parent_resource_type=intent.parent_resource,
+        resource_refs=["RSC-CONTROLLED"],
+        oracle_refs=[oracle.id],
+        source_checksum=checksum,
+        rationale="Restore the controlled record and verify it through the safe read oracle.",
+    )
+    configured = target.model_copy(
+        update={"analysis": target.analysis.model_copy(update={"cleanup_controls": [control]})}
+    )
+
+    matched = assess_record_readiness(
+        configured,
+        observations,
+        [mutation, oracle],
+        ResourceStore(),
+        record,
+        intent,
+        claim,
+    )
+    matched_cleanup = next(
+        item for item in matched.capabilities if item.capability == CapabilityKind.CLEANUP
+    )
+    matched_budget = next(
+        item for item in matched.capabilities if item.capability == CapabilityKind.BUDGET
+    )
+    assert matched_cleanup.satisfied is True
+    assert matched_budget.satisfied is False
+    assert {item.reference for item in matched_cleanup.evidence}.issuperset(
+        {fingerprint, "RSC-CONTROLLED", oracle.id}
+    )
+    assert configured.testing.maximum_requests_per_plan == 3
+    assert configured.testing.active_execution_enabled is False
+    assert configured.testing.human_approval_required is True
+
+    changed_observations = observations.model_copy(
+        update={
+            "observations": [
+                *observations.observations,
+                _observation("OBS-3", method=mutation.method, path=mutation.path),
+            ]
+        }
+    )
+    stale = assess_record_readiness(
+        configured,
+        changed_observations,
+        [mutation, oracle],
+        ResourceStore(),
+        record.model_copy(update={"observations": ["OBS-1", "OBS-3"]}),
+        intent,
+        claim,
+    )
+    stale_cleanup = next(
+        item for item in stale.capabilities if item.capability == CapabilityKind.CLEANUP
+    )
+    assert stale_cleanup.satisfied is False
 
 
 def test_test_ready_records_align_with_actionable_planner(

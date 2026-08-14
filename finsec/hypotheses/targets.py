@@ -14,42 +14,70 @@ def _normalized(value: str) -> str:
     return re.sub(r"[^a-z0-9]", "", value.lower())
 
 
-def _key_parameter(record: HypothesisRecord) -> str | None:
+def _key_target(record: HypothesisRecord) -> tuple[str | None, str | None, bool]:
     if record.generation_rule.get("id", "").startswith("AUTH_OBJECT_ACCESS"):
-        value = record.key.rsplit(":", 1)[-1]
-        return value or None
+        parts = record.key.rsplit(":", 2)
+        value = parts[-1]
+        location = (
+            parts[-2]
+            if len(parts) == 3
+            and parts[-2]
+            in {
+                "path",
+                "query",
+                "body",
+                "header",
+                "cookie",
+                "graphql_variable",
+            }
+            else None
+        )
+        return value or None, location, location is None
     details = record.logic_details or {}
     for key in ("mutation_parameter", "candidate_field", "mutated_field"):
         detail_value = details.get(key)
         if isinstance(detail_value, str) and detail_value.strip():
-            return detail_value.rsplit(".", 1)[-1]
-    return None
+            raw_location = details.get("mutation_location")
+            location = raw_location if isinstance(raw_location, str) else None
+            return (
+                detail_value.strip(),
+                location,
+                False,
+            )
+    return None, None, False
 
 
 def _candidate_parameters(
     record: HypothesisRecord,
     endpoints: list[Endpoint],
 ) -> list[tuple[Endpoint, EndpointParameter]]:
-    requested = _key_parameter(record)
+    requested, requested_location, legacy = _key_target(record)
     if requested is None and not {"OBJECT", "VALUE"}.intersection(record.mutation_dimensions):
         return []
-    requested_key = _normalized(requested) if requested is not None else None
+    if requested is None:
+        return []
+    requested_key = _normalized(requested.rsplit(".", 1)[-1])
     candidates = [
         (endpoint, parameter)
         for endpoint in endpoints
         for parameter in endpoint.parameters
         if parameter.source == "request" and parameter.client_controlled
     ]
-    if requested_key is not None:
-        exact = [item for item in candidates if _normalized(item[1].name) == requested_key]
-        if exact:
-            return exact
-    ownership_targets = [
+    if requested_location is not None:
+        candidates = [item for item in candidates if item[1].location == requested_location]
+    exact_path = [
         item
         for item in candidates
-        if item[1].identifier_semantics.semantic_class == IdentifierSemanticClass.OWNED_OBJECT
+        if item[1].json_path is not None
+        and item[1].json_path.removeprefix("$.").replace("[*]", "[]").casefold()
+        == requested.casefold()
     ]
-    return ownership_targets or candidates
+    if exact_path:
+        return exact_path
+    exact = [item for item in candidates if _normalized(item[1].name) == requested_key]
+    if len(exact) == 1 and (legacy or "." not in requested):
+        return exact
+    return []
 
 
 def _authorization_relationship(semantic_class: IdentifierSemanticClass) -> str:
@@ -91,13 +119,16 @@ def resolve_mutation_target(
         {
             item.id
             for item, candidate in ordered
-            if _normalized(candidate.name) == _normalized(parameter.name)
+            if candidate.location == parameter.location
+            and candidate.json_path == parameter.json_path
+            and _normalized(candidate.name) == _normalized(parameter.name)
         }
     )
     semantics = parameter.identifier_semantics
     return MutationTargetAssessment(
         parameter=parameter.name,
         location=parameter.location,
+        json_path=parameter.json_path,
         endpoint_ids=matching_endpoint_ids or [endpoint.id],
         semantics=semantics,
         expected_authorization_relationship=_authorization_relationship(semantics.semantic_class),

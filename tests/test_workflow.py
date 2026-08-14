@@ -1,5 +1,6 @@
 """Automated passive-ingestion and offline workflow tests."""
 
+import json
 import shutil
 from pathlib import Path
 from typing import Any
@@ -16,9 +17,14 @@ from finsec.captures.domain import (
 )
 from finsec.cli import app
 from finsec.errors import FinsecError
+from finsec.hypotheses.domain import HypothesisStore
+from finsec.hypotheses.population import hypothesis_population
+from finsec.mcp.service import FinsecMcpService
 from finsec.modeling.models import ObservationStore
+from finsec.readiness.resolver import resolve_workspace_readiness
 from finsec.setup import AccountInput, build_setup_config, create_setup_workspace
 from finsec.utils.yaml_store import load_yaml, write_yaml
+from finsec.web.service import load_snapshot, workspace_overview
 from finsec.workflow import (
     WorkflowCapture,
     WorkflowManifest,
@@ -96,6 +102,50 @@ def test_workflow_manifest_drives_complete_offline_pipeline(
     assert result.resources == 3
     assert result.invariants == 3
     assert result.active_hypotheses >= 1
+    population = hypothesis_population(
+        HypothesisStore.model_validate(load_yaml(created.workspace.hypotheses)).hypotheses
+    )
+    assert result.active_hypotheses == len(population.visible_active_hypotheses)
+    assert result.research_tasks == len(population.visible_research_tasks)
+    assert result.raw_active_hypotheses == population.raw_active_hypotheses
+    assert result.raw_research_tasks == population.raw_research_tasks
+
+    readiness = resolve_workspace_readiness(created.workspace)
+    web_counts = workspace_overview(load_snapshot(created.workspace))["counts"]
+    mcp_counts = (
+        FinsecMcpService.from_workspace_path(created.workspace.root).workspace_summary().counts
+    )
+    cli_status = RUNNER.invoke(
+        app,
+        ["status", "--workspace", str(created.workspace.root), "--json"],
+    )
+    cli_hypotheses = RUNNER.invoke(
+        app,
+        ["hypotheses", "--workspace", str(created.workspace.root)],
+    )
+    assert cli_status.exit_code == 0, cli_status.output
+    assert cli_hypotheses.exit_code == 0, cli_hypotheses.output
+    cli_metrics = json.loads(cli_status.output)["metrics"]
+    visible_pairs = {
+        (result.active_hypotheses, result.research_tasks),
+        (readiness.metrics.active_hypotheses, readiness.metrics.research_tasks),
+        (web_counts["active_hypotheses"], web_counts["research_tasks"]),
+        (mcp_counts.active_hypotheses, mcp_counts.research_tasks),
+        (cli_metrics["active_hypotheses"], cli_metrics["research_tasks"]),
+    }
+    raw_pairs = {
+        (result.raw_active_hypotheses, result.raw_research_tasks),
+        (readiness.metrics.raw_active_hypotheses, readiness.metrics.raw_research_tasks),
+        (web_counts["raw_active_hypotheses"], web_counts["raw_research_tasks"]),
+        (mcp_counts.raw_active_hypotheses, mcp_counts.raw_research_tasks),
+        (cli_metrics["raw_active_hypotheses"], cli_metrics["raw_research_tasks"]),
+    }
+    assert visible_pairs == {(result.active_hypotheses, result.research_tasks)}
+    assert raw_pairs == {(result.raw_active_hypotheses, result.raw_research_tasks)}
+    assert (
+        f"Backlog contains {result.active_hypotheses} active hypotheses and "
+        f"{result.research_tasks} research tasks."
+    ) in cli_hypotheses.output
     assert result.ingested[0].imported == 5
     assert incoming.is_file()
     assert any("endpoint inventory" in message for message in progress)

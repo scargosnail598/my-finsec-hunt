@@ -4,6 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from finsec.hypotheses.contracts import ComparisonCoverage
 from finsec.readiness.domain import ReadinessReport
 
 AuthenticationState = Literal["PRESENT", "ABSENT_CONFIRMED", "UNKNOWN_OR_REDACTED"]
@@ -56,6 +57,8 @@ class WorkspaceCounts(McpModel):
     invariants: int
     active_hypotheses: int
     research_tasks: int
+    raw_active_hypotheses: int
+    raw_research_tasks: int
     executions: int
     evidence_sets: int
     evidence_records: int
@@ -116,6 +119,8 @@ class PassiveWorkflowSummary(McpModel):
     invariants: int
     active_hypotheses: int
     research_tasks: int
+    raw_active_hypotheses: int | None = None
+    raw_research_tasks: int | None = None
     hypotheses_generated: bool
     conflicts: list[str]
     interpretation_rules: list[str]
@@ -126,6 +131,7 @@ class MutationTargetSummary(McpModel):
 
     parameter: str | None
     location: str | None
+    json_path: str | None = None
     endpoint_ids: list[str]
     expected_authorization_relationship: str
 
@@ -152,6 +158,7 @@ class HypothesisExplanation(McpModel):
     identifier_semantics: IdentifierSemanticsSummary
     readiness_reasons: list[str]
     missing_prerequisites: list[str]
+    comparison_coverage: ComparisonCoverage
     retention_reasons: list[str]
     difference_reasons: list[str]
     similar_hypothesis_ids: list[str]
@@ -163,6 +170,8 @@ class HypothesisSummary(McpModel):
     id: str
     kind: str
     title: str
+    member_title: str
+    campaign_title: str | None = None
     category: str
     priority: str
     score: int

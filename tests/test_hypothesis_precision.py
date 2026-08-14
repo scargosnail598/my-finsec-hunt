@@ -356,6 +356,9 @@ def test_short_opaque_service_request_ids_generate_one_bola(tmp_path: Path) -> N
     assert endpoint.path == "/api/service_requests/{serviceRequestId}"
     assert endpoint.resource.type == "ServiceRequest"
     assert endpoint.object_access[0].actor_object_binding_observed is True
+    assert {baseline.endpoint_id for baseline in endpoint.object_access[0].baselines} == {
+        endpoint.id
+    }
 
     authorization = [
         item
@@ -705,7 +708,8 @@ def test_unauthenticated_account_scoped_basket_baselines_promote_one_bola(
         "Potential unauthenticated cross-account Basket access through basketId on "
         "GET /rest/basket/{basketId}"
     )
-    assert hypothesis.scores.total == 14
+    assert hypothesis.scores.total == 13
+    assert hypothesis.scores.testability == 4
     assert hypothesis.generation_rule == {"id": "AUTH_OBJECT_ACCESS", "version": "6"}
     assert "Cross-substitution has not yet been tested" in hypothesis.reasoning
     assert "no request authentication credential observed" in hypothesis.eligibility_evidence

@@ -18,9 +18,11 @@ from finsec.hypotheses.contracts import (
     VisibilityIntent,
 )
 from finsec.modeling.models import Endpoint
-from finsec.modeling.relationships import structural_parent_resource
 from finsec.modeling.semantics import IdentifierSemanticClass, OwnershipState
-from finsec.normalization.path_semantics import path_resource_semantics
+from finsec.normalization.path_semantics import (
+    path_resource_semantics,
+    structural_parent_resource,
+)
 
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 VERIFY_ACTIONS = {"check", "inspect", "validate", "verification", "verify"}
@@ -211,7 +213,9 @@ def assess_domain_intent(
         subject = mutation_target.semantics.resource_type
     parent: str | None = None
     structural_parents = {
-        value for endpoint in ordered if (value := structural_parent_resource(endpoint)) is not None
+        value
+        for endpoint in ordered
+        if (value := structural_parent_resource(endpoint.path, endpoint.resource.type)) is not None
     }
     if len(structural_parents) == 1:
         parent = next(iter(structural_parents))
@@ -223,7 +227,7 @@ def assess_domain_intent(
                 "this is structural scope evidence, not ownership proof.",
             )
             for endpoint in ordered
-            if structural_parent_resource(endpoint) == parent
+            if structural_parent_resource(endpoint.path, endpoint.resource.type) == parent
         )
     elif len(structural_parents) > 1:
         ambiguity.append("Source endpoints imply conflicting structural parent resource types.")

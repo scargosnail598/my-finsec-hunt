@@ -144,6 +144,7 @@ class CredentialReadiness(ReadinessModel):
 
     available: bool
     type: str
+    status: str = "UNKNOWN"
     expiration: Literal["valid", "expiring_soon", "expired", "unknown", "not_applicable"]
     locally_usable: bool
 
@@ -161,10 +162,24 @@ class IdentityConfirmationReadiness(ReadinessModel):
 
 
 class OwnershipReadiness(ReadinessModel):
-    """Controlled actor-object-owner evidence kept separate from credentials."""
+    """Per-actor baseline presence for the report's focused hypothesis."""
 
-    required_baselines: int = 2
+    required_baselines: int = 1
     confirmed_baselines: int = 0
+    hypothesis_id: str | None = None
+    resource_type: str | None = None
+
+
+class FocusedComparisonReadiness(ReadinessModel):
+    """Hypothesis-level comparison coverage displayed alongside actor baseline presence."""
+
+    hypothesis_id: str
+    resource_type: str | None = None
+    required_distinct_actors: int = 0
+    observed_distinct_actors: int = 0
+    distinct_controlled_objects: int = 0
+    baseline_actor_ids: list[str] = Field(default_factory=list)
+    missing_actor_ids: list[str] = Field(default_factory=list)
 
 
 class ActorCapabilities(ReadinessModel):
@@ -228,6 +243,8 @@ class ReadinessMetrics(ReadinessModel):
     business_invariants: int = 0
     active_hypotheses: int = 0
     research_tasks: int = 0
+    raw_active_hypotheses: int = 0
+    raw_research_tasks: int = 0
     logic_hypotheses: int = 0
     logic_research_tasks: int = 0
     plans: int = 0
@@ -259,6 +276,7 @@ class ReadinessReport(ReadinessModel):
     overall: OverallReadiness
     stages: list[StageReadiness]
     actors: list[ActorReadiness] = Field(default_factory=list)
+    focused_comparison: FocusedComparisonReadiness | None = None
     metrics: ReadinessMetrics = Field(default_factory=ReadinessMetrics)
     next_actions: list[NextAction] = Field(default_factory=list)
 

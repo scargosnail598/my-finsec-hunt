@@ -131,6 +131,39 @@ class CapabilityKind(StrEnum):
     CLEANUP = "CLEANUP"
 
 
+class ComparisonBaseline(ContractModel):
+    """One canonical actor/object baseline with merged supporting provenance."""
+
+    actor_id: str
+    object_reference: str
+    parent_reference: str | None = None
+    resource_type: str | None = None
+    parent_resource_type: str | None = None
+    route_family: str | None = None
+    collection_route_family: str | None = None
+    operation: str | None = None
+    baseline_ids: list[str] = Field(default_factory=list)
+    endpoint_ids: list[str] = Field(default_factory=list)
+    supporting_relationship_ids: list[str] = Field(default_factory=list)
+    observation_ids: list[str] = Field(default_factory=list)
+
+
+class ComparisonCoverage(ContractModel):
+    """Hypothesis-specific cross-actor baseline coverage."""
+
+    required_distinct_actors: int = Field(default=0, ge=0)
+    observed_distinct_actors: int = Field(default=0, ge=0)
+    distinct_controlled_objects: int = Field(default=0, ge=0)
+    baseline_actor_ids: list[str] = Field(default_factory=list)
+    missing_actor_ids: list[str] = Field(default_factory=list)
+    resource_type: str | None = None
+    route_families: list[str] = Field(default_factory=list)
+    parent_resource_type: str | None = None
+    baseline_ids: list[str] = Field(default_factory=list)
+    evidence_references: list[str] = Field(default_factory=list)
+    baselines: list[ComparisonBaseline] = Field(default_factory=list)
+
+
 class CapabilityAssessment(ContractModel):
     """One explicit readiness prerequisite and the evidence supporting its result."""
 
@@ -170,6 +203,7 @@ class HypothesisReadinessAssessment(ContractModel):
     blockers: list[ReadinessIssue] = Field(default_factory=list)
     warnings: list[ReadinessIssue] = Field(default_factory=list)
     capabilities: list[CapabilityAssessment] = Field(default_factory=list)
+    comparison_coverage: ComparisonCoverage = Field(default_factory=ComparisonCoverage)
     evidence_references: list[str] = Field(default_factory=list)
 
 
@@ -178,6 +212,7 @@ class MutationTargetAssessment(ContractModel):
 
     parameter: str | None = None
     location: str | None = None
+    json_path: str | None = None
     endpoint_ids: list[str] = Field(default_factory=list)
     semantics: IdentifierSemanticAssessment = Field(default_factory=IdentifierSemanticAssessment)
     expected_authorization_relationship: str = "UNKNOWN"
@@ -199,6 +234,7 @@ class SemanticDescriptor(ContractModel):
     operation: DomainOperation = DomainOperation.UNKNOWN
     subject_resource: str = "unknown"
     parent_resource: str | None = None
+    parent_contexts: list[str] = Field(default_factory=list)
     visibility: VisibilityIntent = VisibilityIntent.UNKNOWN
     binding: BindingType = BindingType.UNKNOWN
     weakness_family: str = "UNKNOWN"
@@ -208,6 +244,7 @@ class SemanticDescriptor(ContractModel):
     actor_requirements: list[str] = Field(default_factory=list)
     mutation_parameter: str | None = None
     mutation_location: str | None = None
+    mutation_json_path: str | None = None
     identifier_semantic_class: str = "OPAQUE_UNKNOWN"
     identifier_resource_role: str = "UNKNOWN"
     ownership_state: str = "UNKNOWN"
@@ -257,5 +294,7 @@ class HypothesisCampaign(ContractModel):
     authentication_schemes: list[str] = Field(default_factory=list)
     affected_endpoints: list[str] = Field(default_factory=list)
     affected_resources: list[str] = Field(default_factory=list)
+    shared_setup: list[str] = Field(default_factory=list)
+    distinctions: list[str] = Field(default_factory=list)
     missing_controls: list[str] = Field(default_factory=list)
     next_action: str

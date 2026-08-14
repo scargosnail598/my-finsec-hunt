@@ -97,17 +97,29 @@ def _drafts(endpoints: EndpointStore, resources: ResourceStore) -> list[dict[str
                 )
             )
 
-        object_parameters = list(
-            dict.fromkeys(
-                parameter.name
-                for parameter in endpoint.parameters
-                if parameter.client_controlled and object_candidate(parameter.identifier_semantics)
+        object_parameters = [
+            parameter
+            for parameter in endpoint.parameters
+            if parameter.client_controlled and object_candidate(parameter.identifier_semantics)
+        ]
+        seen_targets: set[tuple[str, str, str | None]] = set()
+        for parameter_record in object_parameters:
+            target = (
+                parameter_record.name,
+                parameter_record.location,
+                parameter_record.json_path,
             )
-        )
-        for parameter in object_parameters:
+            if target in seen_targets:
+                continue
+            seen_targets.add(target)
+            parameter = (
+                parameter_record.json_path.removeprefix("$.").replace("[*]", "[]")
+                if parameter_record.json_path
+                else parameter_record.name
+            )
             drafts.append(
                 _base(
-                    f"object-authorization:{endpoint.id}:{parameter}",
+                    (f"object-authorization:{endpoint.id}:{parameter_record.location}:{parameter}"),
                     "authorization",
                     f"Operations on {resource} selected by {parameter} must authorize the calling "
                     "actor for that specific object.",

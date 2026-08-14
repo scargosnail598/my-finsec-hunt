@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Protocol
 
 from finsec.config.models import TargetDocument
@@ -13,6 +13,8 @@ from finsec.hypotheses.contracts import (
     CapabilityAssessment,
     CapabilityKind,
     ClaimStrengthAssessment,
+    ComparisonBaseline,
+    ComparisonCoverage,
     DecisionEvidence,
     DomainIntentAssessment,
     DomainOperation,
@@ -23,12 +25,14 @@ from finsec.hypotheses.contracts import (
     VisibilityIntent,
 )
 from finsec.modeling.domain import ResourceStore
-from finsec.modeling.models import Endpoint, ObservationStore
+from finsec.modeling.merge import stable_fingerprint
+from finsec.modeling.models import ActorObjectBaseline, Endpoint, ObservationStore
 from finsec.modeling.semantics import (
     IdentifierSemanticClass,
     OwnershipState,
     execution_ownership_supported,
 )
+from finsec.normalization.path_semantics import PathHierarchy, path_hierarchy
 
 RUNTIME_SOURCES = {"HAR", "BURP_XML", "CAIDO_JSON"}
 
@@ -77,6 +81,7 @@ class ReadinessContext:
     hypothesis_id: str
     kind: str
     capabilities: tuple[CapabilityAssessment, ...]
+    comparison_coverage: ComparisonCoverage = field(default_factory=ComparisonCoverage)
     warnings: tuple[ReadinessIssue, ...] = ()
 
 
@@ -166,6 +171,7 @@ def evaluate_readiness(context: ReadinessContext) -> HypothesisReadinessAssessme
             context.warnings, key=lambda item: (item.stage.value, item.code, item.summary)
         ),
         capabilities=capabilities,
+        comparison_coverage=context.comparison_coverage,
         evidence_references=references,
     )
 
@@ -223,9 +229,242 @@ def _required_actors(record: HypothesisLike) -> int:
     return 1
 
 
+def _type_key(value: str | None) -> str:
+    return (
+        ""
+        if value is None
+        else "".join(character for character in value.casefold() if character.isalnum())
+    )
+
+
+def _source_hierarchies(
+    source: Sequence[Endpoint], subject_resource: str
+) -> dict[str, PathHierarchy]:
+    return {
+        endpoint.id: path_hierarchy(endpoint.path, endpoint.path, subject_resource)
+        for endpoint in source
+    }
+
+
+def _baseline_with_derived_provenance(
+    baseline: ActorObjectBaseline,
+    endpoints: Mapping[str, Endpoint],
+) -> ActorObjectBaseline:
+    """Fill legacy typed context only when its referenced endpoint is available."""
+
+    endpoint = endpoints.get(baseline.endpoint_id or "")
+    if endpoint is None:
+        return baseline
+    hierarchy = path_hierarchy(endpoint.path, endpoint.path, endpoint.resource.type)
+    return baseline.model_copy(
+        update={
+            "subject_resource_type": baseline.subject_resource_type or endpoint.resource.type,
+            "route_family": baseline.route_family or hierarchy.route_family,
+            "collection_route_family": (
+                baseline.collection_route_family or hierarchy.collection_route_family
+            ),
+            "parent_resource_type": (
+                baseline.parent_resource_type
+                or (hierarchy.parent.resource_type if hierarchy.parent is not None else None)
+            ),
+            "parent_value": (
+                baseline.parent_value
+                or (hierarchy.parent.value if hierarchy.parent is not None else None)
+            ),
+        }
+    )
+
+
+def _baseline_matches_hypothesis(
+    baseline: ActorObjectBaseline,
+    source: Sequence[Endpoint],
+    hierarchies: Mapping[str, PathHierarchy],
+    all_endpoints: Mapping[str, Endpoint],
+    intent: DomainIntentAssessment,
+) -> bool:
+    """Require typed provenance, with exact-endpoint fallback for legacy baselines."""
+
+    source_ids = {endpoint.id for endpoint in source}
+    legacy = baseline.subject_resource_type is None or baseline.collection_route_family is None
+    if legacy:
+        return baseline.endpoint_id is not None and baseline.endpoint_id in source_ids
+    if baseline.endpoint_id is None or baseline.endpoint_id not in all_endpoints:
+        return False
+    if _type_key(baseline.subject_resource_type) != _type_key(intent.subject_resource):
+        return False
+    if baseline.collection_route_family not in {
+        hierarchy.collection_route_family for hierarchy in hierarchies.values()
+    }:
+        return False
+    expected_parent = _type_key(intent.parent_resource)
+    if _type_key(baseline.parent_resource_type) != expected_parent:
+        return False
+    route_families = {hierarchy.route_family for hierarchy in hierarchies.values()}
+    if baseline.route_family is not None and baseline.route_family not in route_families:
+        return False
+    provenance_endpoint = all_endpoints[baseline.endpoint_id]
+    provenance_hierarchy = path_hierarchy(
+        provenance_endpoint.path,
+        provenance_endpoint.path,
+        provenance_endpoint.resource.type,
+    )
+    if (
+        baseline.route_family is not None
+        and baseline.route_family != provenance_hierarchy.route_family
+    ):
+        return False
+    return not (
+        provenance_hierarchy.parent is not None
+        and provenance_hierarchy.parent.value is not None
+        and baseline.parent_value != provenance_hierarchy.parent.value
+    )
+
+
+def _opaque_reference(prefix: str, value: str) -> str:
+    return f"{prefix}-{stable_fingerprint({'value': value})[:16].upper()}"
+
+
+@dataclass
+class _ComparisonBaselineAccumulator:
+    actor_id: str
+    object_reference: str
+    parent_reference: str | None
+    resource_type: str | None
+    parent_resource_type: str | None
+    route_family: str | None
+    collection_route_family: str | None
+    operation: str | None
+    baseline_ids: set[str] = field(default_factory=set)
+    endpoint_ids: set[str] = field(default_factory=set)
+    supporting_relationship_ids: set[str] = field(default_factory=set)
+    observation_ids: set[str] = field(default_factory=set)
+
+
+def _canonical_comparison_baselines(
+    baselines: Sequence[ActorObjectBaseline],
+) -> list[ComparisonBaseline]:
+    """Merge corroborating edges without treating them as independent baselines."""
+
+    merged: dict[
+        tuple[str, str, str | None, str | None, str | None],
+        _ComparisonBaselineAccumulator,
+    ] = {}
+    for baseline in baselines:
+        object_reference = baseline.subject_resource_id or _opaque_reference(
+            "OBJ", baseline.requested_value
+        )
+        parent_reference = baseline.parent_resource_id
+        if parent_reference is None and baseline.parent_value is not None:
+            parent_reference = _opaque_reference("PARENT", baseline.parent_value)
+        key = (
+            baseline.actor,
+            object_reference,
+            parent_reference,
+            baseline.route_family,
+            baseline.collection_route_family,
+        )
+        entry = merged.setdefault(
+            key,
+            _ComparisonBaselineAccumulator(
+                actor_id=baseline.actor,
+                object_reference=object_reference,
+                parent_reference=parent_reference,
+                resource_type=baseline.subject_resource_type,
+                parent_resource_type=baseline.parent_resource_type,
+                route_family=baseline.route_family,
+                collection_route_family=baseline.collection_route_family,
+                operation=baseline.operation,
+            ),
+        )
+        if baseline.baseline_id is not None:
+            entry.baseline_ids.add(baseline.baseline_id)
+        if baseline.endpoint_id is not None:
+            entry.endpoint_ids.add(baseline.endpoint_id)
+        entry.supporting_relationship_ids.update(baseline.relationship_ids)
+        entry.observation_ids.update(baseline.observations)
+    return [
+        ComparisonBaseline(
+            actor_id=entry.actor_id,
+            object_reference=entry.object_reference,
+            parent_reference=entry.parent_reference,
+            resource_type=entry.resource_type,
+            parent_resource_type=entry.parent_resource_type,
+            route_family=entry.route_family,
+            collection_route_family=entry.collection_route_family,
+            operation=entry.operation,
+            baseline_ids=sorted(entry.baseline_ids),
+            endpoint_ids=sorted(entry.endpoint_ids),
+            supporting_relationship_ids=sorted(entry.supporting_relationship_ids),
+            observation_ids=sorted(entry.observation_ids),
+        )
+        for _, entry in sorted(merged.items())
+    ]
+
+
 def _mutation_target(record: HypothesisLike) -> MutationTargetAssessment:
     value = getattr(record, "mutation_target", None)
     return value if isinstance(value, MutationTargetAssessment) else MutationTargetAssessment()
+
+
+def cleanup_control_fingerprint(
+    record: HypothesisLike,
+    intent: DomainIntentAssessment,
+    mutation_target: MutationTargetAssessment,
+    source: Sequence[Endpoint],
+) -> str:
+    """Return the stable semantic identity used to bind reviewed cleanup controls."""
+
+    return stable_fingerprint(
+        {
+            "category": record.category,
+            "generation_rule": record.generation_rule.get("id", ""),
+            "methods": sorted(endpoint.method for endpoint in source),
+            "routes": sorted(endpoint.path for endpoint in source),
+            "subject": intent.subject_resource,
+            "parent": intent.parent_resource,
+            "operation": intent.operation,
+            "mutation_parameter": mutation_target.parameter,
+            "mutation_location": mutation_target.location,
+            "mutation_json_path": mutation_target.json_path,
+        }
+    )
+
+
+def cleanup_control_source_checksum(
+    target: TargetDocument,
+    observations: ObservationStore,
+    record: HypothesisLike,
+    intent: DomainIntentAssessment,
+    mutation_target: MutationTargetAssessment,
+    source: Sequence[Endpoint],
+) -> str:
+    """Bind a cleanup review to the current semantic target and relevant inputs."""
+
+    target_payload = target.model_dump(mode="json", exclude_none=True)
+    analysis = target_payload.get("analysis")
+    if isinstance(analysis, dict):
+        analysis["cleanup_controls"] = []
+    relevant_observation_ids = set(record.source.observations) | set(record.observations)
+    relevant_observation_ids.update(
+        observation_id for endpoint in source for observation_id in endpoint.sources
+    )
+    return stable_fingerprint(
+        {
+            "semantic_fingerprint": cleanup_control_fingerprint(
+                record, intent, mutation_target, source
+            ),
+            "target": target_payload,
+            "observations": [
+                item.model_dump(mode="json", exclude_none=True)
+                for item in observations.observations
+                if item.id in relevant_observation_ids
+            ],
+            "endpoints": [
+                item.model_dump(mode="json", exclude_none=True)
+                for item in sorted(source, key=lambda endpoint: endpoint.id)
+            ],
+        }
+    )
 
 
 def _state_changing(intent: DomainIntentAssessment) -> bool:
@@ -321,6 +560,7 @@ def build_record_readiness_context(
     )
     semantic_target_satisfied = (
         mutation_target.parameter is not None
+        and (mutation_target.location != "body" or mutation_target.json_path is not None)
         and mutation_target.semantics.semantic_class == IdentifierSemanticClass.OWNED_OBJECT
         and mutation_target.semantics.ownership_state
         not in {OwnershipState.SHARED, OwnershipState.CONTRADICTED}
@@ -346,11 +586,17 @@ def build_record_readiness_context(
         else [],
         missing=[
             (
-                f"Identifier is classified as "
-                f"{mutation_target.semantics.semantic_class.value}, therefore an owned-object "
-                "cross-account mutation is not constructable."
-                if mutation_target.parameter is not None
-                else "Identify the exact ownership-relevant mutation parameter."
+                "Ownership evidence for the owned-object mutation target is contradicted by "
+                "shared or public counterevidence."
+                if mutation_target.semantics.semantic_class == IdentifierSemanticClass.OWNED_OBJECT
+                and mutation_target.semantics.ownership_state == OwnershipState.CONTRADICTED
+                else (
+                    f"Identifier is classified as "
+                    f"{mutation_target.semantics.semantic_class.value}, therefore an "
+                    "owned-object cross-account mutation is not constructable."
+                    if mutation_target.parameter is not None
+                    else "Identify the exact ownership-relevant mutation parameter."
+                )
             )
         ],
         next_action=(
@@ -412,6 +658,7 @@ def build_record_readiness_context(
         ),
     )
 
+    source_hierarchies = _source_hierarchies(source, intent.subject_resource)
     matching_access = [
         access
         for endpoint in source
@@ -419,39 +666,78 @@ def build_record_readiness_context(
         if mutation_target.parameter is None
         or access.identifier.lower() == mutation_target.parameter.lower()
     ]
-    distinct_baselines = any(
-        access.actor_object_binding_observed
+    endpoint_by_id = {endpoint.id: endpoint for endpoint in endpoints}
+    candidate_baselines = [
+        _baseline_with_derived_provenance(baseline, endpoint_by_id)
+        for access in matching_access
+        if access.actor_object_binding_observed
         and access.source in {"CONTROLLED_LIFECYCLE", "RESPONSE_BODY"}
-        and access.distinct_actors >= 2
-        and access.distinct_objects >= 2
-        and len(access.baselines) >= 2
-        for access in matching_access
-    )
-    baseline_actors = {
-        baseline.actor
-        for access in matching_access
-        if access.source in {"CONTROLLED_LIFECYCLE", "RESPONSE_BODY"}
         for baseline in access.baselines
-    }
+    ]
+    eligible_baselines = [
+        baseline
+        for baseline in candidate_baselines
+        if _baseline_matches_hypothesis(
+            baseline,
+            source,
+            source_hierarchies,
+            endpoint_by_id,
+            intent,
+        )
+    ]
+    canonical_baselines = _canonical_comparison_baselines(eligible_baselines)
+    baseline_actors = {baseline.actor_id for baseline in canonical_baselines}
+    baseline_objects = {baseline.object_reference for baseline in canonical_baselines}
+    distinct_baselines = len(baseline_actors) >= actors_required and len(baseline_objects) >= 2
     controlled_actor_ids = [
         account.id for account in target.accounts if account.ownership == "researcher"
     ]
     missing_baseline_actors = sorted(set(controlled_actor_ids) - baseline_actors)
     controlled_baseline_evidence = [
         _evidence(
-            baseline.baseline_id or observation_id,
-            "WORKFLOW" if access.source == "CONTROLLED_LIFECYCLE" else "ENDPOINT",
+            (baseline.baseline_ids or baseline.observation_ids)[0],
+            "WORKFLOW" if baseline.baseline_ids else "ENDPOINT",
             (
-                f"Controlled {baseline.operation or 'resource'} baseline for {baseline.actor} "
-                "is backed by explicit lifecycle or owner-binding evidence."
+                f"Controlled {baseline.operation or 'resource'} baseline for "
+                f"{baseline.actor_id} is backed by explicit lifecycle or owner-binding "
+                f"evidence with {len(baseline.supporting_relationship_ids)} supporting "
+                f"relationship{'s' if len(baseline.supporting_relationship_ids) != 1 else ''}."
             ),
         )
-        for access in matching_access
-        if access.actor_object_binding_observed
-        and access.source in {"CONTROLLED_LIFECYCLE", "RESPONSE_BODY"}
-        for baseline in access.baselines
-        for observation_id in baseline.observations[:1]
+        for baseline in canonical_baselines
+        if baseline.baseline_ids or baseline.observation_ids
     ]
+    comparison_coverage = ComparisonCoverage(
+        required_distinct_actors=actors_required if ownership_required else 0,
+        observed_distinct_actors=len(baseline_actors),
+        distinct_controlled_objects=len(baseline_objects),
+        baseline_actor_ids=sorted(baseline_actors),
+        missing_actor_ids=missing_baseline_actors,
+        resource_type=intent.subject_resource,
+        route_families=sorted(
+            {hierarchy.collection_route_family for hierarchy in source_hierarchies.values()}
+        ),
+        parent_resource_type=intent.parent_resource,
+        baseline_ids=sorted(
+            {
+                baseline_id
+                for baseline in canonical_baselines
+                for baseline_id in baseline.baseline_ids
+            }
+        ),
+        evidence_references=sorted(
+            {
+                reference
+                for baseline in canonical_baselines
+                for reference in [
+                    *baseline.baseline_ids,
+                    *baseline.supporting_relationship_ids,
+                    *baseline.observation_ids,
+                ]
+            }
+        ),
+        baselines=canonical_baselines,
+    )
     all_runtime_ids = {
         item.id for item in observations.observations if item.source in RUNTIME_SOURCES
     }
@@ -521,6 +807,14 @@ def build_record_readiness_context(
         len(source) == len(set(record.source.endpoints))
         and bool(source and runtime_source_ids)
         and scope_satisfied
+        and (
+            not semantic_target_required
+            or (
+                mutation_target.location == "path"
+                and mutation_target.json_path is None
+                and mutation_target.parameter is not None
+            )
+        )
     )
     if rule.startswith("BUSINESS_LOGIC_SHADOW_ENDPOINT"):
         request_template_satisfied = False
@@ -537,6 +831,13 @@ def build_record_readiness_context(
         request_missing.append("Source endpoint hosts are not fully covered by target scope.")
     if rule.startswith("BUSINESS_LOGIC_SHADOW_ENDPOINT"):
         request_missing.append("The candidate method has not been observed at runtime.")
+    if semantic_target_required and mutation_target.parameter is None:
+        request_missing.append("The exact semantic mutation target could not be resolved.")
+    elif semantic_target_required and mutation_target.location != "path":
+        request_missing.append(
+            "The bounded runner supports exact path substitutions only; preserve this target "
+            "for manual review without guessing a request mutation."
+        )
     request_capability = _capability(
         CapabilityKind.REQUEST_TEMPLATE,
         satisfied=request_template_satisfied,
@@ -609,7 +910,10 @@ def build_record_readiness_context(
             f"the bounded plan requires {budget_required} request(s), but policy permits "
             f"{target.testing.maximum_requests_per_plan}."
         ],
-        next_action="Review the request budget without enabling active execution.",
+        next_action=(
+            "Review target.testing.maximum_requests_per_plan; do not change "
+            "active_execution_enabled or execution policy automatically."
+        ),
     )
 
     segmentation = _logic_capability(record, CapabilityKind.SEGMENTATION)
@@ -624,29 +928,81 @@ def build_record_readiness_context(
     )
 
     cleanup_required = state_changing
-    cleanup_satisfied = not cleanup_required or target.testing.synthetic or target.testing.local_lab
+    cleanup_fingerprint = cleanup_control_fingerprint(record, intent, mutation_target, source)
+    cleanup_source_checksum = cleanup_control_source_checksum(
+        target,
+        observations,
+        record,
+        intent,
+        mutation_target,
+        source,
+    )
+    cleanup_route_families = {
+        hierarchy.route_family for hierarchy in source_hierarchies.values()
+    } | {hierarchy.collection_route_family for hierarchy in source_hierarchies.values()}
+    matching_cleanup = next(
+        (
+            item
+            for item in target.analysis.cleanup_controls
+            if item.semantic_fingerprint == cleanup_fingerprint
+            and item.source_checksum == cleanup_source_checksum
+            and item.resource_type.casefold() == intent.subject_resource.casefold()
+            and item.route_family in cleanup_route_families
+            and _type_key(item.parent_resource_type) == _type_key(intent.parent_resource)
+            and set(item.actor_ids).issubset(set(controlled_actor_ids))
+            and baseline_actors.issubset(set(item.actor_ids))
+        ),
+        None,
+    )
+    cleanup_satisfied = (
+        not cleanup_required
+        or target.testing.synthetic
+        or target.testing.local_lab
+        or matching_cleanup is not None
+    )
     logic_cleanup = _logic_capability(record, CapabilityKind.CLEANUP)
     if logic_cleanup is not None and cleanup_required:
         cleanup_satisfied = cleanup_satisfied and logic_cleanup.satisfied
+    cleanup_evidence: list[DecisionEvidence] = []
+    if matching_cleanup is not None:
+        cleanup_evidence.append(
+            _evidence(
+                matching_cleanup.semantic_fingerprint,
+                "TARGET_POLICY",
+                f"Reviewed cleanup strategy is {matching_cleanup.strategy}.",
+            )
+        )
+        cleanup_evidence.extend(
+            _evidence(
+                reference,
+                "TARGET_POLICY",
+                "Reviewed cleanup or authoritative-oracle evidence reference.",
+            )
+            for reference in [
+                *matching_cleanup.resource_refs,
+                *matching_cleanup.oracle_refs,
+            ]
+        )
+    if (target.testing.synthetic or target.testing.local_lab) and cleanup_required:
+        cleanup_evidence.append(
+            _evidence(
+                "target.testing",
+                "TARGET_POLICY",
+                "The target is configured as a synthetic or local-lab environment.",
+            )
+        )
     cleanup_capability = _capability(
         CapabilityKind.CLEANUP,
         required=cleanup_required,
         satisfied=cleanup_satisfied,
         stage=BlockerStage.PLAN_CONSTRUCTABILITY,
         summary="State-changing tests require rollback, cleanup, or disposable-resource controls.",
-        evidence=(
-            [
-                _evidence(
-                    "target.testing",
-                    "TARGET_POLICY",
-                    "The target is configured as a synthetic or local-lab environment.",
-                )
-            ]
-            if cleanup_satisfied and cleanup_required
-            else []
-        ),
+        evidence=cleanup_evidence,
         missing=["Define a rollback, cleanup, or disposable-resource strategy."],
-        next_action="Document the cleanup or disposable-resource strategy before planning.",
+        next_action=(
+            "Add analysis.cleanup_controls with semantic_fingerprint "
+            f"{cleanup_fingerprint} and source_checksum {cleanup_source_checksum}."
+        ),
     )
 
     warnings = [
@@ -710,6 +1066,7 @@ def build_record_readiness_context(
             segmentation_capability,
             cleanup_capability,
         ),
+        comparison_coverage=comparison_coverage,
         warnings=tuple(warnings),
     )
 

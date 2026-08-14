@@ -307,6 +307,8 @@ class WebOperations:
                 "invariants": result.invariants,
                 "active_hypotheses": result.active_hypotheses,
                 "research_tasks": result.research_tasks,
+                "raw_active_hypotheses": result.raw_active_hypotheses,
+                "raw_research_tasks": result.raw_research_tasks,
                 "conflicts": list(result.conflicts),
             }
         else:

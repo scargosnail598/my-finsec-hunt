@@ -11,9 +11,9 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from finsec.config.workspace import WorkspacePaths
-from finsec.hypotheses.clustering import presentation_visible
 from finsec.hypotheses.domain import HypothesisRecord, HypothesisStore
 from finsec.hypotheses.generator import load_hypotheses
+from finsec.hypotheses.population import hypothesis_population
 from finsec.utils.yaml_store import load_yaml
 
 POPULATION_POLICY: Literal["ALL_BACKLOG_RECORDS_COMMON_PRESENTATION_V1"] = (
@@ -151,7 +151,7 @@ def _grouping_provenance_loss(store: HypothesisStore) -> int:
 def _snapshot_details(workspace: WorkspacePaths) -> _SnapshotDetails:
     store = load_hypotheses(workspace)
     records = sorted(store.hypotheses, key=lambda item: item.id)
-    visible = [record for record in records if presentation_visible(record)]
+    visible = list(hypothesis_population(records).visible_records)
     visible_ids = {record.id for record in visible}
     suppressed = [record for record in records if record.id not in visible_ids]
     suppressed_ids = {record.id for record in suppressed}
