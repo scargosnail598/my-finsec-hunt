@@ -31,6 +31,7 @@ from finsec.modeling.models import (
     Observation,
     ObservationStore,
 )
+from finsec.modeling.parameter_identity import parameter_identities_match
 from finsec.modeling.semantics import object_candidate
 from finsec.readiness.provenance import hypothesis_source_fingerprint, record_stage_provenance
 from finsec.utils.yaml_store import load_yaml, write_yaml
@@ -1626,11 +1627,17 @@ def _drafts(
                 (
                     item
                     for item in endpoint.parameters
-                    if item.name == parameter_terminal
-                    and (requested_location is None or item.location == requested_location)
-                    and (
-                        item.json_path is None
-                        or item.json_path.removeprefix("$.").replace("[*]", "[]") == parameter
+                    if (
+                        parameter_identities_match(
+                            evidence_location=item.location,
+                            evidence_json_path=item.json_path,
+                            evidence_name=item.name,
+                            target_location=requested_location,
+                            target_json_path=(parameter if requested_location == "body" else None),
+                            target_name=parameter_terminal,
+                        )
+                        if requested_location is not None
+                        else item.location == "path" and item.name == parameter_terminal
                     )
                     and object_candidate(item.identifier_semantics)
                 ),
@@ -1640,7 +1647,16 @@ def _drafts(
                 (
                     item
                     for item in endpoint.object_access
-                    if item.identifier == parameter_terminal and item.actor_object_binding_observed
+                    if parameter_record is not None
+                    and parameter_identities_match(
+                        evidence_location=item.parameter_location,
+                        evidence_json_path=item.parameter_json_path,
+                        evidence_name=item.identifier,
+                        target_location=parameter_record.location,
+                        target_json_path=parameter_record.json_path,
+                        target_name=parameter_record.name,
+                    )
+                    and item.actor_object_binding_observed
                 ),
                 None,
             )

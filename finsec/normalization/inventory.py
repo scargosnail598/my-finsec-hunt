@@ -692,6 +692,7 @@ def _response_object_access_evidence(
         evidence.append(
             ObjectAccessEvidence(
                 identifier=identifier,
+                parameter_location="path",
                 source="RESPONSE_BODY",
                 confidence=Confidence.HIGH,
                 owner_field_path=owner_path,

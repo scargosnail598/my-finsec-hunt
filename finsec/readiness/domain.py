@@ -248,6 +248,9 @@ class ReadinessMetrics(ReadinessModel):
     logic_hypotheses: int = 0
     logic_research_tasks: int = 0
     plans: int = 0
+    current_ready_plans: int = 0
+    current_blocked_plans: int = 0
+    stale_plans: int = 0
     executions: int = 0
     evidence_sets: int = 0
     validations: int = 0

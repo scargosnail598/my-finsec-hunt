@@ -674,6 +674,7 @@ def _endpoint_summary(item: Endpoint) -> dict[str, Any]:
             {
                 "name": parameter.name,
                 "location": parameter.location,
+                "json_path": parameter.json_path,
                 "inferred_type": parameter.inferred_type,
                 "semantic_type": parameter.semantic_type,
                 "client_controlled": parameter.client_controlled,
@@ -685,6 +686,8 @@ def _endpoint_summary(item: Endpoint) -> dict[str, Any]:
         "ownership_signals": [
             {
                 "identifier": signal.identifier,
+                "parameter_location": signal.parameter_location,
+                "parameter_json_path": signal.parameter_json_path,
                 "source": signal.source,
                 "distinct_actors": signal.distinct_actors,
                 "distinct_objects": signal.distinct_objects,

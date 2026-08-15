@@ -18,6 +18,7 @@ from finsec.hypotheses.contracts import (
     VisibilityIntent,
 )
 from finsec.modeling.models import Endpoint
+from finsec.modeling.parameter_identity import parameter_identities_match
 from finsec.modeling.semantics import IdentifierSemanticClass, OwnershipState
 from finsec.normalization.path_semantics import (
     path_resource_semantics,
@@ -361,7 +362,11 @@ def assess_domain_intent(
             if (
                 mutation_target is not None
                 and mutation_target.parameter is not None
-                and _normalized(decision.parameter) != _normalized(mutation_target.parameter)
+                and (
+                    mutation_target.location != "path"
+                    or mutation_target.json_path is not None
+                    or _normalized(decision.parameter) != _normalized(mutation_target.parameter)
+                )
             ):
                 continue
             if decision.classification == "PUBLIC_SHARED_SCOPE":
@@ -376,7 +381,14 @@ def assess_domain_intent(
             if (
                 mutation_target is not None
                 and mutation_target.parameter is not None
-                and _normalized(access.identifier) != _normalized(mutation_target.parameter)
+                and not parameter_identities_match(
+                    evidence_location=access.parameter_location,
+                    evidence_json_path=access.parameter_json_path,
+                    evidence_name=access.identifier,
+                    target_location=mutation_target.location,
+                    target_json_path=mutation_target.json_path,
+                    target_name=mutation_target.parameter,
+                )
             ):
                 continue
             if not access.actor_object_binding_observed:

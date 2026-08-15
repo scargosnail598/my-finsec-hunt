@@ -447,14 +447,40 @@ def inspect_plan_alignment(workspace: WorkspacePaths, hypothesis_id: str) -> Pla
     """Assess planner/readiness agreement without writing a plan or lifecycle state."""
 
     target, observations, endpoints, resources, hypothesis = _load_inputs(workspace, hypothesis_id)
-    draft = _draft(workspace, target, observations, endpoints, resources, hypothesis)
-    assessment = HypothesisReadinessAssessment.model_validate(draft["readiness_assessment"])
-    violation = draft.get("readiness_invariant_violation")
+    return inspect_plan_alignment_from_inputs(
+        target,
+        observations,
+        endpoints,
+        resources,
+        hypothesis,
+    )
+
+
+def inspect_plan_alignment_from_inputs(
+    target: TargetDocument,
+    observations: ObservationStore,
+    endpoints: EndpointStore,
+    resources: ResourceStore,
+    hypothesis: HypothesisRecord,
+) -> PlanAlignment:
+    """Assess planner/readiness agreement from already-loaded immutable inputs."""
+
+    assessment = _readiness_assessment(target, observations, endpoints, resources, hypothesis)
+    plan_status = "BLOCKED" if readiness_blocking_issues(assessment) else "READY_FOR_REVIEW"
+    readiness_consistent = hypothesis.readiness == assessment.readiness and not (
+        hypothesis.readiness == "TEST_READY" and plan_status == "BLOCKED"
+    )
+    violation = None
+    if not readiness_consistent:
+        violation = (
+            f"Persisted readiness is {hypothesis.readiness}, canonical readiness is "
+            f"{assessment.readiness}, and planner status is {plan_status}."
+        )
     return PlanAlignment(
         readiness=assessment,
-        plan_status=str(draft["status"]),
-        agrees=bool(draft["readiness_consistent"]),
-        violation=str(violation) if violation is not None else None,
+        plan_status=plan_status,
+        agrees=readiness_consistent,
+        violation=violation,
     )
 
 

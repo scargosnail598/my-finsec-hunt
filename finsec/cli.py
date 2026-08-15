@@ -2329,7 +2329,10 @@ def explain_endpoint_command(
             details.extend(
                 [
                     f"- Evidence: {label}",
-                    f"- Parameter: {binding.identifier}",
+                    (
+                        f"- Parameter: {binding.parameter_location or 'legacy-path'}:"
+                        f"{binding.parameter_json_path or binding.identifier}"
+                    ),
                     f"- Controlled actors: {binding.distinct_actors}",
                     (
                         f"- Distinct scoped values: {binding.distinct_scope_values}"
@@ -3612,6 +3615,9 @@ def status_command(
         ("Raw Active Hypotheses", report.metrics.raw_active_hypotheses),
         ("Raw Research Tasks", report.metrics.raw_research_tasks),
         ("Suppressed Endpoints", report.metrics.suppressed_endpoints),
+        ("Current Ready Plans", report.metrics.current_ready_plans),
+        ("Current Blocked Plans", report.metrics.current_blocked_plans),
+        ("Stale Plans", report.metrics.stale_plans),
         ("Evidence Sets", report.metrics.evidence_sets),
         ("Validations", report.metrics.validations),
         ("Reports", report.metrics.reports),

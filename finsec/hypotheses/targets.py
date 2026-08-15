@@ -2,16 +2,15 @@
 
 from __future__ import annotations
 
-import re
-
 from finsec.hypotheses.contracts import MutationTargetAssessment
 from finsec.hypotheses.domain import HypothesisRecord
 from finsec.modeling.models import Endpoint, EndpointParameter
+from finsec.modeling.parameter_identity import (
+    normalize_json_path,
+    normalize_parameter_name,
+    parameter_identities_match,
+)
 from finsec.modeling.semantics import IdentifierSemanticClass
-
-
-def _normalized(value: str) -> str:
-    return re.sub(r"[^a-z0-9]", "", value.lower())
 
 
 def _key_target(record: HypothesisRecord) -> tuple[str | None, str | None, bool]:
@@ -56,25 +55,32 @@ def _candidate_parameters(
         return []
     if requested is None:
         return []
-    requested_key = _normalized(requested.rsplit(".", 1)[-1])
+    requested_key = normalize_parameter_name(requested.rsplit(".", 1)[-1])
     candidates = [
         (endpoint, parameter)
         for endpoint in endpoints
         for parameter in endpoint.parameters
         if parameter.source == "request" and parameter.client_controlled
     ]
-    if requested_location is not None:
-        candidates = [item for item in candidates if item[1].location == requested_location]
-    exact_path = [
-        item
-        for item in candidates
-        if item[1].json_path is not None
-        and item[1].json_path.removeprefix("$.").replace("[*]", "[]").casefold()
-        == requested.casefold()
-    ]
-    if exact_path:
-        return exact_path
-    exact = [item for item in candidates if _normalized(item[1].name) == requested_key]
+    if requested_location is None:
+        candidates = [item for item in candidates if item[1].location == "path"]
+    else:
+        exact_identity = [
+            item
+            for item in candidates
+            if parameter_identities_match(
+                evidence_location=item[1].location,
+                evidence_json_path=item[1].json_path,
+                evidence_name=item[1].name,
+                target_location=requested_location,
+                target_json_path=requested if requested_location == "body" else None,
+                target_name=requested.rsplit(".", 1)[-1],
+            )
+        ]
+        if exact_identity:
+            return exact_identity
+        return []
+    exact = [item for item in candidates if normalize_parameter_name(item[1].name) == requested_key]
     if len(exact) == 1 and (legacy or "." not in requested):
         return exact
     return []
@@ -111,6 +117,7 @@ def resolve_mutation_target(
             0 if item[0].id in record.source.endpoints else 1,
             item[0].id,
             item[1].location,
+            normalize_json_path(item[1].json_path) or "",
             item[1].name,
         ),
     )
@@ -119,16 +126,21 @@ def resolve_mutation_target(
         {
             item.id
             for item, candidate in ordered
-            if candidate.location == parameter.location
-            and candidate.json_path == parameter.json_path
-            and _normalized(candidate.name) == _normalized(parameter.name)
+            if parameter_identities_match(
+                evidence_location=candidate.location,
+                evidence_json_path=candidate.json_path,
+                evidence_name=candidate.name,
+                target_location=parameter.location,
+                target_json_path=parameter.json_path,
+                target_name=parameter.name,
+            )
         }
     )
     semantics = parameter.identifier_semantics
     return MutationTargetAssessment(
         parameter=parameter.name,
         location=parameter.location,
-        json_path=parameter.json_path,
+        json_path=normalize_json_path(parameter.json_path),
         endpoint_ids=matching_endpoint_ids or [endpoint.id],
         semantics=semantics,
         expected_authorization_relationship=_authorization_relationship(semantics.semantic_class),

@@ -26,6 +26,7 @@ from finsec.hypotheses.population import hypothesis_population
 from finsec.modeling.domain import ActorStore, InvariantStore, ResourceStore
 from finsec.modeling.merge import stable_fingerprint
 from finsec.modeling.models import EndpointStore, ObservationStore
+from finsec.modeling.parameter_identity import parameter_identities_match
 from finsec.readiness.domain import (
     PIPELINE_ORDER,
     ActorCapabilities,
@@ -61,7 +62,7 @@ from finsec.readiness.provenance import (
     validation_source_fingerprint,
 )
 from finsec.testing.domain import TestPlanRecord, TestPlanStore
-from finsec.testing.planner import inspect_plan_alignment, plan_source_fingerprint
+from finsec.testing.planner import inspect_plan_alignment_from_inputs, plan_source_fingerprint
 from finsec.utils.yaml_store import load_yaml
 from finsec.validation.domain import ValidationRecord, ValidationStore
 
@@ -720,22 +721,28 @@ def _authorization_ownership_blockers(
         return []
     by_id = {item.id: item for item in endpoints.endpoints}
     selected = [by_id[item] for item in hypothesis.source.endpoints if item in by_id]
-    actor_ids = sorted(
-        {
-            baseline.actor
-            for endpoint in selected
-            for binding in endpoint.object_access
-            for baseline in binding.baselines
-        }
-    )
-    applicable = any(
-        binding.actor_object_binding_observed
+    target = hypothesis.mutation_target
+    matching_bindings = [
+        binding
         for endpoint in selected
         for binding in endpoint.object_access
+        if target.parameter is not None
+        and parameter_identities_match(
+            evidence_location=binding.parameter_location,
+            evidence_json_path=binding.parameter_json_path,
+            evidence_name=binding.identifier,
+            target_location=target.location,
+            target_json_path=target.json_path,
+            target_name=target.parameter,
+        )
+    ]
+    actor_ids = sorted(
+        {baseline.actor for binding in matching_bindings for baseline in binding.baselines}
     )
+    applicable = any(binding.actor_object_binding_observed for binding in matching_bindings)
     if applicable:
         return []
-    conflicting = any(
+    conflicting = target.location == "path" and any(
         "conflict" in reason.lower()
         for endpoint in selected
         for decision in endpoint.ownership_inference
@@ -779,6 +786,8 @@ def _mapped_plan_blockers(
     workspace: WorkspacePaths,
     hypothesis: HypothesisRecord,
     plan: TestPlanRecord,
+    *,
+    stage: PipelineStage = PipelineStage.EXECUTE,
 ) -> list[ReadinessBlocker]:
     result: list[ReadinessBlocker] = []
     reasons = [*plan.risk.reasons, *plan.execution.blockers]
@@ -799,7 +808,7 @@ def _mapped_plan_blockers(
         result.append(
             _blocker(
                 code,
-                PipelineStage.EXECUTE,
+                stage,
                 "The current plan is blocked by a safety or evidence policy.",
                 scope=BlockerScope(
                     workspace=workspace.root.name,
@@ -1730,9 +1739,20 @@ def resolve_workspace_readiness(
                 stale_plans.append(plan_record)
     actionable_hypotheses: list[HypothesisRecord] = []
     hypothesis_plan_blockers: list[ReadinessBlocker] = []
-    if hypothesis_stage.status == LifecycleStatus.COMPLETE:
+    if (
+        hypothesis_stage.status == LifecycleStatus.COMPLETE
+        and observations is not None
+        and endpoints is not None
+        and resources is not None
+    ):
         for item in active_hypotheses:
-            alignment = inspect_plan_alignment(paths, item.id)
+            alignment = inspect_plan_alignment_from_inputs(
+                target,
+                observations,
+                endpoints,
+                resources,
+                item,
+            )
             if alignment.readiness.actionable_plan and alignment.plan_status == "READY_FOR_REVIEW":
                 actionable_hypotheses.append(item)
                 continue
@@ -1776,6 +1796,8 @@ def resolve_workspace_readiness(
         )
         for item in actionable_hypotheses[:3]
     ]
+    current_ready_plans = [item for item in current_plans if item.status == "READY_FOR_REVIEW"]
+    current_blocked_plans = [item for item in current_plans if item.status == "BLOCKED"]
     plan_blockers: list[ReadinessBlocker] = []
     plan_warnings: list[ReadinessBlocker] = []
     if hypothesis_stage.status != LifecycleStatus.COMPLETE:
@@ -1793,16 +1815,34 @@ def resolve_workspace_readiness(
         plan_status = LifecycleStatus.BLOCKED
         plan_blockers.append(_artifact_failure_blocker(paths, PipelineStage.PLAN, plans_loaded))
     elif current_plans:
-        review_ready_plans = [item for item in current_plans if item.status == "READY_FOR_REVIEW"]
-        blocked_current_plans = [item for item in current_plans if item.status == "BLOCKED"]
-        if review_ready_plans:
-            plan_status = LifecycleStatus.COMPLETE
-        else:
+        if current_blocked_plans:
             plan_status = LifecycleStatus.BLOCKED
-            for blocked_plan in blocked_current_plans:
+            for blocked_plan in current_blocked_plans:
                 hypothesis = hypothesis_by_id.get(blocked_plan.hypothesis_id)
                 if hypothesis is not None:
-                    plan_blockers.extend(_mapped_plan_blockers(paths, hypothesis, blocked_plan))
+                    mapped = _mapped_plan_blockers(
+                        paths,
+                        hypothesis,
+                        blocked_plan,
+                        stage=PipelineStage.PLAN,
+                    )
+                    plan_blockers.extend(
+                        mapped
+                        or [
+                            _blocker(
+                                BlockerCode.PLAN_POLICY_BLOCKED,
+                                PipelineStage.PLAN,
+                                "A current plan is blocked by its canonical planning policy.",
+                                scope=BlockerScope(
+                                    workspace=paths.root.name,
+                                    hypothesis_id=hypothesis.id,
+                                    plan_id=blocked_plan.id,
+                                ),
+                            )
+                        ]
+                    )
+        else:
+            plan_status = LifecycleStatus.COMPLETE
         for stale_plan in stale_plans:
             plan_warnings.append(
                 _blocker(
@@ -1893,7 +1933,7 @@ def resolve_workspace_readiness(
         PipelineStage.PLAN,
         plan_status,
         {
-            LifecycleStatus.COMPLETE: "At least one current policy-checked plan exists.",
+            LifecycleStatus.COMPLETE: "All current policy-checked plans are ready for review.",
             LifecycleStatus.READY: "An eligible hypothesis is ready for planning.",
             LifecycleStatus.STALE: "Existing plans no longer match current inputs.",
         }.get(plan_status, "Planning is blocked by evidence or artifact prerequisites."),
@@ -2340,6 +2380,9 @@ def resolve_workspace_readiness(
         if hypotheses
         else 0,
         plans=len(plans.plans) if plans else 0,
+        current_ready_plans=len(current_ready_plans),
+        current_blocked_plans=len(current_blocked_plans),
+        stale_plans=len(stale_plans),
         executions=len(audits),
         evidence_sets=len(evidence_sets),
         validations=len(validations.validations) if validations else 0,

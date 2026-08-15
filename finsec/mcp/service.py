@@ -799,6 +799,7 @@ class FinsecMcpService:
                 EndpointParameterContext(
                     name=self.sanitizer.identifier(item.name),
                     location=item.location,
+                    json_path=item.json_path,
                     inferred_type=item.inferred_type,
                     semantic_type=item.semantic_type,
                     client_controlled=item.client_controlled,
@@ -819,6 +820,8 @@ class FinsecMcpService:
             object_access=[
                 ObjectAccessContext(
                     identifier=self.sanitizer.identifier(item.identifier),
+                    parameter_location=item.parameter_location,
+                    parameter_json_path=item.parameter_json_path,
                     source=item.source,
                     confidence=str(item.confidence),
                     owner_field_path=(
@@ -844,7 +847,14 @@ class FinsecMcpService:
                         }
                     ),
                 )
-                for item in sorted(endpoint.object_access, key=lambda item: item.identifier)
+                for item in sorted(
+                    endpoint.object_access,
+                    key=lambda item: (
+                        item.parameter_location or "",
+                        item.parameter_json_path or "",
+                        item.identifier,
+                    ),
+                )
             ],
             ownership_inference=[
                 OwnershipInferenceContext(

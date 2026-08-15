@@ -224,7 +224,12 @@ def classify_identifier_semantics(
     evidence: list[str] = []
     counterevidence: list[str] = []
     sources: list[str] = []
-    structural = structural_parameter_role(path, parameter.name, endpoint_resource)
+    is_path_parameter = parameter.location == "path"
+    structural = (
+        structural_parameter_role(path, parameter.name, endpoint_resource)
+        if is_path_parameter
+        else StructuralParameterRole(IdentifierResourceRole.UNKNOWN, None, None)
+    )
     resource_type = structural.resource_type or _named_resource(parameter.name, endpoint_resource)
     semantic_class = IdentifierSemanticClass.OPAQUE_UNKNOWN
     resource_role = structural.role
@@ -279,7 +284,14 @@ def classify_identifier_semantics(
             confidence = "high"
             evidence.append("Target policy or parameter semantics classify this as shared scope.")
             sources.append("TARGET_POLICY")
-        elif normalized in configured_parents or structural.role == IdentifierResourceRole.PARENT:
+        elif normalized in configured_parents:
+            semantic_class = IdentifierSemanticClass.PARENT_CONTAINER
+            resource_role = IdentifierResourceRole.PARENT
+            ownership_state = OwnershipState.WEAK_INFERRED
+            confidence = "medium"
+            evidence.append("Target policy classifies this exact parameter name as a parent.")
+            sources.append("TARGET_POLICY")
+        elif structural.role == IdentifierResourceRole.PARENT:
             semantic_class = IdentifierSemanticClass.PARENT_CONTAINER
             resource_role = IdentifierResourceRole.PARENT
             ownership_state = OwnershipState.WEAK_INFERRED
@@ -296,11 +308,18 @@ def classify_identifier_semantics(
                 resource_role = IdentifierResourceRole.SUBJECT
             ownership_state = OwnershipState.UNKNOWN
             confidence = "medium"
-            evidence.append(
-                "Parameter selects the endpoint subject or nested child object, so it is an "
-                "object-identifier candidate; ownership requires independent evidence."
-            )
-            sources.append("PATH_STRUCTURE")
+            if is_path_parameter:
+                evidence.append(
+                    "Parameter selects the endpoint subject or nested child object, so it is an "
+                    "object-identifier candidate; ownership requires independent evidence."
+                )
+                sources.append("PATH_STRUCTURE")
+            else:
+                evidence.append(
+                    "The exact non-path field is an object-identifier candidate; ownership "
+                    "requires evidence bound to this location and JSON path."
+                )
+                sources.append("PARAMETER_FIELD")
         elif normalized in SHARED_NAMES:
             semantic_class = IdentifierSemanticClass.OPAQUE_UNKNOWN
             confidence = "low"
@@ -315,9 +334,13 @@ def classify_identifier_semantics(
             sources.append("PATH_STRUCTURE")
 
     controlled = {item.id for item in target.accounts if item.ownership == "researcher"}
-    actor_values, value_actors, observation_ids = _actor_value_evidence(
-        path, parameter.name, observations, controlled
-    )
+    actor_values: dict[str, set[str]] = {}
+    value_actors: dict[str, set[str]] = {}
+    observation_ids: list[str] = []
+    if is_path_parameter:
+        actor_values, value_actors, observation_ids = _actor_value_evidence(
+            path, parameter.name, observations, controlled
+        )
     if observation_ids:
         sources.append("NORMAL_BEHAVIOR")
     shared_values = sorted(value for value, actors in value_actors.items() if len(actors) >= 2)
@@ -354,8 +377,10 @@ def classify_identifier_semantics(
             ownership_state = OwnershipState.WEAK_INFERRED
             confidence = "medium"
 
-    rejected_cross_actor = _cross_actor_rejections(
-        path, parameter.name, observations, controlled, value_actors
+    rejected_cross_actor = (
+        _cross_actor_rejections(path, parameter.name, observations, controlled, value_actors)
+        if is_path_parameter
+        else []
     )
     if rejected_cross_actor:
         counterevidence.append(

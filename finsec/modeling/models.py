@@ -240,6 +240,18 @@ class ObjectAccessEvidence(StrictModel):
     """Cross-actor object and owner signals for one client-controlled identifier."""
 
     identifier: str
+    parameter_location: (
+        Literal[
+            "path",
+            "query",
+            "body",
+            "header",
+            "cookie",
+            "graphql_variable",
+        ]
+        | None
+    ) = None
+    parameter_json_path: str | None = None
     source: OwnershipEvidenceSource = "RESPONSE_BODY"
     confidence: Confidence = Confidence.HIGH
     owner_field_path: str | None = None

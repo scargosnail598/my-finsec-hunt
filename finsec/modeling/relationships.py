@@ -27,6 +27,7 @@ from finsec.modeling.models import (
     ObjectAccessEvidence,
     ObservationStore,
 )
+from finsec.modeling.parameter_identity import parameter_identities_match
 from finsec.modeling.semantics import IdentifierSemanticClass, OwnershipState
 from finsec.normalization.ownership import classify_ownership_scope_parameter
 from finsec.normalization.path_semantics import (
@@ -1353,6 +1354,7 @@ def controlled_binding_for_endpoint(
     parent_ids = {item.parent_resource_id for item in candidates if item.parent_resource_id}
     return ObjectAccessEvidence(
         identifier=wanted_identifier,
+        parameter_location="path",
         source="CONTROLLED_LIFECYCLE",
         confidence=Confidence.HIGH,
         baselines=baselines,
@@ -1398,7 +1400,14 @@ def project_controlled_ownership(
                 (
                     item
                     for item in retained
-                    if item.identifier == endpoint_parameter.name
+                    if parameter_identities_match(
+                        evidence_location=item.parameter_location,
+                        evidence_json_path=item.parameter_json_path,
+                        evidence_name=item.identifier,
+                        target_location=endpoint_parameter.location,
+                        target_json_path=endpoint_parameter.json_path,
+                        target_name=endpoint_parameter.name,
+                    )
                     and item.actor_object_binding_observed
                     and item.source in {"CONTROLLED_LIFECYCLE", "RESPONSE_BODY"}
                 ),
@@ -1507,7 +1516,13 @@ def project_controlled_ownership(
             endpoint.model_copy(
                 update={
                     "object_access": sorted(
-                        retained, key=lambda item: (item.identifier, item.source)
+                        retained,
+                        key=lambda item: (
+                            item.parameter_location or "",
+                            item.parameter_json_path or "",
+                            item.identifier,
+                            item.source,
+                        ),
                     ),
                     "parameters": updated_parameters,
                 }

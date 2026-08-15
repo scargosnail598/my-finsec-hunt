@@ -16,6 +16,7 @@ from finsec.modeling.models import (
     Observation,
     ObservationStore,
 )
+from finsec.modeling.parameter_identity import parameter_identities_match
 from finsec.modeling.semantics import execution_ownership_supported
 from finsec.testing.domain import (
     PlanExecutionConfig,
@@ -327,7 +328,14 @@ def _object_substitution(
             for item in endpoint.object_access
             if item.actor_object_binding_observed
             and mutation_target.parameter is not None
-            and item.identifier.lower() == mutation_target.parameter.lower()
+            and parameter_identities_match(
+                evidence_location=item.parameter_location,
+                evidence_json_path=item.parameter_json_path,
+                evidence_name=item.identifier,
+                target_location=mutation_target.location,
+                target_json_path=mutation_target.json_path,
+                target_name=mutation_target.parameter,
+            )
         ),
         None,
     )

@@ -24,6 +24,7 @@ from finsec.hypotheses.generator import find_hypothesis
 from finsec.modeling.domain import ResourceStore
 from finsec.modeling.merge import stable_fingerprint
 from finsec.modeling.models import Endpoint, EndpointStore, ObservationStore
+from finsec.modeling.parameter_identity import parameter_identities_match
 from finsec.modeling.semantics import execution_ownership_supported
 from finsec.testing.domain import PlanApproval, StructuredRequest, TestPlanRecord, TestPlanStore
 from finsec.testing.planner import plan_source_fingerprint
@@ -333,6 +334,8 @@ def _validate_object_binding(
     semantic_target = hypothesis.mutation_target
     if (
         semantic_target.parameter is None
+        or semantic_target.location != "path"
+        or semantic_target.json_path is not None
         or mutation.parameter.lower() != semantic_target.parameter.lower()
         or not execution_ownership_supported(semantic_target.semantics)
     ):
@@ -343,7 +346,14 @@ def _validate_object_binding(
         (
             item
             for item in endpoint.object_access
-            if item.identifier.lower() == mutation.parameter.lower()
+            if parameter_identities_match(
+                evidence_location=item.parameter_location,
+                evidence_json_path=item.parameter_json_path,
+                evidence_name=item.identifier,
+                target_location=semantic_target.location,
+                target_json_path=semantic_target.json_path,
+                target_name=semantic_target.parameter,
+            )
             and item.actor_object_binding_observed
         ),
         None,

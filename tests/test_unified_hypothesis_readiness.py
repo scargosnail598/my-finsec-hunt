@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
@@ -11,8 +12,11 @@ from finsec.config.models import CleanupControlRule, TargetDocument
 from finsec.config.workspace import WorkspacePaths, create_workspace
 from finsec.hypotheses.clustering import finalize_hypothesis_store, presentation_visible
 from finsec.hypotheses.contracts import (
+    BlockerStage,
     CapabilityKind,
+    ClaimStrengthAssessment,
     ClaimStrengthLevel,
+    DomainIntentAssessment,
     HypothesisReadinessAssessment,
 )
 from finsec.hypotheses.domain import (
@@ -485,7 +489,7 @@ def test_matching_typed_provenance_satisfies_two_actor_comparison_coverage() -> 
     assert baseline.satisfied is True
 
 
-def test_legacy_baseline_from_another_controlled_parent_in_same_family_counts() -> None:
+def test_legacy_baseline_from_another_controlled_parent_fails_closed() -> None:
     endpoint = _endpoint(
         "EP-DNS-A",
         path="/cdn/4.0/domains/example-a.test/dns-records/{dnsRecordId}",
@@ -510,13 +514,9 @@ def test_legacy_baseline_from_another_controlled_parent_in_same_family_counts() 
         provenance_endpoints=[provenance_endpoint],
     )
 
-    assert assessment.comparison_coverage.observed_distinct_actors == 1
-    assert assessment.comparison_coverage.baseline_actor_ids == ["ACCOUNT_1"]
-    assert assessment.comparison_coverage.missing_actor_ids == ["ACCOUNT_2"]
-    baseline = assessment.comparison_coverage.baselines[0]
-    assert baseline.resource_type == "DnsRecord"
-    assert baseline.parent_resource_type == "Domain"
-    assert baseline.parent_reference is not None
+    assert assessment.comparison_coverage.observed_distinct_actors == 0
+    assert assessment.comparison_coverage.baseline_actor_ids == []
+    assert assessment.comparison_coverage.missing_actor_ids == ["ACCOUNT_1", "ACCOUNT_2"]
 
 
 def test_baseline_parent_value_must_match_its_provenance_endpoint() -> None:
@@ -833,6 +833,26 @@ def test_typed_cleanup_control_matches_canonical_family_and_stales_on_source_cha
         resource="DnsRecord",
         observations=("OBS-2",),
     )
+    controlled_baseline = _typed_baseline(
+        mutation,
+        actor="ACCOUNT_1",
+        object_id="CONTROLLED",
+    )
+    mutation = mutation.model_copy(
+        update={
+            "object_access": [
+                ObjectAccessEvidence(
+                    identifier=mutation.parameters[0].name,
+                    parameter_location="path",
+                    source="CONTROLLED_LIFECYCLE",
+                    baselines=[controlled_baseline],
+                    distinct_actors=1,
+                    distinct_objects=1,
+                    actor_object_binding_observed=True,
+                )
+            ]
+        }
+    )
     record = _record(
         "HYP-001",
         mutation,
@@ -956,6 +976,220 @@ def test_typed_cleanup_control_matches_canonical_family_and_stales_on_source_cha
         item for item in stale.capabilities if item.capability == CapabilityKind.CLEANUP
     )
     assert stale_cleanup.satisfied is False
+
+
+@dataclass(frozen=True)
+class _CleanupCase:
+    target: TargetDocument
+    observations: ObservationStore
+    endpoints: list[Endpoint]
+    record: HypothesisRecord
+    intent: DomainIntentAssessment
+    claim: ClaimStrengthAssessment
+
+
+def _cleanup_case(
+    *,
+    resource_ref: str = "RSC-CONTROLLED",
+    oracle_ref: str = "EP-ORACLE",
+    oracle_method: str = "GET",
+    oracle_state_change: bool = False,
+    oracle_source: str = "HAR",
+    baseline_actor: str = "ACCOUNT_1",
+    control_actor_ids: tuple[str, ...] = ("ACCOUNT_1",),
+    resource_path: str | None = None,
+) -> _CleanupCase:
+    mutation = _endpoint(
+        "EP-MUTATION",
+        method="DELETE",
+        path="/cdn/4.0/domains/example.test/dns-records/{dnsRecordId}",
+        resource="DnsRecord",
+        action="delete",
+        state_change=True,
+        observations=("OBS-MUTATION",),
+    )
+    oracle = _endpoint(
+        "EP-ORACLE",
+        method=oracle_method,
+        path="/cdn/4.0/domains/example.test/dns-records/{dnsRecordId}",
+        resource="DnsRecord",
+        state_change=oracle_state_change,
+        observations=("OBS-ORACLE",),
+    )
+    resource_endpoint = mutation
+    extra_endpoints: list[Endpoint] = []
+    if resource_path is not None:
+        resource_endpoint = _endpoint(
+            "EP-RESOURCE",
+            path=resource_path,
+            resource="DnsRecord",
+            observations=("OBS-RESOURCE",),
+        )
+        extra_endpoints.append(resource_endpoint)
+    controlled_baseline = _typed_baseline(
+        resource_endpoint,
+        actor=baseline_actor,
+        object_id="CONTROLLED",
+    )
+    mutation = mutation.model_copy(
+        update={
+            "object_access": [
+                ObjectAccessEvidence(
+                    identifier=mutation.parameters[0].name,
+                    parameter_location="path",
+                    source="CONTROLLED_LIFECYCLE",
+                    baselines=[controlled_baseline],
+                    distinct_actors=1,
+                    distinct_objects=1,
+                    actor_object_binding_observed=True,
+                )
+            ]
+        }
+    )
+    observations = ObservationStore(
+        observations=[
+            _observation(
+                "OBS-MUTATION",
+                method=mutation.method,
+                path=mutation.path,
+            ),
+            _observation("OBS-ORACLE", method=oracle.method, path=oracle.path).model_copy(
+                update={"source": oracle_source}
+            ),
+            *(
+                [
+                    _observation(
+                        "OBS-RESOURCE",
+                        method=resource_endpoint.method,
+                        path=resource_endpoint.path,
+                        actor=baseline_actor,
+                    )
+                ]
+                if extra_endpoints
+                else []
+            ),
+        ]
+    )
+    target = _target(accounts=2).model_copy(
+        update={
+            "testing": _target(accounts=2).testing.model_copy(
+                update={"synthetic": False, "local_lab": False}
+            )
+        }
+    )
+    record = _record(
+        "HYP-CLEANUP",
+        mutation,
+        category="value_validation",
+        rule="VALUE_VALIDATION",
+        mutation_dimensions=["VALUE"],
+    )
+    intent = assess_domain_intent(
+        target,
+        [mutation],
+        category=record.category,
+        generation_rule_id=record.generation_rule["id"],
+    )
+    claim = assess_claim_strength(
+        generation_rule_id=record.generation_rule["id"],
+        category=record.category,
+        intent=intent,
+        eligibility_evidence=[],
+    )
+    hierarchy = path_hierarchy(mutation.path, mutation.path, intent.subject_resource)
+    control = CleanupControlRule(
+        semantic_fingerprint=cleanup_control_fingerprint(
+            record, intent, record.mutation_target, [mutation]
+        ),
+        strategy="MANUAL_CONTROLLED_RESTORE",
+        actor_ids=list(control_actor_ids),
+        resource_type=intent.subject_resource,
+        route_family=hierarchy.collection_route_family,
+        parent_resource_type=intent.parent_resource,
+        resource_refs=[resource_ref],
+        oracle_refs=[oracle_ref],
+        source_checksum=cleanup_control_source_checksum(
+            target,
+            observations,
+            record,
+            intent,
+            record.mutation_target,
+            [mutation],
+        ),
+        rationale="Restore the controlled object and verify it through the safe runtime oracle.",
+    )
+    configured = target.model_copy(
+        update={"analysis": target.analysis.model_copy(update={"cleanup_controls": [control]})}
+    )
+    return _CleanupCase(
+        configured,
+        observations,
+        [mutation, oracle, *extra_endpoints],
+        record,
+        intent,
+        claim,
+    )
+
+
+def _cleanup_assessment(case: _CleanupCase) -> HypothesisReadinessAssessment:
+    return assess_record_readiness(
+        case.target,
+        case.observations,
+        case.endpoints,
+        ResourceStore(),
+        case.record,
+        case.intent,
+        case.claim,
+    )
+
+
+@pytest.mark.parametrize(
+    ("options", "expected"),
+    [
+        ({"resource_ref": "ARBITRARY"}, "resource reference does not resolve"),
+        ({"oracle_ref": "EP-UNKNOWN"}, "oracle reference does not resolve"),
+        ({"oracle_state_change": True}, "oracle endpoint is state-changing"),
+        ({"oracle_source": "OPENAPI"}, "oracle lacks runtime provenance"),
+        (
+            {"baseline_actor": "ACCOUNT_2", "control_actor_ids": ("ACCOUNT_1",)},
+            "resource is not controlled by the configured actor",
+        ),
+        (
+            {"resource_path": ("/cdn/4.0/domains/other.test/dns-records/{dnsRecordId}")},
+            "resource belongs to another parent context",
+        ),
+        (
+            {"resource_path": ("/cdn/4.0/domains/example.test/certificates/{dnsRecordId}")},
+            "resource belongs to another route family",
+        ),
+    ],
+)
+def test_cleanup_references_fail_closed_with_specific_causes(
+    options: dict[str, object],
+    expected: str,
+) -> None:
+    assessment = _cleanup_assessment(_cleanup_case(**options))  # type: ignore[arg-type]
+    cleanup = next(
+        item for item in assessment.capabilities if item.capability == CapabilityKind.CLEANUP
+    )
+    blocker = next(
+        item for item in assessment.blockers if item.capability == CapabilityKind.CLEANUP
+    )
+
+    assert cleanup.satisfied is False
+    assert any(expected in item for item in cleanup.missing)
+    assert blocker.code == "MISSING_CLEANUP"
+    assert blocker.stage == BlockerStage.PLAN_CONSTRUCTABILITY
+
+
+def test_cleanup_references_resolve_only_with_controlled_resource_and_runtime_oracle() -> None:
+    assessment = _cleanup_assessment(_cleanup_case())
+    cleanup = next(
+        item for item in assessment.capabilities if item.capability == CapabilityKind.CLEANUP
+    )
+
+    assert cleanup.satisfied is True
+    assert {item.reference for item in cleanup.evidence}.issuperset({"RSC-CONTROLLED", "EP-ORACLE"})
 
 
 def test_test_ready_records_align_with_actionable_planner(

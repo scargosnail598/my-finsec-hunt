@@ -222,6 +222,7 @@ class EndpointParameterContext(McpModel):
 
     name: str
     location: str
+    json_path: str | None = None
     inferred_type: str
     semantic_type: str
     client_controlled: bool
@@ -240,6 +241,8 @@ class ObjectAccessContext(McpModel):
     """Aggregate object-boundary evidence without concrete identifiers."""
 
     identifier: str
+    parameter_location: str | None = None
+    parameter_json_path: str | None = None
     source: str
     confidence: str
     owner_field_path: str | None

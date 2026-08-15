@@ -10,6 +10,7 @@ from finsec.errors import FinsecError
 from finsec.modeling.domain import InvariantRecord, InvariantStore, ResourceStore
 from finsec.modeling.merge import merge_generated_records, stable_fingerprint
 from finsec.modeling.models import Confidence, Endpoint, EndpointStore, KnowledgeStatus
+from finsec.modeling.parameter_identity import normalize_json_path, parameter_identity
 from finsec.modeling.semantics import object_candidate
 from finsec.readiness.provenance import invariant_source_fingerprint, record_stage_provenance
 from finsec.utils.yaml_store import load_yaml, write_yaml
@@ -102,19 +103,21 @@ def _drafts(endpoints: EndpointStore, resources: ResourceStore) -> list[dict[str
             for parameter in endpoint.parameters
             if parameter.client_controlled and object_candidate(parameter.identifier_semantics)
         ]
-        seen_targets: set[tuple[str, str, str | None]] = set()
+        seen_targets: set[object] = set()
         for parameter_record in object_parameters:
-            target = (
-                parameter_record.name,
+            target = parameter_identity(
                 parameter_record.location,
                 parameter_record.json_path,
+                parameter_record.name,
             )
-            if target in seen_targets:
+            if target is None or target in seen_targets:
                 continue
             seen_targets.add(target)
             parameter = (
-                parameter_record.json_path.removeprefix("$.").replace("[*]", "[]")
-                if parameter_record.json_path
+                (normalize_json_path(parameter_record.json_path) or "")
+                .removeprefix("$.")
+                .replace("[*]", "[]")
+                if parameter_record.location == "body"
                 else parameter_record.name
             )
             drafts.append(

@@ -6,7 +6,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Protocol
 
-from finsec.config.models import TargetDocument
+from finsec.config.models import CleanupControlRule, TargetDocument
 from finsec.config.scope import hosts_are_covered
 from finsec.hypotheses.contracts import (
     BlockerStage,
@@ -24,9 +24,10 @@ from finsec.hypotheses.contracts import (
     ReadinessIssue,
     VisibilityIntent,
 )
-from finsec.modeling.domain import ResourceStore
+from finsec.modeling.domain import ResourceRecord, ResourceStore
 from finsec.modeling.merge import stable_fingerprint
-from finsec.modeling.models import ActorObjectBaseline, Endpoint, ObservationStore
+from finsec.modeling.models import ActorObjectBaseline, Endpoint, KnowledgeStatus, ObservationStore
+from finsec.modeling.parameter_identity import parameter_identities_match
 from finsec.modeling.semantics import (
     IdentifierSemanticClass,
     OwnershipState,
@@ -299,6 +300,13 @@ def _baseline_matches_hypothesis(
     expected_parent = _type_key(intent.parent_resource)
     if _type_key(baseline.parent_resource_type) != expected_parent:
         return False
+    source_parent_values = {
+        hierarchy.parent.value
+        for hierarchy in hierarchies.values()
+        if hierarchy.parent is not None and hierarchy.parent.value is not None
+    }
+    if source_parent_values and baseline.parent_value not in source_parent_values:
+        return False
     route_families = {hierarchy.route_family for hierarchy in hierarchies.values()}
     if baseline.route_family is not None and baseline.route_family not in route_families:
         return False
@@ -456,8 +464,14 @@ def cleanup_control_source_checksum(
             "target": target_payload,
             "observations": [
                 item.model_dump(mode="json", exclude_none=True)
-                for item in observations.observations
-                if item.id in relevant_observation_ids
+                for item in sorted(
+                    (
+                        value
+                        for value in observations.observations
+                        if value.id in relevant_observation_ids
+                    ),
+                    key=lambda value: value.id,
+                )
             ],
             "endpoints": [
                 item.model_dump(mode="json", exclude_none=True)
@@ -478,26 +492,70 @@ def _state_changing(intent: DomainIntentAssessment) -> bool:
     }
 
 
+def _parent_collection_route(hierarchy: PathHierarchy) -> str | None:
+    if hierarchy.parent is None:
+        return None
+    segments = [item for item in hierarchy.route_family.split("/") if item]
+    return "/" + "/".join(segments[: hierarchy.parent.collection_index + 1])
+
+
+def _oracle_compatible(
+    endpoint: Endpoint,
+    source_hierarchies: Mapping[str, PathHierarchy],
+    intent: DomainIntentAssessment,
+) -> bool:
+    hierarchy = path_hierarchy(endpoint.path, endpoint.path, endpoint.resource.type)
+    endpoint_type = _type_key(endpoint.resource.type)
+    subject_type = _type_key(intent.subject_resource)
+    parent_type = _type_key(intent.parent_resource)
+    source_parent_values = {
+        item.parent.value
+        for item in source_hierarchies.values()
+        if item.parent is not None and item.parent.value is not None
+    }
+    if endpoint_type == subject_type:
+        if hierarchy.collection_route_family not in {
+            item.collection_route_family for item in source_hierarchies.values()
+        }:
+            return False
+        if (
+            _type_key(hierarchy.parent.resource_type if hierarchy.parent is not None else None)
+            != parent_type
+        ):
+            return False
+        return not (
+            source_parent_values
+            and (hierarchy.parent is None or hierarchy.parent.value not in source_parent_values)
+        )
+    if not parent_type or endpoint_type != parent_type:
+        return False
+    parent_collections = {
+        route
+        for item in source_hierarchies.values()
+        if (route := _parent_collection_route(item)) is not None
+    }
+    if hierarchy.collection_route_family not in parent_collections:
+        return False
+    return not (
+        source_parent_values
+        and (hierarchy.subject is None or hierarchy.subject.value not in source_parent_values)
+    )
+
+
 def _oracle_endpoints(
     source: list[Endpoint], all_endpoints: list[Endpoint], intent: DomainIntentAssessment
 ) -> list[Endpoint]:
-    resources = {intent.subject_resource.lower()}
-    if intent.parent_resource is not None:
-        resources.add(intent.parent_resource.lower())
+    source_hierarchies = _source_hierarchies(source, intent.subject_resource)
     return sorted(
         (
             endpoint
             for endpoint in all_endpoints
             if endpoint.method in {"GET", "HEAD"}
             and not endpoint.state_change
-            and endpoint.resource.type.lower() in resources
+            and _oracle_compatible(endpoint, source_hierarchies, intent)
         ),
         key=lambda item: item.id,
-    ) or [
-        endpoint
-        for endpoint in source
-        if endpoint.method in {"GET", "HEAD"} and not endpoint.state_change
-    ]
+    )
 
 
 def _request_budget(record: HypothesisLike, intent: DomainIntentAssessment) -> int:
@@ -513,6 +571,374 @@ def _request_budget(record: HypothesisLike, intent: DomainIntentAssessment) -> i
     return 2
 
 
+def _source_parent_values(hierarchies: Mapping[str, PathHierarchy]) -> set[str]:
+    return {
+        item.parent.value
+        for item in hierarchies.values()
+        if item.parent is not None and item.parent.value is not None
+    }
+
+
+def _subject_endpoint_context_issue(
+    endpoint: Endpoint,
+    source_hierarchies: Mapping[str, PathHierarchy],
+    intent: DomainIntentAssessment,
+) -> str | None:
+    hierarchy = path_hierarchy(endpoint.path, endpoint.path, endpoint.resource.type)
+    if _type_key(endpoint.resource.type) != _type_key(intent.subject_resource):
+        return "cleanup resource belongs to another resource type"
+    if hierarchy.collection_route_family not in {
+        item.collection_route_family for item in source_hierarchies.values()
+    }:
+        return "cleanup resource belongs to another route family"
+    if _type_key(
+        hierarchy.parent.resource_type if hierarchy.parent is not None else None
+    ) != _type_key(intent.parent_resource):
+        return "cleanup resource belongs to another parent context"
+    parent_values = _source_parent_values(source_hierarchies)
+    if parent_values and (hierarchy.parent is None or hierarchy.parent.value not in parent_values):
+        return "cleanup resource belongs to another parent context"
+    return None
+
+
+def _runtime_endpoint_provenance(
+    endpoint: Endpoint,
+    observations: ObservationStore,
+) -> list[str]:
+    observation_by_id = {item.id: item for item in observations.observations}
+    return sorted(
+        observation_id
+        for observation_id in endpoint.sources
+        if observation_id in observation_by_id
+        and observation_by_id[observation_id].source in RUNTIME_SOURCES
+    )
+
+
+def _baseline_cleanup_resolution(
+    baseline: ActorObjectBaseline,
+    *,
+    control: CleanupControlRule,
+    controlled_actor_ids: set[str],
+    endpoints: Mapping[str, Endpoint],
+    observations: ObservationStore,
+    source_hierarchies: Mapping[str, PathHierarchy],
+    intent: DomainIntentAssessment,
+) -> tuple[tuple[str, str, str, str] | None, list[DecisionEvidence], list[str]]:
+    endpoint = endpoints.get(baseline.endpoint_id or "")
+    if endpoint is None:
+        return None, [], ["cleanup resource reference has stale endpoint provenance"]
+    derived = _baseline_with_derived_provenance(baseline, endpoints)
+    reasons: list[str] = []
+    if derived.actor not in controlled_actor_ids or derived.actor not in set(control.actor_ids):
+        reasons.append("cleanup resource is not controlled by the configured actor")
+    if _type_key(derived.subject_resource_type) != _type_key(control.resource_type):
+        reasons.append("cleanup resource belongs to another resource type")
+    if _type_key(derived.parent_resource_type) != _type_key(control.parent_resource_type):
+        reasons.append("cleanup resource belongs to another parent context")
+    parent_values = _source_parent_values(source_hierarchies)
+    if parent_values and derived.parent_value not in parent_values:
+        reasons.append("cleanup resource belongs to another parent context")
+    route_families = {derived.route_family, derived.collection_route_family}
+    if control.route_family not in route_families:
+        reasons.append("cleanup resource belongs to another route family")
+    context_issue = _subject_endpoint_context_issue(endpoint, source_hierarchies, intent)
+    if context_issue is not None:
+        reasons.append(context_issue)
+    observation_by_id = {item.id: item for item in observations.observations}
+    supporting_runtime = sorted(
+        observation_id
+        for observation_id in derived.observations
+        if observation_id in observation_by_id
+        and observation_by_id[observation_id].source in RUNTIME_SOURCES
+        and observation_by_id[observation_id].actor == derived.actor
+    )
+    if not supporting_runtime:
+        reasons.append("cleanup resource lacks current runtime provenance")
+    if reasons:
+        return None, [], sorted(set(reasons))
+    reference = derived.baseline_id or derived.subject_resource_id or endpoint.id
+    evidence = [
+        _evidence(
+            reference,
+            "WORKFLOW",
+            "Controlled cleanup resource resolves to a compatible actor-bound baseline.",
+        ),
+        *[
+            _evidence(
+                observation_id,
+                "OBSERVATION",
+                "Runtime observation supports the controlled cleanup resource.",
+            )
+            for observation_id in supporting_runtime
+        ],
+    ]
+    return (
+        (
+            derived.actor,
+            _type_key(derived.subject_resource_type),
+            _type_key(derived.parent_resource_type),
+            control.route_family,
+        ),
+        evidence,
+        [],
+    )
+
+
+def _modeled_cleanup_resolution(
+    resource: ResourceRecord,
+    *,
+    control: CleanupControlRule,
+    controlled_actor_ids: set[str],
+    endpoints: Mapping[str, Endpoint],
+    observations: ObservationStore,
+    source_hierarchies: Mapping[str, PathHierarchy],
+    intent: DomainIntentAssessment,
+) -> tuple[tuple[str, str, str, str] | None, list[DecisionEvidence], list[str]]:
+    reasons: list[str] = []
+    owner = resource.owner
+    owner_id = owner.value or ""
+    if resource.disposition != "ACTIVE" or _type_key(resource.name) != _type_key(
+        control.resource_type
+    ):
+        reasons.append("cleanup resource belongs to another resource type")
+    if (
+        owner_id not in controlled_actor_ids
+        or owner_id not in set(control.actor_ids)
+        or owner.knowledge_status not in {KnowledgeStatus.OBSERVED, KnowledgeStatus.CONFIRMED}
+        or not owner.evidence
+    ):
+        reasons.append("cleanup resource is not controlled by the configured actor")
+    operation_endpoints = [
+        endpoints[item.endpoint] for item in resource.operations if item.endpoint in endpoints
+    ]
+    compatible = [
+        endpoint
+        for endpoint in operation_endpoints
+        if control.route_family
+        in {
+            path_hierarchy(endpoint.path, endpoint.path, endpoint.resource.type).route_family,
+            path_hierarchy(
+                endpoint.path, endpoint.path, endpoint.resource.type
+            ).collection_route_family,
+        }
+        and _subject_endpoint_context_issue(endpoint, source_hierarchies, intent) is None
+        and _runtime_endpoint_provenance(endpoint, observations)
+    ]
+    if not compatible:
+        context_issues = [
+            _subject_endpoint_context_issue(endpoint, source_hierarchies, intent)
+            for endpoint in operation_endpoints
+        ]
+        if "cleanup resource belongs to another parent context" in context_issues:
+            reasons.append("cleanup resource belongs to another parent context")
+        else:
+            reasons.append("cleanup resource belongs to another route family")
+    if not resource.evidence:
+        reasons.append("cleanup resource lacks canonical evidence provenance")
+    if reasons:
+        return None, [], sorted(set(reasons))
+    endpoint = sorted(compatible, key=lambda item: item.id)[0]
+    return (
+        (
+            owner_id,
+            _type_key(resource.name),
+            _type_key(control.parent_resource_type),
+            control.route_family,
+        ),
+        [
+            _evidence(
+                resource.id,
+                "WORKFLOW",
+                "Canonical modeled resource is actor-controlled and route-compatible.",
+            ),
+            *[
+                _evidence(
+                    observation_id,
+                    "OBSERVATION",
+                    "Runtime observation supports the modeled cleanup resource.",
+                )
+                for observation_id in _runtime_endpoint_provenance(endpoint, observations)
+            ],
+        ],
+        [],
+    )
+
+
+def _resolve_cleanup_resource_ref(
+    reference: str,
+    *,
+    control: CleanupControlRule,
+    controlled_actor_ids: set[str],
+    resources: ResourceStore,
+    baselines: Sequence[ActorObjectBaseline],
+    endpoints: Mapping[str, Endpoint],
+    observations: ObservationStore,
+    source_hierarchies: Mapping[str, PathHierarchy],
+    intent: DomainIntentAssessment,
+) -> tuple[list[DecisionEvidence], list[str]]:
+    modeled = [item for item in resources.resources if item.id == reference]
+    controlled = [
+        item for item in baselines if reference in {item.baseline_id, item.subject_resource_id}
+    ]
+    if not modeled and not controlled:
+        return [], [f"cleanup resource reference does not resolve: {reference}"]
+    resolutions = [
+        _modeled_cleanup_resolution(
+            item,
+            control=control,
+            controlled_actor_ids=controlled_actor_ids,
+            endpoints=endpoints,
+            observations=observations,
+            source_hierarchies=source_hierarchies,
+            intent=intent,
+        )
+        for item in modeled
+    ] + [
+        _baseline_cleanup_resolution(
+            item,
+            control=control,
+            controlled_actor_ids=controlled_actor_ids,
+            endpoints=endpoints,
+            observations=observations,
+            source_hierarchies=source_hierarchies,
+            intent=intent,
+        )
+        for item in controlled
+    ]
+    reasons = sorted({reason for _, _, issues in resolutions for reason in issues})
+    signatures = {signature for signature, _, _ in resolutions if signature is not None}
+    if reasons:
+        return [], reasons
+    if len(signatures) != 1:
+        return [], [f"cleanup resource reference is ambiguous: {reference}"]
+    return [
+        _evidence(
+            reference,
+            "WORKFLOW",
+            "Cleanup resource reference resolves to compatible canonical evidence.",
+        ),
+        *[evidence for _, items, _ in resolutions for evidence in items],
+    ], []
+
+
+def _resolve_cleanup_oracle_ref(
+    reference: str,
+    *,
+    endpoints: list[Endpoint],
+    observations: ObservationStore,
+    source_hierarchies: Mapping[str, PathHierarchy],
+    intent: DomainIntentAssessment,
+) -> tuple[list[DecisionEvidence], list[str]]:
+    matches = [item for item in endpoints if item.id == reference]
+    if not matches:
+        return [], [f"cleanup oracle reference does not resolve: {reference}"]
+    if len(matches) != 1:
+        return [], [f"cleanup oracle reference is ambiguous: {reference}"]
+    endpoint = matches[0]
+    if endpoint.method not in {"GET", "HEAD"}:
+        return [], [f"cleanup oracle endpoint is not GET or HEAD: {reference}"]
+    if endpoint.state_change:
+        return [], [f"cleanup oracle endpoint is state-changing: {reference}"]
+    if not _oracle_compatible(endpoint, source_hierarchies, intent):
+        return [], [f"cleanup oracle belongs to another route or parent context: {reference}"]
+    runtime = _runtime_endpoint_provenance(endpoint, observations)
+    if not runtime:
+        return [], [f"cleanup oracle lacks runtime provenance: {reference}"]
+    return [
+        _evidence(endpoint.id, "ENDPOINT", "Safe authoritative cleanup oracle resolved."),
+        *[
+            _evidence(
+                observation_id,
+                "OBSERVATION",
+                "Runtime observation supports the authoritative cleanup oracle.",
+            )
+            for observation_id in runtime
+        ],
+    ], []
+
+
+def _resolve_cleanup_control(
+    *,
+    target: TargetDocument,
+    observations: ObservationStore,
+    endpoints: list[Endpoint],
+    resources: ResourceStore,
+    intent: DomainIntentAssessment,
+    source_hierarchies: Mapping[str, PathHierarchy],
+    candidate_baselines: Sequence[ActorObjectBaseline],
+    baseline_actors: set[str],
+    cleanup_fingerprint: str,
+    cleanup_source_checksum: str,
+) -> tuple[CleanupControlRule | None, list[DecisionEvidence], list[str]]:
+    candidates = [
+        item
+        for item in target.analysis.cleanup_controls
+        if item.semantic_fingerprint == cleanup_fingerprint
+    ]
+    if not candidates:
+        return None, [], ["Define a rollback, cleanup, or disposable-resource strategy."]
+    control = candidates[0]
+    controlled_actor_ids = {
+        account.id for account in target.accounts if account.ownership == "researcher"
+    }
+    cleanup_route_families = {
+        hierarchy.route_family for hierarchy in source_hierarchies.values()
+    } | {hierarchy.collection_route_family for hierarchy in source_hierarchies.values()}
+    reasons: list[str] = []
+    if control.source_checksum != cleanup_source_checksum:
+        reasons.append("cleanup control source checksum does not match current evidence")
+    if _type_key(control.resource_type) != _type_key(intent.subject_resource):
+        reasons.append("cleanup control belongs to another resource type")
+    if control.route_family not in cleanup_route_families:
+        reasons.append("cleanup control belongs to another route family")
+    if _type_key(control.parent_resource_type) != _type_key(intent.parent_resource):
+        reasons.append("cleanup control belongs to another parent context")
+    if not set(control.actor_ids).issubset(controlled_actor_ids):
+        reasons.append("cleanup control names an actor that is not researcher-controlled")
+    if not baseline_actors.issubset(set(control.actor_ids)):
+        reasons.append("cleanup resource is not controlled by the configured actor")
+    endpoint_by_id = {item.id: item for item in endpoints}
+    evidence: list[DecisionEvidence] = []
+    for reference in control.resource_refs:
+        resolved, issues = _resolve_cleanup_resource_ref(
+            reference,
+            control=control,
+            controlled_actor_ids=controlled_actor_ids,
+            resources=resources,
+            baselines=candidate_baselines,
+            endpoints=endpoint_by_id,
+            observations=observations,
+            source_hierarchies=source_hierarchies,
+            intent=intent,
+        )
+        evidence.extend(resolved)
+        reasons.extend(issues)
+    for reference in control.oracle_refs:
+        resolved, issues = _resolve_cleanup_oracle_ref(
+            reference,
+            endpoints=endpoints,
+            observations=observations,
+            source_hierarchies=source_hierarchies,
+            intent=intent,
+        )
+        evidence.extend(resolved)
+        reasons.extend(issues)
+    if reasons:
+        return None, [], sorted(set(reasons))
+    return (
+        control,
+        [
+            _evidence(
+                control.semantic_fingerprint,
+                "TARGET_POLICY",
+                f"Reviewed cleanup strategy is {control.strategy}.",
+            ),
+            *evidence,
+        ],
+        [],
+    )
+
+
 def build_record_readiness_context(
     target: TargetDocument,
     observations: ObservationStore,
@@ -524,7 +950,6 @@ def build_record_readiness_context(
 ) -> ReadinessContext:
     """Derive shared prerequisite facts from one persisted HYP or BLH record."""
 
-    del resources  # The endpoint/resource relationship is already represented in domain intent.
     source = _source_endpoints(record, endpoints)
     runtime_ids = _runtime_observation_ids(record, observations)
     source_ids = {observation for endpoint in source for observation in endpoint.sources}
@@ -664,7 +1089,14 @@ def build_record_readiness_context(
         for endpoint in source
         for access in endpoint.object_access
         if mutation_target.parameter is None
-        or access.identifier.lower() == mutation_target.parameter.lower()
+        or parameter_identities_match(
+            evidence_location=access.parameter_location,
+            evidence_json_path=access.parameter_json_path,
+            evidence_name=access.identifier,
+            target_location=mutation_target.location,
+            target_json_path=mutation_target.json_path,
+            target_name=mutation_target.parameter,
+        )
     ]
     endpoint_by_id = {endpoint.id: endpoint for endpoint in endpoints}
     candidate_baselines = [
@@ -937,23 +1369,22 @@ def build_record_readiness_context(
         mutation_target,
         source,
     )
-    cleanup_route_families = {
-        hierarchy.route_family for hierarchy in source_hierarchies.values()
-    } | {hierarchy.collection_route_family for hierarchy in source_hierarchies.values()}
-    matching_cleanup = next(
-        (
-            item
-            for item in target.analysis.cleanup_controls
-            if item.semantic_fingerprint == cleanup_fingerprint
-            and item.source_checksum == cleanup_source_checksum
-            and item.resource_type.casefold() == intent.subject_resource.casefold()
-            and item.route_family in cleanup_route_families
-            and _type_key(item.parent_resource_type) == _type_key(intent.parent_resource)
-            and set(item.actor_ids).issubset(set(controlled_actor_ids))
-            and baseline_actors.issubset(set(item.actor_ids))
-        ),
-        None,
-    )
+    matching_cleanup: CleanupControlRule | None = None
+    cleanup_evidence: list[DecisionEvidence] = []
+    cleanup_missing = ["Define a rollback, cleanup, or disposable-resource strategy."]
+    if cleanup_required and not target.testing.synthetic and not target.testing.local_lab:
+        matching_cleanup, cleanup_evidence, cleanup_missing = _resolve_cleanup_control(
+            target=target,
+            observations=observations,
+            endpoints=endpoints,
+            resources=resources,
+            intent=intent,
+            source_hierarchies=source_hierarchies,
+            candidate_baselines=candidate_baselines,
+            baseline_actors=baseline_actors,
+            cleanup_fingerprint=cleanup_fingerprint,
+            cleanup_source_checksum=cleanup_source_checksum,
+        )
     cleanup_satisfied = (
         not cleanup_required
         or target.testing.synthetic
@@ -963,26 +1394,6 @@ def build_record_readiness_context(
     logic_cleanup = _logic_capability(record, CapabilityKind.CLEANUP)
     if logic_cleanup is not None and cleanup_required:
         cleanup_satisfied = cleanup_satisfied and logic_cleanup.satisfied
-    cleanup_evidence: list[DecisionEvidence] = []
-    if matching_cleanup is not None:
-        cleanup_evidence.append(
-            _evidence(
-                matching_cleanup.semantic_fingerprint,
-                "TARGET_POLICY",
-                f"Reviewed cleanup strategy is {matching_cleanup.strategy}.",
-            )
-        )
-        cleanup_evidence.extend(
-            _evidence(
-                reference,
-                "TARGET_POLICY",
-                "Reviewed cleanup or authoritative-oracle evidence reference.",
-            )
-            for reference in [
-                *matching_cleanup.resource_refs,
-                *matching_cleanup.oracle_refs,
-            ]
-        )
     if (target.testing.synthetic or target.testing.local_lab) and cleanup_required:
         cleanup_evidence.append(
             _evidence(
@@ -998,7 +1409,7 @@ def build_record_readiness_context(
         stage=BlockerStage.PLAN_CONSTRUCTABILITY,
         summary="State-changing tests require rollback, cleanup, or disposable-resource controls.",
         evidence=cleanup_evidence,
-        missing=["Define a rollback, cleanup, or disposable-resource strategy."],
+        missing=cleanup_missing,
         next_action=(
             "Add analysis.cleanup_controls with semantic_fingerprint "
             f"{cleanup_fingerprint} and source_checksum {cleanup_source_checksum}."

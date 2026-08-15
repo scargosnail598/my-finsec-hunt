@@ -39,6 +39,8 @@ from finsec.modeling.models import (
     Observation,
     ObservationStore,
 )
+from finsec.modeling.parameter_identity import normalize_json_path, parameter_identity
+from finsec.modeling.relationships import ControlledOwnershipStore, project_controlled_ownership
 from finsec.modeling.semantics import (
     IdentifierResourceRole,
     IdentifierSemanticAssessment,
@@ -287,6 +289,259 @@ def test_cases_b_and_g_distinct_firewalls_under_shared_region_are_secure_scoping
     assert firewall.ownership_state == OwnershipState.WEAK_INFERRED
     assert any("secure account scoping" in item for item in firewall.counterevidence)
     assert region.semantic_class != IdentifierSemanticClass.OWNED_OBJECT
+
+
+def test_body_identifier_does_not_inherit_path_structure_or_actor_value_evidence() -> None:
+    path = "/orders/{orderId}"
+    observations = [
+        _observation("OBS-A", "ACCOUNT_A", "/orders/order-a"),
+        _observation("OBS-B", "ACCOUNT_B", "/orders/order-b"),
+    ]
+    path_parameter = _parameter("orderId")
+    body_parameter = _parameter("orderId").model_copy(
+        update={"location": "body", "json_path": "$.sender.orderId"}
+    )
+
+    path_semantics = classify_identifier_semantics(
+        path=path,
+        endpoint_resource="Order",
+        parameter=path_parameter,
+        observations=observations,
+        target=_target(),
+    )
+    body_semantics = classify_identifier_semantics(
+        path=path,
+        endpoint_resource="Order",
+        parameter=body_parameter,
+        observations=observations,
+        target=_target(),
+    )
+
+    assert path_semantics.semantic_class == IdentifierSemanticClass.OWNED_OBJECT
+    assert path_semantics.ownership_state == OwnershipState.WEAK_INFERRED
+    assert body_semantics.semantic_class == IdentifierSemanticClass.OBJECT_IDENTIFIER
+    assert body_semantics.ownership_state == OwnershipState.UNKNOWN
+    assert body_semantics.parent_resource_type is None
+    assert "PATH_STRUCTURE" not in body_semantics.sources
+    assert "NORMAL_BEHAVIOR" not in body_semantics.sources
+    assert not set(body_semantics.evidence).intersection({"OBS-A", "OBS-B"})
+
+
+def test_path_ownership_evidence_does_not_make_same_named_body_target_ready() -> None:
+    semantics = _owned_semantics("Order")
+    path_parameter = _parameter("orderId", semantics=semantics)
+    body_parameter = _parameter("orderId", semantics=semantics).model_copy(
+        update={"location": "body", "json_path": "$.sender.orderId"}
+    )
+    path_access = ObjectAccessEvidence(
+        identifier="orderId",
+        parameter_location="path",
+        source="CONTROLLED_LIFECYCLE",
+        baselines=[
+            ActorObjectBaseline(
+                actor="ACCOUNT_A",
+                requested_value="order-a",
+                endpoint_id="EP-SEMANTIC",
+                baseline_id="BASE-A",
+                observations=["OBS-A"],
+            ),
+            ActorObjectBaseline(
+                actor="ACCOUNT_B",
+                requested_value="order-b",
+                endpoint_id="EP-SEMANTIC",
+                baseline_id="BASE-B",
+                observations=["OBS-B"],
+            ),
+        ],
+        distinct_actors=2,
+        distinct_objects=2,
+        actor_object_binding_observed=True,
+    )
+    endpoint = _endpoint(
+        [path_parameter, body_parameter],
+        path="/orders/{orderId}",
+        resource="Order",
+        object_access=[path_access],
+    )
+    observations = [
+        _observation("OBS-A", "ACCOUNT_A", "/orders/order-a"),
+        _observation("OBS-B", "ACCOUNT_B", "/orders/order-b"),
+    ]
+    path_record = _record("HYP-PATH", endpoint, "orderId").model_copy(
+        update={"key": f"auth-object-access:get:{endpoint.path}:path:orderId"}
+    )
+    body_record = _record("HYP-BODY", endpoint, "sender.orderId").model_copy(
+        update={"key": f"auth-object-access:get:{endpoint.path}:body:sender.orderId"}
+    )
+    store = _finalize(endpoint, [path_record, body_record], observations)
+    by_id = {item.id: item for item in store.hypotheses}
+
+    assert by_id["HYP-PATH"].readiness_assessment.comparison_coverage.observed_distinct_actors == 2
+    assert by_id["HYP-BODY"].readiness_assessment.comparison_coverage.observed_distinct_actors == 0
+    assert by_id["HYP-BODY"].readiness != "TEST_READY"
+
+
+def test_controlled_path_projection_does_not_promote_same_named_body_parameter() -> None:
+    unknown = IdentifierSemanticAssessment(
+        semantic_class=IdentifierSemanticClass.OBJECT_IDENTIFIER,
+        resource_role=IdentifierResourceRole.SUBJECT,
+        resource_type="Order",
+        ownership_state=OwnershipState.UNKNOWN,
+        confidence="medium",
+        explanation="Ownership is not established.",
+    )
+    access = ObjectAccessEvidence(
+        identifier="orderId",
+        parameter_location="path",
+        source="RESPONSE_BODY",
+        baselines=[
+            ActorObjectBaseline(
+                actor="ACCOUNT_A",
+                requested_value="order-a",
+                endpoint_id="EP-SEMANTIC",
+                observations=["OBS-A"],
+            )
+        ],
+        distinct_actors=1,
+        distinct_objects=1,
+        actor_object_binding_observed=True,
+    )
+    endpoint = _endpoint(
+        [
+            _parameter("orderId", semantics=unknown),
+            _parameter("orderId", semantics=unknown).model_copy(
+                update={"location": "body", "json_path": "$.sender.orderId"}
+            ),
+        ],
+        path="/orders/{orderId}",
+        resource="Order",
+        object_access=[access],
+    )
+
+    projected = project_controlled_ownership(
+        EndpointStore(endpoints=[endpoint]), ControlledOwnershipStore()
+    ).endpoints[0]
+    path_semantics = next(item for item in projected.parameters if item.location == "path")
+    body_semantics = next(item for item in projected.parameters if item.location == "body")
+
+    assert path_semantics.identifier_semantics.ownership_state == OwnershipState.STRONG_INFERRED
+    assert body_semantics.identifier_semantics.ownership_state == OwnershipState.UNKNOWN
+
+
+def test_exact_body_evidence_applies_only_to_matching_json_path() -> None:
+    semantics = _owned_semantics("Order")
+    sender = _parameter("orderId", semantics=semantics).model_copy(
+        update={"location": "body", "json_path": "$.sender.orderId"}
+    )
+    recipient = _parameter("orderId", semantics=semantics).model_copy(
+        update={"location": "body", "json_path": "$.recipient.orderId"}
+    )
+    access = ObjectAccessEvidence(
+        identifier="orderId",
+        parameter_location="body",
+        parameter_json_path="$.sender.orderId",
+        source="CONTROLLED_LIFECYCLE",
+        baselines=[
+            ActorObjectBaseline(
+                actor="ACCOUNT_A",
+                requested_value="order-a",
+                endpoint_id="EP-SEMANTIC",
+                baseline_id="BASE-A",
+                observations=["OBS-A"],
+            ),
+            ActorObjectBaseline(
+                actor="ACCOUNT_B",
+                requested_value="order-b",
+                endpoint_id="EP-SEMANTIC",
+                baseline_id="BASE-B",
+                observations=["OBS-B"],
+            ),
+        ],
+        distinct_actors=2,
+        distinct_objects=2,
+        actor_object_binding_observed=True,
+    )
+    endpoint = _endpoint(
+        [_parameter("orderId", semantics=semantics), sender, recipient],
+        path="/orders/{orderId}",
+        resource="Order",
+        object_access=[access],
+    )
+    observations = [
+        _observation("OBS-A", "ACCOUNT_A", "/orders/order-a"),
+        _observation("OBS-B", "ACCOUNT_B", "/orders/order-b"),
+    ]
+    records = [
+        _record("HYP-SENDER", endpoint, "sender.orderId").model_copy(
+            update={"key": f"auth-object-access:get:{endpoint.path}:body:sender.orderId"}
+        ),
+        _record("HYP-RECIPIENT", endpoint, "recipient.orderId").model_copy(
+            update={"key": f"auth-object-access:get:{endpoint.path}:body:recipient.orderId"}
+        ),
+    ]
+    store = _finalize(endpoint, records, observations)
+    by_id = {item.id: item for item in store.hypotheses}
+
+    assert (
+        by_id["HYP-SENDER"].readiness_assessment.comparison_coverage.observed_distinct_actors == 2
+    )
+    assert (
+        by_id["HYP-RECIPIENT"].readiness_assessment.comparison_coverage.observed_distinct_actors
+        == 0
+    )
+
+
+def test_legacy_name_only_object_access_fails_closed_for_body_target() -> None:
+    semantics = _owned_semantics("Order")
+    body = _parameter("orderId", semantics=semantics).model_copy(
+        update={"location": "body", "json_path": "$.sender.orderId"}
+    )
+    legacy_access = ObjectAccessEvidence(
+        identifier="orderId",
+        source="CONTROLLED_LIFECYCLE",
+        baselines=[
+            ActorObjectBaseline(
+                actor="ACCOUNT_A",
+                requested_value="order-a",
+                endpoint_id="EP-SEMANTIC",
+                observations=["OBS-A"],
+            ),
+            ActorObjectBaseline(
+                actor="ACCOUNT_B",
+                requested_value="order-b",
+                endpoint_id="EP-SEMANTIC",
+                observations=["OBS-B"],
+            ),
+        ],
+        distinct_actors=2,
+        distinct_objects=2,
+        actor_object_binding_observed=True,
+    )
+    endpoint = _endpoint(
+        [_parameter("orderId", semantics=semantics), body],
+        path="/orders/{orderId}",
+        resource="Order",
+        object_access=[legacy_access],
+    )
+    observations = [
+        _observation("OBS-A", "ACCOUNT_A", "/orders/order-a"),
+        _observation("OBS-B", "ACCOUNT_B", "/orders/order-b"),
+    ]
+    record = _record("HYP-BODY", endpoint, "sender.orderId").model_copy(
+        update={"key": f"auth-object-access:get:{endpoint.path}:body:sender.orderId"}
+    )
+    result = _finalize(endpoint, [record], observations).hypotheses[0]
+
+    assert result.readiness_assessment.comparison_coverage.observed_distinct_actors == 0
+    assert result.readiness != "TEST_READY"
+
+
+def test_array_parameter_identity_normalizes_supported_notation() -> None:
+    assert normalize_json_path("items[].id") == "$.items[*].id"
+    assert normalize_json_path("$.items[0].id") == "$.items[*].id"
+    assert parameter_identity("body", "$.items[*].id", "id") == parameter_identity(
+        "body", "items[].id", "id"
+    )
 
 
 @pytest.mark.parametrize(
@@ -661,6 +916,12 @@ def test_nested_json_mutation_identity_is_exact_and_reaches_blocked_plan(
     assert web_target["json_path"] == "$.sender.id"
     assert mcp_target.location == "body"
     assert mcp_target.json_path == "$.sender.id"
+    cli_plan = RUNNER.invoke(
+        app,
+        ["plan", "HYP-002", "--workspace", str(workspace.root)],
+    )
+    assert cli_plan.exit_code == 0, cli_plan.output
+    assert "Mutation target: body:$.sender.id" in cli_plan.output
 
 
 def test_literal_dns_parents_share_campaign_without_replacing_member_titles(

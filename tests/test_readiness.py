@@ -3,13 +3,19 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
+from collections import Counter
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+import pytest
 from typer.testing import CliRunner
 
+import finsec.hypotheses.generator as hypothesis_generator_module
+import finsec.readiness.resolver as resolver_module
+import finsec.testing.planner as planner_module
 from finsec.auth.service import missing_authentication
 from finsec.auth.store import SecretStore
 from finsec.cli import app
@@ -22,15 +28,24 @@ from finsec.config.models import (
     TargetDocument,
 )
 from finsec.config.workspace import WorkspacePaths, create_workspace
+from finsec.hypotheses.domain import HypothesisStore
 from finsec.hypotheses.generator import generate_hypotheses
 from finsec.ingest.har import ingest_har
 from finsec.mcp.service import FinsecMcpService
+from finsec.modeling.domain import ResourceStore
 from finsec.modeling.generator import generate_model
 from finsec.modeling.invariants import generate_invariants
+from finsec.modeling.models import EndpointStore, ObservationStore
 from finsec.readiness.domain import BlockerCode, LifecycleStatus, PipelineStage
 from finsec.readiness.resolver import resolve_workspace_readiness
 from finsec.reporting.generator import generate_report
-from finsec.testing.planner import generate_plan, inspect_plan_alignment
+from finsec.testing.domain import TestPlanRecord as PlanRecord
+from finsec.testing.domain import TestPlanStore as PlanStore
+from finsec.testing.planner import (
+    generate_plan,
+    inspect_plan_alignment,
+    inspect_plan_alignment_from_inputs,
+)
 from finsec.utils.yaml_store import load_yaml, write_yaml
 from finsec.web.service import load_snapshot, workspace_overview
 from finsec.workflow import run_offline_workflow
@@ -338,6 +353,328 @@ def test_blocked_canonical_plan_never_makes_status_plan_ready(
     assert alignment.agrees is True
     assert _stage(report, PipelineStage.PLAN).status == LifecycleStatus.BLOCKED
     assert _stage(report, PipelineStage.PLAN).status != LifecycleStatus.READY
+
+
+def _workspace_hashes(workspace: WorkspacePaths) -> dict[str, str]:
+    return {
+        str(path.relative_to(workspace.root)): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in sorted(workspace.root.rglob("*"))
+        if path.is_file()
+    }
+
+
+def test_status_loads_planner_artifacts_once_independent_of_active_hypothesis_count(
+    phase4_workspace: WorkspacePaths,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    tracked = {
+        phase4_workspace.target,
+        phase4_workspace.observations,
+        phase4_workspace.endpoints,
+        phase4_workspace.resources,
+        phase4_workspace.hypotheses,
+    }
+    calls: Counter[Path] = Counter()
+    original_load_yaml = resolver_module.load_yaml
+
+    def counted_load(path: Path) -> Any:
+        resolved = Path(path)
+        if resolved in tracked:
+            calls[resolved] += 1
+        return original_load_yaml(path)
+
+    monkeypatch.setattr(resolver_module, "load_yaml", counted_load)
+    monkeypatch.setattr(planner_module, "load_yaml", counted_load)
+    monkeypatch.setattr(hypothesis_generator_module, "load_yaml", counted_load)
+
+    first_before = _workspace_hashes(phase4_workspace)
+    first = resolve_workspace_readiness(phase4_workspace)
+    first_counts = {path: calls[path] for path in tracked}
+    assert first.metrics.active_hypotheses >= 1
+    assert set(first_counts.values()) == {1}
+    assert _workspace_hashes(phase4_workspace) == first_before
+
+    store = HypothesisStore.model_validate(original_load_yaml(phase4_workspace.hypotheses))
+    source = next(item for item in store.hypotheses if item.disposition == "ACTIVE")
+    duplicates = [
+        source.model_copy(
+            deep=True,
+            update={
+                "id": f"HYP-LOAD-{index:03d}",
+                "key": f"load-regression:{index:03d}",
+                "generation": None,
+            },
+        )
+        for index in range(8)
+    ]
+    write_yaml(
+        phase4_workspace.hypotheses,
+        HypothesisStore(hypotheses=[*store.hypotheses, *duplicates]).model_dump(
+            mode="json", exclude_none=True
+        ),
+    )
+    monkeypatch.setattr(resolver_module, "_generated_store_integrity", lambda *_: True)
+    calls.clear()
+    second_before = _workspace_hashes(phase4_workspace)
+
+    second = resolve_workspace_readiness(phase4_workspace)
+    second_counts = {path: calls[path] for path in tracked}
+
+    assert second.metrics.active_hypotheses > first.metrics.active_hypotheses
+    assert second_counts == first_counts
+    assert _workspace_hashes(phase4_workspace) == second_before
+
+
+def test_public_and_in_memory_alignment_are_identical_order_independent_and_read_only(
+    phase4_workspace: WorkspacePaths,
+) -> None:
+    target = TargetDocument.model_validate(load_yaml(phase4_workspace.target))
+    observations = ObservationStore.model_validate(load_yaml(phase4_workspace.observations))
+    endpoints = EndpointStore.model_validate(load_yaml(phase4_workspace.endpoints))
+    resources = ResourceStore.model_validate(load_yaml(phase4_workspace.resources))
+    hypotheses = HypothesisStore.model_validate(load_yaml(phase4_workspace.hypotheses))
+    hypothesis = next(item for item in hypotheses.hypotheses if item.id == "HYP-002")
+    before = _workspace_hashes(phase4_workspace)
+
+    public = inspect_plan_alignment(phase4_workspace, hypothesis.id)
+    in_memory = inspect_plan_alignment_from_inputs(
+        target,
+        observations,
+        endpoints,
+        resources,
+        hypothesis,
+    )
+    reversed_inputs = inspect_plan_alignment_from_inputs(
+        target,
+        observations.model_copy(update={"observations": list(reversed(observations.observations))}),
+        endpoints.model_copy(update={"endpoints": list(reversed(endpoints.endpoints))}),
+        resources.model_copy(update={"resources": list(reversed(resources.resources))}),
+        hypothesis,
+    )
+
+    assert public == in_memory == reversed_inputs
+    assert public.plan_status == "READY_FOR_REVIEW"
+    blocked_target = target.model_copy(
+        update={"testing": target.testing.model_copy(update={"maximum_requests_per_plan": 1})}
+    )
+    blocked = inspect_plan_alignment_from_inputs(
+        blocked_target,
+        observations,
+        endpoints,
+        resources,
+        hypothesis,
+    )
+    assert blocked.plan_status == "BLOCKED"
+    assert blocked.readiness.actionable_plan is False
+    assert _workspace_hashes(phase4_workspace) == before
+
+
+def _install_plan_matrix(
+    workspace: WorkspacePaths,
+    source_hypotheses: HypothesisStore,
+    source_plan: PlanRecord,
+    *,
+    current_statuses: tuple[str, ...] = (),
+    stale_statuses: tuple[str, ...] = (),
+    suppressed_stale: bool = False,
+) -> set[str]:
+    base = next(item for item in source_hypotheses.hypotheses if item.id == "HYP-002")
+    hypotheses = list(source_hypotheses.hypotheses)
+    plans: list[PlanRecord] = []
+    current_ids: set[str] = set()
+    for index, status in enumerate(current_statuses, start=1):
+        hypothesis_id = f"HYP-MATRIX-{index:03d}"
+        hypotheses.append(
+            base.model_copy(
+                deep=True,
+                update={
+                    "id": hypothesis_id,
+                    "key": f"matrix-current:{index:03d}",
+                    "generation": None,
+                },
+            )
+        )
+        plan_id = f"PLAN-MATRIX-{index:03d}"
+        blocked = status == "BLOCKED"
+        plans.append(
+            source_plan.model_copy(
+                deep=True,
+                update={
+                    "id": plan_id,
+                    "key": f"plan:{hypothesis_id}",
+                    "hypothesis_id": hypothesis_id,
+                    "status": status,
+                    "risk": source_plan.risk.model_copy(
+                        update={
+                            "decision": "BLOCKED" if blocked else "REQUIRES_HUMAN_APPROVAL",
+                            "reasons": (
+                                ["Synthetic current plan is blocked by canonical policy."]
+                                if blocked
+                                else [
+                                    "Static policy checks pass; explicit human approval is "
+                                    "still mandatory."
+                                ]
+                            ),
+                        }
+                    ),
+                    "generation": None,
+                },
+            )
+        )
+        current_ids.add(plan_id)
+    for index, status in enumerate(stale_statuses, start=1):
+        hypothesis_id = f"HYP-STALE-{index:03d}"
+        if suppressed_stale:
+            hypotheses.append(
+                base.model_copy(
+                    deep=True,
+                    update={
+                        "id": hypothesis_id,
+                        "key": f"matrix-suppressed:{index:03d}",
+                        "disposition": "SUPPRESSED_INSUFFICIENT_EVIDENCE",
+                        "generation": None,
+                    },
+                )
+            )
+        plans.append(
+            source_plan.model_copy(
+                deep=True,
+                update={
+                    "id": f"PLAN-STALE-{index:03d}",
+                    "key": f"plan:{hypothesis_id}",
+                    "hypothesis_id": hypothesis_id,
+                    "status": status,
+                    "generation": None,
+                },
+            )
+        )
+    write_yaml(
+        workspace.hypotheses,
+        HypothesisStore(hypotheses=hypotheses).model_dump(mode="json", exclude_none=True),
+    )
+    write_yaml(
+        workspace.test_plans,
+        PlanStore(plans=plans).model_dump(mode="json", exclude_none=True),
+    )
+    return current_ids
+
+
+def test_conservative_mixed_plan_aggregation_matrix_and_surface_consistency(
+    phase4_workspace: WorkspacePaths,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source_hypotheses = HypothesisStore.model_validate(load_yaml(phase4_workspace.hypotheses))
+    source_plans = PlanStore.model_validate(load_yaml(phase4_workspace.test_plans))
+    source_plan = next(item for item in source_plans.plans if item.hypothesis_id == "HYP-002")
+    current_ids: set[str] = set()
+    monkeypatch.setattr(resolver_module, "_generated_store_integrity", lambda *_: True)
+    monkeypatch.setattr(
+        resolver_module,
+        "_plan_current",
+        lambda plan, *_: plan.id in current_ids,
+    )
+    matrix = [
+        ((), (), False, LifecycleStatus.READY, (0, 0, 0)),
+        (("READY_FOR_REVIEW",), (), False, LifecycleStatus.COMPLETE, (1, 0, 0)),
+        (("BLOCKED",), (), False, LifecycleStatus.BLOCKED, (0, 1, 0)),
+        (
+            ("READY_FOR_REVIEW", "BLOCKED"),
+            (),
+            False,
+            LifecycleStatus.BLOCKED,
+            (1, 1, 0),
+        ),
+        (
+            ("READY_FOR_REVIEW",),
+            ("READY_FOR_REVIEW",),
+            False,
+            LifecycleStatus.COMPLETE,
+            (1, 0, 1),
+        ),
+        (
+            ("BLOCKED",),
+            ("READY_FOR_REVIEW",),
+            False,
+            LifecycleStatus.BLOCKED,
+            (0, 1, 1),
+        ),
+        (
+            ("READY_FOR_REVIEW", "READY_FOR_REVIEW"),
+            (),
+            False,
+            LifecycleStatus.COMPLETE,
+            (2, 0, 0),
+        ),
+        (
+            (),
+            ("READY_FOR_REVIEW",),
+            True,
+            LifecycleStatus.STALE,
+            (0, 0, 1),
+        ),
+    ]
+    for ready_or_blocked, stale, suppressed, expected_status, expected_counts in matrix:
+        current_ids.clear()
+        current_ids.update(
+            _install_plan_matrix(
+                phase4_workspace,
+                source_hypotheses,
+                source_plan,
+                current_statuses=ready_or_blocked,
+                stale_statuses=stale,
+                suppressed_stale=suppressed,
+            )
+        )
+        before = phase4_workspace.test_plans.read_bytes()
+
+        report = resolve_workspace_readiness(phase4_workspace)
+        plan_stage = _stage(report, PipelineStage.PLAN)
+
+        assert plan_stage.status == expected_status
+        assert (
+            report.metrics.current_ready_plans,
+            report.metrics.current_blocked_plans,
+            report.metrics.stale_plans,
+        ) == expected_counts
+        assert phase4_workspace.test_plans.read_bytes() == before
+        if expected_counts[1]:
+            assert plan_stage.blockers
+            assert all(item.stage == PipelineStage.PLAN for item in plan_stage.blockers)
+
+    current_ids.clear()
+    current_ids.update(
+        _install_plan_matrix(
+            phase4_workspace,
+            source_hypotheses,
+            source_plan,
+            current_statuses=("READY_FOR_REVIEW", "BLOCKED"),
+        )
+    )
+    domain = resolve_workspace_readiness(phase4_workspace).model_dump(mode="json")
+    cli_json = RUNNER.invoke(
+        app,
+        ["status", "--workspace", str(phase4_workspace.root), "--json"],
+    )
+    cli_normal = RUNNER.invoke(
+        app,
+        ["status", "--workspace", str(phase4_workspace.root)],
+    )
+    web = workspace_overview(load_snapshot(phase4_workspace))["readiness"]
+    mcp = (
+        FinsecMcpService.from_workspace_path(phase4_workspace.root)
+        .workspace_summary()
+        .readiness.model_dump(mode="json")
+    )
+
+    assert cli_json.exit_code == 0, cli_json.output
+    assert cli_normal.exit_code == 0, cli_normal.output
+    assert json.loads(cli_json.output) == domain == web == mcp
+    assert "plan" in cli_normal.output
+    assert "BLOCKED" in cli_normal.output
+    assert "Current Ready Plans" in cli_normal.output
+    assert "Current Blocked Plans" in cli_normal.output
+    stored = PlanStore.model_validate(load_yaml(phase4_workspace.test_plans))
+    assert sorted(item.status for item in stored.plans) == ["BLOCKED", "READY_FOR_REVIEW"]
 
 
 def test_state_changing_validation_requires_before_and_after_evidence(
