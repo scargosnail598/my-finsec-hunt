@@ -18,6 +18,7 @@ from finsec.hypotheses.contracts import (
 )
 from finsec.hypotheses.domain import HypothesisRecord, HypothesisScores, HypothesisStore
 from finsec.hypotheses.readiness import assess_record_readiness
+from finsec.hypotheses.scoring import canonical_scoring, canonicalize_scores
 from finsec.hypotheses.semantics import (
     assess_claim_strength,
     assess_domain_intent,
@@ -383,16 +384,17 @@ def _calibrated_scores(record: HypothesisRecord) -> tuple[HypothesisScores, str]
     ):
         values["impact"] = min(values["impact"], 3)
         values["confidence"] = min(values["confidence"], 3)
-    values["total"] = sum(
-        values[item] for item in ("impact", "likelihood", "confidence", "testability")
+    if record.kind == "RESEARCH_TASK" or record.disposition != "ACTIVE":
+        values["likelihood"] = 1
+        values["confidence"] = 1
+        values["testability"] = 1
+    canonical = canonical_scoring(
+        values["impact"],
+        values["likelihood"],
+        values["confidence"],
+        values["testability"],
     )
-    scores = HypothesisScores.model_validate(values)
-    calculated_priority = (
-        "P1" if scores.impact >= 4 and scores.total >= 14 else "P2" if scores.total >= 10 else "P3"
-    )
-    priority_rank = {"P1": 1, "P2": 2, "P3": 3}
-    priority = max((record.priority, calculated_priority), key=priority_rank.__getitem__)
-    return scores, priority
+    return canonical.scores, canonical.priority
 
 
 def _primary(records: list[HypothesisRecord]) -> HypothesisRecord:
@@ -404,6 +406,7 @@ def _primary(records: list[HypothesisRecord]) -> HypothesisRecord:
             0 if _base_visible(item) else 1,
             0 if item.kind == "SECURITY_HYPOTHESIS" else 1,
             readiness_rank[item.readiness],
+            canonicalize_scores(item.scores).ranking_key,
             generator_rank.get(_generator(item), 2),
             item.id,
         ),

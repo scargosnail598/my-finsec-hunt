@@ -108,10 +108,19 @@ def _install_credential(
             expires_at=expires_at,
             source="unknown",
         ),
-        identity=AuthenticationIdentityConfig(baseline_confirmed=baseline_confirmed),
+        identity=AuthenticationIdentityConfig(
+            confirmed=baseline_confirmed,
+            confirmation_reference=(
+                "identity-assertion:readiness-synthetic" if baseline_confirmed else None
+            ),
+            last_assertion_status="CONFIRMED" if baseline_confirmed else "NOT_CONFIGURED",
+        ),
         status="READY",
         target_hosts=target.scope.hosts,
-        last_validated_at=datetime.now(UTC),
+        credential_accepted=True,
+        credential_accepted_at=datetime.now(UTC),
+        scope_validated=True,
+        scope_validated_at=datetime.now(UTC),
     )
     write_yaml(workspace.target, target.model_dump(mode="json", exclude_none=True))
     SecretStore(workspace).put(
@@ -179,7 +188,9 @@ def test_authentication_changes_do_not_stale_offline_analysis(
 
     target = load_yaml(workspace.target)
     target["accounts"][0]["authentication"]["status"] = "AVAILABLE_NOT_VALIDATED"
-    target["accounts"][0]["authentication"]["last_validated_at"] = datetime.now(UTC).isoformat()
+    target["accounts"][0]["authentication"]["credential_accepted_at"] = (
+        datetime.now(UTC).isoformat()
+    )
     write_yaml(workspace.target, target)
 
     after = resolve_workspace_readiness(workspace)
@@ -611,6 +622,20 @@ def test_conservative_mixed_plan_aggregation_matrix_and_surface_consistency(
         resolver_module,
         "_plan_current",
         lambda plan, *_: plan.id in current_ids,
+    )
+    monkeypatch.setattr(
+        resolver_module,
+        "inspect_plan_alignment_from_inputs",
+        lambda _target, _observations, _endpoints, _resources, hypothesis: (
+            planner_module.PlanAlignment(
+                readiness=hypothesis.readiness_assessment.model_copy(
+                    update={"readiness": "TEST_READY", "actionable_plan": True, "blockers": []}
+                ),
+                plan_status="READY_FOR_REVIEW",
+                agrees=True,
+                violation=None,
+            )
+        ),
     )
     matrix = [
         ((), (), False, LifecycleStatus.READY, (0, 0, 0)),

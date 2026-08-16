@@ -5,6 +5,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from finsec.modeling.liveness import ControlledObjectLiveness
 from finsec.modeling.semantics import IdentifierSemanticAssessment
 
 
@@ -67,6 +68,8 @@ class DecisionEvidence(ContractModel):
         "INVARIANT",
         "WORKFLOW",
         "TARGET_POLICY",
+        "CONTROLLED_OWNERSHIP",
+        "ACTOR_AUTHENTICATION",
         "GENERATOR",
         "LEGACY",
     ]
@@ -144,6 +147,8 @@ class ComparisonBaseline(ContractModel):
     route_family: str | None = None
     collection_route_family: str | None = None
     operation: str | None = None
+    liveness: ControlledObjectLiveness = ControlledObjectLiveness.UNKNOWN
+    liveness_evidence_references: list[str] = Field(default_factory=list)
     baseline_ids: list[str] = Field(default_factory=list)
     endpoint_ids: list[str] = Field(default_factory=list)
     supporting_relationship_ids: list[str] = Field(default_factory=list)
@@ -166,6 +171,7 @@ class ComparisonCoverage(ContractModel):
     target_parent_references: list[str] = Field(default_factory=list)
     target_parent_baseline_reference: str | None = None
     comparison_baseline_references: list[str] = Field(default_factory=list)
+    witness_baseline_references: list[str] = Field(default_factory=list)
     cross_parent_comparison: bool = False
     explanation: str = "No cross-actor comparison coverage is required."
     baseline_ids: list[str] = Field(default_factory=list)
@@ -184,6 +190,7 @@ class CapabilityAssessment(ContractModel):
     evidence: list[DecisionEvidence] = Field(default_factory=list)
     missing: list[str] = Field(default_factory=list)
     next_action: str | None = None
+    blocker_code: str | None = None
 
 
 class ReadinessIssue(ContractModel):
@@ -195,6 +202,63 @@ class ReadinessIssue(ContractModel):
     summary: str
     evidence: list[DecisionEvidence] = Field(default_factory=list)
     next_action: str | None = None
+
+
+class ExecutionMode(StrEnum):
+    """Canonical bounded-execution shape or explicit manual-only disposition."""
+
+    OBJECT_SUBSTITUTION = "OBJECT_SUBSTITUTION"
+    AUTHENTICATION_COMPARISON = "AUTHENTICATION_COMPARISON"
+    VERSION_COMPARISON = "VERSION_COMPARISON"
+    CHANNEL_COMPARISON = "CHANNEL_COMPARISON"
+    MANUAL_ONLY = "MANUAL_ONLY"
+    UNSUPPORTED = "UNSUPPORTED"
+
+
+class ConstructabilityBlockerCode(StrEnum):
+    """Stable local refusal reasons shared by readiness, planning, and rendering."""
+
+    UNSUPPORTED_EXECUTION_TEMPLATE = "UNSUPPORTED_EXECUTION_TEMPLATE"
+    MISSING_RUNTIME_TEMPLATE = "MISSING_RUNTIME_TEMPLATE"
+    MISSING_SEMANTIC_TARGET = "MISSING_SEMANTIC_TARGET"
+    MISSING_CONTROLLED_BASELINE = "MISSING_CONTROLLED_BASELINE"
+    STALE_EXECUTION_BASELINE = "STALE_EXECUTION_BASELINE"
+    MISSING_LIVE_CONTROLLED_OBJECT = "MISSING_LIVE_CONTROLLED_OBJECT"
+    MISSING_CLEANUP = "MISSING_CLEANUP"
+    MISSING_BUDGET = "MISSING_BUDGET"
+    MISSING_IDENTITY_CONFIRMATION = "MISSING_IDENTITY_CONFIRMATION"
+
+
+class ConstructabilityBaseline(ContractModel):
+    """Secret-free ownership and liveness state for one selected execution binding."""
+
+    canonical_reference: str
+    actor_id: str
+    object_reference: str
+    liveness: ControlledObjectLiveness = ControlledObjectLiveness.UNKNOWN
+    ownership_eligible: bool = True
+    execution_eligible: bool = False
+    evidence_references: list[str] = Field(default_factory=list)
+
+
+class ExecutionConstructabilityAssessment(ContractModel):
+    """One pure execution decision consumed by every planning-facing interface."""
+
+    version: Literal[1] = 1
+    evaluator: str = "execution-constructability-v1"
+    supported: bool = False
+    execution_mode: ExecutionMode = ExecutionMode.UNSUPPORTED
+    blocker_code: ConstructabilityBlockerCode | None = None
+    blocker_stage: BlockerStage | None = None
+    summary: str = "Execution constructability has not been evaluated."
+    evidence_references: list[str] = Field(default_factory=list)
+    missing_requirements: list[str] = Field(default_factory=list)
+    next_action: str | None = None
+    blockers: list[ReadinessIssue] = Field(default_factory=list)
+    baselines: list[ConstructabilityBaseline] = Field(default_factory=list)
+    request_count: int | None = Field(default=None, ge=0, le=10)
+    identity_confirmation_required: bool = False
+    identity_confirmed: bool = False
 
 
 HypothesisReadinessValue = Literal["RESEARCH_ONLY", "REVIEW_REQUIRED", "TEST_READY"]
@@ -212,6 +276,9 @@ class HypothesisReadinessAssessment(ContractModel):
     blockers: list[ReadinessIssue] = Field(default_factory=list)
     warnings: list[ReadinessIssue] = Field(default_factory=list)
     capabilities: list[CapabilityAssessment] = Field(default_factory=list)
+    constructability: ExecutionConstructabilityAssessment = Field(
+        default_factory=ExecutionConstructabilityAssessment
+    )
     comparison_coverage: ComparisonCoverage = Field(default_factory=ComparisonCoverage)
     evidence_references: list[str] = Field(default_factory=list)
 

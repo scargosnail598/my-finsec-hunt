@@ -6,6 +6,14 @@ from typing import Any
 
 import pytest
 
+from finsec.auth.store import SecretStore
+from finsec.config.models import (
+    ActorAuthenticationConfig,
+    AuthenticationComponentConfig,
+    AuthenticationIdentityConfig,
+    AuthenticationSourceConfig,
+    TargetDocument,
+)
 from finsec.config.workspace import WorkspacePaths, create_workspace
 from finsec.evidence.manager import add_evidence, ensure_evidence
 from finsec.hypotheses.generator import generate_hypotheses
@@ -205,6 +213,39 @@ def phase4_workspace(phase3_workspace: WorkspacePaths, tmp_path: Path) -> Worksp
             encoding="utf-8",
         )
         ingest_har(capture, phase3_workspace, actor=actor, channel="WEB")
+    target_document = TargetDocument.model_validate(load_yaml(phase3_workspace.target))
+    secret_store = SecretStore(phase3_workspace)
+    for account in target_document.accounts:
+        actor_token = account.id.lower().replace("_", "-")
+        credential_ref = f"phase4-{actor_token}-credential"
+        account.authentication = ActorAuthenticationConfig(
+            auth_type="bearer",
+            profile_ref=f"actor-{actor_token}-default",
+            components=[
+                AuthenticationComponentConfig(
+                    name="Authorization",
+                    credential_ref=credential_ref,
+                    purpose="access",
+                    value_prefix="Bearer ",
+                )
+            ],
+            source=AuthenticationSourceConfig(type="manual"),
+            identity=AuthenticationIdentityConfig(
+                confirmed=True,
+                confirmation_reference=f"identity-assertion:synthetic-{actor_token}",
+                last_assertion_status="CONFIRMED",
+            ),
+            status="READY",
+            context_fingerprint=f"synthetic-context-{actor_token}",
+            target_hosts=target_document.scope.hosts,
+            credential_accepted=True,
+            scope_validated=True,
+        )
+        secret_store.put(credential_ref, account.id, "access", "PHASE4_SYNTHETIC_SECRET")
+    write_yaml(
+        phase3_workspace.target,
+        target_document.model_dump(mode="json", exclude_none=True),
+    )
     build_inventory(phase3_workspace)
     generate_model(phase3_workspace)
     generate_invariants(phase3_workspace)

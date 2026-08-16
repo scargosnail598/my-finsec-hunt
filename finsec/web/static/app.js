@@ -653,19 +653,21 @@ function renderAuthenticationCard(actor, data) {
       </div>
       <div class="auth-facts">
         ${authFact("Credential available", preflight.credential_available ? "Yes" : "No")}
+        ${authFact("Credential accepted", preflight.credential_accepted ? "Yes" : "No")}
         ${authFact("Authentication type", actor.auth_type ? label(actor.auth_type) : "Not configured")}
         ${authFact("Expires", preflight.expires_at ? formatDate(preflight.expires_at) : "Unknown")}
         ${authFact("Remaining lifetime", formatRemaining(preflight.remaining_seconds))}
         ${authFact("Observed refresh", preflight.refresh_available ? "Configured" : "Not configured")}
-        ${authFact("Target validated", preflight.target_validated ? "Recorded" : "Not recorded")}
+        ${authFact("Scope validated", preflight.scope_validated ? "Yes" : "No")}
         ${authFact(
-          "Last target validation",
-          actor.last_validated_at ? formatDate(actor.last_validated_at) : "Never",
+          "Credential accepted at",
+          actor.credential_accepted_at ? formatDate(actor.credential_accepted_at) : "Never",
         )}
         ${authFact(
-          "Baseline identity",
-          preflight.baseline_identity_confirmed ? "Confirmed" : "Not confirmed",
+          "Identity confirmed",
+          preflight.identity_confirmed ? "Yes" : "No",
         )}
+        ${authFact("Identity assertion", label(preflight.identity_assertion_status))}
         ${authFact("Source", actor.source ? label(actor.source) : "Not configured")}
       </div>
       ${
@@ -1300,6 +1302,7 @@ function renderHypothesisDrawer(data) {
   const semantics = explanation.identifier_semantics || {};
   const readiness = explanation.readiness || {};
   const comparison = readiness.comparison_coverage || {};
+  const constructability = readiness.constructability || {};
   const presentation = explanation.presentation || {};
   const plan = data.plan;
   const validation = data.validation;
@@ -1310,9 +1313,18 @@ function renderHypothesisDrawer(data) {
       ...(baseline.endpoint_ids || []),
       ...(baseline.supporting_relationship_ids || []),
       ...(baseline.observation_ids || []),
+      ...(baseline.liveness_evidence_references || []),
     ];
-    return `${baseline.canonical_reference}: actor=${baseline.actor_id}; object=${baseline.object_reference}; parent=${baseline.parent_reference || "None"}; target-parent=${baseline.matches_target_parent ? "yes" : "no"}; provenance=${provenance.join(", ") || "None"}`;
+    return `${baseline.canonical_reference}: actor=${baseline.actor_id}; object=${baseline.object_reference}; parent=${baseline.parent_reference || "None"}; liveness=${baseline.liveness || "UNKNOWN"}; target-parent=${baseline.matches_target_parent ? "yes" : "no"}; provenance=${provenance.join(", ") || "None"}`;
   });
+  const executionBindings = (constructability.baselines || []).map(
+    (baseline) =>
+      `${baseline.canonical_reference}: actor=${baseline.actor_id}; liveness=${baseline.liveness}; execution eligible=${baseline.execution_eligible ? "yes" : "no"}`,
+  );
+  const constructabilityBlockers = (constructability.blockers || []).map(
+    (blocker) =>
+      `${blocker.code}: ${blocker.summary}${blocker.next_action ? ` Next action: ${blocker.next_action}` : ""}`,
+  );
   const comparisonSection = comparison.required_distinct_actors
     ? `<section class="drawer-section">
         <h3>Cross-actor comparison coverage</h3>
@@ -1332,6 +1344,18 @@ function renderHypothesisDrawer(data) {
         ${drawerListSection("Missing baseline actors", comparison.missing_actor_ids || [])}
       </section>`
     : "";
+  const constructabilitySection = `<section class="drawer-section">
+      <h3>Canonical execution constructability</h3>
+      <div class="check-grid">
+        ${scoreCell("Automated support", constructability.supported ? "Satisfied" : "Unsatisfied")}
+        ${scoreCell("Execution mode", constructability.execution_mode || "UNSUPPORTED")}
+        ${scoreCell("Primary blocker", constructability.blocker_code || "None")}
+        ${scoreCell("Identity confirmed", constructability.identity_confirmed ? "Yes" : "No")}
+      </div>
+      <p class="spaced-copy">${escapeHtml(constructability.next_action || "No next action recorded.")}</p>
+      ${drawerListSection("Execution binding liveness", executionBindings)}
+      ${drawerListSection("Constructability blockers", constructabilityBlockers)}
+    </section>`;
   return `
     <header class="drawer-header">
       <p class="eyebrow">${escapeHtml(item.id)} / ${escapeHtml(label(item.kind))}</p>
@@ -1367,6 +1391,7 @@ function renderHypothesisDrawer(data) {
     </section>
     ${drawerListSection("Readiness reasons", readiness.reasons || [])}
     ${drawerListSection("Missing readiness prerequisites", readiness.missing_prerequisites || [])}
+    ${constructabilitySection}
     ${comparisonSection}
     ${drawerListSection("Why retained", presentation.retention_reasons || [])}
     ${drawerListSection("Why distinct", presentation.difference_reasons || [])}

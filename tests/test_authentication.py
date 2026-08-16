@@ -21,6 +21,7 @@ from finsec.auth.capture import (
     detect_burp_authentication,
     detect_har_authentication,
 )
+from finsec.auth.identity import evaluate_identity_assertion
 from finsec.auth.service import (
     actor_preflight,
     capture_from_burp,
@@ -35,7 +36,11 @@ from finsec.auth.service import (
 )
 from finsec.auth.store import SecretStore
 from finsec.cli import app
-from finsec.config.models import TargetDocument
+from finsec.config.models import (
+    AuthenticationIdentityAssertionConfig,
+    AuthenticationIdentityConfig,
+    TargetDocument,
+)
 from finsec.config.workspace import WorkspacePaths, create_workspace
 from finsec.errors import FinsecError
 from finsec.execution.policy import approve_plan, prepare_execution
@@ -665,6 +670,15 @@ def _auth_plan_workspace(
             capture_auth=True,
             auth_candidate=1,
         )
+    target = TargetDocument.model_validate(load_yaml(workspace.target))
+    for account in target.accounts:
+        assert account.authentication is not None
+        account.authentication.identity.confirmed = True
+        account.authentication.identity.last_assertion_status = "CONFIRMED"
+        account.authentication.identity.confirmation_reference = (
+            f"identity-assertion:synthetic-{account.id.lower()}"
+        )
+    write_yaml(workspace.target, target.model_dump(mode="json", exclude_none=True))
     build_inventory(workspace)
     generate_model(workspace)
     generate_invariants(workspace)
@@ -738,9 +752,11 @@ def test_planner_blocks_missing_and_expired_actor_authentication(tmp_path: Path)
 
     plan = generate_plan(workspace, hypothesis.id).plan
 
-    assert plan.status == "READY_FOR_REVIEW"
-    assert plan.risk.decision == "REQUIRES_HUMAN_APPROVAL"
-    assert plan.planning_blockers == []
+    assert plan.status == "BLOCKED"
+    assert plan.risk.decision == "BLOCKED"
+    assert any(
+        item.code == "MISSING_IDENTITY_CONFIRMATION" for item in plan.planning_blockers
+    )
     assert plan.execution.supported is False
     assert any("ACCOUNT_B authentication" in reason for reason in plan.execution.blockers)
     assert any("expiration" in reason.lower() for reason in plan.execution.blockers)
@@ -1043,7 +1059,7 @@ def test_refresh_rejects_a_new_credential_for_another_identity(tmp_path: Path) -
         assert target.accounts[0].authentication.status == "AUTH_CONTEXT_CHANGED"
 
 
-def test_target_baseline_check_marks_401_invalid_and_success_ready(tmp_path: Path) -> None:
+def test_target_baseline_check_separates_acceptance_from_identity(tmp_path: Path) -> None:
     with auth_server(get_status=401) as server:
         workspace, _ = _local_auth_workspace(tmp_path, server.server_port, _jwt())
         failed = validate_actor_baseline(workspace, "ACCOUNT_A")
@@ -1059,7 +1075,114 @@ def test_target_baseline_check_marks_401_invalid_and_success_ready(tmp_path: Pat
         succeeded = validate_actor_baseline(workspace, "ACCOUNT_A")
         assert succeeded.actor_baseline_matched is True
         assert succeeded.preflight.status == "READY"
-        assert succeeded.preflight.baseline_identity_confirmed is True
+        assert succeeded.preflight.credential_accepted is True
+        assert succeeded.preflight.scope_validated is True
+        assert succeeded.preflight.identity_confirmed is False
+        assert succeeded.preflight.identity_assertion_status == "NOT_CONFIGURED"
+        assert succeeded.preflight.result == "BLOCKED_BY_AUTH"
+
+
+def test_structured_identity_assertion_is_exact_and_secret_free() -> None:
+    account = AccountInput("ACCOUNT_A").to_config()
+    assertion = AuthenticationIdentityAssertionConfig(
+        source="JSON_BODY",
+        selector="/user/id",
+        expected_value="actor-123",
+        expected_status=200,
+        redaction="SHA256",
+    )
+    secret_body = b'{"user":{"id":"actor-123"},"token":"IDENTITY_SECRET_CANARY"}'
+
+    matched = evaluate_identity_assertion(
+        assertion,
+        account,
+        status_code=200,
+        headers=[("Content-Type", "application/json")],
+        body=secret_body,
+        login_or_error_response=False,
+    )
+
+    assert matched.confirmed is True
+    assert matched.status == "CONFIRMED"
+    assert matched.confirmation_reference is not None
+    assert "actor-123" not in repr(matched)
+    assert "IDENTITY_SECRET_CANARY" not in repr(matched)
+
+
+@pytest.mark.parametrize(
+    ("assertion", "body", "headers", "expected_status"),
+    [
+        (
+            AuthenticationIdentityAssertionConfig(
+                source="JSON_BODY",
+                selector="/user/missing",
+                expected_value="actor-123",
+            ),
+            b'{"user":{"id":"actor-123"}}',
+            [("Content-Type", "application/json")],
+            "SELECTOR_MISSING",
+        ),
+        (
+            AuthenticationIdentityAssertionConfig(
+                source="JSON_BODY",
+                selector="/user/id",
+                expected_value="actor-999",
+            ),
+            b'{"user":{"id":"actor-123"}}',
+            [("Content-Type", "application/json")],
+            "VALUE_MISMATCH",
+        ),
+        (
+            AuthenticationIdentityAssertionConfig(
+                source="JSON_BODY",
+                selector="/user/id",
+                expected_value="actor-123",
+            ),
+            b'{"user":',
+            [("Content-Type", "application/json")],
+            "MALFORMED_BODY",
+        ),
+        (
+            AuthenticationIdentityAssertionConfig(
+                source="RESPONSE_HEADER",
+                selector="X-Actor-Id",
+                expected_value="actor-123",
+            ),
+            b"IDENTITY_SECRET_CANARY",
+            [("X-Actor-Id", "actor-123"), ("x-actor-id", "actor-123")],
+            "SELECTOR_AMBIGUOUS",
+        ),
+    ],
+)
+def test_identity_assertion_failures_do_not_expose_response_content(
+    assertion: AuthenticationIdentityAssertionConfig,
+    body: bytes,
+    headers: list[tuple[str, str]],
+    expected_status: str,
+) -> None:
+    result = evaluate_identity_assertion(
+        assertion,
+        AccountInput("ACCOUNT_A").to_config(),
+        status_code=200,
+        headers=headers,
+        body=body,
+        login_or_error_response=False,
+    )
+
+    assert result.confirmed is False
+    assert result.status == expected_status
+    assert "actor-123" not in repr(result)
+    assert "IDENTITY_SECRET_CANARY" not in repr(result)
+
+
+def test_legacy_generic_identity_confirmation_migrates_to_untrusted() -> None:
+    identity = AuthenticationIdentityConfig.model_validate(
+        {"subject": "legacy-user", "baseline_confirmed": True}
+    )
+
+    assert identity.confirmed is False
+    assert identity.last_assertion_status == "LEGACY_UNTRUSTED"
+    assert "baseline_confirmed" not in identity.model_dump(mode="json")
 
 
 def test_legacy_migration_records_only_variable_names(
@@ -1169,6 +1292,25 @@ def test_end_to_end_expiration_replacement_preflight_and_bounded_execution(
             ],
         )
         capture_from_har(workspace, "ACCOUNT_B", replacement, candidate_number=1)
+
+        target = TargetDocument.model_validate(load_yaml(workspace.target))
+        actor_b = next(item for item in target.accounts if item.id == "ACCOUNT_B")
+        assert actor_b.authentication is not None
+        assert actor_b.authentication.baseline is not None
+        actor_b.authentication.baseline.identity_assertion = (
+            AuthenticationIdentityAssertionConfig(
+                source="JSON_BODY",
+                selector="/data/UserId",
+                expected_value=11,
+                expected_status=200,
+            )
+        )
+        write_yaml(workspace.target, target.model_dump(mode="json", exclude_none=True))
+        identity_check = validate_actor_baseline(workspace, "ACCOUNT_B")
+        assert identity_check.preflight.identity_confirmed is True
+        server.received.clear()
+        generate_plan(workspace, hypothesis_id)
+        approve_plan(workspace, hypothesis_id, approved_by="pytest")
 
         prepared = prepare_execution(workspace, hypothesis_id, dry_run=False)
         result = execute_prepared(prepared)

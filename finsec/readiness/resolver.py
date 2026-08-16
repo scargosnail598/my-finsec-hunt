@@ -484,6 +484,7 @@ def _actor_readiness(
                 credential=CredentialReadiness(
                     available=True,
                     type="none",
+                    accepted=True,
                     status="NOT_REQUIRED",
                     expiration="not_applicable",
                     locally_usable=True,
@@ -569,8 +570,28 @@ def _actor_readiness(
                 scope=actor_scope,
             )
         )
-    target_validated = authentication is not None and authentication.last_validated_at is not None
-    identity_confirmed = authentication is not None and authentication.identity.baseline_confirmed
+    credential_accepted = authentication is not None and authentication.credential_accepted
+    target_validated = authentication is not None and authentication.scope_validated
+    identity_confirmed = authentication is not None and authentication.identity.confirmed
+    if available and not credential_accepted:
+        blockers.append(
+            _blocker(
+                BlockerCode.CREDENTIAL_NOT_ACCEPTED,
+                stage,
+                "Credential material is present, but no expected authenticated response has "
+                "accepted it.",
+                scope=actor_scope,
+                actions=[
+                    _cli_action(
+                        f"Validate credential acceptance for {account.id}",
+                        _workspace_command(
+                            f"hunt actor auth check {shlex.quote(account.id)} --network", workspace
+                        ),
+                        safety="requires_human_approval",
+                    )
+                ],
+            )
+        )
     if available and not target_validated:
         blockers.append(
             _blocker(
@@ -594,7 +615,8 @@ def _actor_readiness(
             _blocker(
                 BlockerCode.ACTOR_IDENTITY_NOT_CONFIRMED,
                 stage,
-                "The validated baseline has not confirmed the intended actor identity.",
+                "The accepted credential has not confirmed the intended actor identity through "
+                "a structured assertion.",
                 scope=actor_scope,
                 actions=[
                     _cli_action(
@@ -615,6 +637,7 @@ def _actor_readiness(
             credential=CredentialReadiness(
                 available=available,
                 type=auth_type,
+                accepted=credential_accepted,
                 status=authentication.status if authentication is not None else "MISSING",
                 expiration=expiration,
                 locally_usable=locally_usable,
@@ -979,6 +1002,16 @@ def _execution_blockers(
                     BlockerCode.CREDENTIAL_UNUSABLE,
                     PipelineStage.EXECUTE,
                     "A planned actor credential is not locally usable.",
+                    scope=actor_scope,
+                )
+            )
+        if not actor.credential.accepted:
+            blockers.append(
+                _blocker(
+                    BlockerCode.CREDENTIAL_NOT_ACCEPTED,
+                    PipelineStage.EXECUTE,
+                    "A planned actor credential has not been accepted by the configured "
+                    "authenticated baseline.",
                     scope=actor_scope,
                 )
             )

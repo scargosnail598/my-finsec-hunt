@@ -1,7 +1,7 @@
 """Strongly typed target configuration models."""
 
 from datetime import datetime
-from typing import Literal, Self
+from typing import Any, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -113,7 +113,101 @@ class AuthenticationIdentityConfig(StrictModel):
     roles: list[str] = Field(default_factory=list)
     tenant: str | None = None
     baseline_identifier_fingerprint: str | None = None
-    baseline_confirmed: bool = False
+    confirmed: bool = False
+    confirmed_at: datetime | None = None
+    confirmation_reference: str | None = None
+    last_assertion_status: Literal[
+        "NOT_CONFIGURED",
+        "NOT_CHECKED",
+        "CONFIRMED",
+        "STATUS_MISMATCH",
+        "LOGIN_OR_ERROR_RESPONSE",
+        "MALFORMED_BODY",
+        "SELECTOR_MISSING",
+        "SELECTOR_AMBIGUOUS",
+        "EXPECTED_VALUE_MISSING",
+        "VALUE_MISMATCH",
+        "LEGACY_UNTRUSTED",
+    ] = "NOT_CONFIGURED"
+
+    @model_validator(mode="before")
+    @classmethod
+    def discard_legacy_generic_confirmation(cls, value: Any) -> Any:
+        """Old generic 2xx confirmations cannot establish actor identity."""
+
+        if not isinstance(value, dict) or "baseline_confirmed" not in value:
+            return value
+        migrated = dict(value)
+        legacy_confirmed = bool(migrated.pop("baseline_confirmed"))
+        migrated.setdefault("confirmed", False)
+        if legacy_confirmed and not migrated.get("confirmed"):
+            migrated.setdefault("last_assertion_status", "LEGACY_UNTRUSTED")
+        return migrated
+
+    @model_validator(mode="after")
+    def validate_confirmation_evidence(self) -> Self:
+        if self.confirmed and (
+            self.last_assertion_status != "CONFIRMED" or self.confirmation_reference is None
+        ):
+            raise ValueError(
+                "confirmed actor identity requires a structured assertion status and reference"
+            )
+        if not self.confirmed and (
+            self.confirmed_at is not None or self.confirmation_reference is not None
+        ):
+            raise ValueError("unconfirmed actor identity cannot retain confirmation evidence")
+        return self
+
+
+IdentityAssertionScalar = str | int | float | bool
+
+
+class AuthenticationIdentityAssertionConfig(StrictModel):
+    """Exact actor-specific response assertion evaluated without retaining response content."""
+
+    source: Literal["JSON_BODY", "RESPONSE_HEADER"]
+    selector: str
+    expected_value: IdentityAssertionScalar | None = None
+    expected_actor_reference: Literal[
+        "account.id",
+        "identity.subject",
+        "identity.tenant",
+    ] | None = None
+    expected_status: int | None = Field(default=None, ge=200, le=299)
+    redaction: Literal["OMIT", "SHA256"] = "OMIT"
+
+    @model_validator(mode="after")
+    def validate_assertion(self) -> Self:
+        if (self.expected_value is None) == (self.expected_actor_reference is None):
+            raise ValueError(
+                "identity assertion requires exactly one expected_value or "
+                "expected_actor_reference"
+            )
+        selector = self.selector.strip()
+        if not selector:
+            raise ValueError("identity assertion selector cannot be empty")
+        if self.source == "JSON_BODY":
+            if not selector.startswith("/") or "*" in selector:
+                raise ValueError("JSON identity selectors must be exact JSON Pointers")
+        else:
+            lowered = selector.lower()
+            unsafe_names = {
+                "authorization",
+                "cookie",
+                "proxy-authenticate",
+                "set-cookie",
+                "www-authenticate",
+            }
+            if (
+                lowered in unsafe_names
+                or any(marker in lowered for marker in ("token", "secret", "api-key", "apikey"))
+                or any(character in selector for character in "\r\n:\0")
+            ):
+                raise ValueError("identity assertion response header is not safe")
+        self.selector = selector
+        if isinstance(self.expected_value, str) and not self.expected_value.strip():
+            raise ValueError("identity assertion expected_value cannot be empty")
+        return self
 
 
 class AuthenticationComponentConfig(StrictModel):
@@ -142,6 +236,7 @@ class AuthenticationBaselineConfig(StrictModel):
     safe_headers: dict[str, str] = Field(default_factory=dict)
     expected_status: int | None = None
     expected_content_type: str | None = None
+    identity_assertion: AuthenticationIdentityAssertionConfig | None = None
 
 
 class AuthenticationRefreshConfig(StrictModel):
@@ -180,8 +275,22 @@ class ActorAuthenticationConfig(StrictModel):
     status: AuthenticationStatus
     context_fingerprint: str | None = None
     target_hosts: list[str] = Field(default_factory=list)
-    last_validated_at: datetime | None = None
+    credential_accepted: bool = False
+    credential_accepted_at: datetime | None = None
+    scope_validated: bool = False
+    scope_validated_at: datetime | None = None
     legacy_environment: dict[str, str] = Field(default_factory=dict)
+
+    @model_validator(mode="before")
+    @classmethod
+    def discard_legacy_validation_timestamp(cls, value: Any) -> Any:
+        """Do not infer current acceptance or scope validation from legacy timestamps."""
+
+        if not isinstance(value, dict) or "last_validated_at" not in value:
+            return value
+        migrated = dict(value)
+        migrated.pop("last_validated_at", None)
+        return migrated
 
 
 class AccountConfig(StrictModel):

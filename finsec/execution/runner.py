@@ -653,7 +653,8 @@ def execute_prepared(prepared: PreparedExecution) -> ExecutionResult:
                 prepared.workspace,
                 baseline_request.actor,
                 "READY",
-                baseline_confirmed=True,
+                credential_accepted=True,
+                scope_validated=True,
             )
             comparison_request = prepared.plan.requests[1]
             comparison_response = _send_request(prepared, comparison_request, mark_sent)
@@ -695,7 +696,14 @@ def execute_prepared(prepared: PreparedExecution) -> ExecutionResult:
     if comparison.outcome in {"BASELINE_AUTH_FAILED", "TEST_BLOCKED_BY_AUTH"}:
         actor = prepared.plan.requests[0].actor if prepared.plan.requests else ""
         if actor:
-            mark_authentication_status(prepared.workspace, actor, "INVALID")
+            mark_authentication_status(
+                prepared.workspace,
+                actor,
+                "INVALID",
+                credential_accepted=False,
+                identity_confirmed=False,
+                identity_assertion_status="LOGIN_OR_ERROR_RESPONSE",
+            )
     evidence_root, audit_path, status = _write_outputs(
         prepared,
         started_at,

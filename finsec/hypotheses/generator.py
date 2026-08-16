@@ -18,6 +18,7 @@ from finsec.hypotheses.domain import (
     HypothesisStatus,
     HypothesisStore,
 )
+from finsec.hypotheses.scoring import canonical_scoring
 from finsec.modeling.domain import InvariantRecord, InvariantStore, ResourceRecord, ResourceStore
 from finsec.modeling.invariants import FINANCIAL_RESOURCES
 from finsec.modeling.merge import merge_generated_records, stable_fingerprint
@@ -66,21 +67,17 @@ def _load_inputs(
 
 
 def _priority(impact: int, likelihood: int, confidence: int, testability: int) -> str:
-    total = impact + likelihood + confidence + testability
-    if impact >= 4 and total >= 14:
-        return "P1"
-    if total >= 10:
-        return "P2"
-    return "P3"
+    return canonical_scoring(impact, likelihood, confidence, testability).priority
 
 
 def _score(impact: int, likelihood: int, confidence: int, testability: int) -> dict[str, int]:
+    score = canonical_scoring(impact, likelihood, confidence, testability).scores
     return {
-        "impact": impact,
-        "likelihood": likelihood,
-        "confidence": confidence,
-        "testability": testability,
-        "total": impact + likelihood + confidence + testability,
+        "impact": score.impact,
+        "likelihood": score.likelihood,
+        "confidence": score.confidence,
+        "testability": score.testability,
+        "total": score.total,
     }
 
 

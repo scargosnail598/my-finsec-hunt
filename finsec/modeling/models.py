@@ -7,6 +7,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from finsec.captures.domain import CaptureMode, CaptureRelevance
+from finsec.modeling.liveness import ControlledObjectLiveness
 from finsec.modeling.semantics import IdentifierSemanticAssessment
 
 AuthenticationType = Literal["none", "bearer", "basic", "cookie", "api_key", "mixed"]
@@ -231,6 +232,8 @@ class ActorObjectBaseline(StrictModel):
     relationship_ids: list[str] = Field(default_factory=list)
     capture_ids: list[str] = Field(default_factory=list)
     session_ids: list[str] = Field(default_factory=list)
+    liveness: ControlledObjectLiveness = ControlledObjectLiveness.UNKNOWN
+    liveness_evidence: list[str] = Field(default_factory=list)
     operation: Literal["READ", "CREATE", "UPDATE", "DELETE", "ACTION"] | None = None
     authentication_type: str | None = None
     observations: list[str] = Field(default_factory=list)

@@ -318,10 +318,11 @@ class WorkspaceAnalysisMarkdownRenderer:
         lines.extend(
             [
                 "| Actor ID | Label | Authentication mechanism | Credential state | Credential "
-                "source capture | Identity confirmed | Session coverage | Owned object types | "
-                "Ownership baselines | Controlled baseline status | Planning readiness | "
-                "Execution readiness | Blockers |",
-                "| --- | --- | --- | --- | --- | --- | ---: | --- | ---: | --- | --- | --- | --- |",
+                "accepted | Scope validated | Credential source capture | Identity confirmed | "
+                "Session coverage | Owned object types | Ownership baselines | Controlled "
+                "baseline status | Planning readiness | Execution readiness | Blockers |",
+                "| --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | ---: | --- | "
+                "--- | --- | --- |",
             ]
         )
         for actor_id in actor_ids:
@@ -348,6 +349,10 @@ class WorkspaceAnalysisMarkdownRenderer:
             owned_types = sorted({item.subject_resource_type for item in baselines})
             blockers: list[str] = []
             if readiness is not None:
+                if not readiness.credential.accepted:
+                    blockers.append("credential not accepted")
+                if not readiness.target_validation.recorded:
+                    blockers.append("scope not validated")
                 if not readiness.identity_confirmation.confirmed:
                     blockers.append("identity not confirmed")
                 if readiness.ownership.confirmed_baselines == 0:
@@ -360,6 +365,8 @@ class WorkspaceAnalysisMarkdownRenderer:
                     actor.name if actor else (account.id if account else actor_id),
                     mechanism,
                     credential,
+                    "yes" if readiness and readiness.credential.accepted else "no",
+                    "yes" if readiness and readiness.target_validation.recorded else "no",
                     source or "not recorded",
                     "yes" if readiness and readiness.identity_confirmation.confirmed else "no",
                     len(sessions),
@@ -381,6 +388,8 @@ class WorkspaceAnalysisMarkdownRenderer:
                     "None",
                     "-",
                     "-",
+                    "no",
+                    "no",
                     "-",
                     "-",
                     "no",
@@ -833,6 +842,16 @@ class WorkspaceAnalysisMarkdownRenderer:
             semantics = target.semantics
             assessment = item.readiness_assessment
             coverage = assessment.comparison_coverage
+            constructability = assessment.constructability
+            ownership_capabilities = [
+                capability
+                for capability in assessment.capabilities
+                if capability.capability.value in {"OWNERSHIP", "BASELINE"}
+                and capability.required
+            ]
+            ownership_satisfied = bool(ownership_capabilities) and all(
+                capability.satisfied for capability in ownership_capabilities
+            )
             related = sorted(
                 set(item.grouping.campaign_member_ids or item.grouping.cluster_member_ids)
                 - {item.id}
@@ -847,6 +866,7 @@ class WorkspaceAnalysisMarkdownRenderer:
                     f"{baseline.canonical_reference}: actor={baseline.actor_id}; "
                     f"object={baseline.object_reference}; "
                     f"parent={baseline.parent_reference or 'None'}; "
+                    f"liveness={baseline.liveness.value}; "
                     f"target-parent={'yes' if baseline.matches_target_parent else 'no'}; "
                     "provenance="
                     + self._join(
@@ -856,6 +876,7 @@ class WorkspaceAnalysisMarkdownRenderer:
                                 *baseline.endpoint_ids,
                                 *baseline.supporting_relationship_ids,
                                 *baseline.observation_ids,
+                                *baseline.liveness_evidence_references,
                             }
                         )
                     )
@@ -879,6 +900,7 @@ class WorkspaceAnalysisMarkdownRenderer:
             ]
             next_action = (
                 item.presentation.next_action
+                or constructability.next_action
                 or next(
                     (
                         blocker.next_action
@@ -912,6 +934,39 @@ class WorkspaceAnalysisMarkdownRenderer:
                     self._row("Priority / score", f"{item.priority} / {item.scores.total}"),
                     self._row("Lifecycle status", item.status),
                     self._row("Unified readiness", item.readiness),
+                    self._row(
+                        "Ownership evidence satisfied",
+                        "yes" if ownership_satisfied else "no",
+                    ),
+                    self._row(
+                        "Cross-parent comparison satisfied",
+                        "yes" if coverage.cross_parent_comparison else "no",
+                    ),
+                    self._row(
+                        "Automated execution support",
+                        "satisfied" if constructability.supported else "unsatisfied",
+                    ),
+                    self._row("Execution mode", constructability.execution_mode.value),
+                    self._row(
+                        "Constructability blocker codes",
+                        self._join([blocker.code for blocker in constructability.blockers]),
+                    ),
+                    self._row(
+                        "Execution liveness",
+                        self._join(
+                            [
+                                f"{baseline.canonical_reference}={baseline.liveness.value}"
+                                for baseline in constructability.baselines
+                            ]
+                        ),
+                    ),
+                    self._row(
+                        "Identity confirmation",
+                        "required="
+                        f"{'yes' if constructability.identity_confirmation_required else 'no'}; "
+                        "confirmed="
+                        f"{'yes' if constructability.identity_confirmed else 'no'}",
+                    ),
                     self._row(
                         "Target host/service",
                         self._join(
@@ -1032,7 +1087,9 @@ class WorkspaceAnalysisMarkdownRenderer:
         lines.extend(["## Business-Logic Hypotheses", ""])
         if self._unavailable(lines, report, "business-logic hypotheses"):
             return
+        canonical_by_id = {item.id: item for item in report.hypotheses}
         for logic_hypothesis in report.logic_hypotheses:
+            canonical = canonical_by_id.get(logic_hypothesis.id)
             lines.extend(
                 [
                     f"### {self._heading(logic_hypothesis.id)} - "
@@ -1040,6 +1097,14 @@ class WorkspaceAnalysisMarkdownRenderer:
                     "",
                     "| Field | Value |",
                     "| --- | --- |",
+                    self._row(
+                        "Priority / score",
+                        (
+                            f"{canonical.priority} / {canonical.scores.total}"
+                            if canonical is not None
+                            else "Unavailable"
+                        ),
+                    ),
                     self._row("Workflow family", logic_hypothesis.workflow_family_id),
                     self._row("Category", logic_hypothesis.family),
                     self._row("Affected action", logic_hypothesis.affected_action),
@@ -1071,6 +1136,19 @@ class WorkspaceAnalysisMarkdownRenderer:
                         self._join(logic_hypothesis.contradicting_evidence),
                     ),
                     self._row("Readiness", logic_hypothesis.readiness.value),
+                    self._row(
+                        "Constructability blockers",
+                        (
+                            self._join(
+                                [
+                                    blocker.code
+                                    for blocker in canonical.readiness_assessment.constructability.blockers
+                                ]
+                            )
+                            if canonical is not None
+                            else "Unavailable"
+                        ),
+                    ),
                     self._row(
                         "Research requirements",
                         self._join(logic_hypothesis.suggested_validation_strategy),
@@ -1333,8 +1411,8 @@ class WorkspaceAnalysisMarkdownRenderer:
             [
                 "### Actor Authentication Readiness",
                 "",
-                "| Actor | Credential | Expiration | Locally usable |",
-                "| --- | --- | --- | --- |",
+                "| Actor | Credential | Accepted | Expiration | Locally usable |",
+                "| --- | --- | --- | --- | --- |",
             ]
         )
         for actor in readiness.actors:
@@ -1342,18 +1420,19 @@ class WorkspaceAnalysisMarkdownRenderer:
                 self._row(
                     actor.actor_id,
                     actor.credential.status,
+                    "yes" if actor.credential.accepted else "no",
                     actor.credential.expiration,
                     "yes" if actor.credential.locally_usable else "no",
                 )
             )
         if not readiness.actors:
-            lines.append(self._row("None", "UNKNOWN", "unknown", "no"))
+            lines.append(self._row("None", "UNKNOWN", "no", "unknown", "no"))
         lines.extend(
             [
                 "",
                 "### Identity Confirmation",
                 "",
-                "| Actor | Target validation recorded | Identity confirmed |",
+                "| Actor | Scope validation recorded | Identity confirmed |",
                 "| --- | --- | --- |",
             ]
         )

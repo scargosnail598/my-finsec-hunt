@@ -16,6 +16,7 @@ from finsec.captures.domain import observation_supports_normal_behavior
 from finsec.config.models import TargetDocument
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
+from finsec.modeling.liveness import ControlledObjectLiveness
 from finsec.modeling.merge import stable_fingerprint
 from finsec.modeling.models import (
     ActorObjectBaseline,
@@ -25,6 +26,7 @@ from finsec.modeling.models import (
     EndpointStore,
     KnowledgeStatus,
     ObjectAccessEvidence,
+    Observation,
     ObservationStore,
 )
 from finsec.modeling.parameter_identity import parameter_identities_match
@@ -180,6 +182,8 @@ class ControlledBaseline(BoundaryModel):
     supporting_observation_ids: list[str] = Field(default_factory=list)
     capture_ids: list[str] = Field(default_factory=list)
     session_ids: list[str] = Field(default_factory=list)
+    liveness: ControlledObjectLiveness = ControlledObjectLiveness.UNKNOWN
+    liveness_evidence: list[str] = Field(default_factory=list)
     confidence: Confidence = Confidence.HIGH
     direct: bool = False
     inference_rule: str = "controlled-baseline-from-resource-control"
@@ -427,6 +431,60 @@ def _baseline_id(actor: str, resource_id: str, operation: str, observation_id: s
                 "observation": observation_id,
             }
         )[:16].upper()
+    )
+
+
+def _observation_precedes(left: Observation, right: Observation) -> bool:
+    if left.timestamp is not None and right.timestamp is not None:
+        return left.timestamp < right.timestamp
+    left_capture = left.capture_id or left.capture_identity
+    right_capture = right.capture_id or right.capture_identity
+    return (
+        left_capture is not None
+        and left_capture == right_capture
+        and left.sequence_position is not None
+        and right.sequence_position is not None
+        and left.sequence_position < right.sequence_position
+    )
+
+
+def _baseline_liveness_state(baseline: ControlledBaseline) -> ControlledObjectLiveness:
+    if baseline.operation == "DELETE":
+        return ControlledObjectLiveness.DELETED
+    if baseline.operation == "READ" or baseline.response_object_path is not None:
+        return ControlledObjectLiveness.LIVE
+    return ControlledObjectLiveness.HISTORICAL_ONLY
+
+
+def _current_baseline_liveness(
+    baselines: list[ControlledBaseline],
+    observations: dict[str, Observation],
+) -> tuple[ControlledObjectLiveness, list[str]]:
+    """Resolve the latest authoritative state or fail closed when ordering is ambiguous."""
+
+    events = [item for item in baselines if item.observation_id in observations]
+    if not events:
+        return ControlledObjectLiveness.UNKNOWN, []
+    latest = [
+        candidate
+        for candidate in events
+        if all(
+            other.id == candidate.id
+            or _observation_precedes(
+                observations[other.observation_id], observations[candidate.observation_id]
+            )
+            for other in events
+        )
+    ]
+    if len(latest) == 1:
+        selected = latest[0]
+        return _baseline_liveness_state(selected), [selected.observation_id]
+    states = {_baseline_liveness_state(item) for item in events}
+    if len(states) == 1:
+        return next(iter(states)), sorted({item.observation_id for item in events})
+    return (
+        ControlledObjectLiveness.HISTORICAL_ONLY,
+        sorted({item.observation_id for item in events}),
     )
 
 
@@ -1171,6 +1229,23 @@ def reconstruct_controlled_ownership(
                 }
             )
 
+    observation_index = {item.id: item for item in observations.observations}
+    baselines_by_resource: dict[str, list[ControlledBaseline]] = defaultdict(list)
+    for baseline in baseline_entries.values():
+        baselines_by_resource[baseline.subject_resource_id].append(baseline)
+    for resource_baselines in baselines_by_resource.values():
+        liveness, liveness_evidence = _current_baseline_liveness(
+            resource_baselines,
+            observation_index,
+        )
+        for baseline in resource_baselines:
+            baseline_entries[baseline.id] = baseline_entries[baseline.id].model_copy(
+                update={
+                    "liveness": liveness,
+                    "liveness_evidence": liveness_evidence,
+                }
+            )
+
     for resource_id in sorted(resources):
         if resource_id in strong_by_resource | shared_resources | anonymous_resources:
             continue
@@ -1335,6 +1410,8 @@ def controlled_binding_for_endpoint(
             relationship_ids=item.relationship_ids,
             capture_ids=item.capture_ids,
             session_ids=item.session_ids,
+            liveness=item.liveness,
+            liveness_evidence=item.liveness_evidence,
             operation=item.operation,
             authentication_type=item.authentication_type,
         )

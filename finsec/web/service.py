@@ -295,6 +295,10 @@ def authentication_payload(snapshot: WorkspaceSnapshot) -> dict[str, Any]:
                 "refresh_available": (
                     authentication.refresh.configured if authentication is not None else False
                 ),
+                "credential_accepted": False,
+                "scope_validated": False,
+                "identity_confirmed": False,
+                "identity_assertion_status": "NOT_CONFIGURED",
                 "target_validated": False,
                 "baseline_identity_confirmed": False,
                 "result": "BLOCKED_BY_AUTH",
@@ -309,9 +313,10 @@ def authentication_payload(snapshot: WorkspaceSnapshot) -> dict[str, Any]:
                 "authenticated": account.authenticated,
                 "auth_type": authentication.auth_type if authentication is not None else None,
                 "source": authentication.source.type if authentication is not None else None,
-                "last_validated_at": (
-                    authentication.last_validated_at.isoformat()
-                    if authentication is not None and authentication.last_validated_at is not None
+                "credential_accepted_at": (
+                    authentication.credential_accepted_at.isoformat()
+                    if authentication is not None
+                    and authentication.credential_accepted_at is not None
                     else None
                 ),
                 "preflight": preflight_payload,
@@ -537,11 +542,15 @@ def _sanitized_account(account: Any) -> dict[str, Any]:
                     else None
                 ),
                 "refresh_configured": authentication.refresh.configured,
-                "last_validated_at": (
-                    authentication.last_validated_at.isoformat()
-                    if authentication.last_validated_at is not None
+                "credential_accepted": authentication.credential_accepted,
+                "credential_accepted_at": (
+                    authentication.credential_accepted_at.isoformat()
+                    if authentication.credential_accepted_at is not None
                     else None
                 ),
+                "scope_validated": authentication.scope_validated,
+                "identity_confirmed": authentication.identity.confirmed,
+                "identity_assertion_status": authentication.identity.last_assertion_status,
             }
             if authentication is not None
             else None
@@ -558,6 +567,10 @@ def _authentication_preflight_payload(preflight: AuthenticationPreflight) -> dic
         else None,
         "remaining_seconds": preflight.remaining_seconds,
         "refresh_available": preflight.refresh_available,
+        "credential_accepted": preflight.credential_accepted,
+        "scope_validated": preflight.scope_validated,
+        "identity_confirmed": preflight.identity_confirmed,
+        "identity_assertion_status": preflight.identity_assertion_status,
         "target_validated": preflight.target_validated,
         "baseline_identity_confirmed": preflight.baseline_identity_confirmed,
         "result": preflight.result,
@@ -634,6 +647,13 @@ def _hypothesis_explanation(item: HypothesisRecord) -> dict[str, Any]:
             "decision": item.readiness_assessment.readiness,
             "reasons": list(item.readiness_assessment.reasons),
             "missing_prerequisites": list(item.readiness_assessment.missing_prerequisites),
+            "blockers": [
+                blocker.model_dump(mode="json")
+                for blocker in item.readiness_assessment.blockers
+            ],
+            "constructability": item.readiness_assessment.constructability.model_dump(
+                mode="json"
+            ),
             "comparison_coverage": item.readiness_assessment.comparison_coverage.model_dump(
                 mode="json"
             ),

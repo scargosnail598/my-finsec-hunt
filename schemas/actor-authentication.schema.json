@@ -84,7 +84,31 @@
         "query_parameters": {"type": "object"},
         "safe_headers": {"type": "object"},
         "expected_status": {"type": ["integer", "null"]},
-        "expected_content_type": {"type": ["string", "null"]}
+        "expected_content_type": {"type": ["string", "null"]},
+        "identity_assertion": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["source", "selector"],
+          "properties": {
+            "source": {"enum": ["JSON_BODY", "RESPONSE_HEADER"]},
+            "selector": {"type": "string", "minLength": 1},
+            "expected_value": {"type": ["string", "integer", "number", "boolean", "null"]},
+            "expected_actor_reference": {
+              "type": ["string", "null"],
+              "enum": ["account.id", "identity.subject", "identity.tenant", null]
+            },
+            "expected_status": {
+              "type": ["integer", "null"],
+              "minimum": 200,
+              "maximum": 299
+            },
+            "redaction": {"enum": ["OMIT", "SHA256"]}
+          },
+          "oneOf": [
+            {"required": ["expected_value"]},
+            {"required": ["expected_actor_reference"]}
+          ]
+        }
       }
     },
     "identity": {
@@ -95,7 +119,25 @@
         "roles": {"type": "array", "items": {"type": "string"}},
         "tenant": {"type": ["string", "null"]},
         "baseline_identifier_fingerprint": {"type": ["string", "null"]},
-        "baseline_confirmed": {"type": "boolean"}
+        "confirmed": {"type": "boolean"},
+        "confirmed_at": {"type": ["string", "null"], "format": "date-time"},
+        "confirmation_reference": {"type": ["string", "null"]},
+        "last_assertion_status": {
+          "enum": [
+            "NOT_CONFIGURED",
+            "NOT_CHECKED",
+            "CONFIRMED",
+            "STATUS_MISMATCH",
+            "LOGIN_OR_ERROR_RESPONSE",
+            "MALFORMED_BODY",
+            "SELECTOR_MISSING",
+            "SELECTOR_AMBIGUOUS",
+            "EXPECTED_VALUE_MISSING",
+            "VALUE_MISMATCH",
+            "LEGACY_UNTRUSTED"
+          ]
+        },
+        "baseline_confirmed": {"type": "boolean", "deprecated": true}
       }
     },
     "status": {
@@ -114,7 +156,15 @@
     },
     "context_fingerprint": {"type": ["string", "null"]},
     "target_hosts": {"type": "array", "items": {"type": "string"}},
-    "last_validated_at": {"type": ["string", "null"], "format": "date-time"},
+    "credential_accepted": {"type": "boolean"},
+    "credential_accepted_at": {"type": ["string", "null"], "format": "date-time"},
+    "scope_validated": {"type": "boolean"},
+    "scope_validated_at": {"type": ["string", "null"], "format": "date-time"},
+    "last_validated_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "deprecated": true
+    },
     "legacy_environment": {
       "type": "object",
       "additionalProperties": {"type": "string"}

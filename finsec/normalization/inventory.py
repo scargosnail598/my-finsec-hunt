@@ -17,6 +17,7 @@ from finsec.captures.service import refresh_capture_analysis
 from finsec.config.models import EndpointSideEffectRule, TargetDocument
 from finsec.config.workspace import WorkspacePaths
 from finsec.errors import FinsecError
+from finsec.modeling.liveness import ControlledObjectLiveness
 from finsec.modeling.models import (
     ActorObjectBaseline,
     AuthenticationType,
@@ -660,6 +661,8 @@ def _response_object_access_evidence(
                 endpoint_id=endpoint_id,
                 route_family=hierarchy.route_family,
                 collection_route_family=hierarchy.collection_route_family,
+                liveness=ControlledObjectLiveness.LIVE,
+                liveness_evidence=sorted(observation_ids),
                 observations=sorted(observation_ids),
             )
             for (actor, requested, object_path, fingerprint), observation_ids in sorted(

@@ -59,7 +59,11 @@ def plan_source_fingerprint(
             continue
         authentication.pop("expiration", None)
         authentication.pop("status", None)
-        authentication.pop("last_validated_at", None)
+        authentication.pop("credential_accepted_at", None)
+        authentication.pop("scope_validated_at", None)
+        identity = authentication.get("identity")
+        if isinstance(identity, dict):
+            identity.pop("confirmed_at", None)
         source = authentication.get("source")
         if isinstance(source, dict):
             authentication["source"] = {"type": source.get("type")}
@@ -290,12 +294,14 @@ def _draft(
     )
     owner = researcher_accounts[0] if researcher_accounts else None
     actor = researcher_accounts[1] if len(researcher_accounts) > 1 else owner
+    assessment = _readiness_assessment(target, observations, endpoints, resources, hypothesis)
     execution_templates = build_execution_templates(
         workspace,
         target,
         hypothesis,
         source_endpoints,
         observations,
+        assessment.constructability,
     )
     owner = execution_templates.object_owner or owner
     actor = execution_templates.actor or actor
@@ -315,15 +321,9 @@ def _draft(
         for item in source_endpoints
     )
     concurrency = logic_safety == "CONCURRENT"
-    logic_budget = logic_details.get("estimated_request_budget")
-    request_budget = (
-        int(logic_budget)
-        if isinstance(logic_budget, int | float | str) and str(logic_budget).isdigit()
-        else execution_templates.execution.request_budget or 2
-    )
+    request_budget = assessment.constructability.request_count or 0
     function_authorization = hypothesis.generation_rule.get("id") == "FUNCTION_AUTHORIZATION"
     requires_two_accounts = hypothesis.category == "authorization" and not function_authorization
-    assessment = _readiness_assessment(target, observations, endpoints, resources, hypothesis)
     planning_issues = readiness_blocking_issues(assessment)
     blockers = [item.summary for item in planning_issues]
     execution_blockers = list(execution_templates.execution.blockers)
@@ -338,7 +338,10 @@ def _draft(
             "Financial-effect testing against production requires explicit policy approval."
         )
 
-    request_actors = sorted({item.actor for item in execution_templates.requests})
+    request_actor_ids = {item.actor for item in execution_templates.requests}
+    if not request_actor_ids:
+        request_actor_ids = {item.actor_id for item in assessment.constructability.baselines}
+    request_actors = sorted(request_actor_ids)
     for actor_id in request_actors:
         configured = next((item for item in target.accounts if item.id == actor_id), None)
         authentication = configured.authentication if configured is not None else None

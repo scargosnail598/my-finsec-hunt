@@ -593,6 +593,7 @@ def _print_authentication_preflight(preflight: Any) -> None:
     console.print(f"Actor: {preflight.actor_id}")
     console.print(f"Authentication type: {preflight.auth_type}")
     console.print("Credential available: " + ("yes" if preflight.credential_available else "no"))
+    console.print("Credential accepted: " + ("yes" if preflight.credential_accepted else "no"))
     console.print(f"Known expiration: {preflight.expires_at or 'unknown'}")
     remaining = (
         f"{preflight.remaining_seconds} seconds"
@@ -601,13 +602,9 @@ def _print_authentication_preflight(preflight: Any) -> None:
     )
     console.print(f"Remaining lifetime: {remaining}")
     console.print(f"Local status: {preflight.status}")
-    console.print(
-        "Target validation: " + ("recorded" if preflight.target_validated else "not validated")
-    )
-    console.print(
-        "Baseline actor match: "
-        + ("confirmed" if preflight.baseline_identity_confirmed else "not confirmed")
-    )
+    console.print("Scope validated: " + ("yes" if preflight.scope_validated else "no"))
+    console.print("Identity confirmed: " + ("yes" if preflight.identity_confirmed else "no"))
+    console.print(f"Identity assertion: {preflight.identity_assertion_status}")
     console.print(
         "Observed refresh flow: " + ("available" if preflight.refresh_available else "none")
     )
@@ -3023,6 +3020,30 @@ def hypotheses_command(
                 console.print(f"- Upgrade evidence: {requirement}")
             console.print("\n[bold]Unified readiness[/bold]")
             console.print(f"- Decision: {readiness.readiness}")
+            constructability = readiness.constructability
+            console.print(
+                "- Automated execution support: "
+                + ("satisfied" if constructability.supported else "unsatisfied")
+            )
+            console.print(f"- Execution mode: {constructability.execution_mode}")
+            console.print(
+                "- Identity confirmation: "
+                f"required={'yes' if constructability.identity_confirmation_required else 'no'}; "
+                f"confirmed={'yes' if constructability.identity_confirmed else 'no'}"
+            )
+            if constructability.blocker_code is not None:
+                console.print(
+                    f"- Constructability blocker: {constructability.blocker_code} "
+                    f"({constructability.blocker_stage})"
+                )
+            console.print(f"- Exact next action: {constructability.next_action or 'None'}")
+            for baseline in constructability.baselines:
+                console.print(
+                    f"- Execution binding {baseline.canonical_reference}: actor="
+                    f"{baseline.actor_id}; object={baseline.object_reference}; liveness="
+                    f"{baseline.liveness}; eligible="
+                    f"{'yes' if baseline.execution_eligible else 'no'}."
+                )
             for reason in readiness.reasons:
                 console.print(f"- {reason}")
             for missing in readiness.missing_prerequisites:
@@ -3069,12 +3090,14 @@ def hypotheses_command(
                             *baseline.endpoint_ids,
                             *baseline.supporting_relationship_ids,
                             *baseline.observation_ids,
+                            *baseline.liveness_evidence_references,
                         }
                     )
                     console.print(
                         f"- Baseline {baseline.canonical_reference}: actor={baseline.actor_id}; "
                         f"object={baseline.object_reference}; "
                         f"parent={baseline.parent_reference or 'None'}; "
+                        f"liveness={baseline.liveness}; "
                         f"target-parent={'yes' if baseline.matches_target_parent else 'no'}; "
                         f"provenance={', '.join(baseline_provenance) or 'None'}."
                     )
@@ -3158,6 +3181,28 @@ def show_command(
     except FinsecError as error:
         _abort(error)
     score = hypothesis.scores
+    readiness = hypothesis.readiness_assessment
+    constructability = readiness.constructability
+    coverage = readiness.comparison_coverage
+    ownership = next(
+        (
+            item
+            for item in readiness.capabilities
+            if item.capability.value in {"OWNERSHIP", "BASELINE"} and item.satisfied
+        ),
+        None,
+    )
+    blocker_lines = [
+        f"- [{item.code}] {item.summary}"
+        + (f" Next action: {item.next_action}" if item.next_action else "")
+        for item in readiness.blockers
+    ]
+    binding_lines = [
+        f"- {item.canonical_reference}: actor={item.actor_id}; object={item.object_reference}; "
+        f"liveness={item.liveness}; execution eligible="
+        f"{'yes' if item.execution_eligible else 'no'}"
+        for item in constructability.baselines
+    ]
     details = [
         f"[bold]Kind / Disposition:[/bold] {hypothesis.kind} / {hypothesis.disposition}",
         f"[bold]Readiness:[/bold] {hypothesis.readiness}",
@@ -3196,6 +3241,34 @@ def show_command(
         "",
         "[bold]Safety[/bold]",
         "\n".join(f"- {item}" for item in hypothesis.safety_notes),
+        "",
+        "[bold]Canonical readiness and constructability[/bold]",
+        f"Ownership evidence satisfied: {'yes' if ownership is not None else 'no'}",
+        (
+            "Cross-parent comparison satisfied: "
+            + (
+                "yes"
+                if coverage.required_distinct_actors
+                and coverage.observed_distinct_actors >= coverage.required_distinct_actors
+                and coverage.cross_parent_comparison
+                else "no"
+            )
+        ),
+        f"Automated execution support: {'satisfied' if constructability.supported else 'unsatisfied'}",
+        f"Execution mode: {constructability.execution_mode}",
+        f"Primary blocker: {constructability.blocker_code or 'None'}",
+        (
+            "Identity confirmation: "
+            f"required={'yes' if constructability.identity_confirmation_required else 'no'}; "
+            f"confirmed={'yes' if constructability.identity_confirmed else 'no'}"
+        ),
+        f"Exact next action: {constructability.next_action or 'None'}",
+        "",
+        "[bold]Execution binding liveness[/bold]",
+        "\n".join(binding_lines) or "- None",
+        "",
+        "[bold]Canonical blockers[/bold]",
+        "\n".join(blocker_lines) or "- None",
     ]
     console.print(Panel("\n".join(details), title=f"{hypothesis.id}: {hypothesis.title}"))
 
@@ -3219,6 +3292,7 @@ def plan_command(
         f"{plan.execution_default}.[/{color}]"
     )
     console.print(f"Plan store: {result.path}")
+    console.print("Network requests sent: 0")
     console.print("Research status: active hypothesis; this plan does not confirm a finding.")
     console.print(f"Policy decision: {plan.risk.decision}")
     console.print(
@@ -3226,6 +3300,26 @@ def plan_command(
         f"{plan.mutation_target.location or 'unknown'}:"
         f"{plan.mutation_target.json_path or plan.mutation_target.parameter or 'unresolved'}"
     )
+    constructability = plan.readiness_assessment.constructability
+    console.print("\n[bold]Canonical constructability[/bold]")
+    console.print(f"- Execution mode: {constructability.execution_mode}")
+    console.print(
+        "- Automated support: "
+        + ("satisfied" if constructability.supported else "unsatisfied")
+    )
+    console.print(f"- Primary blocker: {constructability.blocker_code or 'None'}")
+    console.print(f"- Next action: {constructability.next_action or 'None'}")
+    for binding in constructability.baselines:
+        console.print(
+            f"- {binding.canonical_reference}: actor={binding.actor_id}; "
+            f"liveness={binding.liveness}; reusable="
+            f"{'yes' if binding.execution_eligible else 'no'}"
+        )
+    if constructability.execution_mode == "OBJECT_SUBSTITUTION" and not constructability.supported:
+        console.print(
+            "- Manual authorization testing requires fresh disposable researcher-owned "
+            "resources and an approved cleanup or recreation procedure."
+        )
     if plan.risk.decision == "BLOCKED":
         console.print("[red]Policy blockers:[/red]")
         for reason in plan.risk.reasons:
@@ -3704,7 +3798,8 @@ def status_command(
         actor_table = Table(box=None, pad_edge=False)
         actor_table.add_column("Actor")
         actor_table.add_column("Credential", no_wrap=True)
-        actor_table.add_column("Target")
+        actor_table.add_column("Accepted")
+        actor_table.add_column("Scope")
         actor_table.add_column("Identity")
         actor_table.add_column("Ownership")
         actor_table.add_column("Authz execute")
@@ -3713,6 +3808,7 @@ def status_command(
             actor_table.add_row(
                 actor.actor_id,
                 actor.credential.status,
+                "yes" if actor.credential.accepted else "no",
                 "validated" if actor.target_validation.recorded else "unverified",
                 "confirmed" if actor.identity_confirmation.confirmed else "unconfirmed",
                 f"{ownership_context} {'yes' if actor.ownership.confirmed_baselines else 'no'}",
@@ -3720,12 +3816,16 @@ def status_command(
             )
         console.print(actor_table)
         for actor in report.actors:
-            if actor.credential.status not in {"READY", "NOT_REQUIRED"} or not (
-                actor.identity_confirmation.confirmed
+            if (
+                actor.credential.status not in {"READY", "NOT_REQUIRED"}
+                or not actor.credential.accepted
+                or not actor.identity_confirmation.confirmed
             ):
                 identity = "confirmed" if actor.identity_confirmation.confirmed else "unconfirmed"
                 console.print(
-                    f"{actor.actor_id} auth status: {actor.credential.status}; identity: {identity}"
+                    f"{actor.actor_id} auth status: {actor.credential.status}; credential "
+                    f"accepted: {'yes' if actor.credential.accepted else 'no'}; identity: "
+                    f"{identity}"
                 )
         if report.focused_comparison is not None:
             comparison = report.focused_comparison

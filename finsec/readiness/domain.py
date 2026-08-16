@@ -56,6 +56,7 @@ class BlockerCode(StrEnum):
     CREDENTIAL_EXPIRED = "CREDENTIAL_EXPIRED"
     CREDENTIAL_EXPIRATION_UNKNOWN = "CREDENTIAL_EXPIRATION_UNKNOWN"
     CREDENTIAL_UNUSABLE = "CREDENTIAL_UNUSABLE"
+    CREDENTIAL_NOT_ACCEPTED = "CREDENTIAL_NOT_ACCEPTED"
     TARGET_VALIDATION_MISSING = "TARGET_VALIDATION_MISSING"
     ACTOR_IDENTITY_NOT_CONFIRMED = "ACTOR_IDENTITY_NOT_CONFIRMED"
     INSUFFICIENT_CONTROLLED_ACTORS = "INSUFFICIENT_CONTROLLED_ACTORS"
@@ -144,6 +145,7 @@ class CredentialReadiness(ReadinessModel):
 
     available: bool
     type: str
+    accepted: bool = False
     status: str = "UNKNOWN"
     expiration: Literal["valid", "expiring_soon", "expired", "unknown", "not_applicable"]
     locally_usable: bool

@@ -8,6 +8,12 @@ from typing import Protocol
 
 from finsec.config.models import CleanupControlRule, TargetDocument
 from finsec.config.scope import hosts_are_covered
+from finsec.hypotheses.baselines import canonical_baseline_identity, opaque_reference
+from finsec.hypotheses.constructability import (
+    ConstructabilityContext,
+    IdentityConstructabilityFact,
+    assess_execution_constructability,
+)
 from finsec.hypotheses.contracts import (
     BlockerStage,
     CapabilityAssessment,
@@ -18,6 +24,7 @@ from finsec.hypotheses.contracts import (
     DecisionEvidence,
     DomainIntentAssessment,
     DomainOperation,
+    ExecutionConstructabilityAssessment,
     HypothesisReadinessAssessment,
     HypothesisReadinessValue,
     MutationTargetAssessment,
@@ -25,6 +32,7 @@ from finsec.hypotheses.contracts import (
     VisibilityIntent,
 )
 from finsec.modeling.domain import ResourceRecord, ResourceStore
+from finsec.modeling.liveness import ControlledObjectLiveness
 from finsec.modeling.merge import stable_fingerprint
 from finsec.modeling.models import (
     ActorObjectBaseline,
@@ -89,6 +97,9 @@ class ReadinessContext:
     kind: str
     capabilities: tuple[CapabilityAssessment, ...]
     comparison_coverage: ComparisonCoverage = field(default_factory=ComparisonCoverage)
+    constructability: ExecutionConstructabilityAssessment = field(
+        default_factory=ExecutionConstructabilityAssessment
+    )
     warnings: tuple[ReadinessIssue, ...] = ()
 
 
@@ -106,6 +117,7 @@ def _capability(
     evidence: list[DecisionEvidence] | None = None,
     missing: list[str] | None = None,
     next_action: str | None = None,
+    blocker_code: str | None = None,
 ) -> CapabilityAssessment:
     return CapabilityAssessment(
         capability=capability,
@@ -116,6 +128,7 @@ def _capability(
         evidence=sorted(evidence or [], key=lambda item: (item.reference, item.detail)),
         missing=sorted(set(missing or [])),
         next_action=next_action,
+        blocker_code=blocker_code,
     )
 
 
@@ -123,9 +136,9 @@ def evaluate_readiness(context: ReadinessContext) -> HypothesisReadinessAssessme
     """Evaluate identical capability facts identically for producers and the planner."""
 
     capabilities = sorted(context.capabilities, key=lambda item: item.capability.value)
-    blockers = [
+    capability_blockers = [
         ReadinessIssue(
-            code=f"MISSING_{item.capability.value}",
+            code=item.blocker_code or f"MISSING_{item.capability.value}",
             stage=item.stage,
             capability=item.capability,
             summary="; ".join(item.missing) if item.missing else item.summary,
@@ -135,6 +148,11 @@ def evaluate_readiness(context: ReadinessContext) -> HypothesisReadinessAssessme
         for item in capabilities
         if item.required and not item.satisfied
     ]
+    blockers_by_code = {item.code: item for item in capability_blockers}
+    blockers_by_code.update(
+        {item.code: item for item in context.constructability.blockers}
+    )
+    blockers = list(blockers_by_code.values())
     concrete = next(
         (item for item in capabilities if item.capability == CapabilityKind.CONCRETE_TEST),
         None,
@@ -164,13 +182,15 @@ def evaluate_readiness(context: ReadinessContext) -> HypothesisReadinessAssessme
             if capability.required and not capability.satisfied
             for missing in capability.missing
         }
+        | set(context.constructability.missing_requirements)
     )
     references = sorted(
         {evidence.reference for capability in capabilities for evidence in capability.evidence}
+        | set(context.constructability.evidence_references)
     )
     return HypothesisReadinessAssessment(
         readiness=readiness,
-        actionable_plan=readiness == "TEST_READY",
+        actionable_plan=readiness == "TEST_READY" and context.constructability.supported,
         reasons=reasons,
         missing_prerequisites=missing,
         blockers=sorted(blockers, key=lambda item: (item.stage.value, item.code, item.summary)),
@@ -178,6 +198,7 @@ def evaluate_readiness(context: ReadinessContext) -> HypothesisReadinessAssessme
             context.warnings, key=lambda item: (item.stage.value, item.code, item.summary)
         ),
         capabilities=capabilities,
+        constructability=context.constructability,
         comparison_coverage=context.comparison_coverage,
         evidence_references=references,
     )
@@ -563,10 +584,6 @@ def _comparison_candidate(
     )
 
 
-def _opaque_reference(prefix: str, value: str) -> str:
-    return f"{prefix}-{stable_fingerprint({'value': value})[:16].upper()}"
-
-
 @dataclass
 class _ComparisonBaselineAccumulator:
     canonical_reference: str
@@ -579,6 +596,8 @@ class _ComparisonBaselineAccumulator:
     route_family: str | None
     collection_route_family: str | None
     operation: str | None
+    liveness_states: set[ControlledObjectLiveness] = field(default_factory=set)
+    liveness_evidence_references: set[str] = field(default_factory=set)
     baseline_ids: set[str] = field(default_factory=set)
     endpoint_ids: set[str] = field(default_factory=set)
     supporting_relationship_ids: set[str] = field(default_factory=set)
@@ -596,12 +615,9 @@ def _canonical_comparison_baselines(
     ] = {}
     for candidate in candidates:
         baseline = candidate.baseline
-        object_reference = baseline.subject_resource_id or _opaque_reference(
-            "OBJ", baseline.requested_value
+        canonical_reference, object_reference, parent_reference = canonical_baseline_identity(
+            baseline
         )
-        parent_reference = baseline.parent_resource_id
-        if parent_reference is None and baseline.parent_value is not None:
-            parent_reference = _opaque_reference("PARENT", baseline.parent_value)
         key = (
             baseline.actor,
             object_reference,
@@ -612,18 +628,7 @@ def _canonical_comparison_baselines(
         entry = merged.setdefault(
             key,
             _ComparisonBaselineAccumulator(
-                canonical_reference=(
-                    "CBL-"
-                    + stable_fingerprint(
-                        {
-                            "actor": baseline.actor,
-                            "object": object_reference,
-                            "parent": parent_reference,
-                            "route": baseline.route_family,
-                            "collection": baseline.collection_route_family,
-                        }
-                    )[:16].upper()
-                ),
+                canonical_reference=canonical_reference,
                 actor_id=baseline.actor,
                 object_reference=object_reference,
                 parent_reference=parent_reference,
@@ -636,6 +641,8 @@ def _canonical_comparison_baselines(
             ),
         )
         entry.matches_target_parent = entry.matches_target_parent or candidate.matches_target_parent
+        entry.liveness_states.add(baseline.liveness)
+        entry.liveness_evidence_references.update(baseline.liveness_evidence)
         if baseline.baseline_id is not None:
             entry.baseline_ids.add(baseline.baseline_id)
         if baseline.endpoint_id is not None:
@@ -654,6 +661,12 @@ def _canonical_comparison_baselines(
             route_family=entry.route_family,
             collection_route_family=entry.collection_route_family,
             operation=entry.operation,
+            liveness=(
+                next(iter(entry.liveness_states))
+                if len(entry.liveness_states) == 1
+                else ControlledObjectLiveness.UNKNOWN
+            ),
+            liveness_evidence_references=sorted(entry.liveness_evidence_references),
             baseline_ids=sorted(entry.baseline_ids),
             endpoint_ids=sorted(entry.endpoint_ids),
             supporting_relationship_ids=sorted(entry.supporting_relationship_ids),
@@ -680,7 +693,7 @@ def _comparison_witness(
     targets = (
         [item for item in ordered if item.matches_target_parent]
         if target_parent_required
-        else ordered
+        else list(reversed(ordered))
     )
 
     def extend(selected: tuple[ComparisonBaseline, ...]) -> tuple[ComparisonBaseline, ...]:
@@ -1413,6 +1426,7 @@ def build_record_readiness_context(
             "Collect object lifecycle or explicit owner evidence; do not reinterpret shared "
             "scope as ownership."
         ),
+        blocker_code="MISSING_SEMANTIC_TARGET",
     )
     actor_capability = _capability(
         CapabilityKind.ACTOR,
@@ -1490,6 +1504,14 @@ def build_record_readiness_context(
         for account in target.accounts
         if account.ownership == "researcher" and account.authenticated
     }
+    global_controlled_baselines = [
+        baseline
+        for endpoint in endpoints
+        for access in endpoint.object_access
+        if access.actor_object_binding_observed
+        and access.source in {"CONTROLLED_LIFECYCLE", "RESPONSE_BODY"}
+        for baseline in access.baselines
+    ]
     candidate_baselines = [
         baseline
         for access in matching_access
@@ -1590,7 +1612,8 @@ def build_record_readiness_context(
                 f"{baseline.actor_id} is backed by explicit lifecycle or owner-binding "
                 f"evidence with {len(baseline.supporting_relationship_ids)} supporting "
                 f"relationship{'s' if len(baseline.supporting_relationship_ids) != 1 else ''}; "
-                "its parent context remains distinct and opaque."
+                f"liveness is {baseline.liveness.value}; its parent context remains distinct "
+                "and opaque."
             ),
         )
         for baseline in canonical_baselines
@@ -1609,7 +1632,7 @@ def build_record_readiness_context(
         parent_resource_type=intent.parent_resource,
         parent_references=sorted(baseline_parents),
         target_parent_references=sorted(
-            _opaque_reference("PARENT", value) for value in target_parent_values
+            opaque_reference("PARENT", value) for value in target_parent_values
         ),
         target_parent_baseline_reference=(
             target_parent_baseline.canonical_reference
@@ -1618,6 +1641,9 @@ def build_record_readiness_context(
         ),
         comparison_baseline_references=[
             baseline.canonical_reference for baseline in comparison_baselines
+        ],
+        witness_baseline_references=[
+            baseline.canonical_reference for baseline in comparison_witness
         ],
         cross_parent_comparison=cross_parent_comparison,
         explanation=comparison_explanation,
@@ -1637,6 +1663,7 @@ def build_record_readiness_context(
                     *baseline.endpoint_ids,
                     *baseline.supporting_relationship_ids,
                     *baseline.observation_ids,
+                    *baseline.liveness_evidence_references,
                 ]
             }
         ),
@@ -1698,16 +1725,25 @@ def build_record_readiness_context(
                     ]
                     if target_parent_values and target_parent_baseline is None
                     else [
+                        "No controlled ownership baseline exists."
+                    ]
+                    if not global_controlled_baselines
+                    else [
+                        "Controlled baselines exist globally, but not within this workflow family."
+                    ]
+                    if not canonical_baselines
+                    else [
                         f"Missing controlled object baseline for {actor}."
                         for actor in missing_baseline_actors
                     ]
                 )
-                or ["Capture two distinct controlled actor/subject baselines."]
+                or ["No controlled ownership baseline exists for the required comparison."]
             )
             if record.category == "authorization" or binding_family
             else ["Capture a controlled pre-state through an authoritative safe read."]
         ),
-        next_action=("Capture the missing controlled baselines before planning the mutation."),
+        next_action=("Capture the missing controlled ownership evidence for this workflow family."),
+        blocker_code="MISSING_CONTROLLED_BASELINE",
     )
 
     source_hosts = {host for endpoint in source for host in endpoint.hosts}
@@ -1761,6 +1797,7 @@ def build_record_readiness_context(
         ],
         missing=request_missing,
         next_action="Collect one authorized runtime baseline request for the exact operation.",
+        blocker_code="MISSING_RUNTIME_TEMPLATE",
     )
 
     if intent.operation == DomainOperation.VERIFY_CREDENTIAL:
@@ -1798,33 +1835,6 @@ def build_record_readiness_context(
             "before/immediate/delayed state when the operation changes state."
         ],
         next_action="Capture the independent safe oracle required to classify the result.",
-    )
-
-    budget_required = _request_budget(record, intent)
-    budget_capability = _capability(
-        CapabilityKind.BUDGET,
-        satisfied=target.testing.maximum_requests_per_plan >= budget_required,
-        stage=BlockerStage.PLAN_CONSTRUCTABILITY,
-        summary=(
-            f"The bounded plan requires {budget_required} request(s); target policy permits "
-            f"{target.testing.maximum_requests_per_plan}."
-        ),
-        evidence=[
-            _evidence(
-                "target.testing.maximum_requests_per_plan",
-                "TARGET_POLICY",
-                f"Configured request budget is {target.testing.maximum_requests_per_plan}.",
-            )
-        ],
-        missing=[
-            "Target request budget is too low: "
-            f"the bounded plan requires {budget_required} request(s), but policy permits "
-            f"{target.testing.maximum_requests_per_plan}."
-        ],
-        next_action=(
-            "Review target.testing.maximum_requests_per_plan; do not change "
-            "active_execution_enabled or execution policy automatically."
-        ),
     )
 
     segmentation = _logic_capability(record, CapabilityKind.SEGMENTATION)
@@ -1893,6 +1903,106 @@ def build_record_readiness_context(
             "Add analysis.cleanup_controls with semantic_fingerprint "
             f"{cleanup_fingerprint} and source_checksum {cleanup_source_checksum}."
         ),
+        blocker_code="MISSING_CLEANUP",
+    )
+
+    execution_actor_ids = {item.actor_id for item in comparison_witness}
+    if not execution_actor_ids:
+        execution_actor_ids = {
+            observation.actor
+            for observation in observations.observations
+            if observation.id in runtime_source_ids
+            and observation.actor not in {"UNKNOWN", "ANONYMOUS"}
+        }
+    identity_facts: list[IdentityConstructabilityFact] = []
+    for account in target.accounts:
+        if account.id not in execution_actor_ids:
+            continue
+        authentication = account.authentication
+        identity_facts.append(
+            IdentityConstructabilityFact(
+                actor_id=account.id,
+                credential_accepted=(
+                    authentication.credential_accepted if authentication is not None else False
+                ),
+                scope_validated=(
+                    authentication.scope_validated if authentication is not None else False
+                ),
+                identity_confirmed=(
+                    authentication.identity.confirmed if authentication is not None else False
+                ),
+                evidence_reference=f"actor:{account.id}",
+            )
+        )
+    constructability = assess_execution_constructability(
+        ConstructabilityContext(
+            hypothesis_id=record.id,
+            category=record.category,
+            generation_rule_id=rule,
+            methods=tuple(sorted({endpoint.method for endpoint in source})),
+            state_changing=state_changing or any(endpoint.state_change for endpoint in source),
+            runtime_template_satisfied=request_template_satisfied,
+            runtime_evidence=tuple(request_capability.evidence),
+            semantic_target_required=semantic_target_required,
+            semantic_target_satisfied=semantic_target_satisfied,
+            semantic_evidence=tuple(semantic_target_capability.evidence),
+            controlled_baseline_required=(
+                record.category == "authorization" and rule.startswith("AUTH_OBJECT_ACCESS")
+            ),
+            controlled_baseline_satisfied=distinct_baselines,
+            selected_baselines=tuple(comparison_witness),
+            cleanup_required=cleanup_required,
+            cleanup_satisfied=cleanup_satisfied,
+            cleanup_evidence=tuple(cleanup_evidence),
+            cleanup_missing=tuple(cleanup_missing),
+            cleanup_next_action=cleanup_capability.next_action,
+            maximum_requests_per_plan=target.testing.maximum_requests_per_plan,
+            identity_facts=tuple(identity_facts),
+        )
+    )
+    budget_required = constructability.request_count is not None
+    budget_satisfied = (
+        not budget_required
+        or constructability.request_count is not None
+        and target.testing.maximum_requests_per_plan >= constructability.request_count
+    )
+    budget_capability = _capability(
+        CapabilityKind.BUDGET,
+        required=budget_required,
+        satisfied=budget_satisfied,
+        stage=BlockerStage.PLAN_CONSTRUCTABILITY,
+        summary=(
+            "Request budget is evaluated only after a concrete canonical template exists."
+            if constructability.request_count is None
+            else (
+                f"The concrete template requires {constructability.request_count} request(s); "
+                f"target policy permits {target.testing.maximum_requests_per_plan}."
+            )
+        ),
+        evidence=(
+            [
+                _evidence(
+                    "target.testing.maximum_requests_per_plan",
+                    "TARGET_POLICY",
+                    f"Configured request budget is {target.testing.maximum_requests_per_plan}.",
+                )
+            ]
+            if budget_required
+            else []
+        ),
+        missing=(
+            [
+                f"The concrete template requires {constructability.request_count} request(s), "
+                f"but policy permits {target.testing.maximum_requests_per_plan}."
+            ]
+            if budget_required and not budget_satisfied
+            else []
+        ),
+        next_action=(
+            "Review target.testing.maximum_requests_per_plan; do not change execution policy "
+            "automatically."
+        ),
+        blocker_code="MISSING_BUDGET",
     )
 
     warnings = [
@@ -1956,6 +2066,7 @@ def build_record_readiness_context(
             segmentation_capability,
             cleanup_capability,
         ),
+        constructability=constructability,
         comparison_coverage=comparison_coverage,
         warnings=tuple(warnings),
     )

@@ -35,6 +35,7 @@ from finsec.hypotheses.readiness import (
 )
 from finsec.hypotheses.semantics import assess_claim_strength, assess_domain_intent
 from finsec.modeling.domain import GenerationMetadata, ResourceStore
+from finsec.modeling.liveness import ControlledObjectLiveness
 from finsec.modeling.models import (
     ActorObjectBaseline,
     AuthenticationObservation,
@@ -462,6 +463,8 @@ def _comparison_baseline(
             f"REL-{actor}-{object_value}-CREATED",
             f"REL-{actor}-{object_value}-CONSUMED",
         ],
+        liveness="DELETED" if endpoint.method == "DELETE" else "LIVE",
+        liveness_evidence=[observation_id],
         operation="DELETE" if endpoint.method == "DELETE" else "READ",
         authentication_type=endpoint.authentication.observed_type,
         observations=[observation_id],
@@ -521,8 +524,24 @@ def _cross_parent_case(
             "target": {"name": "cross-parent-tests", "slug": "cross-parent-tests"},
             "scope": {"hosts": ["api.unified.test"]},
             "accounts": [
-                {"id": "ACCOUNT_A", "ownership": "researcher"},
-                {"id": "ACCOUNT_B", "ownership": "researcher"},
+                {
+                    "id": actor,
+                    "ownership": "researcher",
+                    "authentication": {
+                        "auth_type": "bearer",
+                        "source": {"type": "manual"},
+                        "identity": {
+                            "confirmed": True,
+                            "confirmation_reference": f"identity-assertion:{actor.lower()}",
+                            "last_assertion_status": "CONFIRMED",
+                        },
+                        "status": "READY",
+                        "target_hosts": ["api.unified.test"],
+                        "credential_accepted": True,
+                        "scope_validated": True,
+                    },
+                }
+                for actor in ("ACCOUNT_A", "ACCOUNT_B")
             ],
             "testing": {
                 "synthetic": synthetic,
@@ -641,7 +660,18 @@ def test_cross_parent_baselines_satisfy_two_actor_comparison_coverage() -> None:
     assert coverage.missing_actor_ids == []
     assert coverage.cross_parent_comparison is True
     assert "different literal parents" in coverage.explanation.lower()
-    assert not any(item.code == "MISSING_BASELINE" for item in assessment.blockers)
+    assert not any(item.code == "MISSING_CONTROLLED_BASELINE" for item in assessment.blockers)
+
+
+def test_read_only_get_object_substitution_is_canonically_constructable() -> None:
+    assessment = _assessment_for_cross_parent_case(_cross_parent_case())
+
+    assert assessment.readiness == "TEST_READY"
+    assert assessment.constructability.supported is True
+    assert assessment.constructability.execution_mode == "OBJECT_SUBSTITUTION"
+    assert assessment.constructability.request_count == 2
+    assert assessment.constructability.blocker_code is None
+    assert {item.liveness for item in assessment.constructability.baselines} == {"LIVE"}
 
 
 def test_cross_parent_coverage_is_anchored_to_the_source_target_parent() -> None:
@@ -705,7 +735,7 @@ def test_two_objects_owned_by_one_actor_do_not_satisfy_two_actor_coverage() -> N
 
     assert assessment.comparison_coverage.observed_distinct_actors == 1
     assert assessment.comparison_coverage.distinct_controlled_objects == 2
-    assert any(item.code == "MISSING_BASELINE" for item in assessment.blockers)
+    assert any(item.code == "MISSING_CONTROLLED_BASELINE" for item in assessment.blockers)
 
 
 def test_corroborating_cross_parent_edges_merge_into_one_baseline() -> None:
@@ -744,7 +774,7 @@ def test_same_object_under_duplicated_evidence_counts_once() -> None:
 
     assert assessment.comparison_coverage.observed_distinct_actors == 2
     assert assessment.comparison_coverage.distinct_controlled_objects == 1
-    assert any(item.code == "MISSING_BASELINE" for item in assessment.blockers)
+    assert any(item.code == "MISSING_CONTROLLED_BASELINE" for item in assessment.blockers)
 
 
 def test_baseline_object_must_match_its_runtime_subject() -> None:
@@ -779,7 +809,7 @@ def test_cross_parent_type_mismatches_fail_closed(
 
     assert assessment.comparison_coverage.baseline_actor_ids == ["ACCOUNT_A"]
     assert assessment.comparison_coverage.missing_actor_ids == [missing_actor]
-    assert any(item.code == "MISSING_BASELINE" for item in assessment.blockers)
+    assert any(item.code == "MISSING_CONTROLLED_BASELINE" for item in assessment.blockers)
 
 
 def test_incompatible_collection_route_family_fails_closed() -> None:
@@ -909,7 +939,7 @@ def test_two_foreign_parent_baselines_without_target_parent_match_fail_closed() 
     assert assessment.comparison_coverage.observed_distinct_actors == 0
     assert assessment.comparison_coverage.target_parent_baseline_reference is None
     assert "validated literal target parent" in assessment.comparison_coverage.explanation
-    assert any(item.code == "MISSING_BASELINE" for item in assessment.blockers)
+    assert any(item.code == "MISSING_CONTROLLED_BASELINE" for item in assessment.blockers)
 
 
 def test_cross_parent_coverage_preserves_subject_only_mutation(
@@ -924,10 +954,11 @@ def test_cross_parent_coverage_preserves_subject_only_mutation(
         case.record,
         [case.endpoints[0]],
         case.observations,
+        assessment.constructability,
     )
     mutation = templates.requests[1].mutations[0]
 
-    assert not any(item.code == "MISSING_BASELINE" for item in assessment.blockers)
+    assert not any(item.code == "MISSING_CONTROLLED_BASELINE" for item in assessment.blockers)
     assert case.record.mutation_target.parameter == "dnsRecordId"
     assert case.record.mutation_target.location == "path"
     assert templates.requests[0].path.endswith("/domain-a.test/dns-records/RECORD_A")
@@ -1031,8 +1062,11 @@ def test_valid_cross_parent_coverage_removes_only_baseline_blocker() -> None:
         persisted,
     )
 
-    assert "MISSING_BASELINE" not in blocker_codes
-    assert {"MISSING_BUDGET", "MISSING_CLEANUP"}.issubset(blocker_codes)
+    assert "MISSING_CONTROLLED_BASELINE" not in blocker_codes
+    assert "UNSUPPORTED_EXECUTION_TEMPLATE" in blocker_codes
+    assert "MISSING_CLEANUP" in blocker_codes
+    assert "STALE_EXECUTION_BASELINE" in blocker_codes
+    assert "MISSING_BUDGET" not in blocker_codes
     assert {
         "HUMAN_APPROVAL_REQUIRED",
         "ACTIVE_EXECUTION_DISABLED",
@@ -1043,6 +1077,69 @@ def test_valid_cross_parent_coverage_removes_only_baseline_blocker() -> None:
     assert case.target.testing.human_approval_required is True
     assert alignment.plan_status == "BLOCKED"
     assert alignment.agrees is True
+    assert (
+        alignment.readiness.constructability.blocker_code
+        == "UNSUPPORTED_EXECUTION_TEMPLATE"
+    )
+
+
+def test_historical_ownership_baseline_does_not_satisfy_execution_liveness() -> None:
+    case = _cross_parent_case()
+    historical = [
+        item.model_copy(update={"liveness": ControlledObjectLiveness.HISTORICAL_ONLY})
+        for item in case.baselines
+    ]
+
+    assessment = _assessment_for_cross_parent_case(case, baselines=historical)
+
+    assert assessment.comparison_coverage.observed_distinct_actors == 2
+    assert not any(item.code == "MISSING_CONTROLLED_BASELINE" for item in assessment.blockers)
+    assert any(item.code == "STALE_EXECUTION_BASELINE" for item in assessment.blockers)
+    assert assessment.constructability.supported is False
+
+
+def test_unknown_liveness_never_silently_becomes_live() -> None:
+    case = _cross_parent_case()
+    unknown = [
+        item.model_copy(
+            update={
+                "liveness": ControlledObjectLiveness.UNKNOWN,
+                "liveness_evidence": [],
+            }
+        )
+        for item in case.baselines
+    ]
+
+    assessment = _assessment_for_cross_parent_case(case, baselines=unknown)
+
+    assert assessment.comparison_coverage.observed_distinct_actors == 2
+    assert any(item.code == "MISSING_LIVE_CONTROLLED_OBJECT" for item in assessment.blockers)
+    assert assessment.constructability.supported is False
+
+
+def test_authoritative_live_evidence_restores_execution_binding_without_erasing_history() -> None:
+    case = _cross_parent_case()
+    restored = [
+        item.model_copy(
+            update={
+                "liveness": ControlledObjectLiveness.LIVE,
+                "liveness_evidence": [*item.liveness_evidence, f"LIVE-{item.actor}"],
+            }
+        )
+        for item in case.baselines
+    ]
+
+    assessment = _assessment_for_cross_parent_case(case, baselines=restored)
+
+    assert assessment.constructability.supported is True
+    assert all(
+        any(reference.startswith("BASE-") for reference in item.evidence_references)
+        for item in assessment.constructability.baselines
+    )
+    assert all(
+        any(reference.startswith("LIVE-") for reference in item.evidence_references)
+        for item in assessment.constructability.baselines
+    )
 
 
 @pytest.mark.parametrize("token", ["requests", "return", "change", "delete", "update"])
@@ -1515,8 +1612,10 @@ def test_state_change_requires_strategy_but_not_a_future_after_snapshot() -> Non
         claim,
     )
 
-    assert ready.readiness == "TEST_READY"
-    assert ready.actionable_plan is True
+    assert ready.readiness == "REVIEW_REQUIRED"
+    assert ready.actionable_plan is False
+    assert ready.constructability.blocker_code == "UNSUPPORTED_EXECUTION_TEMPLATE"
+    assert any(item.code == "UNSUPPORTED_EXECUTION_TEMPLATE" for item in ready.blockers)
     assert missing_strategy.readiness == "REVIEW_REQUIRED"
     assert {item.capability for item in missing_strategy.blockers}.issuperset(
         {CapabilityKind.BASELINE, CapabilityKind.ORACLE}
@@ -1610,8 +1709,10 @@ def test_typed_cleanup_control_matches_canonical_family_and_stales_on_source_cha
     )
     budget = next(item for item in missing.capabilities if item.capability == CapabilityKind.BUDGET)
     assert cleanup.satisfied is False
-    assert budget.satisfied is False
-    assert "requires 4 request(s), but policy permits 3" in budget.missing[0]
+    assert budget.required is False
+    assert budget.satisfied is True
+    assert budget.missing == []
+    assert missing.constructability.blocker_code == "UNSUPPORTED_EXECUTION_TEMPLATE"
     hierarchy = path_hierarchy(mutation.path, mutation.path, intent.subject_resource)
     fingerprint = cleanup_control_fingerprint(record, intent, record.mutation_target, [mutation])
     checksum = cleanup_control_source_checksum(
@@ -1654,7 +1755,8 @@ def test_typed_cleanup_control_matches_canonical_family_and_stales_on_source_cha
         item for item in matched.capabilities if item.capability == CapabilityKind.BUDGET
     )
     assert matched_cleanup.satisfied is True
-    assert matched_budget.satisfied is False
+    assert matched_budget.required is False
+    assert matched_budget.satisfied is True
     assert {item.reference for item in matched_cleanup.evidence}.issuperset(
         {fingerprint, "RSC-CONTROLLED", oracle.id}
     )
@@ -1908,7 +2010,7 @@ def test_cleanup_references_resolve_only_with_controlled_resource_and_runtime_or
     assert {item.reference for item in cleanup.evidence}.issuperset({"RSC-CONTROLLED", "EP-ORACLE"})
 
 
-def test_test_ready_records_align_with_actionable_planner(
+def test_canonical_readiness_records_align_with_planner(
     phase4_workspace: WorkspacePaths,
 ) -> None:
     generated = [
@@ -1921,13 +2023,12 @@ def test_test_ready_records_align_with_actionable_planner(
         item.readiness_assessment.evaluator == "unified-hypothesis-readiness-v1"
         for item in generated
     )
-    ready = [item for item in generated if item.readiness == "TEST_READY"]
-
-    assert ready
-    for item in ready:
+    for item in generated:
         alignment = inspect_plan_alignment(phase4_workspace, item.id)
         assert alignment.agrees is True
-        assert alignment.plan_status == "READY_FOR_REVIEW"
+        assert alignment.plan_status == (
+            "READY_FOR_REVIEW" if item.readiness == "TEST_READY" else "BLOCKED"
+        )
 
 
 def test_cross_generator_exact_duplicates_are_order_independent_and_keep_provenance() -> None:

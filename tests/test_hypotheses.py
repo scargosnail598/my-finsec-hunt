@@ -8,12 +8,20 @@ from typing import Any
 from finsec.config.workspace import WorkspacePaths, create_workspace
 from finsec.hypotheses.domain import HypothesisStore
 from finsec.hypotheses.generator import generate_hypotheses
+from finsec.hypotheses.scoring import canonical_scoring
 from finsec.ingest.har import ingest_har
 from finsec.modeling.generator import generate_model
 from finsec.modeling.invariants import generate_invariants
 from finsec.modeling.models import EndpointStore
 from finsec.normalization.inventory import build_inventory
 from finsec.utils.yaml_store import load_yaml, write_yaml
+
+
+def test_canonical_priority_treats_fourteen_with_high_impact_as_p1() -> None:
+    result = canonical_scoring(impact=4, likelihood=3, confidence=4, testability=3)
+
+    assert result.scores.total == 14
+    assert result.priority == "P1"
 
 
 def test_hypotheses_are_specific_traceable_and_transparently_prioritized(
@@ -52,7 +60,7 @@ def test_hypotheses_are_specific_traceable_and_transparently_prioritized(
     assert payment.domain_intent.visibility == "UNKNOWN"
     assert payment.readiness == "REVIEW_REQUIRED"
     assert {item.code for item in payment.readiness_assessment.blockers}.issuperset(
-        {"MISSING_BASELINE", "MISSING_OWNERSHIP"}
+        {"MISSING_CONTROLLED_BASELINE", "MISSING_OWNERSHIP"}
     )
     assert sum(item.kind == "SECURITY_HYPOTHESIS" for item in store.hypotheses) == 1
     assert sum(item.kind == "RESEARCH_TASK" for item in store.hypotheses) == 3

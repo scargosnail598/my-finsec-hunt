@@ -326,17 +326,24 @@ def test_payment_mutations_are_financial_research_tasks(
     assert item.kind == "RESEARCH_TASK"
 
 
-def test_request_budget_blocker_is_explicit(tmp_path: Path) -> None:
+def test_unsupported_templates_do_not_emit_a_precise_budget_blocker(tmp_path: Path) -> None:
     workspace = _build_workspace(tmp_path)
     target = load_yaml(workspace.target)
     target["testing"]["maximum_requests_per_plan"] = 1
     write_yaml(workspace.target, target)
     analyze_business_logic(workspace)
+    records = _logic(workspace)
     assert any(
-        "request budget is too low" in blocker.lower()
-        for item in _logic(workspace)
+        "UNSUPPORTED_EXECUTION_TEMPLATE" in blocker
+        for item in records
         for blocker in item.readiness_blockers
     )
+    assert not any(
+        "MISSING_BUDGET" in blocker or "request budget is too low" in blocker.lower()
+        for item in records
+        for blocker in item.readiness_blockers
+    )
+    assert all(item.estimated_request_budget == 0 for item in records)
 
 
 def test_step_skip_candidate_is_specific(logic_workspace: WorkspacePaths) -> None:
@@ -436,6 +443,39 @@ def test_business_logic_producer_uses_unified_readiness_evaluator(
         item.readiness_assessment.evaluator == "unified-hypothesis-readiness-v1"
         for item in synchronized
     )
+
+
+def test_raw_business_logic_presentation_matches_canonical_backlog(
+    logic_workspace: WorkspacePaths,
+) -> None:
+    raw = {item.id: item for item in _logic(logic_workspace)}
+    backlog = HypothesisStore.model_validate(load_yaml(logic_workspace.hypotheses))
+    common = {item.id: item for item in backlog.hypotheses if item.id.startswith("BLH-")}
+
+    assert raw.keys() <= common.keys()
+    for identifier, item in raw.items():
+        canonical = common[identifier]
+        assert (
+            item.score.impact,
+            item.score.likelihood,
+            item.score.confidence,
+            item.score.test_readiness,
+        ) == (
+            canonical.scores.impact,
+            canonical.scores.likelihood,
+            canonical.scores.confidence,
+            canonical.scores.testability,
+        )
+        assert item.estimated_request_budget == (
+            canonical.readiness_assessment.constructability.request_count or 0
+        )
+        assert "Establish a successful controlled baseline." not in (
+            item.suggested_validation_strategy
+        )
+        assert item.readiness_blockers == [
+            f"{blocker.code}: {blocker.summary}"
+            for blocker in canonical.readiness_assessment.blockers
+        ]
 
 
 def test_partial_refund_tracks_entitlement_state(logic_workspace: WorkspacePaths) -> None:

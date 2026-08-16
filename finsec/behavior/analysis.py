@@ -63,8 +63,10 @@ from finsec.hypotheses.contracts import (
 )
 from finsec.hypotheses.domain import HypothesisRecord, HypothesisStore
 from finsec.hypotheses.readiness import ReadinessContext, evaluate_readiness
+from finsec.hypotheses.scoring import canonical_scoring
 from finsec.hypotheses.semantics import assess_claim_strength, assess_domain_intent
 from finsec.modeling.domain import ResourceStore
+from finsec.modeling.liveness import ControlledObjectLiveness
 from finsec.modeling.merge import merge_generated_records, stable_fingerprint
 from finsec.modeling.models import EndpointStore, ObservationStore
 from finsec.utils.yaml_store import load_yaml, write_yaml
@@ -1519,6 +1521,18 @@ def generate_mutation_rejections(
     invariant_by_type = {
         (item.workflow_family_id, item.invariant_type): item for item in invariants
     }
+    global_controlled_baselines = [
+        baseline
+        for endpoint in inputs.endpoints.endpoints
+        for access in endpoint.object_access
+        if access.actor_object_binding_observed
+        for baseline in access.baselines
+    ]
+    global_live_baselines = [
+        baseline
+        for baseline in global_controlled_baselines
+        if baseline.liveness == ControlledObjectLiveness.LIVE
+    ]
     rejections: dict[tuple[str, str, str], MutationRejection] = {}
 
     def add(
@@ -1623,9 +1637,20 @@ def generate_mutation_rejections(
                         "The action has no typed client-controlled resource or workflow binding."
                     )
                 if not comparison_links:
-                    actor_reasons.append(
-                        "No separate controlled-actor baseline is available for comparison."
+                    baseline_reason = (
+                        "No controlled ownership baseline exists for a separate actor comparison."
+                        if not global_controlled_baselines
+                        else (
+                            "Historical ownership evidence exists globally, but no live execution "
+                            "object is linked within this workflow family."
+                            if not global_live_baselines
+                            else (
+                                "Controlled baselines exist globally, but not within this workflow "
+                                "family."
+                            )
+                        )
                     )
+                    actor_reasons.append(baseline_reason)
                 add(family, "ACTOR_SWITCH", mutation_action, actor_reasons, observations)
 
             distinct_resource_lifecycles = {
@@ -1640,9 +1665,20 @@ def generate_mutation_rejections(
                         "The action has no typed client-controlled resource identifier."
                     )
                 if len(distinct_resource_lifecycles) < 2:
-                    resource_reasons.append(
-                        "Fewer than two distinct controlled resource lifecycles are available."
+                    resource_reason = (
+                        "Fewer than two distinct controlled resource lifecycles exist."
+                        if not global_controlled_baselines
+                        else (
+                            "Historical controlled resources exist globally, but no live execution "
+                            "objects are linked within this workflow family."
+                            if not global_live_baselines
+                            else (
+                                "Controlled resource baselines exist globally, but fewer than two "
+                                "are linked within this workflow family."
+                            )
+                        )
                     )
+                    resource_reasons.append(resource_reason)
                 add(
                     family,
                     "RESOURCE_SWITCH",
@@ -1703,11 +1739,6 @@ def generate_mutation_rejections(
     return sorted(rejections.values(), key=lambda item: item.id)
 
 
-def _priority(score: LogicScore) -> str:
-    total = score.impact + score.likelihood + score.confidence + score.test_readiness
-    return "P1" if total >= 16 else "P2" if total >= 11 else "P3"
-
-
 def _backlog_draft(
     item: LogicHypothesis,
     cluster: HypothesisCluster,
@@ -1715,7 +1746,12 @@ def _backlog_draft(
     representative: bool,
 ) -> dict[str, Any]:
     score = item.score
-    total = score.impact + score.likelihood + score.confidence + score.test_readiness
+    canonical_score = canonical_scoring(
+        score.impact,
+        score.likelihood,
+        score.confidence,
+        score.test_readiness,
+    )
     mutation_dimensions: list[str] = ["WORKFLOW"]
     if item.family == "ACTOR_SWITCH":
         mutation_dimensions.append("ACTOR")
@@ -1804,13 +1840,13 @@ def _backlog_draft(
             contribution.reason for contribution in item.score.breakdown if contribution.points > 0
         ],
         "scores": {
-            "impact": score.impact,
-            "likelihood": score.likelihood,
-            "confidence": score.confidence,
-            "testability": score.test_readiness,
-            "total": total,
+            "impact": canonical_score.scores.impact,
+            "likelihood": canonical_score.scores.likelihood,
+            "confidence": canonical_score.scores.confidence,
+            "testability": canonical_score.scores.testability,
+            "total": canonical_score.scores.total,
         },
-        "priority": _priority(score),
+        "priority": canonical_score.priority,
         "status": "NOT_TESTED",
         "safety_notes": [
             f"Safety classification: {item.safety_classification}.",
@@ -1904,6 +1940,50 @@ def _sync_backlog(
     return merge.conflicts, store
 
 
+def _synchronize_logic_presentation(
+    item: LogicHypothesis,
+    common: HypothesisRecord,
+) -> LogicHypothesis:
+    """Mirror the finalized backlog score, blockers, budget, and remediation into raw BLH data."""
+
+    assessment = common.readiness_assessment
+    canonical_actions = [
+        action
+        for action in [
+            assessment.constructability.next_action,
+            *(blocker.next_action for blocker in assessment.blockers),
+        ]
+        if action is not None
+    ]
+    retained_actions = [
+        action
+        for action in item.suggested_validation_strategy
+        if action != "Establish a successful controlled baseline."
+        and (
+            assessment.constructability.request_count is not None
+            or "request budget" not in action.lower()
+        )
+    ]
+    strategy = list(dict.fromkeys([*canonical_actions, *retained_actions]))
+    return item.model_copy(
+        update={
+            "score": item.score.model_copy(
+                update={
+                    "impact": common.scores.impact,
+                    "likelihood": common.scores.likelihood,
+                    "confidence": common.scores.confidence,
+                    "test_readiness": common.scores.testability,
+                }
+            ),
+            "estimated_request_budget": assessment.constructability.request_count or 0,
+            "readiness_blockers": [
+                f"{blocker.code}: {blocker.summary}" for blocker in assessment.blockers
+            ],
+            "suggested_validation_strategy": strategy,
+        }
+    )
+
+
 def analyze_business_logic(
     workspace: WorkspacePaths, *, rebuild: bool = True
 ) -> LogicAnalysisResult:
@@ -1967,7 +2047,8 @@ def analyze_business_logic(
     conflicts, backlog = _sync_backlog(workspace, hypotheses, clusters, inputs)
     common_by_id = {item.id: item for item in backlog.hypotheses}
     hypotheses = [
-        item.model_copy(
+        _synchronize_logic_presentation(
+            item.model_copy(
             update={
                 "readiness": HypothesisReadiness(common_by_id[item.id].readiness),
                 "readiness_assessment": common_by_id[item.id].readiness_assessment,
@@ -1975,6 +2056,8 @@ def analyze_business_logic(
                 "claim_strength": common_by_id[item.id].claim_strength,
                 "grouping": common_by_id[item.id].grouping,
             }
+            ),
+            common_by_id[item.id],
         )
         if item.id in common_by_id
         else item

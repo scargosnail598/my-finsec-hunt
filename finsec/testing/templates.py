@@ -8,6 +8,8 @@ from urllib.parse import urlsplit
 
 from finsec.config.models import TargetDocument
 from finsec.config.workspace import WorkspacePaths
+from finsec.hypotheses.baselines import canonical_baseline_identity
+from finsec.hypotheses.contracts import ExecutionConstructabilityAssessment
 from finsec.hypotheses.domain import HypothesisRecord
 from finsec.modeling.models import (
     ActorObjectBaseline,
@@ -301,10 +303,9 @@ def _object_substitution(
     hypothesis: HypothesisRecord,
     endpoint: Endpoint,
     observations: ObservationStore,
+    constructability: ExecutionConstructabilityAssessment,
 ) -> ExecutionTemplateResult:
     blockers: list[str] = []
-    if endpoint.method not in {"GET", "HEAD"} or endpoint.state_change:
-        blockers.append("Object substitution execution supports GET or HEAD read-only endpoints.")
     if endpoint.resource.type.lower() in PUBLIC_READ_RESOURCES:
         blockers.append("Known-public resources are not eligible for BOLA execution plans.")
     mutation_target = hypothesis.mutation_target
@@ -349,62 +350,37 @@ def _object_substitution(
         )
         return ExecutionTemplateResult([], _execution(target, "UNSUPPORTED", [], None, blockers))
 
-    source_baseline: ActorObjectBaseline | None
-    target_baseline: ActorObjectBaseline | None
-    if binding.source == "CONTROLLED_LIFECYCLE":
-        baselines = sorted(
-            binding.baselines,
-            key=lambda item: (
-                0 if item.endpoint_id == endpoint.id else 1,
-                item.actor,
-                _value_key(item.requested_value),
-            ),
-        )
-        source_baseline = next(
-            (item for item in baselines if item.endpoint_id == endpoint.id),
-            None,
-        )
-        target_baseline = (
-            next(
-                (
-                    item
-                    for item in baselines
-                    if source_baseline is not None
-                    and _distinct_controlled_baselines(binding, source_baseline, item)
-                ),
-                None,
-            )
-            if source_baseline is not None
-            else None
-        )
-    elif binding.source == "PATH_PARENT_SCOPE":
-        baselines = sorted(
-            binding.baselines, key=lambda item: (item.actor, _value_key(item.requested_value))
-        )
-        source_baseline = baselines[0]
-        target_baseline = next(
+    selected: list[ActorObjectBaseline] = []
+    for canonical in constructability.baselines:
+        raw = next(
             (
                 item
-                for item in baselines[1:]
-                if _distinct_controlled_baselines(binding, source_baseline, item)
+                for item in sorted(
+                    binding.baselines,
+                    key=lambda value: (
+                        0 if value.endpoint_id == endpoint.id else 1,
+                        value.actor,
+                        _value_key(value.requested_value),
+                    ),
+                )
+                if canonical_baseline_identity(item)[0] == canonical.canonical_reference
             ),
             None,
         )
-    else:
-        baselines = sorted(
-            binding.baselines, key=lambda item: (_value_key(item.requested_value), item.actor)
-        )
-        target_baseline = baselines[0]
-        source_baseline = next(
-            (
-                item
-                for item in reversed(baselines)
-                if _distinct_controlled_baselines(binding, item, target_baseline)
-            ),
-            None,
-        )
+        if raw is not None:
+            selected.append(raw)
+    source_baseline = selected[0] if selected else None
+    target_baseline = selected[1] if len(selected) > 1 else None
     if source_baseline is None or target_baseline is None:
-        blockers.append("No distinct controlled source and target baselines are available.")
+        blockers.append(
+            "MISSING_LIVE_CONTROLLED_OBJECT: Canonical live source and target bindings "
+            "cannot be resolved."
+        )
+        return ExecutionTemplateResult([], _execution(target, "UNSUPPORTED", [], None, blockers))
+    if not _distinct_controlled_baselines(binding, source_baseline, target_baseline):
+        blockers.append(
+            "MISSING_CONTROLLED_BASELINE: Canonical source and target bindings are not distinct."
+        )
         return ExecutionTemplateResult([], _execution(target, "UNSUPPORTED", [], None, blockers))
 
     by_id = _observation_by_id(observations)
@@ -653,8 +629,15 @@ def build_execution_templates(
     hypothesis: HypothesisRecord,
     endpoints: list[Endpoint],
     observations: ObservationStore,
+    constructability: ExecutionConstructabilityAssessment,
 ) -> ExecutionTemplateResult:
     """Build only the four explicitly supported bounded comparison shapes."""
+
+    if not constructability.supported:
+        blockers = [f"{item.code}: {item.summary}" for item in constructability.blockers]
+        if not blockers:
+            blockers = [constructability.summary]
+        return ExecutionTemplateResult([], _execution(target, "UNSUPPORTED", [], None, blockers))
 
     if not endpoints:
         blockers = ["No source endpoint is available for structured request generation."]
@@ -672,7 +655,14 @@ def build_execution_templates(
         ]
         return ExecutionTemplateResult([], _execution(target, "UNSUPPORTED", [], None, blockers))
     if hypothesis.category == "authorization":
-        return _object_substitution(workspace, target, hypothesis, endpoints[0], observations)
+        return _object_substitution(
+            workspace,
+            target,
+            hypothesis,
+            endpoints[0],
+            observations,
+            constructability,
+        )
     if hypothesis.category == "authentication":
         return _authentication_comparison(workspace, target, endpoints[0], observations)
     if hypothesis.category == "version_parity":

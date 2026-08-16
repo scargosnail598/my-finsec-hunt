@@ -25,6 +25,7 @@ from finsec.auth.capture import (
     detect_burp_authentication,
     detect_har_authentication,
 )
+from finsec.auth.identity import IdentityAssertionStatus, evaluate_identity_assertion
 from finsec.auth.store import SecretStore
 from finsec.config.models import (
     AccountConfig,
@@ -58,10 +59,24 @@ class AuthenticationPreflight:
     expires_at: datetime | None
     remaining_seconds: int | None
     refresh_available: bool
-    target_validated: bool
-    baseline_identity_confirmed: bool
+    credential_accepted: bool
+    scope_validated: bool
+    identity_confirmed: bool
+    identity_assertion_status: IdentityAssertionStatus
     result: Literal["READY_FOR_EXECUTION", "READY_FOR_PLANNING", "BLOCKED_BY_AUTH"]
     reasons: tuple[str, ...] = ()
+
+    @property
+    def target_validated(self) -> bool:
+        """Backward-compatible display alias for scope validation."""
+
+        return self.scope_validated
+
+    @property
+    def baseline_identity_confirmed(self) -> bool:
+        """Backward-compatible display alias for structured identity confirmation."""
+
+        return self.identity_confirmed
 
 
 @dataclass(frozen=True)
@@ -563,7 +578,10 @@ def store_candidate(
         status=status,
         context_fingerprint=context,
         target_hosts=target.scope.hosts,
-        last_validated_at=candidate.captured_at if initial == "READY" else None,
+        credential_accepted=initial == "READY",
+        credential_accepted_at=candidate.captured_at if initial == "READY" else None,
+        scope_validated=initial == "READY",
+        scope_validated_at=candidate.captured_at if initial == "READY" else None,
     )
     actor.actor_type = actor_type
     actor.authentication = authentication
@@ -726,20 +744,35 @@ def mark_authentication_status(
     actor_id: str,
     status: AuthenticationStatus,
     *,
-    baseline_confirmed: bool | None = None,
+    credential_accepted: bool | None = None,
+    scope_validated: bool | None = None,
+    identity_confirmed: bool | None = None,
+    identity_assertion_status: IdentityAssertionStatus | None = None,
+    identity_confirmation_reference: str | None = None,
 ) -> None:
-    """Persist only a redacted lifecycle state after target-side classification."""
+    """Persist independent redacted authentication facts after target-side classification."""
 
     target = _load_target(workspace)
     actor = _account(target, actor_id)
     if actor.authentication is None or actor.authentication.auth_type == "none":
         return
     actor.authentication.status = status
-    actor.authentication.expiration.last_checked_at = datetime.now(UTC)
-    if baseline_confirmed is not None:
-        actor.authentication.identity.baseline_confirmed = baseline_confirmed
-    if status == "READY":
-        actor.authentication.last_validated_at = datetime.now(UTC)
+    checked_at = datetime.now(UTC)
+    actor.authentication.expiration.last_checked_at = checked_at
+    if credential_accepted is not None:
+        actor.authentication.credential_accepted = credential_accepted
+        actor.authentication.credential_accepted_at = checked_at if credential_accepted else None
+    if scope_validated is not None:
+        actor.authentication.scope_validated = scope_validated
+        actor.authentication.scope_validated_at = checked_at if scope_validated else None
+    if identity_confirmed is not None:
+        actor.authentication.identity.confirmed = identity_confirmed
+        actor.authentication.identity.confirmed_at = checked_at if identity_confirmed else None
+        actor.authentication.identity.confirmation_reference = (
+            identity_confirmation_reference if identity_confirmed else None
+        )
+    if identity_assertion_status is not None:
+        actor.authentication.identity.last_assertion_status = identity_assertion_status
     _write_target(workspace, target)
 
 
@@ -793,7 +826,7 @@ def validate_actor_baseline(workspace: WorkspacePaths, actor_id: str) -> Authent
         raise FinsecError("Actor baseline is not read-only.")
     if not host_is_covered(baseline.host, target.scope.hosts):
         raise FinsecError("Actor baseline is outside target scope.")
-    preflight = actor_preflight(workspace, actor_id, for_execution=True, request_count=1)
+    preflight = actor_preflight(workspace, actor_id, request_count=1)
     if preflight.result == "BLOCKED_BY_AUTH":
         return AuthenticationCheckResult(preflight, 0, None, False)
     headers = {
@@ -827,22 +860,59 @@ def validate_actor_baseline(workspace: WorkspacePaths, actor_id: str) -> Authent
         connection.request(baseline.method, request_target, headers=headers)
         response = connection.getresponse()
         body = response.read(target.testing.maximum_response_bytes + 1)
-        response_headers = {name: value for name, value in response.getheaders()}
+        response_header_pairs = response.getheaders()
+        response_headers = {name: value for name, value in response_header_pairs}
     except (OSError, ssl.SSLError, http.client.HTTPException) as error:
         raise FinsecError("Authentication baseline network validation failed safely.") from error
     finally:
         connection.close()
     if len(body) > target.testing.maximum_response_bytes:
         raise FinsecError("Authentication baseline response exceeded the size limit.")
-    if _response_is_login(response.status, response_headers, body):
-        mark_authentication_status(workspace, actor_id, "INVALID", baseline_confirmed=False)
+    login_or_error = _response_is_login(response.status, response_headers, body)
+    identity_result = evaluate_identity_assertion(
+        baseline.identity_assertion,
+        actor,
+        status_code=response.status,
+        headers=response_header_pairs,
+        body=body,
+        login_or_error_response=login_or_error,
+    )
+    if login_or_error:
+        mark_authentication_status(
+            workspace,
+            actor_id,
+            "INVALID",
+            credential_accepted=False,
+            scope_validated=True,
+            identity_confirmed=False,
+            identity_assertion_status=identity_result.status,
+        )
         checked = actor_preflight(workspace, actor_id, for_execution=True)
         return AuthenticationCheckResult(checked, 1, response.status, False)
     matched = 200 <= response.status < 300 and (
         baseline.expected_status is None or response.status == baseline.expected_status
     )
     if matched:
-        mark_authentication_status(workspace, actor_id, "READY", baseline_confirmed=True)
+        mark_authentication_status(
+            workspace,
+            actor_id,
+            "READY",
+            credential_accepted=True,
+            scope_validated=True,
+            identity_confirmed=identity_result.confirmed,
+            identity_assertion_status=identity_result.status,
+            identity_confirmation_reference=identity_result.confirmation_reference,
+        )
+    else:
+        mark_authentication_status(
+            workspace,
+            actor_id,
+            "AVAILABLE_NOT_VALIDATED",
+            credential_accepted=False,
+            scope_validated=True,
+            identity_confirmed=False,
+            identity_assertion_status=identity_result.status,
+        )
     checked = actor_preflight(workspace, actor_id, for_execution=True)
     return AuthenticationCheckResult(checked, 1, response.status, matched)
 
@@ -867,75 +937,85 @@ def actor_preflight(
         if authentication is not None and authentication.components:
             raise FinsecError(f"Anonymous actor {actor_id!r} has an unsafe credential assignment.")
         return AuthenticationPreflight(
-            actor_id,
-            "none",
-            "NONE",
-            True,
-            None,
-            None,
-            False,
-            True,
-            True,
-            "READY_FOR_EXECUTION" if for_execution else "READY_FOR_PLANNING",
+            actor_id=actor_id,
+            auth_type="none",
+            status="NONE",
+            credential_available=True,
+            expires_at=None,
+            remaining_seconds=None,
+            refresh_available=False,
+            credential_accepted=True,
+            scope_validated=True,
+            identity_confirmed=True,
+            identity_assertion_status="CONFIRMED",
+            result="READY_FOR_EXECUTION" if for_execution else "READY_FOR_PLANNING",
         )
     if authentication is None:
         return AuthenticationPreflight(
-            actor_id,
-            "legacy_unmanaged",
-            "MISSING",
-            False,
-            None,
-            None,
-            False,
-            False,
-            False,
-            "BLOCKED_BY_AUTH",
-            ("Actor authentication metadata has not been migrated.",),
+            actor_id=actor_id,
+            auth_type="legacy_unmanaged",
+            status="MISSING",
+            credential_available=False,
+            expires_at=None,
+            remaining_seconds=None,
+            refresh_available=False,
+            credential_accepted=False,
+            scope_validated=False,
+            identity_confirmed=False,
+            identity_assertion_status="NOT_CONFIGURED",
+            result="BLOCKED_BY_AUTH",
+            reasons=("Actor authentication metadata has not been migrated.",),
         )
     if expected_profile_ref and authentication.profile_ref != expected_profile_ref:
         return AuthenticationPreflight(
-            actor_id,
-            authentication.auth_type,
-            "AUTH_CONTEXT_CHANGED",
-            False,
-            authentication.expiration.expires_at,
-            None,
-            authentication.refresh.configured,
-            False,
-            False,
-            "BLOCKED_BY_AUTH",
-            ("The plan references a different actor credential profile.",),
+            actor_id=actor_id,
+            auth_type=authentication.auth_type,
+            status="AUTH_CONTEXT_CHANGED",
+            credential_available=False,
+            expires_at=authentication.expiration.expires_at,
+            remaining_seconds=None,
+            refresh_available=authentication.refresh.configured,
+            credential_accepted=False,
+            scope_validated=False,
+            identity_confirmed=False,
+            identity_assertion_status=authentication.identity.last_assertion_status,
+            result="BLOCKED_BY_AUTH",
+            reasons=("The plan references a different actor credential profile.",),
         )
     if (
         expected_context_fingerprint is not None
         and authentication.context_fingerprint != expected_context_fingerprint
     ):
         return AuthenticationPreflight(
-            actor_id,
-            authentication.auth_type,
-            "AUTH_CONTEXT_CHANGED",
-            False,
-            authentication.expiration.expires_at,
-            None,
-            authentication.refresh.configured,
-            False,
-            False,
-            "BLOCKED_BY_AUTH",
-            ("Actor authentication context changed after plan generation.",),
+            actor_id=actor_id,
+            auth_type=authentication.auth_type,
+            status="AUTH_CONTEXT_CHANGED",
+            credential_available=False,
+            expires_at=authentication.expiration.expires_at,
+            remaining_seconds=None,
+            refresh_available=authentication.refresh.configured,
+            credential_accepted=False,
+            scope_validated=False,
+            identity_confirmed=False,
+            identity_assertion_status=authentication.identity.last_assertion_status,
+            result="BLOCKED_BY_AUTH",
+            reasons=("Actor authentication context changed after plan generation.",),
         )
     if request_hosts and not request_hosts.issubset(set(authentication.target_hosts)):
         return AuthenticationPreflight(
-            actor_id,
-            authentication.auth_type,
-            "INVALID",
-            False,
-            authentication.expiration.expires_at,
-            None,
-            authentication.refresh.configured,
-            False,
-            False,
-            "BLOCKED_BY_AUTH",
-            ("Credential profile is not scoped to every planned request host.",),
+            actor_id=actor_id,
+            auth_type=authentication.auth_type,
+            status="INVALID",
+            credential_available=False,
+            expires_at=authentication.expiration.expires_at,
+            remaining_seconds=None,
+            refresh_available=authentication.refresh.configured,
+            credential_accepted=authentication.credential_accepted,
+            scope_validated=False,
+            identity_confirmed=False,
+            identity_assertion_status=authentication.identity.last_assertion_status,
+            result="BLOCKED_BY_AUTH",
+            reasons=("Credential profile is not scoped to every planned request host.",),
         )
     store = SecretStore(workspace)
     missing = [
@@ -984,6 +1064,15 @@ def actor_preflight(
     if for_execution and status == "EXPIRING_SOON":
         blocked = True
         reasons.append("Refresh or replacement is required before network execution.")
+    if for_execution and not authentication.credential_accepted:
+        blocked = True
+        reasons.append("Credential acceptance has not been confirmed by an expected response.")
+    if for_execution and not authentication.scope_validated:
+        blocked = True
+        reasons.append("Credential target and scope validation has not been confirmed.")
+    if for_execution and not authentication.identity.confirmed:
+        blocked = True
+        reasons.append("Actor identity has not been confirmed by a structured assertion.")
     result: Literal["READY_FOR_EXECUTION", "READY_FOR_PLANNING", "BLOCKED_BY_AUTH"]
     if blocked:
         result = "BLOCKED_BY_AUTH"
@@ -997,8 +1086,10 @@ def actor_preflight(
         expires_at=expiration,
         remaining_seconds=remaining,
         refresh_available=authentication.refresh.configured,
-        target_validated=authentication.last_validated_at is not None,
-        baseline_identity_confirmed=authentication.identity.baseline_confirmed,
+        credential_accepted=authentication.credential_accepted,
+        scope_validated=authentication.scope_validated,
+        identity_confirmed=authentication.identity.confirmed,
+        identity_assertion_status=authentication.identity.last_assertion_status,
         result=result,
         reasons=tuple(dict.fromkeys(reasons)),
     )
@@ -1373,6 +1464,10 @@ def refresh_actor_authentication(workspace: WorkspacePaths, actor_id: str) -> Re
         updates.append((refresh_component.credential_ref, actor_id, "refresh", new_refresh))
     store.put_many(updates)
     authentication.expiration = new_expiration
+    authentication.credential_accepted = False
+    authentication.credential_accepted_at = None
+    authentication.scope_validated = False
+    authentication.scope_validated_at = None
     if continuity == "CONFIRMED":
         authentication.identity = new_identity
         authentication.context_fingerprint = authentication_context_fingerprint(
