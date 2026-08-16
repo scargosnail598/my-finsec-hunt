@@ -26,7 +26,13 @@ from finsec.hypotheses.contracts import (
 )
 from finsec.modeling.domain import ResourceRecord, ResourceStore
 from finsec.modeling.merge import stable_fingerprint
-from finsec.modeling.models import ActorObjectBaseline, Endpoint, KnowledgeStatus, ObservationStore
+from finsec.modeling.models import (
+    ActorObjectBaseline,
+    Endpoint,
+    KnowledgeStatus,
+    Observation,
+    ObservationStore,
+)
 from finsec.modeling.parameter_identity import parameter_identities_match
 from finsec.modeling.semantics import (
     IdentifierSemanticClass,
@@ -276,55 +282,284 @@ def _baseline_with_derived_provenance(
     )
 
 
-def _baseline_matches_hypothesis(
+def _baseline_matches_exact_target_context(
     baseline: ActorObjectBaseline,
-    source: Sequence[Endpoint],
     hierarchies: Mapping[str, PathHierarchy],
-    all_endpoints: Mapping[str, Endpoint],
-    intent: DomainIntentAssessment,
+    target_parent_values: set[str],
 ) -> bool:
-    """Require typed provenance, with exact-endpoint fallback for legacy baselines."""
+    """Match the exact route and literal parent context of the hypothesis target."""
 
-    source_ids = {endpoint.id for endpoint in source}
-    legacy = baseline.subject_resource_type is None or baseline.collection_route_family is None
-    if legacy:
-        return baseline.endpoint_id is not None and baseline.endpoint_id in source_ids
-    if baseline.endpoint_id is None or baseline.endpoint_id not in all_endpoints:
-        return False
-    if _type_key(baseline.subject_resource_type) != _type_key(intent.subject_resource):
-        return False
-    if baseline.collection_route_family not in {
-        hierarchy.collection_route_family for hierarchy in hierarchies.values()
-    }:
-        return False
-    expected_parent = _type_key(intent.parent_resource)
-    if _type_key(baseline.parent_resource_type) != expected_parent:
-        return False
-    source_parent_values = {
-        hierarchy.parent.value
-        for hierarchy in hierarchies.values()
-        if hierarchy.parent is not None and hierarchy.parent.value is not None
-    }
-    if source_parent_values and baseline.parent_value not in source_parent_values:
-        return False
     route_families = {hierarchy.route_family for hierarchy in hierarchies.values()}
-    if baseline.route_family is not None and baseline.route_family not in route_families:
-        return False
-    provenance_endpoint = all_endpoints[baseline.endpoint_id]
-    provenance_hierarchy = path_hierarchy(
-        provenance_endpoint.path,
-        provenance_endpoint.path,
-        provenance_endpoint.resource.type,
+    return baseline.route_family in route_families and (
+        not target_parent_values or baseline.parent_value in target_parent_values
+    )
+
+
+@dataclass(frozen=True, order=True)
+class _ComparisonContext:
+    """Runtime service/auth context shared by comparison-compatible baselines."""
+
+    host: str
+    scheme: str
+    authentication_type: str
+    collection_route_family: str
+
+
+@dataclass(frozen=True)
+class _ComparisonCandidate:
+    baseline: ActorObjectBaseline
+    context: _ComparisonContext
+    matches_target_parent: bool
+
+
+def _unique_endpoint_index(endpoints: Sequence[Endpoint]) -> dict[str, Endpoint]:
+    grouped: dict[str, list[Endpoint]] = {}
+    for endpoint in endpoints:
+        grouped.setdefault(endpoint.id, []).append(endpoint)
+    return {identifier: values[0] for identifier, values in grouped.items() if len(values) == 1}
+
+
+def _unique_observation_index(
+    observations: ObservationStore,
+) -> tuple[dict[str, Observation], set[str]]:
+    grouped: dict[str, list[Observation]] = {}
+    for observation in observations.observations:
+        grouped.setdefault(observation.id, []).append(observation)
+    return (
+        {identifier: values[0] for identifier, values in grouped.items() if len(values) == 1},
+        {identifier for identifier, values in grouped.items() if len(values) != 1},
+    )
+
+
+def _runtime_comparison_context(
+    endpoint: Endpoint,
+    observation: Observation,
+) -> tuple[_ComparisonContext, PathHierarchy] | None:
+    """Resolve one unambiguous runtime endpoint/service context."""
+
+    observation_authentication = observation.authentication.observed_type
+    authentication_compatible = (
+        observation_authentication != "mixed"
+        and endpoint.authentication.observed_type in {observation_authentication, "mixed"}
+        and (
+            (observation.authentication.present and observation_authentication != "none")
+            or (
+                not endpoint.authentication.required
+                and not observation.authentication.present
+                and observation_authentication == "none"
+            )
+        )
     )
     if (
-        baseline.route_family is not None
-        and baseline.route_family != provenance_hierarchy.route_family
+        observation.source not in RUNTIME_SOURCES
+        or observation.id not in endpoint.sources
+        or observation.method != endpoint.method
+        or not observation.host
+        or observation.host not in endpoint.hosts
+        or not authentication_compatible
     ):
-        return False
-    return not (
-        provenance_hierarchy.parent is not None
-        and provenance_hierarchy.parent.value is not None
-        and baseline.parent_value != provenance_hierarchy.parent.value
+        return None
+    hierarchy = path_hierarchy(endpoint.path, observation.path, endpoint.resource.type)
+    endpoint_hierarchy = path_hierarchy(endpoint.path, endpoint.path, endpoint.resource.type)
+    if hierarchy.collection_route_family != endpoint_hierarchy.collection_route_family:
+        return None
+    if (
+        endpoint_hierarchy.parent is not None
+        and endpoint_hierarchy.parent.value is not None
+        and (hierarchy.parent is None or hierarchy.parent.value != endpoint_hierarchy.parent.value)
+    ):
+        return None
+    return (
+        _ComparisonContext(
+            host=observation.host.casefold(),
+            scheme=(observation.scheme or "").casefold(),
+            authentication_type=observation_authentication,
+            collection_route_family=hierarchy.collection_route_family,
+        ),
+        hierarchy,
+    )
+
+
+def _source_comparison_contexts(
+    source: Sequence[Endpoint],
+    observations: Mapping[str, Observation],
+    ambiguous_observation_ids: set[str],
+    runtime_ids: set[str],
+) -> tuple[set[_ComparisonContext], set[str]]:
+    contexts: set[_ComparisonContext] = set()
+    parent_values: set[str] = set()
+    for endpoint in sorted(source, key=lambda item: item.id):
+        for observation_id in sorted(set(endpoint.sources).intersection(runtime_ids)):
+            if observation_id in ambiguous_observation_ids:
+                continue
+            observation = observations.get(observation_id)
+            if observation is None:
+                continue
+            resolved = _runtime_comparison_context(endpoint, observation)
+            if resolved is None:
+                continue
+            context, hierarchy = resolved
+            contexts.add(context)
+            if hierarchy.parent is not None and hierarchy.parent.value is not None:
+                parent_values.add(hierarchy.parent.value)
+    return contexts, parent_values
+
+
+def _baseline_runtime_provenance(
+    baseline: ActorObjectBaseline,
+    endpoint: Endpoint,
+    observations: Mapping[str, Observation],
+    ambiguous_observation_ids: set[str],
+    intent: DomainIntentAssessment,
+) -> tuple[ActorObjectBaseline, _ComparisonContext] | None:
+    """Derive typed baseline context only from current actor-bound runtime evidence."""
+
+    observation_ids = sorted(set(baseline.observations))
+    if not observation_ids or any(
+        identifier in ambiguous_observation_ids
+        or identifier not in observations
+        or identifier not in endpoint.sources
+        for identifier in observation_ids
+    ):
+        return None
+    contexts: set[_ComparisonContext] = set()
+    parent_types: set[str] = set()
+    parent_values: set[str] = set()
+    subject_values: set[str] = set()
+    for observation_id in observation_ids:
+        observation = observations[observation_id]
+        if observation.actor != baseline.actor:
+            return None
+        resolved = _runtime_comparison_context(endpoint, observation)
+        if resolved is None:
+            return None
+        context, hierarchy = resolved
+        if (
+            baseline.authentication_type is not None
+            and baseline.authentication_type.casefold() != context.authentication_type.casefold()
+        ):
+            return None
+        contexts.add(context)
+        if hierarchy.subject is not None and hierarchy.subject.value is not None:
+            subject_values.add(hierarchy.subject.value)
+        if hierarchy.parent is not None:
+            parent_types.add(_type_key(hierarchy.parent.resource_type))
+            if hierarchy.parent.value is not None:
+                parent_values.add(hierarchy.parent.value)
+    if (
+        len(contexts) != 1
+        or len(parent_types) > 1
+        or len(parent_values) > 1
+        or len(subject_values) > 1
+    ):
+        return None
+    observed_subject_value = next(iter(subject_values), None)
+    if observed_subject_value is not None and baseline.requested_value != observed_subject_value:
+        return None
+    endpoint_hierarchy = path_hierarchy(endpoint.path, endpoint.path, endpoint.resource.type)
+    endpoint_parent_type = (
+        endpoint_hierarchy.parent.resource_type if endpoint_hierarchy.parent is not None else None
+    )
+    observed_parent_type = next(iter(parent_types), _type_key(endpoint_parent_type))
+    if observed_parent_type != _type_key(intent.parent_resource):
+        return None
+    observed_parent_value = next(iter(parent_values), None)
+    if (
+        baseline.parent_value is not None
+        and observed_parent_value is not None
+        and baseline.parent_value != observed_parent_value
+    ):
+        return None
+    derived = baseline.model_copy(
+        update={
+            "subject_resource_type": baseline.subject_resource_type or endpoint.resource.type,
+            "route_family": baseline.route_family or endpoint_hierarchy.route_family,
+            "collection_route_family": (
+                baseline.collection_route_family or endpoint_hierarchy.collection_route_family
+            ),
+            "parent_resource_type": baseline.parent_resource_type or endpoint_parent_type,
+            "parent_value": baseline.parent_value or observed_parent_value,
+            "authentication_type": baseline.authentication_type
+            or next(iter(contexts)).authentication_type,
+        }
+    )
+    if (
+        _type_key(endpoint.resource.type) != _type_key(intent.subject_resource)
+        or _type_key(derived.subject_resource_type) != _type_key(intent.subject_resource)
+        or derived.route_family != endpoint_hierarchy.route_family
+        or derived.collection_route_family != endpoint_hierarchy.collection_route_family
+        or _type_key(derived.parent_resource_type) != _type_key(intent.parent_resource)
+        or (
+            intent.parent_resource is not None
+            and derived.parent_resource_id is None
+            and derived.parent_value is None
+        )
+    ):
+        return None
+    return derived, next(iter(contexts))
+
+
+def _baseline_matches_comparison_context(
+    baseline: ActorObjectBaseline,
+    context: _ComparisonContext,
+    source_contexts: set[_ComparisonContext],
+    source_hierarchies: Mapping[str, PathHierarchy],
+    intent: DomainIntentAssessment,
+) -> bool:
+    """Match semantic family and runtime provenance without equating literal parents."""
+
+    return (
+        context in source_contexts
+        and _type_key(baseline.subject_resource_type) == _type_key(intent.subject_resource)
+        and baseline.collection_route_family
+        in {item.collection_route_family for item in source_hierarchies.values()}
+        and _type_key(baseline.parent_resource_type) == _type_key(intent.parent_resource)
+    )
+
+
+def _comparison_candidate(
+    baseline: ActorObjectBaseline,
+    *,
+    controlled_actor_ids: set[str],
+    endpoints: Mapping[str, Endpoint],
+    observations: Mapping[str, Observation],
+    ambiguous_observation_ids: set[str],
+    source_contexts: set[_ComparisonContext],
+    source_hierarchies: Mapping[str, PathHierarchy],
+    target_parent_values: set[str],
+    intent: DomainIntentAssessment,
+) -> _ComparisonCandidate | None:
+    if baseline.actor not in controlled_actor_ids or baseline.endpoint_id is None:
+        return None
+    endpoint = endpoints.get(baseline.endpoint_id)
+    if endpoint is None or endpoint.disposition != "ACTIVE":
+        return None
+    resolved = _baseline_runtime_provenance(
+        baseline,
+        endpoint,
+        observations,
+        ambiguous_observation_ids,
+        intent,
+    )
+    if resolved is None:
+        return None
+    derived, context = resolved
+    if not _baseline_matches_comparison_context(
+        derived,
+        context,
+        source_contexts,
+        source_hierarchies,
+        intent,
+    ):
+        return None
+    return _ComparisonCandidate(
+        baseline=derived,
+        context=context,
+        matches_target_parent=_baseline_matches_exact_target_context(
+            derived,
+            source_hierarchies,
+            target_parent_values,
+        ),
     )
 
 
@@ -334,9 +569,11 @@ def _opaque_reference(prefix: str, value: str) -> str:
 
 @dataclass
 class _ComparisonBaselineAccumulator:
+    canonical_reference: str
     actor_id: str
     object_reference: str
     parent_reference: str | None
+    matches_target_parent: bool
     resource_type: str | None
     parent_resource_type: str | None
     route_family: str | None
@@ -349,7 +586,7 @@ class _ComparisonBaselineAccumulator:
 
 
 def _canonical_comparison_baselines(
-    baselines: Sequence[ActorObjectBaseline],
+    candidates: Sequence[_ComparisonCandidate],
 ) -> list[ComparisonBaseline]:
     """Merge corroborating edges without treating them as independent baselines."""
 
@@ -357,7 +594,8 @@ def _canonical_comparison_baselines(
         tuple[str, str, str | None, str | None, str | None],
         _ComparisonBaselineAccumulator,
     ] = {}
-    for baseline in baselines:
+    for candidate in candidates:
+        baseline = candidate.baseline
         object_reference = baseline.subject_resource_id or _opaque_reference(
             "OBJ", baseline.requested_value
         )
@@ -374,9 +612,22 @@ def _canonical_comparison_baselines(
         entry = merged.setdefault(
             key,
             _ComparisonBaselineAccumulator(
+                canonical_reference=(
+                    "CBL-"
+                    + stable_fingerprint(
+                        {
+                            "actor": baseline.actor,
+                            "object": object_reference,
+                            "parent": parent_reference,
+                            "route": baseline.route_family,
+                            "collection": baseline.collection_route_family,
+                        }
+                    )[:16].upper()
+                ),
                 actor_id=baseline.actor,
                 object_reference=object_reference,
                 parent_reference=parent_reference,
+                matches_target_parent=candidate.matches_target_parent,
                 resource_type=baseline.subject_resource_type,
                 parent_resource_type=baseline.parent_resource_type,
                 route_family=baseline.route_family,
@@ -384,6 +635,7 @@ def _canonical_comparison_baselines(
                 operation=baseline.operation,
             ),
         )
+        entry.matches_target_parent = entry.matches_target_parent or candidate.matches_target_parent
         if baseline.baseline_id is not None:
             entry.baseline_ids.add(baseline.baseline_id)
         if baseline.endpoint_id is not None:
@@ -392,9 +644,11 @@ def _canonical_comparison_baselines(
         entry.observation_ids.update(baseline.observations)
     return [
         ComparisonBaseline(
+            canonical_reference=entry.canonical_reference,
             actor_id=entry.actor_id,
             object_reference=entry.object_reference,
             parent_reference=entry.parent_reference,
+            matches_target_parent=entry.matches_target_parent,
             resource_type=entry.resource_type,
             parent_resource_type=entry.parent_resource_type,
             route_family=entry.route_family,
@@ -405,8 +659,94 @@ def _canonical_comparison_baselines(
             supporting_relationship_ids=sorted(entry.supporting_relationship_ids),
             observation_ids=sorted(entry.observation_ids),
         )
-        for _, entry in sorted(merged.items())
+        for _, entry in sorted(
+            merged.items(),
+            key=lambda item: tuple("" if value is None else value for value in item[0]),
+        )
     ]
+
+
+def _comparison_witness(
+    baselines: Sequence[ComparisonBaseline],
+    required_actors: int,
+    *,
+    target_parent_required: bool,
+) -> tuple[ComparisonBaseline, ...]:
+    """Select one deterministic actor/object witness set anchored to the target parent."""
+
+    if required_actors <= 0:
+        return ()
+    ordered = sorted(baselines, key=lambda item: item.canonical_reference)
+    targets = (
+        [item for item in ordered if item.matches_target_parent]
+        if target_parent_required
+        else ordered
+    )
+
+    def extend(selected: tuple[ComparisonBaseline, ...]) -> tuple[ComparisonBaseline, ...]:
+        if len(selected) >= required_actors:
+            return selected
+        actors = {item.actor_id for item in selected}
+        objects = {item.object_reference for item in selected}
+        for candidate in ordered:
+            if candidate.actor_id in actors or candidate.object_reference in objects:
+                continue
+            result = extend((*selected, candidate))
+            if result:
+                return result
+        return ()
+
+    for target in targets:
+        result = extend((target,))
+        if result:
+            return result
+    return ()
+
+
+def _select_comparison_group(
+    candidates: Sequence[_ComparisonCandidate],
+    required_actors: int,
+    *,
+    target_parent_required: bool,
+) -> tuple[list[ComparisonBaseline], tuple[ComparisonBaseline, ...]]:
+    grouped: dict[_ComparisonContext, list[_ComparisonCandidate]] = {}
+    for candidate in candidates:
+        grouped.setdefault(candidate.context, []).append(candidate)
+    choices: list[
+        tuple[
+            _ComparisonContext,
+            list[ComparisonBaseline],
+            tuple[ComparisonBaseline, ...],
+        ]
+    ] = []
+    for context, values in grouped.items():
+        baselines = _canonical_comparison_baselines(values)
+        witness = _comparison_witness(
+            baselines,
+            required_actors,
+            target_parent_required=target_parent_required,
+        )
+        choices.append((context, baselines, witness))
+    if target_parent_required:
+        choices = [
+            item for item in choices if any(baseline.matches_target_parent for baseline in item[1])
+        ]
+    if not choices:
+        return [], ()
+    _, selected, witness = min(
+        choices,
+        key=lambda item: (
+            0 if item[2] else 1,
+            0
+            if not target_parent_required
+            or any(baseline.matches_target_parent for baseline in item[1])
+            else 1,
+            -len({baseline.actor_id for baseline in item[1]}),
+            -len({baseline.object_reference for baseline in item[1]}),
+            item[0],
+        ),
+    )
+    return selected, witness
 
 
 def _mutation_target(record: HypothesisLike) -> MutationTargetAssessment:
@@ -438,6 +778,45 @@ def cleanup_control_fingerprint(
     )
 
 
+def _cleanup_checksum_endpoint(endpoint: Endpoint) -> dict[str, object]:
+    """Canonicalize set-like ownership provenance before checksum binding."""
+
+    payload = endpoint.model_dump(mode="json", exclude_none=True)
+    raw_access = payload.get("object_access")
+    if not isinstance(raw_access, list):
+        return payload
+    normalized_access: list[dict[str, object]] = []
+    for value in raw_access:
+        if not isinstance(value, dict):
+            continue
+        access = dict(value)
+        for key in ("relationship_ids", "baseline_ids", "counterevidence", "ambiguity"):
+            raw_values = access.get(key)
+            if isinstance(raw_values, list):
+                access[key] = sorted(raw_values, key=str)
+        raw_baselines = access.get("baselines")
+        if isinstance(raw_baselines, list):
+            baselines: list[dict[str, object]] = []
+            for raw_baseline in raw_baselines:
+                if not isinstance(raw_baseline, dict):
+                    continue
+                baseline = dict(raw_baseline)
+                for key in (
+                    "relationship_ids",
+                    "capture_ids",
+                    "session_ids",
+                    "observations",
+                ):
+                    raw_values = baseline.get(key)
+                    if isinstance(raw_values, list):
+                        baseline[key] = sorted(raw_values, key=str)
+                baselines.append(baseline)
+            access["baselines"] = sorted(baselines, key=stable_fingerprint)
+        normalized_access.append(access)
+    payload["object_access"] = sorted(normalized_access, key=stable_fingerprint)
+    return payload
+
+
 def cleanup_control_source_checksum(
     target: TargetDocument,
     observations: ObservationStore,
@@ -452,6 +831,12 @@ def cleanup_control_source_checksum(
     analysis = target_payload.get("analysis")
     if isinstance(analysis, dict):
         analysis["cleanup_controls"] = []
+    accounts = target_payload.get("accounts")
+    if isinstance(accounts, list):
+        target_payload["accounts"] = sorted(
+            accounts,
+            key=lambda item: str(item.get("id", "")) if isinstance(item, dict) else str(item),
+        )
     relevant_observation_ids = set(record.source.observations) | set(record.observations)
     relevant_observation_ids.update(
         observation_id for endpoint in source for observation_id in endpoint.sources
@@ -474,7 +859,7 @@ def cleanup_control_source_checksum(
                 )
             ],
             "endpoints": [
-                item.model_dump(mode="json", exclude_none=True)
+                _cleanup_checksum_endpoint(item)
                 for item in sorted(source, key=lambda endpoint: endpoint.id)
             ],
         }
@@ -1098,51 +1483,123 @@ def build_record_readiness_context(
             target_name=mutation_target.parameter,
         )
     ]
-    endpoint_by_id = {endpoint.id: endpoint for endpoint in endpoints}
+    endpoint_by_id = _unique_endpoint_index(endpoints)
+    observation_by_id, ambiguous_observation_ids = _unique_observation_index(observations)
+    controlled_actor_ids = {
+        account.id
+        for account in target.accounts
+        if account.ownership == "researcher" and account.authenticated
+    }
     candidate_baselines = [
-        _baseline_with_derived_provenance(baseline, endpoint_by_id)
+        baseline
         for access in matching_access
         if access.actor_object_binding_observed
         and access.source in {"CONTROLLED_LIFECYCLE", "RESPONSE_BODY"}
         for baseline in access.baselines
     ]
-    eligible_baselines = [
-        baseline
+    source_contexts, target_parent_values = _source_comparison_contexts(
+        source,
+        observation_by_id,
+        ambiguous_observation_ids,
+        runtime_ids,
+    )
+    comparison_candidates = [
+        candidate
         for baseline in candidate_baselines
-        if _baseline_matches_hypothesis(
-            baseline,
-            source,
-            source_hierarchies,
-            endpoint_by_id,
-            intent,
+        if (
+            candidate := _comparison_candidate(
+                baseline,
+                controlled_actor_ids=controlled_actor_ids,
+                endpoints=endpoint_by_id,
+                observations=observation_by_id,
+                ambiguous_observation_ids=ambiguous_observation_ids,
+                source_contexts=source_contexts,
+                source_hierarchies=source_hierarchies,
+                target_parent_values=target_parent_values,
+                intent=intent,
+            )
         )
+        is not None
     ]
-    canonical_baselines = _canonical_comparison_baselines(eligible_baselines)
+    canonical_baselines, comparison_witness = _select_comparison_group(
+        comparison_candidates,
+        actors_required,
+        target_parent_required=bool(target_parent_values),
+    )
     baseline_actors = {baseline.actor_id for baseline in canonical_baselines}
     baseline_objects = {baseline.object_reference for baseline in canonical_baselines}
-    distinct_baselines = len(baseline_actors) >= actors_required and len(baseline_objects) >= 2
-    controlled_actor_ids = [
-        account.id for account in target.accounts if account.ownership == "researcher"
-    ]
-    missing_baseline_actors = sorted(set(controlled_actor_ids) - baseline_actors)
+    baseline_parents = {
+        baseline.parent_reference
+        for baseline in canonical_baselines
+        if baseline.parent_reference is not None
+    }
+    distinct_baselines = len(comparison_witness) >= actors_required
+    missing_baseline_actors = sorted(controlled_actor_ids - baseline_actors)
+    target_parent_baseline: ComparisonBaseline | None = None
+    if target_parent_values:
+        target_parent_baseline = (
+            comparison_witness[0]
+            if comparison_witness
+            else next(
+                (baseline for baseline in canonical_baselines if baseline.matches_target_parent),
+                None,
+            )
+        )
+    comparison_baselines = list(comparison_witness[1:]) if comparison_witness else []
+    cross_parent_comparison = bool(
+        target_parent_baseline is not None
+        and any(
+            baseline.parent_reference != target_parent_baseline.parent_reference
+            for baseline in comparison_baselines
+        )
+    )
+    if not ownership_required:
+        comparison_explanation = "No cross-actor comparison coverage is required."
+    elif target_parent_values and target_parent_baseline is None:
+        comparison_explanation = (
+            "No canonical controlled baseline matches the hypothesis's validated literal "
+            "target parent; foreign-parent baselines alone cannot establish comparison coverage."
+        )
+    elif distinct_baselines and cross_parent_comparison:
+        comparison_explanation = (
+            "Different literal parents are intentionally retained as separate controlled "
+            "contexts and accepted only for cross-actor comparison coverage; exact cleanup "
+            "and subject-only mutation parent matching remain unchanged."
+        )
+    elif distinct_baselines:
+        comparison_explanation = (
+            "The selected controlled actor/object baselines satisfy comparison coverage within "
+            "the retained target-parent context."
+        )
+    else:
+        comparison_explanation = (
+            "Canonical controlled baselines do not yet provide the required distinct "
+            "actor/object comparison witness."
+        )
     controlled_baseline_evidence = [
         _evidence(
-            (baseline.baseline_ids or baseline.observation_ids)[0],
+            (
+                baseline.baseline_ids
+                or baseline.observation_ids
+                or baseline.endpoint_ids
+                or [baseline.canonical_reference]
+            )[0],
             "WORKFLOW" if baseline.baseline_ids else "ENDPOINT",
             (
                 f"Controlled {baseline.operation or 'resource'} baseline for "
                 f"{baseline.actor_id} is backed by explicit lifecycle or owner-binding "
                 f"evidence with {len(baseline.supporting_relationship_ids)} supporting "
-                f"relationship{'s' if len(baseline.supporting_relationship_ids) != 1 else ''}."
+                f"relationship{'s' if len(baseline.supporting_relationship_ids) != 1 else ''}; "
+                "its parent context remains distinct and opaque."
             ),
         )
         for baseline in canonical_baselines
-        if baseline.baseline_ids or baseline.observation_ids
     ]
     comparison_coverage = ComparisonCoverage(
         required_distinct_actors=actors_required if ownership_required else 0,
         observed_distinct_actors=len(baseline_actors),
         distinct_controlled_objects=len(baseline_objects),
+        distinct_parent_references=len(baseline_parents),
         baseline_actor_ids=sorted(baseline_actors),
         missing_actor_ids=missing_baseline_actors,
         resource_type=intent.subject_resource,
@@ -1150,6 +1607,20 @@ def build_record_readiness_context(
             {hierarchy.collection_route_family for hierarchy in source_hierarchies.values()}
         ),
         parent_resource_type=intent.parent_resource,
+        parent_references=sorted(baseline_parents),
+        target_parent_references=sorted(
+            _opaque_reference("PARENT", value) for value in target_parent_values
+        ),
+        target_parent_baseline_reference=(
+            target_parent_baseline.canonical_reference
+            if target_parent_baseline is not None
+            else None
+        ),
+        comparison_baseline_references=[
+            baseline.canonical_reference for baseline in comparison_baselines
+        ],
+        cross_parent_comparison=cross_parent_comparison,
+        explanation=comparison_explanation,
         baseline_ids=sorted(
             {
                 baseline_id
@@ -1163,6 +1634,7 @@ def build_record_readiness_context(
                 for baseline in canonical_baselines
                 for reference in [
                     *baseline.baseline_ids,
+                    *baseline.endpoint_ids,
                     *baseline.supporting_relationship_ids,
                     *baseline.observation_ids,
                 ]
@@ -1219,10 +1691,17 @@ def build_record_readiness_context(
         + controlled_baseline_evidence,
         missing=(
             (
-                [
-                    f"Missing controlled object baseline for {actor}."
-                    for actor in missing_baseline_actors
-                ]
+                (
+                    [
+                        "No canonical controlled baseline matches the hypothesis's validated "
+                        "literal target parent."
+                    ]
+                    if target_parent_values and target_parent_baseline is None
+                    else [
+                        f"Missing controlled object baseline for {actor}."
+                        for actor in missing_baseline_actors
+                    ]
+                )
                 or ["Capture two distinct controlled actor/subject baselines."]
             )
             if record.category == "authorization" or binding_family

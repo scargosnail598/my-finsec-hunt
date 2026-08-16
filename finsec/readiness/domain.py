@@ -175,11 +175,19 @@ class FocusedComparisonReadiness(ReadinessModel):
 
     hypothesis_id: str
     resource_type: str | None = None
+    parent_resource_type: str | None = None
     required_distinct_actors: int = 0
     observed_distinct_actors: int = 0
     distinct_controlled_objects: int = 0
+    distinct_parent_references: int = 0
     baseline_actor_ids: list[str] = Field(default_factory=list)
     missing_actor_ids: list[str] = Field(default_factory=list)
+    parent_references: list[str] = Field(default_factory=list)
+    target_parent_baseline_reference: str | None = None
+    comparison_baseline_references: list[str] = Field(default_factory=list)
+    evidence_references: list[str] = Field(default_factory=list)
+    cross_parent_comparison: bool = False
+    explanation: str = "No cross-actor comparison coverage is required."
 
 
 class ActorCapabilities(ReadinessModel):

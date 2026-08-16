@@ -363,9 +363,11 @@
         "observation_ids"
       ],
       "properties": {
+        "canonical_reference": {"type": "string"},
         "actor_id": {"type": "string"},
         "object_reference": {"type": "string"},
         "parent_reference": {"type": ["string", "null"]},
+        "matches_target_parent": {"type": "boolean"},
         "resource_type": {"type": ["string", "null"]},
         "parent_resource_type": {"type": ["string", "null"]},
         "route_family": {"type": ["string", "null"]},
@@ -398,11 +400,21 @@
         "required_distinct_actors": {"type": "integer", "minimum": 0},
         "observed_distinct_actors": {"type": "integer", "minimum": 0},
         "distinct_controlled_objects": {"type": "integer", "minimum": 0},
+        "distinct_parent_references": {"type": "integer", "minimum": 0},
         "baseline_actor_ids": {"type": "array", "items": {"type": "string"}},
         "missing_actor_ids": {"type": "array", "items": {"type": "string"}},
         "resource_type": {"type": ["string", "null"]},
         "route_families": {"type": "array", "items": {"type": "string"}},
         "parent_resource_type": {"type": ["string", "null"]},
+        "parent_references": {"type": "array", "items": {"type": "string"}},
+        "target_parent_references": {"type": "array", "items": {"type": "string"}},
+        "target_parent_baseline_reference": {"type": ["string", "null"]},
+        "comparison_baseline_references": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "cross_parent_comparison": {"type": "boolean"},
+        "explanation": {"type": "string"},
         "baseline_ids": {"type": "array", "items": {"type": "string"}},
         "evidence_references": {"type": "array", "items": {"type": "string"}},
         "baselines": {

@@ -203,6 +203,9 @@ def test_web_ui_serves_bundled_assets_and_overview(tmp_path: Path) -> None:
     app_script = _get(app, "/assets/app.js")
     assert "data-rerun-workflow" in app_script.text
     assert "data-review-deletion" in app_script.text
+    assert "Cross-actor comparison coverage" in app_script.text
+    assert "target_parent_baseline_reference" in app_script.text
+    assert "comparison_baseline_references" in app_script.text
     assert 'data-theme-choice="dark"' in index.text
     assert '<script src="/assets/theme.js"></script>' in index.text
     assert index.headers["cache-control"] == "no-store"

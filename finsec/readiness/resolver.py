@@ -1700,11 +1700,19 @@ def resolve_workspace_readiness(
             focused_comparison = FocusedComparisonReadiness(
                 hypothesis_id=focused_hypothesis.id,
                 resource_type=coverage.resource_type,
+                parent_resource_type=coverage.parent_resource_type,
                 required_distinct_actors=coverage.required_distinct_actors,
                 observed_distinct_actors=coverage.observed_distinct_actors,
                 distinct_controlled_objects=coverage.distinct_controlled_objects,
+                distinct_parent_references=coverage.distinct_parent_references,
                 baseline_actor_ids=coverage.baseline_actor_ids,
                 missing_actor_ids=coverage.missing_actor_ids,
+                parent_references=coverage.parent_references,
+                target_parent_baseline_reference=(coverage.target_parent_baseline_reference),
+                comparison_baseline_references=coverage.comparison_baseline_references,
+                evidence_references=coverage.evidence_references,
+                cross_parent_comparison=coverage.cross_parent_comparison,
+                explanation=coverage.explanation,
             )
             baseline_actors = set(coverage.baseline_actor_ids)
             actor_reports = [

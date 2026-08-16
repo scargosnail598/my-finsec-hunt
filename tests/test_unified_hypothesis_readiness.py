@@ -18,6 +18,7 @@ from finsec.hypotheses.contracts import (
     ClaimStrengthLevel,
     DomainIntentAssessment,
     HypothesisReadinessAssessment,
+    MutationTargetAssessment,
 )
 from finsec.hypotheses.domain import (
     HypothesisRecord,
@@ -53,9 +54,16 @@ from finsec.modeling.models import (
     ObservationStore,
     SideEffectEvidence,
 )
+from finsec.modeling.semantics import (
+    IdentifierResourceRole,
+    IdentifierSemanticAssessment,
+    IdentifierSemanticClass,
+    OwnershipState,
+)
 from finsec.normalization.inventory import _action
 from finsec.normalization.path_semantics import path_hierarchy
-from finsec.testing.planner import inspect_plan_alignment
+from finsec.testing.planner import inspect_plan_alignment, inspect_plan_alignment_from_inputs
+from finsec.testing.templates import build_execution_templates
 from finsec.utils.yaml_store import write_yaml
 
 
@@ -214,6 +222,7 @@ def _typed_baseline(
     parent_resource_type: str | None = None,
     parent_value: str | None = None,
     endpoint_id: str | None = None,
+    observation_id: str | None = None,
 ) -> ActorObjectBaseline:
     hierarchy = path_hierarchy(endpoint.path, endpoint.path, endpoint.resource.type)
     return ActorObjectBaseline(
@@ -239,7 +248,7 @@ def _typed_baseline(
         route_family=hierarchy.route_family,
         collection_route_family=(collection_route_family or hierarchy.collection_route_family),
         baseline_id=f"BASE-{actor}-{object_id}",
-        observations=[endpoint.sources[0]],
+        observations=[observation_id or endpoint.sources[0]],
     )
 
 
@@ -261,15 +270,29 @@ def _authorization_assessment(
     )
     endpoint = endpoint.model_copy(update={"object_access": [access]})
     record = _record("HYP-001", endpoint)
-    observations = ObservationStore(
-        observations=[
-            _observation(
-                endpoint.sources[0],
-                method=endpoint.method,
-                path=endpoint.path,
+    all_endpoints = [endpoint, *(provenance_endpoints or [])]
+    actors_by_observation: dict[str, set[str]] = {}
+    for baseline in baselines:
+        for observation_id in baseline.observations:
+            actors_by_observation.setdefault(observation_id, set()).add(baseline.actor)
+    observation_records: list[Observation] = []
+    seen_observations: set[str] = set()
+    for provenance_endpoint in sorted(all_endpoints, key=lambda item: item.id):
+        for observation_id in provenance_endpoint.sources:
+            if observation_id in seen_observations:
+                continue
+            seen_observations.add(observation_id)
+            actors = actors_by_observation.get(observation_id, {"ACCOUNT_1"})
+            actor = next(iter(actors)) if len(actors) == 1 else "UNKNOWN"
+            observation_records.append(
+                _observation(
+                    observation_id,
+                    method=provenance_endpoint.method,
+                    path=provenance_endpoint.path,
+                    actor=actor,
+                )
             )
-        ]
-    )
+    observations = ObservationStore(observations=observation_records)
     target = _target()
     intent = assess_domain_intent(
         target,
@@ -284,7 +307,6 @@ def _authorization_assessment(
         intent=intent,
         eligibility_evidence=[],
     )
-    all_endpoints = [endpoint, *(provenance_endpoints or [])]
     return assess_record_readiness(
         target,
         observations,
@@ -357,6 +379,670 @@ def _record(
             ),
         }
     )
+
+
+@dataclass(frozen=True)
+class _CrossParentCase:
+    target: TargetDocument
+    observations: ObservationStore
+    endpoints: tuple[Endpoint, ...]
+    record: HypothesisRecord
+    baselines: tuple[ActorObjectBaseline, ...]
+
+
+def _comparison_endpoint(
+    identifier: str,
+    *,
+    parent: str,
+    object_value: str,
+    observation_id: str,
+    method: str = "GET",
+    collection: str = "dns-records",
+    host: str = "api.unified.test",
+    authentication_type: str = "bearer",
+) -> tuple[Endpoint, Observation]:
+    state_change = method not in {"GET", "HEAD"}
+    endpoint = _endpoint(
+        identifier,
+        method=method,
+        path=f"/cdn/4.0/domains/{parent}/{collection}/{{dnsRecordId}}",
+        resource="DnsRecord",
+        action="delete" if method == "DELETE" else "read",
+        state_change=state_change,
+        observations=(observation_id,),
+    ).model_copy(
+        update={
+            "hosts": [host],
+            "authentication": EndpointAuthentication(
+                required=True,
+                observed_type=authentication_type,
+            ),
+        }
+    )
+    observation = _observation(
+        observation_id,
+        method=method,
+        path=f"/cdn/4.0/domains/{parent}/{collection}/{object_value}",
+        actor="ACCOUNT_A" if object_value in {"RECORD_A", "RECORD_C"} else "ACCOUNT_B",
+    ).model_copy(
+        update={
+            "host": host,
+            "authentication": AuthenticationObservation(
+                present=True,
+                observed_type=authentication_type,
+            ),
+        }
+    )
+    return endpoint, observation
+
+
+def _comparison_baseline(
+    endpoint: Endpoint,
+    *,
+    actor: str,
+    parent: str,
+    object_value: str,
+    observation_id: str,
+    parent_resource_type: str = "Domain",
+) -> ActorObjectBaseline:
+    hierarchy = path_hierarchy(endpoint.path, endpoint.path, endpoint.resource.type)
+    return ActorObjectBaseline(
+        actor=actor,
+        requested_value=object_value,
+        subject_resource_id=f"RSC-{object_value}",
+        subject_resource_type="DnsRecord",
+        parent_resource_id=f"RSC-{parent.upper().replace('.', '-')}",
+        parent_resource_type=parent_resource_type,
+        parent_value=parent,
+        endpoint_id=endpoint.id,
+        route_family=hierarchy.route_family,
+        collection_route_family=hierarchy.collection_route_family,
+        baseline_id=f"BASE-{actor}-{object_value}",
+        relationship_ids=[
+            f"REL-{actor}-{object_value}-CREATED",
+            f"REL-{actor}-{object_value}-CONSUMED",
+        ],
+        operation="DELETE" if endpoint.method == "DELETE" else "READ",
+        authentication_type=endpoint.authentication.observed_type,
+        observations=[observation_id],
+    )
+
+
+def _cross_parent_case(
+    *,
+    method: str = "GET",
+    maximum_requests_per_plan: int = 6,
+    synthetic: bool = True,
+    local_lab: bool = True,
+) -> _CrossParentCase:
+    endpoint_a, observation_a = _comparison_endpoint(
+        "EP-DNS-A",
+        parent="domain-a.test",
+        object_value="RECORD_A",
+        observation_id="OBS-A",
+        method=method,
+    )
+    endpoint_b, observation_b = _comparison_endpoint(
+        "EP-DNS-B",
+        parent="domain-b.test",
+        object_value="RECORD_B",
+        observation_id="OBS-B",
+        method=method,
+    )
+    baseline_a = _comparison_baseline(
+        endpoint_a,
+        actor="ACCOUNT_A",
+        parent="domain-a.test",
+        object_value="RECORD_A",
+        observation_id="OBS-A",
+    )
+    baseline_b = _comparison_baseline(
+        endpoint_b,
+        actor="ACCOUNT_B",
+        parent="domain-b.test",
+        object_value="RECORD_B",
+        observation_id="OBS-B",
+    )
+    access = ObjectAccessEvidence(
+        identifier="dnsRecordId",
+        parameter_location="path",
+        source="CONTROLLED_LIFECYCLE",
+        baselines=[baseline_a, baseline_b],
+        distinct_actors=2,
+        distinct_objects=2,
+        distinct_parent_values=2,
+        actor_object_binding_observed=True,
+        relationship_ids=sorted({*baseline_a.relationship_ids, *baseline_b.relationship_ids}),
+        baseline_ids=[baseline_a.baseline_id or "", baseline_b.baseline_id or ""],
+    )
+    endpoint_a = endpoint_a.model_copy(update={"object_access": [access]})
+    target = TargetDocument.model_validate(
+        {
+            "target": {"name": "cross-parent-tests", "slug": "cross-parent-tests"},
+            "scope": {"hosts": ["api.unified.test"]},
+            "accounts": [
+                {"id": "ACCOUNT_A", "ownership": "researcher"},
+                {"id": "ACCOUNT_B", "ownership": "researcher"},
+            ],
+            "testing": {
+                "synthetic": synthetic,
+                "local_lab": local_lab,
+                "maximum_requests_per_plan": maximum_requests_per_plan,
+            },
+        }
+    )
+    mutation_target = MutationTargetAssessment(
+        parameter="dnsRecordId",
+        location="path",
+        endpoint_ids=[endpoint_a.id],
+        semantics=IdentifierSemanticAssessment(
+            semantic_class=IdentifierSemanticClass.OWNED_OBJECT,
+            resource_role=IdentifierResourceRole.CHILD_OBJECT,
+            resource_type="DnsRecord",
+            parent_resource_type="Domain",
+            ownership_state=OwnershipState.STRONG_INFERRED,
+            confidence="high",
+            evidence=[baseline_a.baseline_id or "", baseline_b.baseline_id or ""],
+            explanation="Two controlled actor/object lifecycles establish ownership.",
+        ),
+        expected_authorization_relationship="OWNER_SCOPED",
+    )
+    record = _record("HYP-CROSS-PARENT", endpoint_a).model_copy(
+        update={"mutation_target": mutation_target}
+    )
+    return _CrossParentCase(
+        target=target,
+        observations=ObservationStore(observations=[observation_a, observation_b]),
+        endpoints=(endpoint_a, endpoint_b),
+        record=record,
+        baselines=(baseline_a, baseline_b),
+    )
+
+
+def _assessment_for_cross_parent_case(
+    case: _CrossParentCase,
+    *,
+    target: TargetDocument | None = None,
+    observations: ObservationStore | None = None,
+    endpoints: list[Endpoint] | tuple[Endpoint, ...] | None = None,
+    baselines: list[ActorObjectBaseline] | tuple[ActorObjectBaseline, ...] | None = None,
+) -> HypothesisReadinessAssessment:
+    selected_target = target or case.target
+    selected_observations = observations or case.observations
+    selected_endpoints = list(endpoints or case.endpoints)
+    selected_baselines = list(baselines or case.baselines)
+    source_index = next(
+        index
+        for index, endpoint in enumerate(selected_endpoints)
+        if endpoint.id == case.record.source.endpoints[0]
+    )
+    source = selected_endpoints[source_index]
+    access = source.object_access[0].model_copy(
+        update={
+            "baselines": selected_baselines,
+            "distinct_actors": len({item.actor for item in selected_baselines}),
+            "distinct_objects": len(
+                {item.subject_resource_id or item.requested_value for item in selected_baselines}
+            ),
+            "distinct_parent_values": len(
+                {
+                    item.parent_resource_id or item.parent_value
+                    for item in selected_baselines
+                    if item.parent_resource_id is not None or item.parent_value is not None
+                }
+            ),
+            "relationship_ids": sorted(
+                {
+                    relationship
+                    for item in selected_baselines
+                    for relationship in item.relationship_ids
+                }
+            ),
+            "baseline_ids": sorted(
+                item.baseline_id for item in selected_baselines if item.baseline_id is not None
+            ),
+        }
+    )
+    source = source.model_copy(update={"object_access": [access]})
+    selected_endpoints[source_index] = source
+    intent = assess_domain_intent(
+        selected_target,
+        [source],
+        category=case.record.category,
+        generation_rule_id=case.record.generation_rule["id"],
+        mutation_target=case.record.mutation_target,
+    )
+    claim = assess_claim_strength(
+        generation_rule_id=case.record.generation_rule["id"],
+        category=case.record.category,
+        intent=intent,
+        eligibility_evidence=[],
+    )
+    return assess_record_readiness(
+        selected_target,
+        selected_observations,
+        selected_endpoints,
+        ResourceStore(),
+        case.record,
+        intent,
+        claim,
+    )
+
+
+def test_cross_parent_baselines_satisfy_two_actor_comparison_coverage() -> None:
+    assessment = _assessment_for_cross_parent_case(_cross_parent_case())
+    coverage = assessment.comparison_coverage
+
+    assert coverage.required_distinct_actors == 2
+    assert coverage.observed_distinct_actors == 2
+    assert coverage.distinct_controlled_objects == 2
+    assert coverage.distinct_parent_references == 2
+    assert coverage.baseline_actor_ids == ["ACCOUNT_A", "ACCOUNT_B"]
+    assert coverage.missing_actor_ids == []
+    assert coverage.cross_parent_comparison is True
+    assert "different literal parents" in coverage.explanation.lower()
+    assert not any(item.code == "MISSING_BASELINE" for item in assessment.blockers)
+
+
+def test_cross_parent_coverage_is_anchored_to_the_source_target_parent() -> None:
+    assessment = _assessment_for_cross_parent_case(_cross_parent_case())
+    coverage = assessment.comparison_coverage
+    target = next(
+        item
+        for item in coverage.baselines
+        if item.canonical_reference == coverage.target_parent_baseline_reference
+    )
+    comparisons = {item.canonical_reference: item for item in coverage.baselines}
+
+    assert sum(item.matches_target_parent for item in coverage.baselines) == 1
+    assert target.actor_id == "ACCOUNT_A"
+    assert target.parent_reference == "RSC-DOMAIN-A-TEST"
+    assert coverage.target_parent_references
+    assert [comparisons[item].actor_id for item in coverage.comparison_baseline_references] == [
+        "ACCOUNT_B"
+    ]
+
+
+def test_cross_parent_comparison_is_order_independent() -> None:
+    case = _cross_parent_case()
+    forward = _assessment_for_cross_parent_case(case)
+    reversed_baselines = [
+        item.model_copy(update={"relationship_ids": list(reversed(item.relationship_ids))})
+        for item in reversed(case.baselines)
+    ]
+    reversed_target = case.target.model_copy(
+        update={"accounts": list(reversed(case.target.accounts))}
+    )
+    reversed_assessment = _assessment_for_cross_parent_case(
+        case,
+        target=reversed_target,
+        observations=case.observations.model_copy(
+            update={"observations": list(reversed(case.observations.observations))}
+        ),
+        endpoints=list(reversed(case.endpoints)),
+        baselines=reversed_baselines,
+    )
+
+    assert forward.model_dump(mode="json") == reversed_assessment.model_dump(mode="json")
+
+
+def test_two_objects_owned_by_one_actor_do_not_satisfy_two_actor_coverage() -> None:
+    case = _cross_parent_case()
+    baseline_b = case.baselines[1].model_copy(update={"actor": "ACCOUNT_A"})
+    observations = case.observations.model_copy(
+        update={
+            "observations": [
+                case.observations.observations[0],
+                case.observations.observations[1].model_copy(update={"actor": "ACCOUNT_A"}),
+            ]
+        }
+    )
+    assessment = _assessment_for_cross_parent_case(
+        case,
+        observations=observations,
+        baselines=[case.baselines[0], baseline_b],
+    )
+
+    assert assessment.comparison_coverage.observed_distinct_actors == 1
+    assert assessment.comparison_coverage.distinct_controlled_objects == 2
+    assert any(item.code == "MISSING_BASELINE" for item in assessment.blockers)
+
+
+def test_corroborating_cross_parent_edges_merge_into_one_baseline() -> None:
+    case = _cross_parent_case()
+    corroborating = case.baselines[0].model_copy(
+        update={
+            "baseline_id": "BASE-ACCOUNT_A-RECORD_A-CORROBORATING",
+            "relationship_ids": ["REL-A-CORROBORATING"],
+        }
+    )
+    assessment = _assessment_for_cross_parent_case(
+        case,
+        baselines=[case.baselines[0], corroborating, case.baselines[1]],
+    )
+    account_a = next(
+        item for item in assessment.comparison_coverage.baselines if item.actor_id == "ACCOUNT_A"
+    )
+
+    assert len(assessment.comparison_coverage.baselines) == 2
+    assert account_a.baseline_ids == [
+        "BASE-ACCOUNT_A-RECORD_A",
+        "BASE-ACCOUNT_A-RECORD_A-CORROBORATING",
+    ]
+    assert "REL-A-CORROBORATING" in account_a.supporting_relationship_ids
+
+
+def test_same_object_under_duplicated_evidence_counts_once() -> None:
+    case = _cross_parent_case()
+    duplicated_object = case.baselines[1].model_copy(
+        update={"subject_resource_id": case.baselines[0].subject_resource_id}
+    )
+    assessment = _assessment_for_cross_parent_case(
+        case,
+        baselines=[case.baselines[0], duplicated_object],
+    )
+
+    assert assessment.comparison_coverage.observed_distinct_actors == 2
+    assert assessment.comparison_coverage.distinct_controlled_objects == 1
+    assert any(item.code == "MISSING_BASELINE" for item in assessment.blockers)
+
+
+def test_baseline_object_must_match_its_runtime_subject() -> None:
+    case = _cross_parent_case()
+    inconsistent = case.baselines[1].model_copy(update={"requested_value": "RECORD_OTHER"})
+    assessment = _assessment_for_cross_parent_case(
+        case,
+        baselines=[case.baselines[0], inconsistent],
+    )
+
+    assert assessment.comparison_coverage.baseline_actor_ids == ["ACCOUNT_A"]
+    assert assessment.comparison_coverage.missing_actor_ids == ["ACCOUNT_B"]
+
+
+@pytest.mark.parametrize(
+    ("update", "missing_actor"),
+    [
+        ({"subject_resource_type": "Firewall"}, "ACCOUNT_B"),
+        ({"parent_resource_type": "Account"}, "ACCOUNT_B"),
+    ],
+)
+def test_cross_parent_type_mismatches_fail_closed(
+    update: dict[str, str],
+    missing_actor: str,
+) -> None:
+    case = _cross_parent_case()
+    incompatible = case.baselines[1].model_copy(update=update)
+    assessment = _assessment_for_cross_parent_case(
+        case,
+        baselines=[case.baselines[0], incompatible],
+    )
+
+    assert assessment.comparison_coverage.baseline_actor_ids == ["ACCOUNT_A"]
+    assert assessment.comparison_coverage.missing_actor_ids == [missing_actor]
+    assert any(item.code == "MISSING_BASELINE" for item in assessment.blockers)
+
+
+def test_incompatible_collection_route_family_fails_closed() -> None:
+    case = _cross_parent_case()
+    endpoint_b, observation_b = _comparison_endpoint(
+        "EP-DNS-B",
+        parent="domain-b.test",
+        object_value="RECORD_B",
+        observation_id="OBS-B",
+        collection="certificates",
+    )
+    baseline_b = _comparison_baseline(
+        endpoint_b,
+        actor="ACCOUNT_B",
+        parent="domain-b.test",
+        object_value="RECORD_B",
+        observation_id="OBS-B",
+    )
+    assessment = _assessment_for_cross_parent_case(
+        case,
+        observations=ObservationStore(
+            observations=[case.observations.observations[0], observation_b]
+        ),
+        endpoints=[case.endpoints[0], endpoint_b],
+        baselines=[case.baselines[0], baseline_b],
+    )
+
+    assert assessment.comparison_coverage.baseline_actor_ids == ["ACCOUNT_A"]
+    assert assessment.comparison_coverage.missing_actor_ids == ["ACCOUNT_B"]
+
+
+@pytest.mark.parametrize("ambiguous", [False, True])
+def test_missing_or_ambiguous_endpoint_provenance_fails_closed(ambiguous: bool) -> None:
+    case = _cross_parent_case()
+    baseline_b = case.baselines[1]
+    endpoints = list(case.endpoints)
+    if ambiguous:
+        endpoints.append(case.endpoints[1].model_copy(deep=True))
+    else:
+        baseline_b = baseline_b.model_copy(update={"endpoint_id": "EP-MISSING"})
+    assessment = _assessment_for_cross_parent_case(
+        case,
+        endpoints=endpoints,
+        baselines=[case.baselines[0], baseline_b],
+    )
+
+    assert assessment.comparison_coverage.baseline_actor_ids == ["ACCOUNT_A"]
+    assert assessment.comparison_coverage.missing_actor_ids == ["ACCOUNT_B"]
+
+
+@pytest.mark.parametrize("ambiguous", [False, True])
+def test_missing_or_ambiguous_runtime_provenance_fails_closed(ambiguous: bool) -> None:
+    case = _cross_parent_case()
+    baseline_b = case.baselines[1]
+    observations = list(case.observations.observations)
+    if ambiguous:
+        observations.append(case.observations.observations[1].model_copy(deep=True))
+    else:
+        baseline_b = baseline_b.model_copy(update={"observations": []})
+    assessment = _assessment_for_cross_parent_case(
+        case,
+        observations=ObservationStore(observations=observations),
+        baselines=[case.baselines[0], baseline_b],
+    )
+
+    assert assessment.comparison_coverage.baseline_actor_ids == ["ACCOUNT_A"]
+    assert assessment.comparison_coverage.missing_actor_ids == ["ACCOUNT_B"]
+
+
+@pytest.mark.parametrize("mismatch", ["authentication", "service"])
+def test_incompatible_authentication_or_service_provenance_fails_closed(
+    mismatch: str,
+) -> None:
+    case = _cross_parent_case()
+    endpoint_b, observation_b = _comparison_endpoint(
+        "EP-DNS-B",
+        parent="domain-b.test",
+        object_value="RECORD_B",
+        observation_id="OBS-B",
+        host="api.other.test" if mismatch == "service" else "api.unified.test",
+        authentication_type="cookie" if mismatch == "authentication" else "bearer",
+    )
+    baseline_b = _comparison_baseline(
+        endpoint_b,
+        actor="ACCOUNT_B",
+        parent="domain-b.test",
+        object_value="RECORD_B",
+        observation_id="OBS-B",
+    )
+    assessment = _assessment_for_cross_parent_case(
+        case,
+        observations=ObservationStore(
+            observations=[case.observations.observations[0], observation_b]
+        ),
+        endpoints=[case.endpoints[0], endpoint_b],
+        baselines=[case.baselines[0], baseline_b],
+    )
+
+    assert assessment.comparison_coverage.baseline_actor_ids == ["ACCOUNT_A"]
+    assert assessment.comparison_coverage.missing_actor_ids == ["ACCOUNT_B"]
+
+
+def test_two_foreign_parent_baselines_without_target_parent_match_fail_closed() -> None:
+    case = _cross_parent_case()
+    endpoint_c, observation_c = _comparison_endpoint(
+        "EP-DNS-C",
+        parent="domain-c.test",
+        object_value="RECORD_C",
+        observation_id="OBS-C",
+    )
+    baseline_c = _comparison_baseline(
+        endpoint_c,
+        actor="ACCOUNT_A",
+        parent="domain-c.test",
+        object_value="RECORD_C",
+        observation_id="OBS-C",
+    )
+    assessment = _assessment_for_cross_parent_case(
+        case,
+        observations=ObservationStore(
+            observations=[*case.observations.observations, observation_c]
+        ),
+        endpoints=[*case.endpoints, endpoint_c],
+        baselines=[case.baselines[1], baseline_c],
+    )
+
+    assert assessment.comparison_coverage.observed_distinct_actors == 0
+    assert assessment.comparison_coverage.target_parent_baseline_reference is None
+    assert "validated literal target parent" in assessment.comparison_coverage.explanation
+    assert any(item.code == "MISSING_BASELINE" for item in assessment.blockers)
+
+
+def test_cross_parent_coverage_preserves_subject_only_mutation(
+    tmp_path: Path,
+) -> None:
+    case = _cross_parent_case()
+    assessment = _assessment_for_cross_parent_case(case)
+    workspace = create_workspace("cross-parent-plan", tmp_path / "workspaces")
+    templates = build_execution_templates(
+        workspace,
+        case.target,
+        case.record,
+        [case.endpoints[0]],
+        case.observations,
+    )
+    mutation = templates.requests[1].mutations[0]
+
+    assert not any(item.code == "MISSING_BASELINE" for item in assessment.blockers)
+    assert case.record.mutation_target.parameter == "dnsRecordId"
+    assert case.record.mutation_target.location == "path"
+    assert templates.requests[0].path.endswith("/domain-a.test/dns-records/RECORD_A")
+    assert templates.requests[1].path.endswith("/domain-a.test/dns-records/RECORD_B")
+    assert mutation.parameter == "dnsRecordId"
+    assert mutation.substitution_scope == "SUBJECT_ONLY"
+    assert mutation.source_parent_resource_id == "RSC-DOMAIN-A-TEST"
+    assert mutation.target_parent_resource_id == "RSC-DOMAIN-B-TEST"
+
+
+def test_public_and_in_memory_alignment_are_identical_and_read_only(
+    tmp_path: Path,
+) -> None:
+    case = _cross_parent_case()
+    assessment = _assessment_for_cross_parent_case(case)
+    persisted = case.record.model_copy(
+        update={
+            "readiness": assessment.readiness,
+            "readiness_assessment": assessment,
+        }
+    )
+    workspace = create_workspace("cross-parent-alignment", tmp_path / "workspaces")
+    write_yaml(workspace.target, case.target.model_dump(mode="json", exclude_none=True))
+    write_yaml(
+        workspace.observations,
+        case.observations.model_dump(mode="json", exclude_none=True),
+    )
+    write_yaml(
+        workspace.endpoints,
+        EndpointStore(endpoints=list(case.endpoints)).model_dump(mode="json", exclude_none=True),
+    )
+    write_yaml(workspace.resources, ResourceStore().model_dump(mode="json", exclude_none=True))
+    write_yaml(
+        workspace.hypotheses,
+        HypothesisStore(hypotheses=[persisted]).model_dump(mode="json", exclude_none=True),
+    )
+    before = {
+        path.relative_to(workspace.root): path.read_bytes()
+        for path in workspace.root.rglob("*")
+        if path.is_file()
+    }
+
+    public = inspect_plan_alignment(workspace, persisted.id)
+    in_memory = inspect_plan_alignment_from_inputs(
+        case.target,
+        case.observations,
+        EndpointStore(endpoints=list(case.endpoints)),
+        ResourceStore(),
+        persisted,
+    )
+    after = {
+        path.relative_to(workspace.root): path.read_bytes()
+        for path in workspace.root.rglob("*")
+        if path.is_file()
+    }
+
+    assert public.readiness.model_dump(mode="json") == in_memory.readiness.model_dump(mode="json")
+    assert public.plan_status == in_memory.plan_status
+    assert public.agrees == in_memory.agrees
+    assert public.violation == in_memory.violation
+    assert public.plan_status == "READY_FOR_REVIEW"
+    assert public.agrees is True
+    assert after == before
+
+
+def test_valid_cross_parent_coverage_removes_only_baseline_blocker() -> None:
+    case = _cross_parent_case(
+        method="DELETE",
+        maximum_requests_per_plan=3,
+        synthetic=False,
+        local_lab=False,
+    )
+    oracle, oracle_observation = _comparison_endpoint(
+        "EP-DNS-ORACLE",
+        parent="domain-a.test",
+        object_value="RECORD_A",
+        observation_id="OBS-ORACLE",
+    )
+    observations = ObservationStore(
+        observations=[*case.observations.observations, oracle_observation]
+    )
+    endpoints = [*case.endpoints, oracle]
+    assessment = _assessment_for_cross_parent_case(
+        case,
+        observations=observations,
+        endpoints=endpoints,
+    )
+    blocker_codes = {item.code for item in assessment.blockers}
+    warning_codes = {item.code for item in assessment.warnings}
+    persisted = case.record.model_copy(
+        update={
+            "readiness": assessment.readiness,
+            "readiness_assessment": assessment,
+        }
+    )
+    alignment = inspect_plan_alignment_from_inputs(
+        case.target,
+        observations,
+        EndpointStore(endpoints=endpoints),
+        ResourceStore(),
+        persisted,
+    )
+
+    assert "MISSING_BASELINE" not in blocker_codes
+    assert {"MISSING_BUDGET", "MISSING_CLEANUP"}.issubset(blocker_codes)
+    assert {
+        "HUMAN_APPROVAL_REQUIRED",
+        "ACTIVE_EXECUTION_DISABLED",
+        "READ_ONLY_RUNNER_UNSUPPORTED",
+    }.issubset(warning_codes)
+    assert case.target.testing.maximum_requests_per_plan == 3
+    assert case.target.testing.active_execution_enabled is False
+    assert case.target.testing.human_approval_required is True
+    assert alignment.plan_status == "BLOCKED"
+    assert alignment.agrees is True
 
 
 @pytest.mark.parametrize("token", ["requests", "return", "change", "delete", "update"])
@@ -447,10 +1133,16 @@ def test_incompatible_baseline_provenance_does_not_satisfy_dns_readiness(
 ) -> None:
     endpoint = _endpoint(
         "EP-DNS",
-        path="/cdn/4.0/domains/{domain}/dns-records/{dnsRecordId}",
+        path="/cdn/4.0/domains/example-a.test/dns-records/{dnsRecordId}",
         resource="DnsRecord",
+        observations=("OBS-1", "OBS-2"),
     )
-    valid = _typed_baseline(endpoint, actor="ACCOUNT_1", object_id="record-a")
+    valid = _typed_baseline(
+        endpoint,
+        actor="ACCOUNT_1",
+        object_id="record-a",
+        observation_id="OBS-1",
+    )
     incompatible = _typed_baseline(
         endpoint,
         actor="ACCOUNT_2",
@@ -458,6 +1150,7 @@ def test_incompatible_baseline_provenance_does_not_satisfy_dns_readiness(
         subject_resource_type=resource_type,
         collection_route_family=collection_route_family,
         parent_resource_type=parent_resource_type,
+        observation_id="OBS-2",
     )
 
     assessment = _authorization_assessment(endpoint, [valid, incompatible])
@@ -470,12 +1163,23 @@ def test_incompatible_baseline_provenance_does_not_satisfy_dns_readiness(
 def test_matching_typed_provenance_satisfies_two_actor_comparison_coverage() -> None:
     endpoint = _endpoint(
         "EP-DNS",
-        path="/cdn/4.0/domains/{domain}/dns-records/{dnsRecordId}",
+        path="/cdn/4.0/domains/example-a.test/dns-records/{dnsRecordId}",
         resource="DnsRecord",
+        observations=("OBS-1", "OBS-2"),
     )
     baselines = [
-        _typed_baseline(endpoint, actor="ACCOUNT_1", object_id="record-a"),
-        _typed_baseline(endpoint, actor="ACCOUNT_2", object_id="record-b"),
+        _typed_baseline(
+            endpoint,
+            actor="ACCOUNT_1",
+            object_id="record-a",
+            observation_id="OBS-1",
+        ),
+        _typed_baseline(
+            endpoint,
+            actor="ACCOUNT_2",
+            object_id="record-b",
+            observation_id="OBS-2",
+        ),
     ]
 
     assessment = _authorization_assessment(endpoint, baselines)
@@ -550,7 +1254,7 @@ def test_baseline_parent_value_must_match_its_provenance_endpoint() -> None:
 
 
 def test_corroborating_relationships_remain_one_canonical_baseline() -> None:
-    endpoint = _endpoint("EP-1")
+    endpoint = _endpoint("EP-1", observations=("OBS-1", "OBS-2"))
     first = _typed_baseline(endpoint, actor="ACCOUNT_1", object_id="order-a").model_copy(
         update={"relationship_ids": ["REL-A", "REL-B"]}
     )
@@ -560,9 +1264,12 @@ def test_corroborating_relationships_remain_one_canonical_baseline() -> None:
             "relationship_ids": ["REL-C"],
         }
     )
-    second = _typed_baseline(endpoint, actor="ACCOUNT_2", object_id="order-b").model_copy(
-        update={"relationship_ids": ["REL-D"]}
-    )
+    second = _typed_baseline(
+        endpoint,
+        actor="ACCOUNT_2",
+        object_id="order-b",
+        observation_id="OBS-2",
+    ).model_copy(update={"relationship_ids": ["REL-D"]})
 
     assessment = _authorization_assessment(endpoint, [first, corroborating, second])
     account_one = next(
@@ -591,7 +1298,7 @@ def test_legacy_baseline_requires_exact_source_endpoint() -> None:
         actor="ACCOUNT_2",
         requested_value="order-b",
         endpoint_id="EP-OTHER",
-        observations=[endpoint.sources[0]],
+        observations=["OBS-OTHER"],
     )
 
     assessment = _authorization_assessment(endpoint, [exact, unrelated])
@@ -998,6 +1705,7 @@ def _cleanup_case(
     baseline_actor: str = "ACCOUNT_1",
     control_actor_ids: tuple[str, ...] = ("ACCOUNT_1",),
     resource_path: str | None = None,
+    oracle_path: str | None = None,
 ) -> _CleanupCase:
     mutation = _endpoint(
         "EP-MUTATION",
@@ -1011,7 +1719,7 @@ def _cleanup_case(
     oracle = _endpoint(
         "EP-ORACLE",
         method=oracle_method,
-        path="/cdn/4.0/domains/example.test/dns-records/{dnsRecordId}",
+        path=(oracle_path or "/cdn/4.0/domains/example.test/dns-records/{dnsRecordId}"),
         resource="DnsRecord",
         state_change=oracle_state_change,
         observations=("OBS-ORACLE",),
@@ -1161,6 +1869,14 @@ def _cleanup_assessment(case: _CleanupCase) -> HypothesisReadinessAssessment:
         (
             {"resource_path": ("/cdn/4.0/domains/example.test/certificates/{dnsRecordId}")},
             "resource belongs to another route family",
+        ),
+        (
+            {"oracle_path": "/cdn/4.0/domains/other.test/dns-records/{dnsRecordId}"},
+            "oracle belongs to another route or parent context",
+        ),
+        (
+            {"oracle_path": "/cdn/4.0/domains/example.test/certificates/{dnsRecordId}"},
+            "oracle belongs to another route or parent context",
         ),
     ],
 )

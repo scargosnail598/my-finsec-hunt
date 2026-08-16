@@ -315,6 +315,27 @@ def test_controlled_ownership_baselines_are_reported_for_applicable_actors(
     assert all(item.ownership.required_baselines == 1 for item in by_actor.values())
     assert report.focused_comparison is not None
     assert report.focused_comparison.observed_distinct_actors == 2
+    hypotheses = HypothesisStore.model_validate(load_yaml(phase4_workspace.hypotheses))
+    focused = next(
+        item for item in hypotheses.hypotheses if item.id == report.focused_comparison.hypothesis_id
+    )
+    coverage = focused.readiness_assessment.comparison_coverage
+    assert report.focused_comparison.required_distinct_actors == coverage.required_distinct_actors
+    assert report.focused_comparison.distinct_controlled_objects == (
+        coverage.distinct_controlled_objects
+    )
+    assert report.focused_comparison.distinct_parent_references == (
+        coverage.distinct_parent_references
+    )
+    assert report.focused_comparison.parent_references == coverage.parent_references
+    assert report.focused_comparison.target_parent_baseline_reference == (
+        coverage.target_parent_baseline_reference
+    )
+    assert report.focused_comparison.comparison_baseline_references == (
+        coverage.comparison_baseline_references
+    )
+    assert report.focused_comparison.evidence_references == coverage.evidence_references
+    assert report.focused_comparison.explanation == coverage.explanation
     assert all(
         item.ownership.hypothesis_id == report.focused_comparison.hypothesis_id
         for item in by_actor.values()
@@ -322,6 +343,24 @@ def test_controlled_ownership_baselines_are_reported_for_applicable_actors(
     assert all(
         item.ownership.resource_type == report.focused_comparison.resource_type
         for item in by_actor.values()
+    )
+    cli_normal = RUNNER.invoke(
+        app,
+        ["status", "--workspace", str(phase4_workspace.root)],
+    )
+    cli_json = RUNNER.invoke(
+        app,
+        ["status", "--workspace", str(phase4_workspace.root), "--json"],
+    )
+    assert cli_normal.exit_code == 0, cli_normal.output
+    assert cli_json.exit_code == 0, cli_json.output
+    focused_json = json.loads(cli_json.output)["focused_comparison"]
+    assert focused_json["distinct_parent_references"] == coverage.distinct_parent_references
+    assert focused_json["target_parent_baseline_reference"] == (
+        coverage.target_parent_baseline_reference
+    )
+    assert focused_json["comparison_baseline_references"] == (
+        coverage.comparison_baseline_references
     )
 
 

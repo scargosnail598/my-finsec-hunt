@@ -832,14 +832,35 @@ class WorkspaceAnalysisMarkdownRenderer:
             target = item.mutation_target
             semantics = target.semantics
             assessment = item.readiness_assessment
+            coverage = assessment.comparison_coverage
             related = sorted(
                 set(item.grouping.campaign_member_ids or item.grouping.cluster_member_ids)
                 - {item.id}
             )
             ownership_evidence = [
                 *semantics.evidence,
-                *assessment.comparison_coverage.evidence_references,
-                *assessment.comparison_coverage.baseline_ids,
+                *coverage.evidence_references,
+                *coverage.baseline_ids,
+            ]
+            comparison_contexts = [
+                (
+                    f"{baseline.canonical_reference}: actor={baseline.actor_id}; "
+                    f"object={baseline.object_reference}; "
+                    f"parent={baseline.parent_reference or 'None'}; "
+                    f"target-parent={'yes' if baseline.matches_target_parent else 'no'}; "
+                    "provenance="
+                    + self._join(
+                        sorted(
+                            {
+                                *baseline.baseline_ids,
+                                *baseline.endpoint_ids,
+                                *baseline.supporting_relationship_ids,
+                                *baseline.observation_ids,
+                            }
+                        )
+                    )
+                )
+                for baseline in coverage.baselines
             ]
             supporting = [
                 *item.eligibility_evidence,
@@ -914,6 +935,29 @@ class WorkspaceAnalysisMarkdownRenderer:
                     ),
                     self._row("Actor binding", item.domain_intent.binding.value),
                     self._row("Object binding", target.expected_authorization_relationship),
+                    self._row(
+                        "Comparison coverage",
+                        f"{coverage.observed_distinct_actors}/"
+                        f"{coverage.required_distinct_actors} actors; "
+                        f"{coverage.distinct_controlled_objects} objects; "
+                        f"{coverage.distinct_parent_references} parent contexts",
+                    ),
+                    self._row(
+                        "Baseline actors",
+                        self._join(coverage.baseline_actor_ids),
+                    ),
+                    self._row(
+                        "Opaque parent references",
+                        self._join(coverage.parent_references),
+                    ),
+                    self._row(
+                        "Target-parent baseline",
+                        coverage.target_parent_baseline_reference or "None",
+                    ),
+                    self._row(
+                        "Controlled comparison baselines",
+                        self._join(coverage.comparison_baseline_references),
+                    ),
                     self._row("Ownership state", semantics.ownership_state.value),
                     self._row("Campaign", item.grouping.campaign_id or "None"),
                     self._row("Related hypotheses", self._join(related)),
@@ -933,6 +977,21 @@ class WorkspaceAnalysisMarkdownRenderer:
                     "**Hypothesis.** " + self.redactor.text(item.hypothesis),
                     "",
                     "**Reasoning.** " + self.redactor.text(item.reasoning),
+                    "",
+                    "**Cross-actor comparison interpretation.** "
+                    + self.redactor.text(coverage.explanation),
+                    "",
+                    "**Controlled comparison contexts**",
+                    "",
+                ]
+            )
+            self._bullets(
+                lines,
+                comparison_contexts,
+                empty="No canonical comparison context is recorded.",
+            )
+            lines.extend(
+                [
                     "",
                     "**Eligibility evidence**",
                     "",

@@ -134,9 +134,11 @@ class CapabilityKind(StrEnum):
 class ComparisonBaseline(ContractModel):
     """One canonical actor/object baseline with merged supporting provenance."""
 
+    canonical_reference: str = ""
     actor_id: str
     object_reference: str
     parent_reference: str | None = None
+    matches_target_parent: bool = False
     resource_type: str | None = None
     parent_resource_type: str | None = None
     route_family: str | None = None
@@ -154,11 +156,18 @@ class ComparisonCoverage(ContractModel):
     required_distinct_actors: int = Field(default=0, ge=0)
     observed_distinct_actors: int = Field(default=0, ge=0)
     distinct_controlled_objects: int = Field(default=0, ge=0)
+    distinct_parent_references: int = Field(default=0, ge=0)
     baseline_actor_ids: list[str] = Field(default_factory=list)
     missing_actor_ids: list[str] = Field(default_factory=list)
     resource_type: str | None = None
     route_families: list[str] = Field(default_factory=list)
     parent_resource_type: str | None = None
+    parent_references: list[str] = Field(default_factory=list)
+    target_parent_references: list[str] = Field(default_factory=list)
+    target_parent_baseline_reference: str | None = None
+    comparison_baseline_references: list[str] = Field(default_factory=list)
+    cross_parent_comparison: bool = False
+    explanation: str = "No cross-actor comparison coverage is required."
     baseline_ids: list[str] = Field(default_factory=list)
     evidence_references: list[str] = Field(default_factory=list)
     baselines: list[ComparisonBaseline] = Field(default_factory=list)

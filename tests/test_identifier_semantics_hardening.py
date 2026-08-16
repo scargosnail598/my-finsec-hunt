@@ -1261,6 +1261,7 @@ def test_case_f_two_controlled_lifecycles_build_exact_object_substitution(
         and item.category == "authorization"
         and item.mutation_target.parameter == "firewallId"
     )
+    coverage = hypothesis.readiness_assessment.comparison_coverage
     assert authentication_task.mutation_target.parameter is None
     first_signature = _generation_signature(store)
 
@@ -1297,17 +1298,24 @@ def test_case_f_two_controlled_lifecycles_build_exact_object_substitution(
     assert "Semantic class: OWNED_OBJECT" in explained.output
     assert "Ranking rationale" in explained.output
     assert "Suppression and distinction" in explained.output
+    assert (
+        f"Comparison coverage: {coverage.observed_distinct_actors}/"
+        f"{coverage.required_distinct_actors} actors"
+    ) in explained.output
+    assert "Comparison interpretation:" in explained.output
 
     web = hypothesis_detail(load_snapshot(workspace), hypothesis.id)["explanation"]
     assert web["mutation_target"]["parameter"] == "firewallId"
     assert web["identifier_semantics"]["ownership_state"] == "STRONG_INFERRED"
     assert web["presentation"]["retention_reasons"]
     assert web["presentation"]["cluster_id"] == hypothesis.grouping.cluster_id
+    assert web["readiness"]["comparison_coverage"] == coverage.model_dump(mode="json")
 
     mcp = FinsecMcpService.from_workspace_path(workspace.root).hypothesis_context(hypothesis.id)
     assert mcp.hypothesis.explanation.mutation_target.parameter == "firewallId"
     assert mcp.hypothesis.explanation.identifier_semantics.semantic_class == "OWNED_OBJECT"
     assert mcp.hypothesis.explanation.retention_reasons
+    assert mcp.hypothesis.explanation.comparison_coverage == coverage
 
 
 def test_legacy_records_default_to_unknown_semantics() -> None:

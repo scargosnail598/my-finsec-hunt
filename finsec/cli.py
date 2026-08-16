@@ -3037,13 +3037,46 @@ def hypotheses_command(
                     "- Comparison coverage: "
                     f"{coverage.observed_distinct_actors}/"
                     f"{coverage.required_distinct_actors} actors; "
-                    f"{coverage.distinct_controlled_objects} distinct object(s)."
+                    f"{coverage.distinct_controlled_objects} distinct object(s); "
+                    f"{coverage.distinct_parent_references} distinct parent context(s)."
                 )
                 if coverage.baseline_actor_ids:
                     console.print("- Baseline actors: " + ", ".join(coverage.baseline_actor_ids))
+                if coverage.parent_resource_type is not None:
+                    console.print(f"- Parent resource type: {coverage.parent_resource_type}")
+                if coverage.parent_references:
+                    console.print(
+                        "- Opaque parent references: " + ", ".join(coverage.parent_references)
+                    )
+                if coverage.target_parent_baseline_reference is not None:
+                    console.print(
+                        f"- Target-parent baseline: {coverage.target_parent_baseline_reference}"
+                    )
+                if coverage.comparison_baseline_references:
+                    console.print(
+                        "- Controlled comparison baselines: "
+                        + ", ".join(coverage.comparison_baseline_references)
+                    )
                 if coverage.missing_actor_ids:
                     console.print(
                         "- Missing baseline actors: " + ", ".join(coverage.missing_actor_ids)
+                    )
+                console.print(f"- Comparison interpretation: {coverage.explanation}")
+                for baseline in coverage.baselines:
+                    baseline_provenance = sorted(
+                        {
+                            *baseline.baseline_ids,
+                            *baseline.endpoint_ids,
+                            *baseline.supporting_relationship_ids,
+                            *baseline.observation_ids,
+                        }
+                    )
+                    console.print(
+                        f"- Baseline {baseline.canonical_reference}: actor={baseline.actor_id}; "
+                        f"object={baseline.object_reference}; "
+                        f"parent={baseline.parent_reference or 'None'}; "
+                        f"target-parent={'yes' if baseline.matches_target_parent else 'no'}; "
+                        f"provenance={', '.join(baseline_provenance) or 'None'}."
                     )
             for warning in readiness.warnings:
                 console.print(f"- Gate [{warning.stage}/{warning.code}]: {warning.summary}")
@@ -3700,8 +3733,27 @@ def status_command(
                 f"{comparison.hypothesis_id} comparison coverage = "
                 f"{comparison.observed_distinct_actors}/"
                 f"{comparison.required_distinct_actors} actors; "
-                f"{comparison.distinct_controlled_objects} distinct object(s)."
+                f"{comparison.distinct_controlled_objects} distinct object(s); "
+                f"{comparison.distinct_parent_references} distinct parent context(s)."
             )
+            console.print(f"Comparison interpretation: {comparison.explanation}")
+            if comparison.baseline_actor_ids:
+                console.print("Baseline actors: " + ", ".join(comparison.baseline_actor_ids))
+            if comparison.parent_references:
+                console.print(
+                    "Opaque parent references: " + ", ".join(comparison.parent_references)
+                )
+            if comparison.target_parent_baseline_reference is not None:
+                console.print(
+                    f"Target-parent baseline: {comparison.target_parent_baseline_reference}"
+                )
+            if comparison.comparison_baseline_references:
+                console.print(
+                    "Controlled comparison baselines: "
+                    + ", ".join(comparison.comparison_baseline_references)
+                )
+            if comparison.evidence_references:
+                console.print("Comparison provenance: " + ", ".join(comparison.evidence_references))
 
     if report.next_actions:
         console.print("\n[bold]Next actions[/bold]")

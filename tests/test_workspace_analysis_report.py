@@ -173,6 +173,29 @@ def test_workspace_report_default_mode(phase3_workspace: WorkspacePaths) -> None
     assert "not confirmed vulnerabilities" in content
 
 
+def test_workspace_report_exposes_canonical_comparison_coverage(
+    phase4_workspace: WorkspacePaths,
+) -> None:
+    content = _report_only(phase4_workspace, "comparison-coverage.md").read_text(encoding="utf-8")
+    store = HypothesisStore.model_validate(load_yaml(phase4_workspace.hypotheses))
+    focused = next(
+        item
+        for item in store.hypotheses
+        if item.readiness_assessment.comparison_coverage.required_distinct_actors > 0
+    )
+    coverage = focused.readiness_assessment.comparison_coverage
+
+    assert (
+        f"{coverage.observed_distinct_actors}/{coverage.required_distinct_actors} actors; "
+        f"{coverage.distinct_controlled_objects} objects; "
+        f"{coverage.distinct_parent_references} parent contexts"
+    ) in content
+    assert "Target-parent baseline" in content
+    assert "Controlled comparison baselines" in content
+    assert "Cross-actor comparison interpretation" in content
+    assert coverage.explanation in content
+
+
 def test_workspace_report_report_only_mode(phase3_workspace: WorkspacePaths) -> None:
     derived = [
         phase3_workspace.endpoints,

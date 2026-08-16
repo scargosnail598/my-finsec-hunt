@@ -1299,10 +1299,39 @@ function renderHypothesisDrawer(data) {
   const mutation = explanation.mutation_target || {};
   const semantics = explanation.identifier_semantics || {};
   const readiness = explanation.readiness || {};
+  const comparison = readiness.comparison_coverage || {};
   const presentation = explanation.presentation || {};
   const plan = data.plan;
   const validation = data.validation;
   const evidence = data.evidence;
+  const comparisonBaselines = (comparison.baselines || []).map((baseline) => {
+    const provenance = [
+      ...(baseline.baseline_ids || []),
+      ...(baseline.endpoint_ids || []),
+      ...(baseline.supporting_relationship_ids || []),
+      ...(baseline.observation_ids || []),
+    ];
+    return `${baseline.canonical_reference}: actor=${baseline.actor_id}; object=${baseline.object_reference}; parent=${baseline.parent_reference || "None"}; target-parent=${baseline.matches_target_parent ? "yes" : "no"}; provenance=${provenance.join(", ") || "None"}`;
+  });
+  const comparisonSection = comparison.required_distinct_actors
+    ? `<section class="drawer-section">
+        <h3>Cross-actor comparison coverage</h3>
+        <div class="check-grid">
+          ${scoreCell("Required actors", comparison.required_distinct_actors || 0)}
+          ${scoreCell("Observed actors", comparison.observed_distinct_actors || 0)}
+          ${scoreCell("Controlled objects", comparison.distinct_controlled_objects || 0)}
+          ${scoreCell("Parent contexts", comparison.distinct_parent_references || 0)}
+        </div>
+        <p class="spaced-copy">${escapeHtml(comparison.explanation || "Comparison coverage is incomplete.")}</p>
+        ${drawerListSection("Baseline actors", comparison.baseline_actor_ids || [])}
+        ${drawerListSection("Opaque parent references", comparison.parent_references || [])}
+        ${drawerListSection("Target-parent baseline", comparison.target_parent_baseline_reference ? [comparison.target_parent_baseline_reference] : [])}
+        ${drawerListSection("Controlled comparison baselines", comparison.comparison_baseline_references || [])}
+        ${drawerListSection("Evidence and provenance", comparison.evidence_references || [])}
+        ${drawerListSection("Controlled baseline contexts", comparisonBaselines)}
+        ${drawerListSection("Missing baseline actors", comparison.missing_actor_ids || [])}
+      </section>`
+    : "";
   return `
     <header class="drawer-header">
       <p class="eyebrow">${escapeHtml(item.id)} / ${escapeHtml(label(item.kind))}</p>
@@ -1338,6 +1367,7 @@ function renderHypothesisDrawer(data) {
     </section>
     ${drawerListSection("Readiness reasons", readiness.reasons || [])}
     ${drawerListSection("Missing readiness prerequisites", readiness.missing_prerequisites || [])}
+    ${comparisonSection}
     ${drawerListSection("Why retained", presentation.retention_reasons || [])}
     ${drawerListSection("Why distinct", presentation.difference_reasons || [])}
     ${drawerListSection("Eligibility evidence", item.eligibility_evidence)}
